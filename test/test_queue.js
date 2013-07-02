@@ -1,5 +1,5 @@
 var Job = require('../lib/job');
-var Queue = require('../lib/queue');
+var Queue = require('../');
 var expect = require('expect.js');
 
 describe('Queue', function(){
