@@ -22,6 +22,7 @@
     "when": "~2.1.1"
   },
   "devDependencies": {
+    "mocha": "~1.12",
     "expect.js": "~0.2.0"
   },
   "scripts": {
