@@ -4,10 +4,12 @@ Bull Job Manager
 ![bull](http://files.softicons.com/download/animal-icons/animal-icons-by-martin-berube/png/128/bull.png)
 
 A minimalistic, robust and fast job processing queue. 
-Designed with stability and atomicity in mind. The API is inspired in Kue.
+Designed with stability and atomicity in mind. The API is inspired by Kue.
 
 It uses redis for persistence, so the queue is not lost if the server goes 
 down for any reason.
+
+[![BuildStatus](https://secure.travis-ci.org/OptimalBits/bull.png?branch=master)](http://travis-ci.org/optimalbits/bull)
 
 Install:
 --------
