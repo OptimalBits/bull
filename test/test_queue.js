@@ -6,7 +6,7 @@ describe('Queue', function(){
   var queue;
   
   before(function(done){
-    queue = new Queue('test queue', 6379, '127.0.0.1');
+    queue = Queue('test queue', 6379, '127.0.0.1');
     done()
   });
   
@@ -22,7 +22,7 @@ describe('Queue', function(){
   
   it('process a job', function(done){
     queue.process('test job type 2', function(job, jobDone){
-      expect(job.foo).to.be.equal('bar')
+      expect(job.data.foo).to.be.equal('bar')
       jobDone();
       done();
     })
@@ -35,12 +35,55 @@ describe('Queue', function(){
     });
   });
   
+  it('process a job that updates progress', function(done){
+    queue.process('test job progress', function(job, jobDone){
+      expect(job.data.foo).to.be.equal('bar')
+      job.progress(42);
+      jobDone();
+    });
+    
+    queue.createJob('test job progress', {foo: 'bar'}).then(function(job){
+      expect(job.jobId).to.be.ok()
+      expect(job.name).to.be('test job progress');
+    }).otherwise(function(err){
+      done(err);
+    });
+    
+    queue.on('progress', function(job, progress){
+      expect(job).to.be.ok();
+      expect(progress).to.be.eql(42);
+      done();
+    });
+  });
+  
+  it('process a job that fails', function(done){
+    var jobError = new Error("Job Failed");
+    queue.process('test job fails', function(job, jobDone){
+      expect(job.data.foo).to.be.equal('bar')
+      jobDone(jobError);
+    })
+    
+    queue.createJob('test job fails', {foo: 'bar'}).then(function(job){
+      expect(job.jobId).to.be.ok()
+      expect(job.name).to.be('test job fails')
+    }).otherwise(function(err){
+      done(err);
+    });
+    
+    queue.on('failed', function(job, err){
+      expect(job.jobId).to.be.ok()
+      expect(job.name).to.be('test job fails')
+      expect(err).to.be.eql(jobError);
+      done();
+    });
+  });
+  
   it('process several jobs serially', function(done){
     var counter = 1;
     var maxJobs = 100;
     queue.process('serial job', function(job, jobDone){
-      expect(job.num).to.be.equal(counter);
-      expect(job.foo).to.be.equal('bar');
+      expect(job.data.num).to.be.equal(counter);
+      expect(job.data.foo).to.be.equal('bar');
       jobDone();
       if(counter == maxJobs) done();
       counter++;
