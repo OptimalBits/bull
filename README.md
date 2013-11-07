@@ -13,7 +13,7 @@ If you need more features than the one provided by Bull check
 [Kue](https://github.com/learnboost/kue) but keep in mind this open
 [issue](https://github.com/LearnBoost/kue/issues/130).
 
-[![BuildStatus](https://secure.travis-ci.org/OptimalBits/bull.png?branch=master)](http://travis-ci.org/optimalbits/bull)
+[![BuildStatus](https://secure.travis-ci.org/OptimalBits/bull.png?branch=master)](http://travis-ci.org/OptimalBits/bull)
 
 Install:
 --------
@@ -80,9 +80,10 @@ A queue emits also some useful events:
 
 ##Documentation
 
-    * [Queue](#queue)
-    * [Queue##process](#process)
-    * [Queue##createJob](#createJob)
+* [Queue](#queue)
+* [Queue##process](#process)
+* [Queue##createJob](#createJob)
+* [Job](#job)
     
 ## Reference
 
