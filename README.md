@@ -9,7 +9,7 @@ Designed with stability and atomicity in mind. The API is inspired by Kue.
 It uses redis for persistence, so the queue is not lost if the server goes 
 down for any reason.
 
-If you need more features than the one provided by Bull check 
+If you need more features than the ones provided by Bull check 
 [Kue](https://github.com/learnboost/kue) but keep in mind this open
 [issue](https://github.com/LearnBoost/kue/issues/130).
 
@@ -107,14 +107,14 @@ __Arguments__
 
   
 <a name="process"/>
-#### process(jobName, function(job, done))
+#### Queue##process(jobName, function(job, done))
 
 Defines a processing function for the jobs with the given name.
 
 The callback is called everytime a job in the queue matches the name and
 provides an instance of the job and a done callback to be called after the
 job has been completed. If done can be called providing an Error instsance
-to signal that the job did not complete successfully. 
+to signal that the job did not complete successfully.
     
 __Arguments__
  
@@ -126,7 +126,7 @@ __Arguments__
 ---------------------------------------
   
 <a name="createJob"/>
-#### createJob(jobName, args)
+#### Queue##createJob(jobName, args)
 
 Creates a new job and adds it to the queue. If the queue is empty the job
 will be executed directly, otherwise it will be placed in the queue and 
