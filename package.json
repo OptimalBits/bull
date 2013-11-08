@@ -19,7 +19,8 @@
   "gitHead": "452fbba40bcfa6fc48f0140eea14d9a61abbc758",
   "dependencies": {
     "redis": "~0.8.4",
-    "when": "~2.1.1"
+    "when": "~2.1.1",
+    "lodash": "~2.2.1"
   },
   "devDependencies": {
     "mocha": "~1.12",
