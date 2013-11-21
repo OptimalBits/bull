@@ -69,7 +69,7 @@ describe('Job', function(){
   });
   
   it('completed', function(done){
-    Job.create(queue, 3, 'test job progress', {foo: 'bar'}).then(function(job){
+    Job.create(queue, 3, 'test job completed', {foo: 'bar'}).then(function(job){
       return job.isCompleted().then(function(isCompleted){
         expect(isCompleted).to.be(false);
       }).then(function(){
@@ -86,7 +86,7 @@ describe('Job', function(){
   });
   
   it('failed', function(done){
-    Job.create(queue, 4, 'test job progress', {foo: 'bar'}).then(function(job){
+    Job.create(queue, 4, 'test job failed', {foo: 'bar'}).then(function(job){
       return job.isFailed().then(function(isFailed){
         expect(isFailed).to.be(false);
       }).then(function(){
