@@ -70,9 +70,53 @@ describe('Queue', function(){
       done(err);
     });
     
-    queue.on('failed', function(job, err){
+    queue.once('failed', function(job, err){
       expect(job.jobId).to.be.ok()
       expect(job.name).to.be('test job fails')
+      expect(err).to.be.eql(jobError);
+      done();
+    });
+  });
+  
+  it('process a job that throws an exception', function(done){
+    var jobError = new Error("Job Failed");
+    queue.process('test job throws exception', function(job, jobDone){
+      expect(job.data.foo).to.be.equal('bar')
+      throw jobError;
+    });
+    
+    queue.createJob('test job throws exception', {foo: 'bar'}).then(function(job){
+      expect(job.jobId).to.be.ok()
+      expect(job.name).to.be('test job throws exception')
+    }).otherwise(function(err){
+      done(err);
+    });
+    
+    queue.once('failed', function(job, err){
+      expect(job.jobId).to.be.ok()
+      expect(job.name).to.be('test job throws exception')
+      expect(err).to.be.eql(jobError);
+      done();
+    });
+  });
+  
+  it.skip('retry a job that fails', function(done){
+    var jobError = new Error("Job Failed");
+    queue.process('test job fails retry', function(job, jobDone){
+      expect(job.data.foo).to.be.equal('bar')
+      jobDone(jobError);
+    })
+    
+    queue.createJob('test job fails retry', {foo: 'bar'}).then(function(job){
+      expect(job.jobId).to.be.ok()
+      expect(job.name).to.be('test job fails retry')
+    }).otherwise(function(err){
+      done(err);
+    });
+    
+    queue.once('failed', function(job, err){
+      expect(job.jobId).to.be.ok()
+      expect(job.name).to.be('test job fails retry')
       expect(err).to.be.eql(jobError);
       done();
     });
@@ -93,5 +137,5 @@ describe('Queue', function(){
       queue.createJob('serial job', {foo: 'bar', num: i});
     }
   });
-
+  
 });
