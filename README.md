@@ -3,7 +3,7 @@ Bull Job Manager
 
 ![bull](http://files.softicons.com/download/animal-icons/animal-icons-by-martin-berube/png/128/bull.png)
 
-A minimalistic, robust and fast job processing queue. 
+A lightweight, robust and fast job processing queue. 
 Designed with stability and atomicity in mind. The API is inspired by Kue.
 
 It uses redis for persistence, so the queue is not lost if the server goes 
@@ -28,6 +28,9 @@ Quick Guide
     var queue = new Queue('media transcoding', 6379, '127.0.0.1'));
     
     queue.process('video transcode', function(job, done){
+      
+      // job.data contains the custom data passed when the job was created
+      
       // transcode video asynchronously and report progress
       job.progress(42);
       
@@ -36,6 +39,9 @@ Quick Guide
       
       // or give a error if error
       done(Error('error transcoding'));
+      
+      // If the job throws an unhandled exception it is also handled correctly
+      throw (Error('some unexpected error'));
     });
 
     queue.process('audio transcode', function(job, done){
@@ -47,6 +53,9 @@ Quick Guide
       
       // or give a error if error
       done(Error('error transcoding'));
+      
+      // If the job throws an unhandled exception it is also handled correctly
+      throw (Error('some unexpected error'));
     });
     
     queue.process('image transcode', function(job, done){
@@ -58,6 +67,9 @@ Quick Guide
       
       // or give a error if error
       done(Error('error transcoding'));
+      
+      // If the job throws an unhandled exception it is also handled correctly
+      throw (Error('some unexpected error'));
     });
     
     queue.createJob('video transcode', {video: 'http://example.com/video1.mov'});
@@ -76,6 +88,41 @@ A queue emits also some useful events:
       // Job progress updated!
     })
     
+    
+Queues are cheap, so if you need many of them just create new ones with different
+names:
+
+    var userJohn = new Queue('john');
+    var userLisa = new Queue('lisa');
+    .
+    .
+    .
+    
+Queues are robust and can be run in parallel in several threads or processes
+without any risk of hazzards or queue corruption. Check this simple example 
+using cluster to parallelize jobs accross processes:
+
+    var 
+      Queue = require('bull'),
+      cluster = require('cluster');
+
+    var numWorkers = 8;
+    var queue = new Queue("test concurrent queue", 6379, '127.0.0.1');
+
+    queue.process('test concurrent job', function(job, jobDone){
+      if(cluster.isMaster){
+        console.log("Job done in master", job.jobId);
+      }else{
+        console.log("Job done by worker", cluster.worker.id, job.jobId);
+      }
+      jobDone();
+    });
+
+    if(cluster.isMaster){
+      for (var i = 0; i < numWorkers; i++) {
+        cluster.fork();
+      }
+    }
 
 
 ##Documentation
