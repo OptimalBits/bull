@@ -133,27 +133,62 @@ describe('Queue', function(){
     }
   });
   
-  it('add a job to a paused queue', function(done){
-    var ispaused = false;
+  it('add jobs to a paused queue', function(done){
+    var ispaused = false, counter = 2;
     
     queue.process(function(job, jobDone){
       expect(ispaused).to.be(false);
       expect(job.data.foo).to.be.equal('paused');
       jobDone();
-      done();
+      counter--;
+      if(counter === 0) done();
     });
     
     queue.pause();
+    
     ispaused = true;
     
     queue.add({foo: 'paused'});
+    queue.add({foo: 'paused'});
     
     setTimeout(function(){
-      console.log("papagayo")
       ispaused = false;
       queue.resume();
-    }, 1000); // We hope that this was enough to trigger a process if
+    }, 100); // We hope that this was enough to trigger a process if
     // we were not paused.
+  });
+  
+  it('paused a running queue', function(done){
+    var ispaused = false, isresumed = true, first = true;
+    
+    queue.process(function(job, jobDone){
+      expect(ispaused).to.be(false);
+      expect(job.data.foo).to.be.equal('paused');
+      jobDone();
+      
+      if(first){
+        first = false;
+        queue.pause();
+        ispaused = true;
+      }else{
+        expect(isresumed).to.be(true);
+        done();
+      }  
+    });
+        
+    queue.add({foo: 'paused'});
+    queue.add({foo: 'paused'});
+    
+    queue.on('paused', function(){
+      setTimeout(function(){
+        ispaused = false;
+        queue.resume();
+      }, 100); // We hope that this was enough to trigger a process if
+    });
+    
+    queue.on('resumed', function(){
+      isresumed = true;
+    });
     
   });
   
