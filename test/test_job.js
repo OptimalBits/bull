@@ -20,20 +20,16 @@ describe('Job', function(){
   });
 
   it('create', function(done){
-    Job.create(queue, 1, 'test job', {foo: 'bar'}).then(function(job){
-      expect(job).to.have.property('name');
+    Job.create(queue, 1, {foo: 'bar'}).then(function(job){
       expect(job).to.have.property('jobId');
       expect(job).to.have.property('data');
     
-      expect(job.name).to.be.equal('test job');
       expect(job.data.foo).to.be.equal('bar');
       
       Job.fromId(queue, job.jobId).then(function(storedJob){
-        expect(storedJob).to.have.property('name');
         expect(storedJob).to.have.property('jobId');
         expect(storedJob).to.have.property('data');
     
-        expect(storedJob.name).to.be.equal('test job');
         expect(storedJob.data.foo).to.be.equal('bar');
         done();
       }).otherwise(function(err){
@@ -47,12 +43,10 @@ describe('Job', function(){
   });
   
   it('report progress', function(done){
-    Job.create(queue, 2, 'test job progress', {foo: 'bar'}).then(function(job){
-      expect(job).to.have.property('name');
+    Job.create(queue, 2, {foo: 'bar'}).then(function(job){
       expect(job).to.have.property('jobId');
       expect(job).to.have.property('data');
     
-      expect(job.name).to.be.equal('test job progress');
       expect(job.data.foo).to.be.equal('bar');
       expect(job.progress()).to.be(0);
       
@@ -69,7 +63,7 @@ describe('Job', function(){
   });
   
   it('completed', function(done){
-    Job.create(queue, 3, 'test job completed', {foo: 'bar'}).then(function(job){
+    Job.create(queue, 3, {foo: 'bar'}).then(function(job){
       return job.isCompleted().then(function(isCompleted){
         expect(isCompleted).to.be(false);
       }).then(function(){
@@ -86,7 +80,7 @@ describe('Job', function(){
   });
   
   it('failed', function(done){
-    Job.create(queue, 4, 'test job failed', {foo: 'bar'}).then(function(job){
+    Job.create(queue, 4, {foo: 'bar'}).then(function(job){
       return job.isFailed().then(function(isFailed){
         expect(isFailed).to.be(false);
       }).then(function(){
