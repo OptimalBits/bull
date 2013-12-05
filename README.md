@@ -75,6 +75,16 @@ Quick Guide
     queue.createJob('video transcode', {video: 'http://example.com/video1.mov'});
     queue.createJob('audio transcode', {audio: 'http://example.com/audio1.mp3'});
     queue.createJob('image transcode', {image: 'http://example.com/image1.tiff'});
+    
+A queue can be paused and resumed:
+
+    queue.pause().then(function(){
+      // queue is paused now
+    });
+    
+    queue.resume().then(function(){
+      // queue is resumed now
+    })
 
 A queue emits also some useful events:
 
@@ -87,8 +97,13 @@ A queue emits also some useful events:
     .on('progress', function(job, progress){
       // Job progress updated!
     })
-    
-    
+    .on('paused', function(){
+      // The queue has been paused
+    })
+    .on('progress', function(job, progress){
+      // The queue has been resumed
+    })
+
 Queues are cheap, so if you need many of them just create new ones with different
 names:
 
@@ -106,7 +121,6 @@ using cluster to parallelize jobs accross processes:
       Queue = require('bull'),
       cluster = require('cluster');
 
-    var numWorkers = 8;
     var queue = new Queue("test concurrent queue", 6379, '127.0.0.1');
 
     queue.process('test concurrent job', function(job, jobDone){
@@ -119,6 +133,7 @@ using cluster to parallelize jobs accross processes:
     });
 
     if(cluster.isMaster){
+      var numWorkers = 8;
       for (var i = 0; i < numWorkers; i++) {
         cluster.fork();
       }
