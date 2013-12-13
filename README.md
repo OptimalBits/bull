@@ -136,7 +136,7 @@ if(cluster.isMaster){
   }
   
   cluster.on('online', function(worker) {
-    // Lets create a few jobs for every created worker
+    // Lets create a few jobs for the queue workers
     for(var i=0; i<500; i++){
       queue.add({foo: 'bar'});
     };
