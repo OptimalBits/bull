@@ -32,6 +32,7 @@ var imageQueue = new Queue('image transcoding', 6379, '127.0.0.1'));
 videoQueue.process(function(job, done){
   
   // job.data contains the custom data passed when the job was created
+  // job.jobId contains id of this job.
   
   // transcode video asynchronously and report progress
   job.progress(42);
@@ -120,7 +121,7 @@ var userLisa = new Queue('lisa');
 ```
     
 Queues are robust and can be run in parallel in several threads or processes
-without any risk of hazzards or queue corruption. Check this simple example 
+without any risk of hazards or queue corruption. Check this simple example 
 using cluster to parallelize jobs accross processes:
 ```javascript
 var 
@@ -210,7 +211,7 @@ executed as soon as possible.
 __Arguments__
  
 ```javascript
-  args {PlainObject} A plain object with arguments that will be passed
+  data {PlainObject} A plain object with arguments that will be passed
     to the job processing function in job.data.
   opts {PlainObject} A plain object with arguments that will be passed
     to the job processing function in job.opts
