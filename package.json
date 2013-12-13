@@ -14,7 +14,7 @@
     "parallel"
   ],
   "author": "OptimalBits",
-  "license": "BSD",
+  "license": "MIT",
   "readmeFilename": "README.md",
   "gitHead": "452fbba40bcfa6fc48f0140eea14d9a61abbc758",
   "dependencies": {
