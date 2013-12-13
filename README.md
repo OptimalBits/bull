@@ -22,129 +22,135 @@ Install:
 
 Quick Guide
 -----------
+```javascript
+var Queue = require('bull');
 
-    var Queue = require('bull');
-    
-    var queue = new Queue('media transcoding', 6379, '127.0.0.1'));
-    
-    queue.process('video transcode', function(job, done){
-      
-      // job.data contains the custom data passed when the job was created
-      
-      // transcode video asynchronously and report progress
-      job.progress(42);
-      
-      // call done when finished
-      done();
-      
-      // or give a error if error
-      done(Error('error transcoding'));
-      
-      // If the job throws an unhandled exception it is also handled correctly
-      throw (Error('some unexpected error'));
-    });
+var videoQueue = new Queue('video transcoding', 6379, '127.0.0.1'));
+var audioQueue = new Queue('audio transcoding', 6379, '127.0.0.1'));
+var imageQueue = new Queue('image transcoding', 6379, '127.0.0.1'));
 
-    queue.process('audio transcode', function(job, done){
-      // transcode audio asynchronously and report progress
-      job.progress(42);
-      
-      // call done when finished
-      done();
-      
-      // or give a error if error
-      done(Error('error transcoding'));
-      
-      // If the job throws an unhandled exception it is also handled correctly
-      throw (Error('some unexpected error'));
-    });
-    
-    queue.process('image transcode', function(job, done){
-      // transcode image asynchronously and report progress
-      job.progress(42);
-      
-      // call done when finished
-      done();
-      
-      // or give a error if error
-      done(Error('error transcoding'));
-      
-      // If the job throws an unhandled exception it is also handled correctly
-      throw (Error('some unexpected error'));
-    });
-    
-    queue.createJob('video transcode', {video: 'http://example.com/video1.mov'});
-    queue.createJob('audio transcode', {audio: 'http://example.com/audio1.mp3'});
-    queue.createJob('image transcode', {image: 'http://example.com/image1.tiff'});
+videoQueue.process(function(job, done){
+  
+  // job.data contains the custom data passed when the job was created
+  
+  // transcode video asynchronously and report progress
+  job.progress(42);
+  
+  // call done when finished
+  done();
+  
+  // or give a error if error
+  done(Error('error transcoding'));
+  
+  // If the job throws an unhandled exception it is also handled correctly
+  throw (Error('some unexpected error'));
+});
+
+audioQueue.process(function(job, done){
+  // transcode audio asynchronously and report progress
+  job.progress(42);
+  
+  // call done when finished
+  done();
+  
+  // or give a error if error
+  done(Error('error transcoding'));
+  
+  // If the job throws an unhandled exception it is also handled correctly
+  throw (Error('some unexpected error'));
+});
+
+imageQueue.process(function(job, done){
+  // transcode image asynchronously and report progress
+  job.progress(42);
+  
+  // call done when finished
+  done();
+  
+  // or give a error if error
+  done(Error('error transcoding'));
+  
+  // If the job throws an unhandled exception it is also handled correctly
+  throw (Error('some unexpected error'));
+});
+
+videoQueue.add({video: 'http://example.com/video1.mov'});
+audioQueue.add({audio: 'http://example.com/audio1.mp3'});
+imageQueue.add({image: 'http://example.com/image1.tiff'});
+```
     
 A queue can be paused and resumed:
+```javascript
+queue.pause().then(function(){
+  // queue is paused now
+});
 
-    queue.pause().then(function(){
-      // queue is paused now
-    });
-    
-    queue.resume().then(function(){
-      // queue is resumed now
-    })
+queue.resume().then(function(){
+  // queue is resumed now
+})
+```
 
 A queue emits also some useful events:
-
-    queue.on('completed', function(job){
-      // Job completed!
-    })
-    .on('failed', function(job, err){
-      // Job failed with reason err!
-    })
-    .on('progress', function(job, progress){
-      // Job progress updated!
-    })
-    .on('paused', function(){
-      // The queue has been paused
-    })
-    .on('progress', function(job, progress){
-      // The queue has been resumed
-    })
+```javascript
+queue.on('completed', function(job){
+  // Job completed!
+})
+.on('failed', function(job, err){
+  // Job failed with reason err!
+})
+.on('progress', function(job, progress){
+  // Job progress updated!
+})
+.on('paused', function(){
+  // The queue has been paused
+})
+.on('progress', function(job, progress){
+  // The queue has been resumed
+})
+```
 
 Queues are cheap, so if you need many of them just create new ones with different
 names:
-
-    var userJohn = new Queue('john');
-    var userLisa = new Queue('lisa');
-    .
-    .
-    .
+```javascript
+var userJohn = new Queue('john');
+var userLisa = new Queue('lisa');
+.
+.
+.
+```
     
 Queues are robust and can be run in parallel in several threads or processes
 without any risk of hazzards or queue corruption. Check this simple example 
 using cluster to parallelize jobs accross processes:
+```javascript
+var 
+  Queue = require('bull'),
+  cluster = require('cluster');
 
-    var 
-      Queue = require('bull'),
-      cluster = require('cluster');
+var queue = new Queue("test concurrent queue", 6379, '127.0.0.1');
 
-    var queue = new Queue("test concurrent queue", 6379, '127.0.0.1');
+queue.process('test concurrent job', function(job, jobDone){
+  if(cluster.isMaster){
+    console.log("Job done in master", job.jobId);
+  }else{
+    console.log("Job done by worker", cluster.worker.id, job.jobId);
+  }
+  jobDone();
+});
 
-    queue.process('test concurrent job', function(job, jobDone){
-      if(cluster.isMaster){
-        console.log("Job done in master", job.jobId);
-      }else{
-        console.log("Job done by worker", cluster.worker.id, job.jobId);
-      }
-      jobDone();
-    });
-
-    if(cluster.isMaster){
-      var numWorkers = 8;
-      for (var i = 0; i < numWorkers; i++) {
-        cluster.fork();
-      }
-    }
-
+if(cluster.isMaster){
+  var numWorkers = 8;
+  for (var i = 0; i < numWorkers; i++) {
+    cluster.fork();
+  }
+}
+```
 
 ##Documentation
 
 * [Queue](#queue)
 * [Queue##process](#process)
-* [Queue##createJob](#createJob)
+* [Queue##add](#add)
 * [Job](#job)
     
 ## Reference
@@ -169,11 +175,11 @@ __Arguments__
 
   
 <a name="process"/>
-#### Queue##process(jobName, function(job, done))
+#### Queue##process(function(job, done))
 
-Defines a processing function for the jobs with the given name.
+Defines a processing function for the jobs placed into a given Queue.
 
-The callback is called everytime a job in the queue matches the name and
+The callback is called everytime a job is placed in the queue and
 provides an instance of the job and a done callback to be called after the
 job has been completed. If done can be called providing an Error instsance
 to signal that the job did not complete successfully.
@@ -187,8 +193,8 @@ __Arguments__
 
 ---------------------------------------
   
-<a name="createJob"/>
-#### Queue##createJob(jobName, args)
+<a name="add"/>
+#### Queue##add(data, opts)
 
 Creates a new job and adds it to the queue. If the queue is empty the job
 will be executed directly, otherwise it will be placed in the queue and 
@@ -197,9 +203,10 @@ executed as soon as possible.
 __Arguments__
  
 ```javascript
-  jobName {String} A job type name.
   args {PlainObject} A plain object with arguments that will be passed
     to the job processing function in job.data.
+  opts {PlainObject} A plain object with arguments that will be passed
+    to the job processing function in job.opts
   returns {Promise} A promise that resolves when the job has been succesfully
     added to the queue (or rejects if some error occured).
 ```
@@ -214,7 +221,7 @@ A job includes all data needed to perform its execution, as well as the progress
 method needed to update its progress.
     
 The most important property for the user is Job##data that includes the
-object that was passed to Queue##createJob, and that is normally used to 
+object that was passed to Queue##add, and that is normally used to 
 perform the job.
 
 ---------------------------------------
