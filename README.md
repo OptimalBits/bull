@@ -25,9 +25,9 @@ Quick Guide
 ```javascript
 var Queue = require('bull');
 
-var videoQueue = new Queue('video transcoding', 6379, '127.0.0.1'));
-var audioQueue = new Queue('audio transcoding', 6379, '127.0.0.1'));
-var imageQueue = new Queue('image transcoding', 6379, '127.0.0.1'));
+var videoQueue = Queue('video transcoding', 6379, '127.0.0.1'));
+var audioQueue = Queue('audio transcoding', 6379, '127.0.0.1'));
+var imageQueue = Queue('image transcoding', 6379, '127.0.0.1'));
 
 videoQueue.process(function(job, done){
   
@@ -113,8 +113,8 @@ queue.on('completed', function(job){
 Queues are cheap, so if you need many of them just create new ones with different
 names:
 ```javascript
-var userJohn = new Queue('john');
-var userLisa = new Queue('lisa');
+var userJohn = Queue('john');
+var userLisa = Queue('lisa');
 .
 .
 .
@@ -152,6 +152,30 @@ if(cluster.isMaster){
     jobDone();
   });
 }
+```
+
+Bull can also be used for persistent messsage queues. This is a quite useful
+feature in some usecases. For example, you can have two servers that need to 
+communicate with each other. By using a queue the servers do not need to be online
+at the same time, this create a very robust communication channel:
+
+```javascript
+var Queue = require('bull');
+
+// If we are server one, we will use queueOne for sending and queue two for
+// receiving.
+  
+var sendQueue = Queue("server one message queue", 6379, '127.0.0.1');
+var receiveQueue = Queue("server two message queue", 6379, '127.0.0.1');
+
+// we can send any JSON stringfiable data
+sendQueue.queue.add({msg: 'this is a test message'});
+
+// And receive as well
+receiveQueue.process(function(msg, msgDone){
+  console.log('Received message from server two: %s', msg);
+  msgDone();
+});
 ```
 
 ##Documentation
