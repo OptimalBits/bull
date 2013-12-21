@@ -25,9 +25,9 @@ Quick Guide
 ```javascript
 var Queue = require('bull');
 
-var videoQueue = Queue('video transcoding', 6379, '127.0.0.1'));
-var audioQueue = Queue('audio transcoding', 6379, '127.0.0.1'));
-var imageQueue = Queue('image transcoding', 6379, '127.0.0.1'));
+var videoQueue = Queue('video transcoding', 6379, '127.0.0.1');
+var audioQueue = Queue('audio transcoding', 6379, '127.0.0.1');
+var imageQueue = Queue('image transcoding', 6379, '127.0.0.1');
 
 videoQueue.process(function(job, done){
   
