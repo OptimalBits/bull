@@ -192,7 +192,7 @@ process jobs as fast as they can, and some other services that need to take the
 result of this processors and do something with it, maybe storing results in a
 database. 
 
-The most robust and scalable way to accomplish this is combining the standard 
+The most robust and scalable way to accomplish this is by combining the standard 
 job queue with the message queue pattern: a service sends jobs to the cluster
 just by opening a job queue and adding jobs to it, the cluster will start
 processing as fast as it can. Everytime a job gets completed in the cluster a
