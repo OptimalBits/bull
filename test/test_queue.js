@@ -17,6 +17,40 @@ describe('Queue', function(){
     queue.close();
     done();
   })
+  
+  it('create a queue with standard redis opts', function(done){
+    var queue = Queue('standard');
+    
+    queue.once('ready', function(){
+      expect(queue.client.host).to.be('127.0.0.1');
+      expect(queue.bclient.host).to.be('127.0.0.1');
+      
+      expect(queue.client.port).to.be(6379);
+      expect(queue.bclient.port).to.be(6379);
+      
+      expect(queue.client.selected_db).to.be(0);
+      expect(queue.bclient.selected_db).to.be(0);
+            
+      done();
+    });
+  });
+  
+  it('create a queue using custom redis paramters', function(done){
+    var queue = Queue('custom', {redis: {DB: 1}});
+    
+    queue.once('ready', function(){
+      expect(queue.client.host).to.be('127.0.0.1');
+      expect(queue.bclient.host).to.be('127.0.0.1');
+      
+      expect(queue.client.port).to.be(6379);
+      expect(queue.bclient.port).to.be(6379);
+      
+      expect(queue.client.selected_db).to.be(1);
+      expect(queue.bclient.selected_db).to.be(1);
+            
+      done();
+    });  
+  })
 
   it('process a job', function(done){
     queue.process(function(job, jobDone){
