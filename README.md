@@ -15,6 +15,8 @@ If you need more features than the ones provided by Bull check
 
 [![BuildStatus](https://secure.travis-ci.org/OptimalBits/bull.png?branch=master)](http://travis-ci.org/OptimalBits/bull)
 
+Follow [manast](http://twitter.com/manast) for news and updates regarding this library.
+
 Install:
 --------
 
@@ -154,6 +156,11 @@ if(cluster.isMaster){
 }
 ```
 
+Useful patterns
+---------------
+
+####Message Queue
+
 Bull can also be used for persistent messsage queues. This is a quite useful
 feature in some usecases. For example, you can have two servers that need to 
 communicate with each other. By using a queue the servers do not need to be online
@@ -177,6 +184,21 @@ receiveQueue.process(function(msg, msgDone){
   msgDone();
 });
 ```
+
+####Returning job completions
+
+A common pattern is where you have a cluster of queue processors that just 
+process jobs as fast as they can, and some other services that need to take the
+result of this processors and do something with it, maybe storing results in a
+database. 
+
+The most robust and scalable way to accomplish this is combining the standard 
+job queue with the message queue pattern: a service sends jobs to the cluster
+just by opening a job queue and adding jobs to it, the cluster will start
+processing as fast as it can. Everytime a job gets completed in the cluster a
+message is send to a results message queue with the result data, this queue is
+listened by some other service that stores the results in a database.
+
 
 ##Documentation
 
