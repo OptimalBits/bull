@@ -42,14 +42,90 @@ describe('Job', function(){
     });
   });
   
+  
+  describe('Locking', function(){
+    it('take a lock', function(done){
+      Job.create(queue, 1, {foo: 'bar'}).then(function(job){
+        expect(job).to.have.property('jobId');
+        expect(job).to.have.property('data');
+        
+        return job.takeLock('123').then(function(lockTaken){
+          expect(lockTaken).to.be(true);
+        });
+      }).then(done, function(err){
+        console.log(err);
+        done(err);
+      });
+    });
+    
+    it('take an already taken lock', function(done){
+      Job.create(queue, 2, {foo: 'bar'}).then(function(job){
+        expect(job).to.have.property('jobId');
+        expect(job).to.have.property('data');
+        
+        return job.takeLock('123').then(function(lockTaken){
+          expect(lockTaken).to.be(true);
+        }).then(function(){
+          return job.takeLock('123').then(function(lockTaken){
+            expect(lockTaken).to.be(false);
+          });
+        })
+      }).then(done, function(err){
+        console.log(err);
+        done(err);
+      });
+    });
+    
+    it('renew a taken lock', function(done){
+      Job.create(queue, 3, {foo: 'bar'}).then(function(job){
+        expect(job).to.have.property('jobId');
+        expect(job).to.have.property('data');
+        
+        return job.takeLock('123').then(function(lockTaken){
+          expect(lockTaken).to.be(true);
+        }).then(function(){
+          return job.renewLock('123').then(function(lockRenewed){
+            expect(lockRenewed).to.be(true);
+          });
+        });
+      }).then(done, function(err){
+        console.log(err);
+        done(err);
+      });
+    });
+    
+    it('release a lock', function(done){
+      Job.create(queue, 4, {foo: 'bar'}).then(function(job){
+        expect(job).to.have.property('jobId');
+        expect(job).to.have.property('data');
+        
+        return job.takeLock('123').then(function(lockTaken){
+          expect(lockTaken).to.be(true);
+        }).then(function(){
+          return job.releaseLock('321').then(function(lockReleased){
+            expect(lockReleased).to.be(false);
+          });
+        }).then(function(){
+          return job.releaseLock('123').then(function(lockReleased){
+            expect(lockReleased).to.be(true);
+          });
+        });
+      }).then(done, function(err){
+        console.log(err);
+        done(err);
+      });
+    });
+  })
+  
+  
   it('report progress', function(done){
     Job.create(queue, 2, {foo: 'bar'}).then(function(job){
       expect(job).to.have.property('jobId');
       expect(job).to.have.property('data');
-    
+
       expect(job.data.foo).to.be.equal('bar');
       expect(job.progress()).to.be(0);
-      
+
       return job.progress(42).then(function(){
         return Job.fromId(queue, job.jobId).then(function(storedJob){
           expect(storedJob.progress()).to.be(42);
