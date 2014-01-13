@@ -107,7 +107,7 @@ queue.on('completed', function(job){
 .on('paused', function(){
   // The queue has been paused
 })
-.on('progress', function(job, progress){
+.on('resumed', function(job){
   // The queue has been resumed
 })
 ```
