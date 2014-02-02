@@ -51,6 +51,23 @@ describe('Queue', function(){
       done();
     });  
   })
+  
+  it('create a queue with dots in its name', function(done){
+    var queue = Queue('using. dots. in.name.');
+    
+    queue.process(function(job, jobDone){
+      expect(job.data.foo).to.be.equal('bar')
+      jobDone();
+      done();
+    })
+    
+    queue.add({foo: 'bar'}).then(function(job){
+      expect(job.jobId).to.be.ok()
+      expect(job.data.foo).to.be('bar')
+    }, function(err){
+      done(err);
+    });
+  });
 
   it('process a job', function(done){
     queue.process(function(job, jobDone){
