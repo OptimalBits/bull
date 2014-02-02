@@ -304,6 +304,30 @@ describe('Queue', function(){
     }
   });
   
+  it('count added, unprocessed jobs', function(done){
+    var counter = 1;
+    var maxJobs = 100;
+    var added = [];
+    
+    for(var i=1; i<=maxJobs; i++){
+      added.push(queue.add({foo: 'bar', num: i}));
+    }
+    
+    bluebird.all(added).then(function(){
+      queue.count().then(function(count){
+        expect(count).to.be(100);
+      
+        queue.process(function(job, jobDone){
+          expect(job.data.num).to.be.equal(counter);
+          expect(job.data.foo).to.be.equal('bar');
+          jobDone();
+          if(counter == maxJobs) done();
+          counter++;
+        });
+      });
+    });
+  });
+  
   it('add jobs to a paused queue', function(done){
     var ispaused = false, counter = 2;
     
