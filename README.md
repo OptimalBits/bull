@@ -205,8 +205,8 @@ listened by some other service that stores the results in a database.
 * [Queue](#queue)
 * [Queue##process](#process)
 * [Queue##add](#add)
-* [Queue##add](#count)
-* [Queue##add](#empty)
+* [Queue##count](#count)
+* [Queue##empty](#empty)
 * [Job](#job)
 * [Job##remove](#remove)
 
