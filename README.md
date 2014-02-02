@@ -208,6 +208,8 @@ listened by some other service that stores the results in a database.
 * [Queue##add](#count)
 * [Queue##add](#empty)
 * [Job](#job)
+* [Job##remove](#remove)
+
     
 ## Reference
 
@@ -293,7 +295,7 @@ Empties a queue deleting all the input lists and associated jobs.
 __Arguments__
  
 ```javascript
-  returns {Promise} A promise that resolves with the list is emptied.
+  returns {Promise} A promise that resolves with the queue is emptied.
 ```
 
 ---------------------------------------
@@ -307,6 +309,19 @@ method needed to update its progress.
 The most important property for the user is Job##data that includes the
 object that was passed to Queue##add, and that is normally used to 
 perform the job.
+
+---------------------------------------
+
+<a name="remove"/>
+#### Job##remove()
+
+Removes a Job from the queue from all the lists where it may be included.
+
+__Arguments__
+ 
+```javascript
+  returns {Promise} A promise that resolves when the job is removed.
+```
 
 ---------------------------------------
 

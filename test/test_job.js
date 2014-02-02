@@ -32,15 +32,37 @@ describe('Job', function(){
     
         expect(storedJob.data.foo).to.be.equal('bar');
         done();
-      }).otherwise(function(err){
+      }, function(err){
         console.log(err);
         done(err);
       })
-    }).otherwise(function(err){
+    }, function(err){
       console.log(err);
       done(err);
     });
   });
+  
+  it('remove', function(done){
+    Job.create(queue, 1, {foo: 'bar'}).then(function(job){
+      expect(job).to.have.property('jobId');
+      expect(job).to.have.property('data');
+    
+      expect(job.data.foo).to.be.equal('bar');
+      
+      job.remove().then(function(){
+        Job.fromId(queue, job.jobId).then(function(storedJob){
+          expect(storedJob).to.be(null);
+          done();
+        }, function(err){
+          done(err);
+        });
+      }, function(err){
+        done(err);
+      });
+    }, function(err){
+      done(err);
+    });
+  })
   
   
   describe('Locking', function(){
@@ -132,7 +154,7 @@ describe('Job', function(){
           done();
         });
       });
-    }).otherwise(function(err){
+    }, function(err){
       console.log(err);
       done(err);
     });
@@ -150,7 +172,7 @@ describe('Job', function(){
           done();
         });
       });
-    }).otherwise(function(err){
+    }, function(err){
       done(err);
     });
   });
@@ -167,7 +189,7 @@ describe('Job', function(){
           done();
         });
       });
-    }).otherwise(function(err){
+    }, function(err){
       done(err);
     });
     
