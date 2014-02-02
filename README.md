@@ -268,6 +268,21 @@ __Arguments__
 ---------------------------------------
 
 
+<a name="count"/>
+#### Queue##count()
+
+Returns a promise that returns the number of jobs in the queue, waiting or
+paused. Since there may be other processes adding or processing jobs, this
+value may be true only for a very small amount of time.
+
+__Arguments__
+ 
+```javascript
+  returns {Promise} A promise that resolves with the current jobs count.
+```
+
+---------------------------------------
+
 <a name="job"/>
 ### Job
 
