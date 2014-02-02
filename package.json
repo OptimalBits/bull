@@ -20,7 +20,7 @@
     "redis": "~0.8.4",
     "when": "~2.1.1",
     "lodash": "~2.2.1",
-    "bluebird": "~0.11.6-0",
+    "bluebird": "~1.0.1",
     "node-uuid": "~1.4.1"
   },
   "devDependencies": {
