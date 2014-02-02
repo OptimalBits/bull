@@ -3,7 +3,7 @@ var Queue = require('../');
 var expect = require('expect.js');
 var bluebird = require('bluebird');
 
-var STD_QUEUE_NAME = 'test queue 2';
+var STD_QUEUE_NAME = 'test queue';
 
 describe('Queue', function(){
   var queue;
@@ -14,8 +14,10 @@ describe('Queue', function(){
   });
   
   afterEach(function(done){
-    queue.close();
-    done();
+    queue.empty().then(function(){
+      queue.close();
+      done();
+    });
   })
   
   it('create a queue with standard redis opts', function(done){
@@ -210,7 +212,7 @@ describe('Queue', function(){
     
     queue.process(function(job, jobDone){
       expect(job.data.foo).to.be.equal('bar')
-      
+
       if(jobId !== job.jobId){
         done(Error("Missmatch job ids"));
       }
@@ -308,6 +310,7 @@ describe('Queue', function(){
   it('process several jobs serially', function(done){
     var counter = 1;
     var maxJobs = 100;
+  
     queue.process(function(job, jobDone){
       expect(job.data.num).to.be.equal(counter);
       expect(job.data.foo).to.be.equal('bar');
@@ -333,13 +336,12 @@ describe('Queue', function(){
     bluebird.all(added).then(function(){
       queue.count().then(function(count){
         expect(count).to.be(100);
-      
-        queue.process(function(job, jobDone){
-          expect(job.data.num).to.be.equal(counter);
-          expect(job.data.foo).to.be.equal('bar');
-          jobDone();
-          if(counter == maxJobs) done();
-          counter++;
+        
+        queue.empty().then(function(){
+          queue.count().then(function(count){
+            expect(count).to.be(0);
+            done();
+          });
         });
       });
     });
