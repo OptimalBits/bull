@@ -205,6 +205,8 @@ listened by some other service that stores the results in a database.
 * [Queue](#queue)
 * [Queue##process](#process)
 * [Queue##add](#add)
+* [Queue##add](#count)
+* [Queue##add](#empty)
 * [Job](#job)
     
 ## Reference
@@ -279,6 +281,19 @@ __Arguments__
  
 ```javascript
   returns {Promise} A promise that resolves with the current jobs count.
+```
+
+---------------------------------------
+
+<a name="empty"/>
+#### Queue##empty()
+
+Empties a queue deleting all the input lists and associated jobs.
+
+__Arguments__
+ 
+```javascript
+  returns {Promise} A promise that resolves with the list is emptied.
 ```
 
 ---------------------------------------
