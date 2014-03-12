@@ -407,25 +407,36 @@ describe('Queue', function(){
   });
 
   it('process a lifo queue', function(done){
-    var currentValue = 0;
+    var currentValue = 0, first = true;
+    queue = Queue('test lifo');
 
-    queue.process(function(job, jobDone){
-      expect(job.data.foo).to.be.equal(currentValue--);
-      jobDone();
+    queue.once('ready', function(){
+      queue.process(function(job, jobDone){
+        // Catching the job before the pause
+        if(first){
+          expect(job.data.count).to.be.equal(0);
+          first = false;
+          return jobDone();
+        }
+        expect(job.data.count).to.be.equal(currentValue--);
+        jobDone();
+        if(currentValue === 0){
+          done();
+        }
+      });
 
-      if(currentValue === 0){
-        done();
-      }
+      // Add a job to pend proccessing
+      queue.add({'count': 0}).then(function(){
+        queue.pause().then(function(){
+          // Add a series of jobs in a predictable order
+          fn = function(cb){
+            queue.add({'count': ++currentValue}, {'lifo': true}).then(cb);
+          };
+          fn(fn(fn(fn(function(){
+            queue.resume();
+          }))));
+        });
+      });
     });
-
-    queue.pause();
-
-    queue.add({'count': ++currentValue}, {'lifo': true});
-    queue.add({'count': ++currentValue}, {'lifo': true});
-    queue.add({'count': ++currentValue}, {'lifo': true});
-
-    queue.resume();
   });
-
-
 });
