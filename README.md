@@ -268,7 +268,7 @@ __Arguments__
   opts {PlainObject} A plain object with arguments that will be passed
     to the job processing function in job.opts
   opts.lifo {Boolean} A boolean which, if true, adds the job to the right
-    of the queue instead of the left (default)
+    of the queue instead of the left (default false)
   returns {Promise} A promise that resolves when the job has been succesfully
     added to the queue (or rejects if some error occured).
 ```
