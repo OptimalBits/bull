@@ -439,4 +439,22 @@ describe('Queue', function(){
       });
     });
   });
+
+  it('recover from a connection loss', function(done){
+    queue = Queue('test connection loss');
+    queue.on('error', function(err){
+      // error event has to be observed or the exception will bubble up
+    }).process(function(job, jobDone){
+      expect(job.data.foo).to.be.equal('bar');
+      jobDone();
+      done();
+    });
+
+    // Simulate disconnect
+    queue.bclient.stream.end();
+    queue.bclient.emit('error', new Error('ECONNRESET'));
+
+    // add something to the queue
+    queue.add({'foo': 'bar'});
+  });
 });
