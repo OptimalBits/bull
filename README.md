@@ -304,6 +304,24 @@ __Arguments__
 
 ---------------------------------------
 
+<a name="getJob"/>
+#### Queue##getJob(jobId)
+
+Returns a promise that will return the job instance associated with the `jobId`
+parameter. If the specified job cannot be located, the promise callback parameter
+will be set to `null`.
+
+__Arguments__
+
+```javascript
+  jobId {String} A string identifying the ID of the to look up.
+  returns {Promise} A promise that resolves with the job instance when the job
+  has been retrieved to the queue, or null otherwise.
+```
+
+---------------------------------------
+
+
 <a name="job"/>
 ### Job
 
@@ -354,4 +372,3 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-

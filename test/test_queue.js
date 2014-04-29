@@ -70,7 +70,7 @@ describe('Queue', function(){
       done(err);
     });
   });
-  
+
   it('should recover from a connection loss', function(done){
     queue = Queue('test connection loss');
     queue.on('error', function(err){
@@ -153,7 +153,7 @@ describe('Queue', function(){
       queueStalled.add({bar1: 'baz1'}),
       queueStalled.add({bar2: 'baz2'}),
       queueStalled.add({bar3: 'baz3'})];
-      
+
     Promise.all(jobs).then(function(){
       queueStalled.process(function(job){
         // instead of completing we just close the queue to simulate a crash.
@@ -350,7 +350,7 @@ describe('Queue', function(){
     for(var i=1; i<=maxJobs; i++){
       added.push(queue.add({foo: 'bar', num: i}));
     }
-    
+
     Promise.all(added).then(function(){
       queue.count().then(function(count){
         expect(count).to.be(100);
@@ -422,7 +422,7 @@ describe('Queue', function(){
       isresumed = true;
     });
   });
-  
+
   it('process a lifo queue', function(done){
     var currentValue = 0, first = true;
     queue = Queue('test lifo');
@@ -456,7 +456,7 @@ describe('Queue', function(){
       });
     });
   });
-    
+
   describe("Jobs getters", function(){
     it('should get waitting jobs', function(done){
       Promise.join(queue.add({foo: 'bar'}), queue.add({baz: 'qux'})).then(function(){
@@ -469,10 +469,10 @@ describe('Queue', function(){
         })
       });
     });
-    
+
     it('should get active jobs', function(done){
       var counter = 2;
-      
+
       queue.process(function(job, jobDone){
         queue.getActive().then(function(jobs){
           expect(jobs).to.be.a('array');
@@ -482,20 +482,32 @@ describe('Queue', function(){
         });
         jobDone();
       });
-      
+
       queue.add({foo: 'bar'});
     });
-    
+
+    it('should get a specific job', function(done){
+      var data = {foo: 'sup!'}
+
+      queue.add(data).then(function(job) {
+        queue.getJob(job.jobId).then(function(returnedJob) {
+          expect(returnedJob.data).to.eql(data);
+          expect(returnedJob.jobId).to.be(job.jobId);
+          done();
+        })
+      })
+    });
+
     it('should get completed jobs', function(){
       var counter = 2;
-      
+
       queue.process(function(job, jobDone){
         jobDone();
       });
-      
+
       queue.on('completed', function(){
         counter --;
-        
+
         if(counter === 0){
           queue.getCompleted().then(function(jobs){
             expect(jobs).to.be.a('array');
@@ -505,21 +517,21 @@ describe('Queue', function(){
           });
         }
       });
-      
+
       queue.add({foo: 'bar'});
       queue.add({baz: 'qux'});
     });
-    
+
     it('should get failed jobs', function(done){
       var counter = 2;
-      
+
       queue.process(function(job, jobDone){
         jobDone(Error("Forced error"));
       });
-      
+
       queue.on('failed', function(){
         counter --;
-        
+
         if(counter === 0){
           queue.getFailed().then(function(jobs){
             expect(jobs).to.be.a('array');
@@ -527,9 +539,12 @@ describe('Queue', function(){
           });
         }
       });
-      
+
       queue.add({foo: 'bar'});
       queue.add({baz: 'qux'});
     });
+
+
+
   });
 });
