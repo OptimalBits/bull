@@ -145,6 +145,37 @@ describe('Queue', function(){
     });
   });
 
+  it('process failed jobs when starting a queue', function(done){
+    var conf = {
+      name: 'test queue failed',
+      redisPort: 6379,
+      redisHost: '127.0.0.1',
+      runFailedOnStart: true
+    };
+
+    var queueFailed = Queue(conf);
+    queueFailed.LOCK_RENEW_TIME = 10;
+
+    var jobs = [queueFailed.add({bar: 'baz'})];
+
+    Promise.all(jobs).then(function(){
+      queueFailed.process(function(job, jobDone){
+        setTimeout(function(){
+          var queue2 = Queue(conf);
+          queue2.process(function(job, jobDone){
+            jobDone();
+          })
+
+          queue2.on('completed', function(job){
+            done();
+          });
+        }, 200);
+
+        jobDone(true);
+      });
+    })
+  });
+
   it('process a stalled job when starting a queue', function(done){
     var queueStalled = Queue('test queue stalled', 6379, '127.0.0.1');
     queueStalled.LOCK_RENEW_TIME = 10;
