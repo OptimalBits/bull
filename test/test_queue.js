@@ -155,7 +155,6 @@ describe('Queue', function(){
 
     var queueFailed = Queue(conf);
     queueFailed.LOCK_RENEW_TIME = 10;
-
     var jobs = [queueFailed.add({bar: 'baz'})];
 
     Promise.all(jobs).then(function(){
@@ -172,6 +171,40 @@ describe('Queue', function(){
         }, 200);
 
         jobDone(true);
+        queueFailed.close();
+      });
+    })
+  });
+
+  it('process failed jobs manually', function(done){
+    var conf = {
+      name: 'test queue failed 2',
+      redisPort: 6379,
+      redisHost: '127.0.0.1'
+    };
+
+    var queueFailed = Queue(conf);
+    queueFailed.LOCK_RENEW_TIME = 10;
+    var jobs = [queueFailed.add({bar: 'baz'})];
+
+    Promise.all(jobs).then(function(){
+      queueFailed.process(function(job, jobDone){
+        jobDone(true);
+        queueFailed.close();
+
+        setTimeout(function(){
+          var queue2 = Queue(conf);
+
+          queue2.process(function(job, jobDone){
+            jobDone();
+          });
+
+          queue2.on('completed', function(job){
+            done();
+          });
+
+          queue2.processFailedJobs();
+        }, 100);
       });
     })
   });
