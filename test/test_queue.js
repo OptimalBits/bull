@@ -147,20 +147,21 @@ describe('Queue', function(){
 
   it('process failed jobs when starting a queue', function(done){
     var conf = {
-      name: 'test queue failed',
-      redisPort: 6379,
-      redisHost: '127.0.0.1',
+      redis: {
+        port: 6379,
+        host: '127.0.0.1'
+      },
       runFailedOnStart: true
     };
 
-    var queueFailed = Queue(conf);
+    var queueFailed = Queue('test queue failed', conf);
     queueFailed.LOCK_RENEW_TIME = 10;
     var jobs = [queueFailed.add({bar: 'baz'})];
 
     Promise.all(jobs).then(function(){
       queueFailed.process(function(job, jobDone){
         setTimeout(function(){
-          var queue2 = Queue(conf);
+          var queue2 = Queue('test queue failed', conf);
           queue2.process(function(job, jobDone){
             jobDone();
           })
@@ -178,12 +179,13 @@ describe('Queue', function(){
 
   it('process failed jobs manually', function(done){
     var conf = {
-      name: 'test queue failed 2',
-      redisPort: 6379,
-      redisHost: '127.0.0.1'
+      redis: {
+        port: 6379,
+        host: '127.0.0.1'
+      }
     };
 
-    var queueFailed = Queue(conf);
+    var queueFailed = Queue('test queue failed 2', conf);
     queueFailed.LOCK_RENEW_TIME = 10;
     var jobs = [queueFailed.add({bar: 'baz'})];
 
@@ -193,7 +195,7 @@ describe('Queue', function(){
         queueFailed.close();
 
         setTimeout(function(){
-          var queue2 = Queue(conf);
+          var queue2 = Queue('test queue failed 2', conf);
 
           queue2.process(function(job, jobDone){
             jobDone();
