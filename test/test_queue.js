@@ -1,7 +1,18 @@
 var Job = require('../lib/job');
-var Queue = require('../');
+var realQueue = require('../');
 var expect = require('expect.js');
 var Promise = require('bluebird');
+
+var ts = Date.now();
+
+var Queue = function(name){
+  // use fresh queue each test run
+  var name = name + ts;
+
+  arguments[0] = name;
+
+  return realQueue.apply(null, arguments);
+};
 
 var STD_QUEUE_NAME = 'test queue';
 
@@ -167,7 +178,9 @@ describe('Queue', function(){
           })
 
           queue2.on('completed', function(job){
-            done();
+            queue2.getFailed().then(function(jobs){
+              expect(jobs.length).to.be.equal(0);
+            });
           });
         }, 200);
 
