@@ -173,13 +173,18 @@ describe('Queue', function(){
       queueFailed.process(function(job, jobDone){
         setTimeout(function(){
           var queue2 = Queue('test queue failed', conf);
-          queue2.process(function(job, jobDone){
-            jobDone();
-          })
+          queue2.getFailed().then(function(jobs){
+           expect(jobs.length).to.be.equal(1);
 
-          queue2.on('completed', function(job){
-            queue2.getFailed().then(function(jobs){
-              expect(jobs.length).to.be.equal(0);
+            queue2.process(function(job, jobDone){
+              jobDone();
+            })
+
+            queue2.on('completed', function(job){
+              queue2.getFailed().then(function(jobs){
+                expect(jobs == null).to.be.true;
+                done();
+              });
             });
           });
         }, 200);
@@ -210,15 +215,18 @@ describe('Queue', function(){
         setTimeout(function(){
           var queue2 = Queue('test queue failed 2', conf);
 
-          queue2.process(function(job, jobDone){
-            jobDone();
-          });
+          queue2.getFailed().then(function(jobs){
+             expect(jobs.length).to.be.equal(1);
+              queue2.process(function(job, jobDone){
+                jobDone();
+              });
 
-          queue2.on('completed', function(job){
-            done();
-          });
+              queue2.on('completed', function(job){
+                done();
+              });
 
-          queue2.processFailedJobs();
+              queue2.processFailedJobs();
+          });
         }, 100);
       });
     })
