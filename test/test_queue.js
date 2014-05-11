@@ -1,7 +1,18 @@
 var Job = require('../lib/job');
-var Queue = require('../');
+var realQueue = require('../');
 var expect = require('expect.js');
 var Promise = require('bluebird');
+
+var ts = Date.now();
+
+var Queue = function(name){
+  // use fresh queue each test run
+  var name = name + ts;
+
+  arguments[0] = name;
+
+  return realQueue.apply(null, arguments);
+};
 
 var STD_QUEUE_NAME = 'test queue';
 
@@ -143,6 +154,82 @@ describe('Queue', function(){
       expect(data).to.be.eql(37);
       done();
     });
+  });
+
+  it('process failed jobs when starting a queue', function(done){
+    var conf = {
+      redis: {
+        port: 6379,
+        host: '127.0.0.1'
+      },
+      runFailedOnStart: true
+    };
+
+    var queueFailed = Queue('test queue failed', conf);
+    queueFailed.LOCK_RENEW_TIME = 10;
+    var jobs = [queueFailed.add({bar: 'baz'})];
+
+    Promise.all(jobs).then(function(){
+      queueFailed.process(function(job, jobDone){
+        setTimeout(function(){
+          var queue2 = Queue('test queue failed', conf);
+          queue2.getFailed().then(function(jobs){
+           expect(jobs.length).to.be.equal(1);
+
+            queue2.process(function(job, jobDone){
+              jobDone();
+            })
+
+            queue2.on('completed', function(job){
+              queue2.getFailed().then(function(jobs){
+                expect(jobs == null).to.be.true;
+                done();
+              });
+            });
+          });
+        }, 200);
+
+        jobDone(true);
+        queueFailed.close();
+      });
+    })
+  });
+
+  it('process failed jobs manually', function(done){
+    var conf = {
+      redis: {
+        port: 6379,
+        host: '127.0.0.1'
+      }
+    };
+
+    var queueFailed = Queue('test queue failed 2', conf);
+    queueFailed.LOCK_RENEW_TIME = 10;
+    var jobs = [queueFailed.add({bar: 'baz'})];
+
+    Promise.all(jobs).then(function(){
+      queueFailed.process(function(job, jobDone){
+        jobDone(true);
+        queueFailed.close();
+
+        setTimeout(function(){
+          var queue2 = Queue('test queue failed 2', conf);
+
+          queue2.getFailed().then(function(jobs){
+             expect(jobs.length).to.be.equal(1);
+              queue2.process(function(job, jobDone){
+                jobDone();
+              });
+
+              queue2.on('completed', function(job){
+                done();
+              });
+
+              queue2.processFailedJobs();
+          });
+        }, 100);
+      });
+    })
   });
 
   it('process a stalled job when starting a queue', function(done){
