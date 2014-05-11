@@ -228,7 +228,7 @@ __Arguments__
     queueName {String} A unique name for this Queue.
     redisPort {Number} A port where redis server is running.
     redisHost {String} A host specified as IP or domain where redis is running.
-    redisOptions {Object} Optional options to pass to the redis client.
+    redisOptions {Object} Options to pass to the redis client. https://github.com/mranney/node_redis
 ```
 
 ---------------------------------------
