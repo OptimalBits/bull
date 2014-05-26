@@ -2,6 +2,7 @@ var Job = require('../lib/job');
 var Queue = require('../');
 var expect = require('expect.js');
 var Promise = require('bluebird');
+var Redis = require('redis');
 
 var STD_QUEUE_NAME = 'test queue';
 
@@ -60,6 +61,24 @@ describe('Queue', function(){
     queue.once('ready', function(){
       expect(queue.client.host).to.be('localhost');
       expect(queue.bclient.host).to.be('localhost');
+
+      expect(queue.client.selected_db).to.be(0);
+      expect(queue.bclient.selected_db).to.be(0);
+
+      done();
+    });
+  })
+
+  it('create a queue using a shared redis client', function(done){
+    var redisClient = Redis.createClient(6379, 'localhost');
+    var queue = Queue('custom', {sharedClient: redisClient});
+
+    queue.once('ready', function(){
+      expect(queue.client.host).to.be('localhost');
+      expect(queue.bclient.host).to.be('127.0.0.1');
+
+      expect(queue.client.port).to.be(6379);
+      expect(queue.bclient.port).to.be(6379);
 
       expect(queue.client.selected_db).to.be(0);
       expect(queue.bclient.selected_db).to.be(0);
