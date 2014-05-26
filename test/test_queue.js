@@ -54,6 +54,20 @@ describe('Queue', function(){
     });
   })
 
+  it('create a queue using custom redis paramters 2', function(done){
+    var queue = Queue('custom', {redis: {host: 'localhost'}});
+
+    queue.once('ready', function(){
+      expect(queue.client.host).to.be('localhost');
+      expect(queue.bclient.host).to.be('localhost');
+
+      expect(queue.client.selected_db).to.be(0);
+      expect(queue.bclient.selected_db).to.be(0);
+
+      done();
+    });
+  })
+
   it('create a queue with dots in its name', function(done){
     var queue = Queue('using. dots. in.name.');
 
