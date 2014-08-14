@@ -159,7 +159,7 @@ describe('Queue', function(){
     });
   });
 
-  it('process a stalled job when starting a queue', function(done){
+  it('process stalled jobs when starting a queue', function(done){
     var queueStalled = Queue('test queue stalled', 6379, '127.0.0.1');
     queueStalled.LOCK_RENEW_TIME = 10;
     var jobs = [
@@ -191,6 +191,32 @@ describe('Queue', function(){
     })
   });
 
+  it('process jobs added that were added before queue backend started', function(done){
+    var queueStalled = Queue('test queue added before', 6379, '127.0.0.1');
+    queueStalled.LOCK_RENEW_TIME = 10;
+    var jobs = [
+      queueStalled.add({bar: 'baz'}),
+      queueStalled.add({bar1: 'baz1'}),
+      queueStalled.add({bar2: 'baz2'}),
+      queueStalled.add({bar3: 'baz3'})];
+
+    Promise.all(jobs).then(function(){
+      return queueStalled.close();
+    }).then(function(){
+      var queue = Queue('test queue added before', 6379, '127.0.0.1');
+      queue.process(function(job, jobDone){
+        jobDone();
+      });
+
+      var counter = 0;
+      queue.on('completed', function(job){
+        counter ++;
+        if(counter === 4) {
+          done();
+        }
+      });
+    })
+  });
 
   it('process several stalled jobs when starting several queues', function(done){
     var NUM_QUEUES = 10;
