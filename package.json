@@ -17,11 +17,11 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
-    "redis": "~0.8.4",
-    "when": "~2.1.1",
+    "bluebird": "^2.3.0",
     "lodash": "~2.2.1",
-    "bluebird": "~1.0.1",
-    "node-uuid": "~1.4.1"
+    "node-uuid": "~1.4.1",
+    "redis": "~0.8.4",
+    "when": "~2.1.1"
   },
   "devDependencies": {
     "mocha": "~1.12",
