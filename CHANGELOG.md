@@ -1,3 +1,17 @@
+v0.1.9
+======
+- [Improvement] Faster job removal. (manast)
+
+v0.1.8
+======
+- [Improvement] Better promisification of redis methods. (manast)
+
+v0.1.7
+======
+- [Feature] Added a convenience method for getting a job. (loginx)
+- [Fix] Only set a redis db from options if defined. (jboga)
+- [Fix] Fixed issue #52. (manast)
+
 v0.1.6
 ======
 
