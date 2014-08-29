@@ -160,12 +160,12 @@ describe('Job', function(){
     });
   });
   
-  it('completed', function(done){
+  it('moveToCompleted', function(done){
     Job.create(queue, 3, {foo: 'bar'}).then(function(job){
       return job.isCompleted().then(function(isCompleted){
         expect(isCompleted).to.be(false);
       }).then(function(){
-        return job.completed();
+        return job.moveToCompleted();
       }).then(function(){
         return job.isCompleted().then(function(isCompleted){
           expect(isCompleted).to.be(true);
@@ -177,12 +177,12 @@ describe('Job', function(){
     });
   });
   
-  it('failed', function(done){
+  it('moveToFailed', function(done){
     Job.create(queue, 4, {foo: 'bar'}).then(function(job){
       return job.isFailed().then(function(isFailed){
         expect(isFailed).to.be(false);
       }).then(function(){
-        return job.failed(Error("test error"));
+        return job.moveToFailed(Error("test error"));
       }).then(function(){
         return job.isFailed().then(function(isFailed){
           expect(isFailed).to.be(true);
