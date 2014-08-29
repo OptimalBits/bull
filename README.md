@@ -14,6 +14,7 @@ If you need more features than the ones provided by Bull check
 [issue](https://github.com/LearnBoost/kue/issues/130).
 
 [![BuildStatus](https://secure.travis-ci.org/OptimalBits/bull.png?branch=master)](http://travis-ci.org/OptimalBits/bull)
+[![NPM version](https://badge.fury.io/js/bull.svg)](http://badge.fury.io/js/bull)
 
 Follow [manast](http://twitter.com/manast) for news and updates regarding this library.
 
