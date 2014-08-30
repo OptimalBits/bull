@@ -263,38 +263,31 @@ describe('Queue', function(){
   });
 
   it('does not process a job that is being processed when a new queue starts', function(done){
-    var jobId;
-    queue.add({foo: 'bar'}).then(function(job){
-      jobId = job.jobId;
-    });
+    var err = null;
+    var anotherQueue;
 
-    queue.process(function(job, jobDone){
-      expect(job.data.foo).to.be.equal('bar')
+    queue.add({foo: 'bar'}).then(function(addedJob){
+      queue.process(function(job, jobDone){
+        expect(job.data.foo).to.be.equal('bar')
 
-      if(jobId !== job.jobId){
-        done(Error("Missmatch job ids"));
-      }
-
-      setTimeout(function(){
-        jobDone();
-      }, 100);
-    });
-
-    queue.on('completed', function(job){
-      anotherQueue.close();
-      done();
-    });
-
-    var anotherQueue = Queue(STD_QUEUE_NAME, 6379, '127.0.0.1');
-
-    setTimeout(function(){
-      anotherQueue.process(function(job, jobDone){
-        if(job.jobId === jobId){
-          done(Error("SHOULD NOT PROCESS"));
+        if(addedJob.jobId !== job.jobId){
+          err = new Error('Processed job id does not match that of added job');
         }
+
+        setTimeout(jobDone, 100);
+      });
+
+      anotherQueue = Queue(STD_QUEUE_NAME, 6379, '127.0.0.1');
+      anotherQueue.process(function(job, jobDone){
+        err = new Error('The second queue should not have received a job to process');
         jobDone();
       });
-    }, 50);
+
+      queue.on('completed', function(){
+        anotherQueue.close();
+        done(err);
+      });
+    });
   });
 
   it.skip('process stalled jobs without requiring a queue restart');
