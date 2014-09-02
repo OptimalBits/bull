@@ -20,6 +20,14 @@ describe('Queue', function(){
     });
   })
 
+  describe('.close', function () {
+    it('should return a promise', function (done) {
+      var testQueue = new Queue('test');
+      var closePromise = testQueue.close().finally(done);
+      expect(closePromise).to.be.a(Promise);
+    });
+  });
+
   it('create a queue with standard redis opts', function(done){
     var queue = Queue('standard');
 
