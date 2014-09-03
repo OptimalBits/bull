@@ -5,20 +5,35 @@ var Promise = require('bluebird');
 
 var STD_QUEUE_NAME = 'test queue';
 
+function buildQueue() {
+  return new Queue(STD_QUEUE_NAME, 6379, '127.0.0.1');
+}
+
+function cleanupQueue(queue, done){
+  queue.empty()
+    .then(queue.close.bind(queue))
+    .finally(done)
+}
+
 describe('Queue', function(){
   var queue;
 
-  beforeEach(function(done){
-    queue = Queue(STD_QUEUE_NAME, 6379, '127.0.0.1');
-    done();
+  afterEach(function(done){
+    if(queue){
+      cleanupQueue(queue, done);
+      queue = undefined;
+    } else {
+      done();
+    }
   });
 
-  afterEach(function(done){
-    queue.empty().then(function(){
-      queue.close();
-      done();
+  describe('.close', function () {
+    it('should return a promise', function (done) {
+      var testQueue = new Queue('test');
+      var closePromise = testQueue.close().finally(done);
+      expect(closePromise).to.be.a(Promise);
     });
-  })
+  });
 
   it('create a queue with standard redis opts', function(done){
     var queue = Queue('standard');
@@ -104,6 +119,7 @@ describe('Queue', function(){
   });
 
   it('process a job', function(done){
+    queue = buildQueue();
     queue.process(function(job, jobDone){
       expect(job.data.foo).to.be.equal('bar')
       jobDone();
@@ -119,6 +135,7 @@ describe('Queue', function(){
   });
 
   it('process a job that updates progress', function(done){
+    queue = buildQueue();
     queue.process(function(job, jobDone){
       expect(job.data.foo).to.be.equal('bar')
       job.progress(42);
@@ -140,6 +157,7 @@ describe('Queue', function(){
   });
 
   it('process a job that returns data in the process handler', function(done){
+    queue = buildQueue();
     queue.process(function(job, jobDone){
       expect(job.data.foo).to.be.equal('bar')
       jobDone(null, 37);
@@ -263,48 +281,44 @@ describe('Queue', function(){
   });
 
   it('does not process a job that is being processed when a new queue starts', function(done){
-    var jobId;
-    queue.add({foo: 'bar'}).then(function(job){
-      jobId = job.jobId;
-    });
+    var err = null;
+    var anotherQueue;
 
-    queue.process(function(job, jobDone){
-      expect(job.data.foo).to.be.equal('bar')
+    queue = buildQueue();
 
-      if(jobId !== job.jobId){
-        done(Error("Missmatch job ids"));
-      }
+    queue.add({foo: 'bar'}).then(function(addedJob){
+      queue.process(function(job, jobDone){
+        expect(job.data.foo).to.be.equal('bar')
 
-      setTimeout(function(){
-        jobDone();
-      }, 100);
-    });
-
-    queue.on('completed', function(job){
-      anotherQueue.close();
-      done();
-    });
-
-    var anotherQueue = Queue(STD_QUEUE_NAME, 6379, '127.0.0.1');
-
-    setTimeout(function(){
-      anotherQueue.process(function(job, jobDone){
-        if(job.jobId === jobId){
-          done(Error("SHOULD NOT PROCESS"));
+        if(addedJob.jobId !== job.jobId){
+          err = new Error('Processed job id does not match that of added job');
         }
+
+        setTimeout(jobDone, 100);
+      });
+
+      anotherQueue = Queue(STD_QUEUE_NAME, 6379, '127.0.0.1');
+      anotherQueue.process(function(job, jobDone){
+        err = new Error('The second queue should not have received a job to process');
         jobDone();
       });
-    }, 50);
+
+      queue.on('completed', function(){
+        cleanupQueue(anotherQueue, done.bind(null, err));
+      });
+    });
   });
 
   it.skip('process stalled jobs without requiring a queue restart');
 
   it('process a job that fails', function(done){
     var jobError = Error("Job Failed");
+    queue = buildQueue();
+
     queue.process(function(job, jobDone){
       expect(job.data.foo).to.be.equal('bar')
       jobDone(jobError);
-    })
+    });
 
     queue.add({foo: 'bar'}).then(function(job){
       expect(job.jobId).to.be.ok()
@@ -323,6 +337,9 @@ describe('Queue', function(){
 
   it('process a job that throws an exception', function(done){
     var jobError = new Error("Job Failed");
+
+    queue = buildQueue();
+
     queue.process(function(job, jobDone){
       expect(job.data.foo).to.be.equal('bar')
       throw jobError;
@@ -369,6 +386,8 @@ describe('Queue', function(){
     var counter = 1;
     var maxJobs = 100;
 
+    queue = buildQueue();
+
     queue.process(function(job, jobDone){
       expect(job.data.num).to.be.equal(counter);
       expect(job.data.foo).to.be.equal('bar');
@@ -386,6 +405,8 @@ describe('Queue', function(){
     var counter = 1;
     var maxJobs = 100;
     var added = [];
+
+    queue = buildQueue();
 
     for(var i=1; i<=maxJobs; i++){
       added.push(queue.add({foo: 'bar', num: i}));
@@ -407,6 +428,8 @@ describe('Queue', function(){
 
   it('add jobs to a paused queue', function(done){
     var ispaused = false, counter = 2;
+
+    queue = buildQueue();
 
     queue.process(function(job, jobDone){
       expect(ispaused).to.be(false);
@@ -432,6 +455,8 @@ describe('Queue', function(){
 
   it('paused a running queue', function(done){
     var ispaused = false, isresumed = true, first = true;
+
+    queue = buildQueue();
 
     queue.process(function(job, jobDone){
       expect(ispaused).to.be(false);
@@ -499,6 +524,7 @@ describe('Queue', function(){
 
   describe("Jobs getters", function(){
     it('should get waitting jobs', function(done){
+      queue = buildQueue();
       Promise.join(queue.add({foo: 'bar'}), queue.add({baz: 'qux'})).then(function(){
         queue.getWaiting().then(function(jobs){
           expect(jobs).to.be.a('array');
@@ -513,6 +539,7 @@ describe('Queue', function(){
     it('should get active jobs', function(done){
       var counter = 2;
 
+      queue = buildQueue();
       queue.process(function(job, jobDone){
         queue.getActive().then(function(jobs){
           expect(jobs).to.be.a('array');
@@ -529,6 +556,7 @@ describe('Queue', function(){
     it('should get a specific job', function(done){
       var data = {foo: 'sup!'}
 
+      queue = buildQueue();
       queue.add(data).then(function(job) {
         queue.getJob(job.jobId).then(function(returnedJob) {
           expect(returnedJob.data).to.eql(data);
@@ -541,6 +569,7 @@ describe('Queue', function(){
     it('should get completed jobs', function(){
       var counter = 2;
 
+      queue = buildQueue();
       queue.process(function(job, jobDone){
         jobDone();
       });
@@ -565,6 +594,8 @@ describe('Queue', function(){
     it('should get failed jobs', function(done){
       var counter = 2;
 
+      queue = buildQueue();
+
       queue.process(function(job, jobDone){
         jobDone(Error("Forced error"));
       });
@@ -583,8 +614,6 @@ describe('Queue', function(){
       queue.add({foo: 'bar'});
       queue.add({baz: 'qux'});
     });
-
-
 
   });
 });

@@ -5,7 +5,7 @@ var expect = require('expect.js');
 
 describe('Job', function(){
   var queue;
-  
+
   before(function(done){
     queue = new Queue('test', 6379, '127.0.0.1');
     queue.client.keys(queue.toKey('*'), function(err, keys){
@@ -23,13 +23,13 @@ describe('Job', function(){
     Job.create(queue, 1, {foo: 'bar'}).then(function(job){
       expect(job).to.have.property('jobId');
       expect(job).to.have.property('data');
-    
+
       expect(job.data.foo).to.be.equal('bar');
-      
+
       Job.fromId(queue, job.jobId).then(function(storedJob){
         expect(storedJob).to.have.property('jobId');
         expect(storedJob).to.have.property('data');
-    
+
         expect(storedJob.data.foo).to.be.equal('bar');
         done();
       }, function(err){
@@ -41,14 +41,14 @@ describe('Job', function(){
       done(err);
     });
   });
-  
+
   it('remove', function(done){
     Job.create(queue, 1, {foo: 'bar'}).then(function(job){
       expect(job).to.have.property('jobId');
       expect(job).to.have.property('data');
-    
+
       expect(job.data.foo).to.be.equal('bar');
-      
+
       job.remove().then(function(){
         Job.fromId(queue, job.jobId).then(function(storedJob){
           expect(storedJob).to.be(null);
@@ -63,14 +63,14 @@ describe('Job', function(){
       done(err);
     });
   })
-  
-  
+
+
   describe('Locking', function(){
     it('take a lock', function(done){
       Job.create(queue, 1, {foo: 'bar'}).then(function(job){
         expect(job).to.have.property('jobId');
         expect(job).to.have.property('data');
-        
+
         return job.takeLock('123').then(function(lockTaken){
           expect(lockTaken).to.be(true);
         });
@@ -79,12 +79,12 @@ describe('Job', function(){
         done(err);
       });
     });
-    
+
     it('take an already taken lock', function(done){
       Job.create(queue, 2, {foo: 'bar'}).then(function(job){
         expect(job).to.have.property('jobId');
         expect(job).to.have.property('data');
-        
+
         return job.takeLock('123').then(function(lockTaken){
           expect(lockTaken).to.be(true);
         }).then(function(){
@@ -97,12 +97,12 @@ describe('Job', function(){
         done(err);
       });
     });
-    
+
     it('renew a taken lock', function(done){
       Job.create(queue, 3, {foo: 'bar'}).then(function(job){
         expect(job).to.have.property('jobId');
         expect(job).to.have.property('data');
-        
+
         return job.takeLock('123').then(function(lockTaken){
           expect(lockTaken).to.be(true);
         }).then(function(){
@@ -115,12 +115,12 @@ describe('Job', function(){
         done(err);
       });
     });
-    
+
     it('release a lock', function(done){
       Job.create(queue, 4, {foo: 'bar'}).then(function(job){
         expect(job).to.have.property('jobId');
         expect(job).to.have.property('data');
-        
+
         return job.takeLock('123').then(function(lockTaken){
           expect(lockTaken).to.be(true);
         }).then(function(){
@@ -138,8 +138,8 @@ describe('Job', function(){
       });
     });
   })
-  
-  
+
+
   it('report progress', function(done){
     Job.create(queue, 2, {foo: 'bar'}).then(function(job){
       expect(job).to.have.property('jobId');
@@ -159,13 +159,13 @@ describe('Job', function(){
       done(err);
     });
   });
-  
-  it('completed', function(done){
+
+  it('moveToCompleted', function(done){
     Job.create(queue, 3, {foo: 'bar'}).then(function(job){
       return job.isCompleted().then(function(isCompleted){
         expect(isCompleted).to.be(false);
       }).then(function(){
-        return job.completed();
+        return job.moveToCompleted();
       }).then(function(){
         return job.isCompleted().then(function(isCompleted){
           expect(isCompleted).to.be(true);
@@ -176,13 +176,13 @@ describe('Job', function(){
       done(err);
     });
   });
-  
-  it('failed', function(done){
+
+  it('moveToFailed', function(done){
     Job.create(queue, 4, {foo: 'bar'}).then(function(job){
       return job.isFailed().then(function(isFailed){
         expect(isFailed).to.be(false);
       }).then(function(){
-        return job.failed(Error("test error"));
+        return job.moveToFailed(Error("test error"));
       }).then(function(){
         return job.isFailed().then(function(isFailed){
           expect(isFailed).to.be(true);
@@ -192,7 +192,7 @@ describe('Job', function(){
     }, function(err){
       done(err);
     });
-    
+
   });
 });
 
