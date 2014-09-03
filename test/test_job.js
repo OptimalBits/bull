@@ -45,6 +45,8 @@ describe('Job', function(){
         expect(storedJob).to.have.property('data');
 
         expect(storedJob.data.foo).to.be.equal('bar');
+        expect(storedJob.opts).to.be.a(Object);
+        expect(storedJob.opts.testOpt).to.be('enabled');
       });
     });
   });
