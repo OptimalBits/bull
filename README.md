@@ -270,6 +270,8 @@ __Arguments__
     to the job processing function in job.opts
   opts.lifo {Boolean} A boolean which, if true, adds the job to the right
     of the queue instead of the left (default false)
+  opts.timeout {Number} The number of milliseconds after which the job
+    should be fail with a timeout error [optional]
   returns {Promise} A promise that resolves when the job has been succesfully
     added to the queue (or rejects if some error occured).
 ```

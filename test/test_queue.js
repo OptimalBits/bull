@@ -550,7 +550,7 @@ describe('Queue', function(){
           expect(returnedJob.data).to.eql(data);
           expect(returnedJob.jobId).to.be(job.jobId);
           done();
-        })
+        });
       })
     });
 
@@ -603,5 +603,26 @@ describe('Queue', function(){
       queue.add({baz: 'qux'});
     });
 
+    it('fails jobs that exceed their specified timeout', function(done){
+      queue = buildQueue();
+
+      queue.process(function(job, jobDone){
+        setTimeout(jobDone, 150);
+      });
+
+      queue.on('failed', function(job, error){
+        expect(error).to.be.a(Promise.TimeoutError);
+        done();
+      });
+
+      queue.on('completed', function(){
+        var error = new Error('The job should have timed out');
+        done(error);
+      });
+
+      queue.add({some: 'data'}, {
+        timeout: 100
+      });
+    });
   });
 });
