@@ -2,6 +2,7 @@ var Job = require('../lib/job');
 var Queue = require('../');
 var expect = require('expect.js');
 var Promise = require('bluebird');
+var _ = require('lodash');
 
 var STD_QUEUE_NAME = 'test queue';
 
@@ -35,8 +36,8 @@ describe('Queue', function(){
     });
   });
 
-  it('create a queue with standard redis opts', function(done){
-    var queue = Queue('standard');
+  it('creates a queue with standard redis opts', function(done){
+    queue = Queue('standard');
 
     queue.once('ready', function(){
       expect(queue.client.host).to.be('127.0.0.1');
@@ -52,8 +53,8 @@ describe('Queue', function(){
     });
   });
 
-  it('create a queue using custom redis paramters', function(done){
-    var queue = Queue('custom', {redis: {DB: 1}});
+  it('creates a queue using the supplied redis DB', function(done){
+    queue = Queue('custom', {redis: {DB: 1}});
 
     queue.once('ready', function(){
       expect(queue.client.host).to.be('127.0.0.1');
@@ -67,10 +68,10 @@ describe('Queue', function(){
 
       done();
     });
-  })
+  });
 
-  it('create a queue using custom redis paramters 2', function(done){
-    var queue = Queue('custom', {redis: {host: 'localhost'}});
+  it('creates a queue using custom the supplied redis host', function(done){
+    queue = Queue('custom', {redis: {host: 'localhost'}});
 
     queue.once('ready', function(){
       expect(queue.client.host).to.be('localhost');
@@ -78,26 +79,23 @@ describe('Queue', function(){
 
       expect(queue.client.selected_db).to.be(0);
       expect(queue.bclient.selected_db).to.be(0);
-
       done();
     });
-  })
+  });
 
-  it('create a queue with dots in its name', function(done){
-    var queue = Queue('using. dots. in.name.');
+  it('creates a queue with dots in its name', function(){
+    queue = Queue('using. dots. in.name.');
 
-    queue.process(function(job, jobDone){
-      expect(job.data.foo).to.be.equal('bar')
-      jobDone();
-      done();
-    })
-
-    queue.add({foo: 'bar'}).then(function(job){
-      expect(job.jobId).to.be.ok()
-      expect(job.data.foo).to.be('bar')
-    }, function(err){
-      done(err);
-    });
+    return queue.add({foo: 'bar'}).then(function(job){
+        expect(job.jobId).to.be.ok()
+        expect(job.data.foo).to.be('bar')
+      })
+      .then(function(){
+        queue.process(function(job, jobDone){
+          expect(job.data.foo).to.be.equal('bar')
+          jobDone();
+        });
+      });
   });
 
   it('should recover from a connection loss', function(done){
@@ -124,14 +122,12 @@ describe('Queue', function(){
       expect(job.data.foo).to.be.equal('bar')
       jobDone();
       done();
-    })
+    });
 
     queue.add({foo: 'bar'}).then(function(job){
       expect(job.jobId).to.be.ok()
       expect(job.data.foo).to.be('bar')
-    }, function(err){
-      done(err);
-    });
+    }).catch(done);
   });
 
   it('process a job that updates progress', function(done){
@@ -145,9 +141,7 @@ describe('Queue', function(){
     queue.add({foo: 'bar'}).then(function(job){
       expect(job.jobId).to.be.ok()
       expect(job.data.foo).to.be('bar');
-    }, function(err){
-      done(err);
-    });
+    }).catch(done);
 
     queue.on('progress', function(job, progress){
       expect(job).to.be.ok();
@@ -166,9 +160,7 @@ describe('Queue', function(){
     queue.add({foo: 'bar'}).then(function(job){
       expect(job.jobId).to.be.ok()
       expect(job.data.foo).to.be('bar');
-    }, function(err){
-      done(err);
-    });
+    }).catch(done);
 
     queue.on('completed', function(job, data){
       expect(job).to.be.ok();
@@ -184,63 +176,59 @@ describe('Queue', function(){
       queueStalled.add({bar: 'baz'}),
       queueStalled.add({bar1: 'baz1'}),
       queueStalled.add({bar2: 'baz2'}),
-      queueStalled.add({bar3: 'baz3'})];
+      queueStalled.add({bar3: 'baz3'})
+    ];
 
     Promise.all(jobs).then(function(){
       queueStalled.process(function(job){
         // instead of completing we just close the queue to simulate a crash.
         queueStalled.close();
-
         setTimeout(function(){
           var queue2 = Queue('test queue stalled', 6379, '127.0.0.1');
+          var doneAfterFour = _.after(4, function(){
+            done();
+          });
+          queue2.on('completed', doneAfterFour);
+
           queue2.process(function(job, jobDone){
             jobDone();
-          })
-
-          var counter = 0;
-          queue2.on('completed', function(job){
-            counter ++;
-            if(counter === 4) {
-              done();
-            }
           });
         }, 100);
       });
-    })
+    });
   });
 
-  it('process jobs added that were added before queue backend started', function(done){
+  it('processes jobs that were added before the queue backend started', function(){
     var queueStalled = Queue('test queue added before', 6379, '127.0.0.1');
     queueStalled.LOCK_RENEW_TIME = 10;
     var jobs = [
       queueStalled.add({bar: 'baz'}),
       queueStalled.add({bar1: 'baz1'}),
       queueStalled.add({bar2: 'baz2'}),
-      queueStalled.add({bar3: 'baz3'})];
+      queueStalled.add({bar3: 'baz3'})
+    ];
 
-    Promise.all(jobs).then(function(){
-      return queueStalled.close();
-    }).then(function(){
-      var queue = Queue('test queue added before', 6379, '127.0.0.1');
-      queue.process(function(job, jobDone){
-        jobDone();
-      });
+    return Promise.all(jobs)
+      .then(queueStalled.close.bind(queueStalled))
+      .then(function(){
+        queue = Queue('test queue added before', 6379, '127.0.0.1');
+        queue.process(function(job, jobDone){
+          jobDone();
+        });
 
-      var counter = 0;
-      queue.on('completed', function(job){
-        counter ++;
-        if(counter === 4) {
-          done();
-        }
+        return new Promise(function(resolve, reject){
+          var resolveAfterAllJobs = _.after(jobs.length, resolve);
+          queue.on('completed', resolveAfterAllJobs);
+        });
       });
-    })
   });
 
-  it('process several stalled jobs when starting several queues', function(done){
+  it('processes several stalled jobs when starting several queues', function(done){
     var NUM_QUEUES = 10;
     var NUM_JOBS_PER_QUEUE = 20;
     var stalledQueues = [];
     var jobs = [];
+
     for(var i=0; i<NUM_QUEUES; i++){
       var queue = Queue('test queue stalled 2', 6379, '127.0.0.1');
       stalledQueues.push(queue);
@@ -270,7 +258,9 @@ describe('Queue', function(){
               queue2.on('completed', function(job){
                 counter ++;
                 if(counter === NUM_QUEUES * NUM_JOBS_PER_QUEUE) {
-                  done();
+                  queue2.close().then(function(){
+                      done();
+                  });
                 }
               });
             }, 100);
@@ -401,7 +391,7 @@ describe('Queue', function(){
     }
   });
 
-  it('count added, unprocessed jobs', function(done){
+  it('count added, unprocessed jobs', function(){
     var counter = 1;
     var maxJobs = 100;
     var added = [];
@@ -412,18 +402,16 @@ describe('Queue', function(){
       added.push(queue.add({foo: 'bar', num: i}));
     }
 
-    Promise.all(added).then(function(){
-      queue.count().then(function(count){
+    return Promise.all(added)
+      .then(queue.count.bind(queue))
+      .then(function(count){
         expect(count).to.be(100);
-
-        queue.empty().then(function(){
-          queue.count().then(function(count){
-            expect(count).to.be(0);
-            done();
-          });
-        });
+      })
+      .then(queue.empty.bind(queue))
+      .then(queue.count.bind(queue))
+      .then(function(count){
+        expect(count).to.be(0);
       });
-    });
   });
 
   it('add jobs to a paused queue', function(done){
