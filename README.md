@@ -167,26 +167,39 @@ Useful patterns
 Bull can also be used for persistent messsage queues. This is a quite useful
 feature in some usecases. For example, you can have two servers that need to
 communicate with each other. By using a queue the servers do not need to be online
-at the same time, this create a very robust communication channel:
+at the same time, this create a very robust communication channel. You can treat 
+*add* as *send* and *process* as *receive*:
 
+Server A:
 ```javascript
 var Queue = require('bull');
 
-// If we are server one, we will use queueOne for sending and queue two for
-// receiving.
+var sendQueue = Queue("Server B");
+var receiveQueue = Queue("Server A");
 
-var sendQueue = Queue("server one message queue", 6379, '127.0.0.1');
-var receiveQueue = Queue("server two message queue", 6379, '127.0.0.1');
-
-// we can send any JSON stringfiable data
-sendQueue.add({msg: 'this is a test message'});
-
-// And receive as well
-receiveQueue.process(function(msg, msgDone){
-  console.log('Received message from server two: %s', msg);
-  msgDone();
+receiveQueue.process(function(msg, done){
+  console.log("Received message", msg);
+  done();
 });
+
+sendQueue.add({msg:"Hello"});
 ```
+
+Server B:
+```javascript
+var Queue = require('bull');
+
+var sendQueue = Queue("Server A");
+var receiveQueue = Queue("Server B");
+
+receiveQueue.process(function(msg, done){
+  console.log("Received message", msg);
+  done();
+});
+
+sendQueue.add({msg:"World"});
+```
+
 
 ####Returning job completions
 
