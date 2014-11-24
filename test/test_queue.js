@@ -521,6 +521,21 @@ describe('Queue', function(){
       });
     });
   });
+  
+  it('should publish a message when a new message is added to the queue', function(done) {
+    var client = redis.createClient(6379, '127.0.0.1', {});
+    client.select(0);
+    queue = Queue('test pub sub');  
+    client.on('ready', function () {
+      client.on("message", function(channel, message) {
+        expect(channel).to.be.equal(queue.toKey("jobs"));
+        expect(parseInt(message, 10)).to.be.a('number');
+        done();
+      });
+      client.subscribe(queue.toKey("jobs"));
+      queue.add({test: "stuff"});
+    });
+  });
 
   describe("Jobs getters", function(){
     it('should get waitting jobs', function(done){
