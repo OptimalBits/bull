@@ -35,7 +35,7 @@ describe('Job', function(){
       }, function(err){
         console.log(err);
         done(err);
-      })
+      });
     }, function(err){
       console.log(err);
       done(err);
@@ -62,7 +62,7 @@ describe('Job', function(){
     }, function(err){
       done(err);
     });
-  })
+  });
 
 
   describe('Locking', function(){
@@ -91,7 +91,7 @@ describe('Job', function(){
           return job.takeLock('123').then(function(lockTaken){
             expect(lockTaken).to.be(false);
           });
-        })
+        });
       }).then(done, function(err){
         console.log(err);
         done(err);
@@ -137,7 +137,7 @@ describe('Job', function(){
         done(err);
       });
     });
-  })
+  });
 
 
   it('report progress', function(done){

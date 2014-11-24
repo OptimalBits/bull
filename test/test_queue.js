@@ -2,6 +2,7 @@ var Job = require('../lib/job');
 var Queue = require('../');
 var expect = require('expect.js');
 var Promise = require('bluebird');
+var redis = require('redis');
 
 var STD_QUEUE_NAME = 'test queue';
 
@@ -12,7 +13,7 @@ function buildQueue() {
 function cleanupQueue(queue, done){
   queue.empty()
     .then(queue.close.bind(queue))
-    .finally(done)
+    .finally(done);
 }
 
 describe('Queue', function(){
@@ -67,7 +68,7 @@ describe('Queue', function(){
 
       done();
     });
-  })
+  });
 
   it('create a queue using custom redis paramters 2', function(done){
     var queue = Queue('custom', {redis: {host: 'localhost'}});
@@ -81,20 +82,20 @@ describe('Queue', function(){
 
       done();
     });
-  })
+  });
 
   it('create a queue with dots in its name', function(done){
     var queue = Queue('using. dots. in.name.');
 
     queue.process(function(job, jobDone){
-      expect(job.data.foo).to.be.equal('bar')
+      expect(job.data.foo).to.be.equal('bar');
       jobDone();
       done();
-    })
+    });
 
     queue.add({foo: 'bar'}).then(function(job){
-      expect(job.jobId).to.be.ok()
-      expect(job.data.foo).to.be('bar')
+      expect(job.jobId).to.be.ok();
+      expect(job.data.foo).to.be('bar');
     }, function(err){
       done(err);
     });
@@ -121,14 +122,14 @@ describe('Queue', function(){
   it('process a job', function(done){
     queue = buildQueue();
     queue.process(function(job, jobDone){
-      expect(job.data.foo).to.be.equal('bar')
+      expect(job.data.foo).to.be.equal('bar');
       jobDone();
       done();
-    })
+    });
 
     queue.add({foo: 'bar'}).then(function(job){
-      expect(job.jobId).to.be.ok()
-      expect(job.data.foo).to.be('bar')
+      expect(job.jobId).to.be.ok();
+      expect(job.data.foo).to.be('bar');
     }, function(err){
       done(err);
     });
@@ -137,13 +138,13 @@ describe('Queue', function(){
   it('process a job that updates progress', function(done){
     queue = buildQueue();
     queue.process(function(job, jobDone){
-      expect(job.data.foo).to.be.equal('bar')
+      expect(job.data.foo).to.be.equal('bar');
       job.progress(42);
       jobDone();
     });
 
     queue.add({foo: 'bar'}).then(function(job){
-      expect(job.jobId).to.be.ok()
+      expect(job.jobId).to.be.ok();
       expect(job.data.foo).to.be('bar');
     }, function(err){
       done(err);
@@ -159,12 +160,12 @@ describe('Queue', function(){
   it('process a job that returns data in the process handler', function(done){
     queue = buildQueue();
     queue.process(function(job, jobDone){
-      expect(job.data.foo).to.be.equal('bar')
+      expect(job.data.foo).to.be.equal('bar');
       jobDone(null, 37);
     });
 
     queue.add({foo: 'bar'}).then(function(job){
-      expect(job.jobId).to.be.ok()
+      expect(job.jobId).to.be.ok();
       expect(job.data.foo).to.be('bar');
     }, function(err){
       done(err);
@@ -195,7 +196,7 @@ describe('Queue', function(){
           var queue2 = Queue('test queue stalled', 6379, '127.0.0.1');
           queue2.process(function(job, jobDone){
             jobDone();
-          })
+          });
 
           var counter = 0;
           queue2.on('completed', function(job){
@@ -206,7 +207,7 @@ describe('Queue', function(){
           });
         }, 100);
       });
-    })
+    });
   });
 
   it('process jobs added that were added before queue backend started', function(done){
@@ -233,7 +234,7 @@ describe('Queue', function(){
           done();
         }
       });
-    })
+    });
   });
 
   it('process several stalled jobs when starting several queues', function(done){
@@ -288,7 +289,7 @@ describe('Queue', function(){
 
     queue.add({foo: 'bar'}).then(function(addedJob){
       queue.process(function(job, jobDone){
-        expect(job.data.foo).to.be.equal('bar')
+        expect(job.data.foo).to.be.equal('bar');
 
         if(addedJob.jobId !== job.jobId){
           err = new Error('Processed job id does not match that of added job');
@@ -316,20 +317,20 @@ describe('Queue', function(){
     queue = buildQueue();
 
     queue.process(function(job, jobDone){
-      expect(job.data.foo).to.be.equal('bar')
+      expect(job.data.foo).to.be.equal('bar');
       jobDone(jobError);
     });
 
     queue.add({foo: 'bar'}).then(function(job){
-      expect(job.jobId).to.be.ok()
-      expect(job.data.foo).to.be('bar')
+      expect(job.jobId).to.be.ok();
+      expect(job.data.foo).to.be('bar');
     }, function(err){
       done(err);
     });
 
     queue.once('failed', function(job, err){
-      expect(job.jobId).to.be.ok()
-      expect(job.data.foo).to.be('bar')
+      expect(job.jobId).to.be.ok();
+      expect(job.data.foo).to.be('bar');
       expect(err).to.be.eql(jobError);
       done();
     });
@@ -341,20 +342,20 @@ describe('Queue', function(){
     queue = buildQueue();
 
     queue.process(function(job, jobDone){
-      expect(job.data.foo).to.be.equal('bar')
+      expect(job.data.foo).to.be.equal('bar');
       throw jobError;
     });
 
     queue.add({foo: 'bar'}).then(function(job){
-      expect(job.jobId).to.be.ok()
-      expect(job.data.foo).to.be('bar')
+      expect(job.jobId).to.be.ok();
+      expect(job.data.foo).to.be('bar');
     }, function(err){
       done(err);
     });
 
     queue.once('failed', function(job, err){
-      expect(job.jobId).to.be.ok()
-      expect(job.data.foo).to.be('bar')
+      expect(job.jobId).to.be.ok();
+      expect(job.data.foo).to.be('bar');
       expect(err).to.be.eql(jobError);
       done();
     });
@@ -363,20 +364,20 @@ describe('Queue', function(){
   it.skip('retry a job that fails', function(done){
     var jobError = new Error("Job Failed");
     queue.process(function(job, jobDone){
-      expect(job.data.foo).to.be.equal('bar')
+      expect(job.data.foo).to.be.equal('bar');
       jobDone(jobError);
-    })
+    });
 
     queue.add({foo: 'bar'}).then(function(job){
-      expect(job.jobId).to.be.ok()
-      expect(job.data.foo).to.be('bar')
+      expect(job.jobId).to.be.ok();
+      expect(job.data.foo).to.be('bar');
     }, function(err){
       done(err);
     });
 
     queue.once('failed', function(job, err){
-      expect(job.jobId).to.be.ok()
-      expect(job.data.foo).to.be('bar')
+      expect(job.jobId).to.be.ok();
+      expect(job.data.foo).to.be('bar');
       expect(err).to.be.eql(jobError);
       done();
     });
@@ -547,7 +548,7 @@ describe('Queue', function(){
           expect(jobs[1].data.foo).to.be.equal('bar');
           expect(jobs[0].data.baz).to.be.equal('qux');
           done();
-        })
+        });
       });
     });
 
@@ -569,7 +570,7 @@ describe('Queue', function(){
     });
 
     it('should get a specific job', function(done){
-      var data = {foo: 'sup!'}
+      var data = {foo: 'sup!'};
 
       queue = buildQueue();
       queue.add(data).then(function(job) {
@@ -577,8 +578,8 @@ describe('Queue', function(){
           expect(returnedJob.data).to.eql(data);
           expect(returnedJob.jobId).to.be(job.jobId);
           done();
-        })
-      })
+        });
+      });
     });
 
     it('should get completed jobs', function(){
