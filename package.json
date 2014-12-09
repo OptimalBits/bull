@@ -24,8 +24,9 @@
     "when": "~2.1.1"
   },
   "devDependencies": {
+    "expect.js": "~0.2.0",
     "mocha": "~1.12",
-    "expect.js": "~0.2.0"
+    "sinon": "~1.12.1"
   },
   "scripts": {
     "test": "mocha test/* --reporter spec"
