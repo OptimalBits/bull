@@ -3,6 +3,7 @@ var Queue = require('../');
 var expect = require('expect.js');
 var Promise = require('bluebird');
 var redis = require('redis');
+var sinon = require('sinon');
 
 var STD_QUEUE_NAME = 'test queue';
 
@@ -18,6 +19,7 @@ function cleanupQueue(queue, done){
 
 describe('Queue', function(){
   var queue;
+  var sandbox = sinon.sandbox.create();
 
   afterEach(function(done){
     if(queue){
@@ -26,11 +28,38 @@ describe('Queue', function(){
     } else {
       done();
     }
+    sandbox.restore();
   });
 
   describe('.close', function () {
+    var testQueue;
+
+    beforeEach(function () {
+        testQueue = new Queue('test');
+    });
+
+    it('should call end on the client', function () {
+      var endSpy = sandbox.spy(testQueue.client, 'end');
+      return testQueue.close().then(function () {
+        expect(endSpy.calledOnce).to.be(true);
+      });
+    });
+
+    it('should call end on the blocking client', function () {
+      var endSpy = sandbox.spy(testQueue.bclient, 'end');
+      return testQueue.close().then(function () {
+        expect(endSpy.calledOnce).to.be(true);
+      });
+    });
+
+    it('should resolve the promise when the streams for botch clients have emitted "close"', function () {
+      testQueue.close();
+
+      expect(typeof testQueue.client.stream._events.close).to.be('function');
+      expect(typeof testQueue.bclient.stream._events.close).to.be('function');
+    });
+
     it('should return a promise', function (done) {
-      var testQueue = new Queue('test');
       var closePromise = testQueue.close().finally(done);
       expect(closePromise).to.be.a(Promise);
     });
