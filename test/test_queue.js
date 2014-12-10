@@ -148,6 +148,22 @@ describe('Queue', function(){
     queue.add({'foo': 'bar'});
   });
 
+  it('should reconnect when the blocking client triggers an "end" event', function (done) {
+      queue = buildQueue();
+
+      var runSpy = sandbox.spy(queue, 'run');
+      queue.process(function (job, jobDone) {
+          expect(runSpy.callCount).to.be(2);
+          jobDone();
+          done();
+      });
+
+      expect(runSpy.callCount).to.be(1);
+
+      queue.add({'foo': 'bar'});
+      queue.bclient.emit('end');
+  });
+
   it('process a job', function(done){
     queue = buildQueue();
     queue.process(function(job, jobDone){
