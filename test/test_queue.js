@@ -7,8 +7,9 @@ var sinon = require('sinon');
 
 var STD_QUEUE_NAME = 'test queue';
 
-function buildQueue() {
-  return new Queue(STD_QUEUE_NAME, 6379, '127.0.0.1');
+function buildQueue(name) {
+  var qName = name || STD_QUEUE_NAME;
+  return new Queue(qName, 6379, '127.0.0.1');
 }
 
 function cleanupQueue(queue, done){
@@ -406,24 +407,49 @@ describe('Queue', function(){
     });
   });
 
-  it.skip('retry a job that fails', function(done){
-    var jobError = new Error("Job Failed");
-    queue.process(function(job, jobDone){
-      expect(job.data.foo).to.be.equal('bar');
-      jobDone(jobError);
-    });
+  it('retry a job that fails', function(done){
+    var called = 0
+    var messages = 0;
+    var failedOnce = false;
+    
+    var queue = buildQueue('retry-test-queue');
+    var client = redis.createClient(6379, '127.0.0.1', {});
 
-    queue.add({foo: 'bar'}).then(function(job){
-      expect(job.jobId).to.be.ok();
-      expect(job.data.foo).to.be('bar');
-    }, function(err){
-      done(err);
+    client.select(0);
+    
+    client.on('ready', function () {
+      client.on("message", function(channel, message) {
+        expect(channel).to.be.equal(queue.toKey("jobs"));
+        expect(parseInt(message, 10)).to.be.a('number');
+        messages++;
+      });
+      client.subscribe(queue.toKey("jobs"));
+      
+      queue.add({foo: 'bar'}).then(function(job){
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+      });
+    });
+    
+    queue.process(function(job, jobDone){
+      called++;
+      if (called % 2 !== 0){
+        throw new Error("Not even!")
+      }
+      jobDone();
     });
 
     queue.once('failed', function(job, err){
       expect(job.jobId).to.be.ok();
       expect(job.data.foo).to.be('bar');
-      expect(err).to.be.eql(jobError);
+      expect(err.message).to.be.eql("Not even!");
+      failedOnce = true
+      queue.retryJob(job);
+    });
+
+    queue.once('completed', function(){
+      expect(failedOnce).to.be(true);
+      expect(messages).to.eql(2);
       done();
     });
   });

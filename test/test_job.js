@@ -64,6 +64,26 @@ describe('Job', function(){
     });
   });
 
+  it('retry', function(done) {
+    var curJob;
+    Job.create(queue, 6, {foo: 'spam'}).then(function(job) {
+      curJob = job;
+      return job.moveToFailed();
+    }).then (function() {
+      return curJob.retry();
+    }).then(function(){
+      queue.getFailed().then(function(jobs) {
+        expect(jobs.length).to.equal(0);
+        return curJob.isFailed();
+      }).then(function(failed) {
+        expect(failed).to.be(false);
+        return curJob.isCompleted();
+      }).then(function(completed) {
+        expect(completed).to.be(false);
+        done();
+      });
+    });
+  })
 
   describe('Locking', function(){
     it('take a lock', function(done){
