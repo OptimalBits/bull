@@ -4,12 +4,12 @@ Bull Job Manager
 ![bull](http://files.softicons.com/download/animal-icons/animal-icons-by-martin-berube/png/128/bull.png)
 
 A lightweight, robust and fast job processing queue.
-Designed with stability and atomicity in mind. The API is inspired by Kue.
+Carefully written for rock solid stability and atomicity.
 
 It uses redis for persistence, so the queue is not lost if the server goes
 down for any reason.
 
-If you need more features than the ones provided by Bull check
+If you need similar features than the ones provided by Bull check
 [Kue](https://github.com/learnboost/kue) but keep in mind this open
 [issue](https://github.com/LearnBoost/kue/issues/130).
 
@@ -17,6 +17,15 @@ If you need more features than the ones provided by Bull check
 [![NPM version](https://badge.fury.io/js/bull.svg)](http://badge.fury.io/js/bull)
 
 Follow [manast](http://twitter.com/manast) for news and updates regarding this library.
+
+Features:
+---------
+
+- Minimal CPU usage by poll free design.
+- Robust design based on Redis.
+- Delayed jobs.
+- Retrys.
+
 
 Install:
 --------

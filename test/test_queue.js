@@ -13,22 +13,19 @@ function buildQueue(name) {
   return new Queue(qName, 6379, '127.0.0.1');
 }
 
-function cleanupQueue(queue, done){
-  queue.empty()
-    .then(queue.close.bind(queue))
-    .finally(done);
+function cleanupQueue(queue){
+  return queue.empty().then(queue.close.bind(queue));
 }
 
 describe('Queue', function(){
   var queue;
   var sandbox = sinon.sandbox.create();
 
-  afterEach(function(done){
+  afterEach(function(){
     if(queue){
-      cleanupQueue(queue, done);
-      queue = undefined;
-    } else {
-      done();
+      return cleanupQueue(queue).then(function(){
+        queue = undefined;  
+      })
     }
     sandbox.restore();
   });
@@ -61,9 +58,10 @@ describe('Queue', function(){
       expect(typeof testQueue.bclient.stream._events.close).to.be('function');
     });
 
-    it('should return a promise', function (done) {
-      var closePromise = testQueue.close().finally(done);
-      expect(closePromise).to.be.a(Promise);
+    it('should return a promise', function () {
+      var closePromise = testQueue.close().then(function(){
+        expect(closePromise).to.be.a(Promise);  
+      });
     });
   });
 
@@ -318,6 +316,7 @@ describe('Queue', function(){
   });
 
   it('does not process a job that is being processed when a new queue starts', function(done){
+    this.timeout(5000)
     var err = null;
     var anotherQueue;
 
