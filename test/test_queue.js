@@ -1,3 +1,5 @@
+"use strict";
+
 var Job = require('../lib/job');
 var Queue = require('../');
 var expect = require('expect.js');
@@ -570,7 +572,7 @@ describe('Queue', function(){
       queue.add({'count': 0}).then(function(){
         queue.pause().then(function(){
           // Add a series of jobs in a predictable order
-          fn = function(cb){
+          var fn = function(cb){
             queue.add({'count': ++currentValue}, {'lifo': true}).then(cb);
           };
           fn(fn(fn(fn(function(){
@@ -594,6 +596,75 @@ describe('Queue', function(){
       client.subscribe(queue.toKey("jobs"));
       queue.add({test: "stuff"});
     });
+  });
+
+  describe("Delayed jobs", function(){
+    it("should process a delayed job only after delayed time", function(done){
+      var delay = 500;
+      queue = Queue("delayed queue 40");
+      var timestamp = Date.now();
+      
+      queue.process(function(job, jobDone){
+        jobDone();
+
+        expect(Date.now() > timestamp + delay);
+        
+        queue.getWaiting().then(function(jobs){
+          expect(jobs.length).to.be.equal(0);
+        }).then(function(){
+          return queue.getActive().then(function(jobs){
+            expect(jobs.length).to.be.equal(0);
+          })
+        }).then(function(){
+          return queue.getDelayed().then(function(jobs){
+            expect(jobs.length).to.be.equal(0);
+          })
+        }).then(function(){
+          return queue.getCompleted().then(function(jobs){
+            //expect(jobs.length).to.be.equal(1);
+            //console.log("COMPLETED", jobs)
+          })
+        }).then(function(){
+          return queue.getFailed().then(function(jobs){
+            expect(jobs.length).to.be.equal(0);
+          })
+        }).then(function(){
+          return queue.empty();
+        }).then(done)
+      });
+      return queue.add({delayed: 'foobar'}, {delay: delay}).then(function(job){
+        expect(job.jobId).to.be.ok()
+        expect(job.data.delayed).to.be('foobar')
+        expect(job.delay).to.be(delay)
+      })
+    });
+
+    it("should process delayed jobs in correct order", function(done){
+      var order = 0;
+      queue = Queue("delayed queue multiple");
+
+      queue.process(function(job, jobDone){
+        expect(order).to.be.lessThan(job.data.order);
+        order = job.data.order;
+
+        jobDone();
+        if(order === 10){
+          done();
+        }
+      });
+
+      queue.add({order: 1}, {delay: 100});
+      queue.add({order: 6}, {delay: 600});
+      queue.add({order: 10}, {delay: 1000});
+      queue.add({order: 2}, {delay: 200});
+      queue.add({order: 9}, {delay: 900});
+      queue.add({order: 5}, {delay: 500});
+      queue.add({order: 3}, {delay: 300});
+      queue.add({order: 7}, {delay: 700});
+      queue.add({order: 4}, {delay: 400});
+      queue.add({order: 8}, {delay: 800});
+      
+    })
   });
 
   describe("Jobs getters", function(){
