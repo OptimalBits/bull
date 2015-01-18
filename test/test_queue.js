@@ -331,18 +331,17 @@ describe('Queue', function(){
         if(addedJob.jobId !== job.jobId){
           err = new Error('Processed job id does not match that of added job');
         }
-
         setTimeout(jobDone, 100);
       });
 
-      anotherQueue = Queue(STD_QUEUE_NAME, 6379, '127.0.0.1');
+      anotherQueue = buildQueue();
       anotherQueue.process(function(job, jobDone){
         err = new Error('The second queue should not have received a job to process');
         jobDone();
       });
 
       queue.on('completed', function(){
-        cleanupQueue(anotherQueue, done.bind(null, err));
+        cleanupQueue(anotherQueue).then(done.bind(null, err));
       });
     });
   });
@@ -601,7 +600,7 @@ describe('Queue', function(){
   describe("Delayed jobs", function(){
     it("should process a delayed job only after delayed time", function(done){
       var delay = 500;
-      queue = Queue("delayed queue 40");
+      queue = Queue("delayed queue simple");
       var timestamp = Date.now();
       
       queue.process(function(job, jobDone){
@@ -643,8 +642,8 @@ describe('Queue', function(){
       var order = 0;
       queue = Queue("delayed queue multiple");
 
-      queue.process(function(job, jobDone){
-        expect(order).to.be.lessThan(job.data.order);
+      queue.process(function(job, jobDone){        
+        expect(order).to.be.below(job.data.order);
         order = job.data.order;
 
         jobDone();
