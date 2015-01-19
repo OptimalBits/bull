@@ -290,6 +290,9 @@ __Arguments__
     to the job processing function in job.data.
   opts {PlainObject} A plain object with arguments that will be passed
     to the job processing function in job.opts
+  opts.delay {Number} An amount of miliseconds to wait until this job
+  can be processed. Note that for accurate delays, both server and clients
+  should have their clocks synchronized.
   opts.lifo {Boolean} A boolean which, if true, adds the job to the right
     of the queue instead of the left (default false)
   opts.timeout {Number} The number of milliseconds after which the job
