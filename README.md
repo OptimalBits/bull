@@ -4,12 +4,12 @@ Bull Job Manager
 ![bull](http://files.softicons.com/download/animal-icons/animal-icons-by-martin-berube/png/128/bull.png)
 
 A lightweight, robust and fast job processing queue.
-Designed with stability and atomicity in mind. The API is inspired by Kue.
+Carefully written for rock solid stability and atomicity.
 
 It uses redis for persistence, so the queue is not lost if the server goes
 down for any reason.
 
-If you need more features than the ones provided by Bull check
+If you need similar features than the ones provided by Bull check
 [Kue](https://github.com/learnboost/kue) but keep in mind this open
 [issue](https://github.com/LearnBoost/kue/issues/130).
 
@@ -17,6 +17,15 @@ If you need more features than the ones provided by Bull check
 [![NPM version](https://badge.fury.io/js/bull.svg)](http://badge.fury.io/js/bull)
 
 Follow [manast](http://twitter.com/manast) for news and updates regarding this library.
+
+Features:
+---------
+
+- Minimal CPU usage by poll free design.
+- Robust design based on Redis.
+- Delayed jobs.
+- Retrys.
+
 
 Install:
 --------
@@ -281,6 +290,9 @@ __Arguments__
     to the job processing function in job.data.
   opts {PlainObject} A plain object with arguments that will be passed
     to the job processing function in job.opts
+  opts.delay {Number} An amount of miliseconds to wait until this job
+  can be processed. Note that for accurate delays, both server and clients
+  should have their clocks synchronized.
   opts.lifo {Boolean} A boolean which, if true, adds the job to the right
     of the queue instead of the left (default false)
   opts.timeout {Number} The number of milliseconds after which the job
