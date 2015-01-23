@@ -163,6 +163,19 @@ describe('Queue', function(){
       queue.bclient.emit('end');
   });
 
+  it('should not try to reconnect when the blocking client triggers an "end" event and no process have been called', function (done) {
+    queue = buildQueue();
+
+    var runSpy = sandbox.spy(queue, 'run');
+
+    queue.bclient.emit('end');
+
+    setTimeout(function() {
+      expect(runSpy.callCount).to.be(0);
+      done()
+    }, 100)
+  });
+
   it('process a job', function(done){
     queue = buildQueue();
     queue.process(function(job, jobDone){
@@ -401,12 +414,12 @@ describe('Queue', function(){
     var called = 0
     var messages = 0;
     var failedOnce = false;
-    
+
     var queue = buildQueue('retry-test-queue');
     var client = redis.createClient(6379, '127.0.0.1', {});
 
     client.select(0);
-    
+
     client.on('ready', function () {
       client.on("message", function(channel, message) {
         expect(channel).to.be.equal(queue.toKey("jobs"));
@@ -414,13 +427,13 @@ describe('Queue', function(){
         messages++;
       });
       client.subscribe(queue.toKey("jobs"));
-      
+
       queue.add({foo: 'bar'}).then(function(job){
         expect(job.jobId).to.be.ok();
         expect(job.data.foo).to.be('bar');
       });
     });
-    
+
     queue.process(function(job, jobDone){
       called++;
       if (called % 2 !== 0){
@@ -581,11 +594,11 @@ describe('Queue', function(){
       });
     });
   });
-  
+
   it('should publish a message when a new message is added to the queue', function(done) {
     var client = redis.createClient(6379, '127.0.0.1', {});
     client.select(0);
-    queue = Queue('test pub sub');  
+    queue = Queue('test pub sub');
     client.on('ready', function () {
       client.on("message", function(channel, message) {
         expect(channel).to.be.equal(queue.toKey("jobs"));
