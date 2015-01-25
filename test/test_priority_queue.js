@@ -420,15 +420,17 @@ describe('Queue', function(){
 
       // Add a job to pend proccessing
       queue.add({'count': 0}).then(function(){
-        queue.pause().then(function(){
-          // Add a series of jobs in a predictable order
-          var fn = function(cb){
-            queue.add({'count': ++currentValue}, {'lifo': true}).then(cb);
-          };
-          fn(fn(fn(fn(function(){
-            queue.resume();
-          }))));
-        });
+        Promise.delay(100).then(function() {
+          queue.pause().then(function(){
+            // Add a series of jobs in a predictable order
+            var fn = function(cb){
+              queue.add({'count': ++currentValue}, {'lifo': true}).then(cb);
+            };
+            fn(fn(fn(fn(function(){
+              queue.resume();
+            }))));
+          });
+        })
       });
     });
   });
