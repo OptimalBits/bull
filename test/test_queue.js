@@ -26,7 +26,7 @@ describe('Queue', function(){
   afterEach(function(){
     if(queue){
       return cleanupQueue(queue).then(function(){
-        queue = undefined;  
+        queue = undefined;
       })
     }
     sandbox.restore();
@@ -62,7 +62,7 @@ describe('Queue', function(){
 
     it('should return a promise', function () {
       var closePromise = testQueue.close().then(function(){
-        expect(closePromise).to.be.a(Promise);  
+        expect(closePromise).to.be.a(Promise);
       });
     });
   });
@@ -615,12 +615,12 @@ describe('Queue', function(){
       var delay = 500;
       queue = Queue("delayed queue simple");
       var timestamp = Date.now();
-      
+
       queue.process(function(job, jobDone){
         jobDone();
 
         expect(Date.now() > timestamp + delay);
-        
+
         queue.getWaiting().then(function(jobs){
           expect(jobs.length).to.be.equal(0);
         }).then(function(){
@@ -655,7 +655,7 @@ describe('Queue', function(){
       var order = 0;
       queue = Queue("delayed queue multiple");
 
-      queue.process(function(job, jobDone){        
+      queue.process(function(job, jobDone){
         expect(order).to.be.below(job.data.order);
         order = job.data.order;
 
@@ -675,8 +675,101 @@ describe('Queue', function(){
       queue.add({order: 7}, {delay: 700});
       queue.add({order: 4}, {delay: 400});
       queue.add({order: 8}, {delay: 800});
-      
+
     })
+  });
+
+  describe.only("Concurrency process", function() {
+    it("should run job in sequence if I specify a concurrency of 1", function (done) {
+      queue = buildQueue();
+
+      var processing = false;
+
+      queue.process(1, function (job, done) {
+        expect(processing).to.be.equal(false);
+        processing = true;
+        Promise.delay(50).then(function () {
+          processing = false;
+          done();
+        });
+      });
+
+      queue.add({});
+      queue.add({});
+
+      queue.on('completed', _.after(2, done.bind(null, null)));
+    });
+
+    it("should process job respecting the concurrency set", function (done) {
+      queue = buildQueue();
+
+      var nbProcessing = 0;
+
+      queue.process(4, function (job, done) {
+        expect(nbProcessing).to.be.lessThan(5);
+        nbProcessing++;
+        Promise.delay(50).then(function () {
+          nbProcessing--;
+          done();
+        });
+      }).catch(done);
+
+      queue.add({});
+      queue.add({});
+      queue.add({});
+      queue.add({});
+      queue.add({});
+      queue.add({});
+      queue.add({});
+      queue.add({});
+
+      queue.on('completed', _.after(8, done.bind(null, null)));
+      queue.on('error', done);
+    });
+
+    it("should wait for all concurrent processing in case of pause", function (done) {
+      queue = buildQueue();
+
+      var i = 0;
+      var nbJobFinish = 0;
+
+      queue.process(3, function (job, done) {
+        var error = null;
+
+        if (++i === 4) {
+          queue.pause().then(function () {
+            expect(nbJobFinish).to.be.equal(4);
+            queue.resume();
+          });
+        }
+
+        // We simulate an error of one processing job.
+        // They had a bug in pause() with this special case.
+        if (i % 3 == 0) {
+          error = new Error();
+        }
+
+        //100 - i*20 is to force to finish job n°4 before lower job that will wait longer
+        Promise.delay(100 - i*10).then(function () {
+          nbJobFinish++;
+          done(error);
+        });
+      }).catch(done);
+
+      queue.add({});
+      queue.add({});
+      queue.add({});
+      queue.add({});
+      queue.add({});
+      queue.add({});
+      queue.add({});
+      queue.add({});
+
+      var cb = _.after(8, done.bind(null, null));
+      queue.on('completed', cb);
+      queue.on('failed', cb);
+      queue.on('error', done);
+    });
   });
 
   describe("Jobs getters", function(){
