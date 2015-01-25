@@ -19,7 +19,7 @@ function cleanupQueue(queue){
   return queue.empty().then(queue.close.bind(queue));
 }
 
-describe('Queue', function(){
+describe('Priority queue', function(){
   var queue;
   var sandbox = sinon.sandbox.create();
 
@@ -116,7 +116,7 @@ describe('Queue', function(){
 
   it('process stalled jobs when starting a queue', function(done){
     var queueStalled = buildQueue('test queue stalled');
-    queueStalled.LOCK_RENEW_TIME = 10;
+    queueStalled.setLockRenewTime(10);
     var jobs = [
       queueStalled.add({bar: 'baz'}),
       queueStalled.add({bar1: 'baz1'}),
@@ -124,28 +124,31 @@ describe('Queue', function(){
       queueStalled.add({bar3: 'baz3'})
     ];
 
-    Promise.all(jobs).then(function(){
-      queueStalled.process(function(job){
-        // instead of completing we just close the queue to simulate a crash.
-        queueStalled.close();
-        setTimeout(function(){
-          var queue2 = buildQueue('test queue stalled');
-          var doneAfterFour = _.after(4, function(){
-            done();
-          });
-          queue2.on('completed', doneAfterFour);
+    queueStalled.empty().then(function() {
+      Promise.all(jobs).then(function(){
+        return queueStalled.process(function(job) {
+          // instead of completing we just close the queue to simulate a crash.
+          return queueStalled.close().then(function() {
+            var queue2 = buildQueue('test queue stalled');
+            var doneAfterFour = _.after(4, function () {
+              done();
+            });
+            queue2.on('completed', function (job) {
+              doneAfterFour();
+            });
 
-          queue2.process(function(job, jobDone){
-            jobDone();
+            queue2.process(function (job, jobDone) {
+              jobDone();
+            });
           });
-        }, 100);
-      });
-    });
+        });
+      }).catch(done)
+    })
   });
 
   it('processes jobs that were added before the queue backend started', function(){
     var queueStalled = buildQueue('test queue added before');
-    queueStalled.LOCK_RENEW_TIME = 10;
+    queueStalled.setLockRenewTime(10);
     var jobs = [
       queueStalled.add({bar: 'baz'}),
       queueStalled.add({bar1: 'baz1'}),
@@ -169,15 +172,15 @@ describe('Queue', function(){
   });
 
   it('processes several stalled jobs when starting several queues', function(done){
-    var NUM_QUEUES = 10;
-    var NUM_JOBS_PER_QUEUE = 20;
+    var NUM_QUEUES = 5;
+    var NUM_JOBS_PER_QUEUE = 10;
     var stalledQueues = [];
     var jobs = [];
 
     for(var i=0; i<NUM_QUEUES; i++){
       var queue = buildQueue('test queue stalled 2');
       stalledQueues.push(queue);
-      queue.LOCK_RENEW_TIME = 10;
+      queue.setLockRenewTime(10);
 
       for(var j=0; j<NUM_JOBS_PER_QUEUE; j++){
         jobs.push(queue.add({job: j}));
@@ -189,27 +192,27 @@ describe('Queue', function(){
       for(var k=0; k<stalledQueues.length; k++){
         stalledQueues[k].process(function(job){
           // instead of completing we just close the queue to simulate a crash.
-          this.close();
+          this.close().then(function() {
+            processed ++;
+            if(processed === stalledQueues.length){
+              setTimeout(function(){
+                var queue2 = buildQueue('test queue stalled 2');
+                queue2.process(function(job, jobDone){
+                  jobDone();
+                });
 
-          processed ++;
-          if(processed === stalledQueues.length){
-            setTimeout(function(){
-              var queue2 = buildQueue('test queue stalled 2');
-              queue2.process(function(job, jobDone){
-                jobDone();
-              });
-
-              var counter = 0;
-              queue2.on('completed', function(job){
-                counter ++;
-                if(counter === NUM_QUEUES * NUM_JOBS_PER_QUEUE) {
-                  queue2.close().then(function(){
-                      done();
-                  });
-                }
-              });
-            }, 100);
-          }
+                var counter = 0;
+                queue2.on('completed', function(job){
+                  counter ++;
+                  if(counter === NUM_QUEUES * NUM_JOBS_PER_QUEUE) {
+                    queue2.close().then(function(){
+                        done();
+                    });
+                  }
+                });
+              }, 100);
+            }
+          });
         });
       }
     });
