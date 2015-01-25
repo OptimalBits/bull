@@ -176,7 +176,7 @@ Useful patterns
 Bull can also be used for persistent messsage queues. This is a quite useful
 feature in some usecases. For example, you can have two servers that need to
 communicate with each other. By using a queue the servers do not need to be online
-at the same time, this create a very robust communication channel. You can treat 
+at the same time, this create a very robust communication channel. You can treat
 *add* as *send* and *process* as *receive*:
 
 Server A:
@@ -349,6 +349,32 @@ __Arguments__
 
 ---------------------------------------
 
+
+<a name="priorityQueue"/>
+###PriorityQueue(queueName, redisPort, redisHost, [redisOpts])
+
+This is the Queue constructor of priority queue. It works same a normal queue, with same function and parameters.
+The only difference is that the Queue#add() allow an options opts.priority that could take
+["low", "normal", "medium", "hight", "critical"]. If no options provider, "normal" will be taken.
+
+The priority queue will process more often highter priority jobs than lower.
+
+```javascript
+  var PriorityQueue = require("bull/lib/priority-queue");
+
+  var queue = new PriorityQueue("myPriorityQueues");
+
+  queue.add({todo: "Improve feature"}, {priority: "normal"});
+  queue.add({todo: "Read 9gags"}, {priority: "low"});
+  queue.add({todo: "Fix my test unit"}, {priority: "critical"});
+
+  queue.process(function(job, done) {
+    console.log("I have to: " + job.data.todo);
+    done();
+  });
+```
+
+Warning: Priority queue use 5 times more redis connections than a normal queue.
 
 <a name="job"/>
 ### Job
