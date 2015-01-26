@@ -679,7 +679,7 @@ describe('Queue', function(){
     })
   });
 
-  describe.only("Concurrency process", function() {
+  describe("Concurrency process", function() {
     it("should run job in sequence if I specify a concurrency of 1", function (done) {
       queue = buildQueue();
 
@@ -700,31 +700,45 @@ describe('Queue', function(){
       queue.on('completed', _.after(2, done.bind(null, null)));
     });
 
+
+    //This job use delay to check that at any time we have 4 process in parallel.
+    //Due to time to get new jobs and call process, false negative can appear.
     it("should process job respecting the concurrency set", function (done) {
-      queue = buildQueue();
+      queue = buildQueue("test concurrency");
+      queue.empty().then(function() {
+        var nbProcessing = 0;
+        var pendingMessageToProcess = 8;
+        var wait = 100;
 
-      var nbProcessing = 0;
+        queue.process(4, function (job, done) {
+          nbProcessing++;
+          expect(nbProcessing).to.be.lessThan(5);
 
-      queue.process(4, function (job, done) {
-        expect(nbProcessing).to.be.lessThan(5);
-        nbProcessing++;
-        Promise.delay(50).then(function () {
-          nbProcessing--;
-          done();
-        });
-      }).catch(done);
+          wait += 20;
 
-      queue.add({});
-      queue.add({});
-      queue.add({});
-      queue.add({});
-      queue.add({});
-      queue.add({});
-      queue.add({});
-      queue.add({});
+          Promise.delay(wait).then(function () {
+            //We should not have 4 more in parallel.
+            //At the end, due to empty list, no new job will process, so nbProcessing will decrease.
+            expect(nbProcessing).to.be(Math.min(pendingMessageToProcess, 4));
 
-      queue.on('completed', _.after(8, done.bind(null, null)));
-      queue.on('error', done);
+            pendingMessageToProcess--;
+            nbProcessing--;
+            done();
+          });
+        }).catch(done);
+
+        queue.add();
+        queue.add();
+        queue.add();
+        queue.add();
+        queue.add();
+        queue.add();
+        queue.add();
+        queue.add();
+
+        queue.on('completed', _.after(8, done.bind(null, null)));
+        queue.on('failed', done);
+      });
     });
 
     it("should wait for all concurrent processing in case of pause", function (done) {
