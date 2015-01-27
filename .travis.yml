@@ -1,9 +1,9 @@
 language: node_js
 
-# test on node.js versions: 0.6, 0.8, 0.10
+# test on node.js versions: 0.10
 node_js:
-  - '0.8'
   - '0.10'
+  - '0.11'
 
 services:
   - redis-server
