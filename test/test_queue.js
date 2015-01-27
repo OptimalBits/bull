@@ -26,7 +26,7 @@ describe('Queue', function(){
   afterEach(function(){
     if(queue){
       return cleanupQueue(queue).then(function(){
-        queue = undefined;  
+        queue = undefined;
       })
     }
     sandbox.restore();
@@ -62,7 +62,7 @@ describe('Queue', function(){
 
     it('should return a promise', function () {
       var closePromise = testQueue.close().then(function(){
-        expect(closePromise).to.be.a(Promise);  
+        expect(closePromise).to.be.a(Promise);
       });
     });
   });
@@ -614,13 +614,21 @@ describe('Queue', function(){
     it("should process a delayed job only after delayed time", function(done){
       var delay = 500;
       queue = Queue("delayed queue simple");
+      var client = redis.createClient(6379, '127.0.0.1', {});
       var timestamp = Date.now();
-      
+      var publishHappened = false;
+      client.on('ready', function () {
+        client.on("message", function(channel, message) {
+          expect(parseInt(message, 10)).to.be.a('number');
+          publishHappened = true;
+        });
+        client.subscribe(queue.toKey("jobs"));
+      });
       queue.process(function(job, jobDone){
         jobDone();
 
         expect(Date.now() > timestamp + delay);
-        
+
         queue.getWaiting().then(function(jobs){
           expect(jobs.length).to.be.equal(0);
         }).then(function(){
@@ -642,7 +650,10 @@ describe('Queue', function(){
           })
         }).then(function(){
           return queue.empty();
-        }).then(done)
+        }).then(function(){
+          expect(publishHappened).to.be(true);
+          done();
+        });
       });
       return queue.add({delayed: 'foobar'}, {delay: delay}).then(function(job){
         expect(job.jobId).to.be.ok()
@@ -655,7 +666,7 @@ describe('Queue', function(){
       var order = 0;
       queue = Queue("delayed queue multiple");
 
-      queue.process(function(job, jobDone){        
+      queue.process(function(job, jobDone){
         expect(order).to.be.below(job.data.order);
         order = job.data.order;
 
@@ -675,7 +686,7 @@ describe('Queue', function(){
       queue.add({order: 7}, {delay: 700});
       queue.add({order: 4}, {delay: 400});
       queue.add({order: 8}, {delay: 800});
-      
+
     })
   });
 
