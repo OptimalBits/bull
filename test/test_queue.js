@@ -624,6 +624,7 @@ describe('Queue', function(){
         });
         client.subscribe(queue.toKey("jobs"));
       });
+
       queue.process(function(job, jobDone){
         jobDone();
 
@@ -688,6 +689,113 @@ describe('Queue', function(){
       queue.add({order: 8}, {delay: 800});
 
     })
+  });
+
+  describe("Concurrency process", function() {
+    it("should run job in sequence if I specify a concurrency of 1", function (done) {
+      queue = buildQueue();
+
+      var processing = false;
+
+      queue.process(1, function (job, done) {
+        expect(processing).to.be.equal(false);
+        processing = true;
+        Promise.delay(50).then(function () {
+          processing = false;
+          done();
+        });
+      });
+
+      queue.add({});
+      queue.add({});
+
+      queue.on('completed', _.after(2, done.bind(null, null)));
+    });
+
+
+    //This job use delay to check that at any time we have 4 process in parallel.
+    //Due to time to get new jobs and call process, false negative can appear.
+    it("should process job respecting the concurrency set", function (done) {
+      queue = buildQueue("test concurrency");
+      queue.empty().then(function() {
+        var nbProcessing = 0;
+        var pendingMessageToProcess = 8;
+        var wait = 100;
+
+        queue.process(4, function (job, done) {
+          nbProcessing++;
+          expect(nbProcessing).to.be.lessThan(5);
+
+          wait += 20;
+
+          Promise.delay(wait).then(function () {
+            //We should not have 4 more in parallel.
+            //At the end, due to empty list, no new job will process, so nbProcessing will decrease.
+            expect(nbProcessing).to.be(Math.min(pendingMessageToProcess, 4));
+
+            pendingMessageToProcess--;
+            nbProcessing--;
+            done();
+          });
+        }).catch(done);
+
+        queue.add();
+        queue.add();
+        queue.add();
+        queue.add();
+        queue.add();
+        queue.add();
+        queue.add();
+        queue.add();
+
+        queue.on('completed', _.after(8, done.bind(null, null)));
+        queue.on('failed', done);
+      });
+    });
+
+    it("should wait for all concurrent processing in case of pause", function (done) {
+      queue = buildQueue();
+
+      var i = 0;
+      var nbJobFinish = 0;
+
+      queue.process(3, function (job, done) {
+        var error = null;
+
+        if (++i === 4) {
+          queue.pause().then(function () {
+            expect(nbJobFinish).to.be.equal(4);
+            queue.resume();
+          });
+        }
+
+        // We simulate an error of one processing job.
+        // They had a bug in pause() with this special case.
+        if (i % 3 == 0) {
+          error = new Error();
+        }
+
+        //100 - i*20 is to force to finish job n°4 before lower job that will wait longer
+        Promise.delay(100 - i*10).then(function () {
+          nbJobFinish++;
+          done(error);
+        });
+      }).catch(done);
+
+      queue.add({});
+      queue.add({});
+      queue.add({});
+      queue.add({});
+      queue.add({});
+      queue.add({});
+      queue.add({});
+      queue.add({});
+
+      var cb = _.after(8, done.bind(null, null));
+      queue.on('completed', cb);
+      queue.on('failed', cb);
+      queue.on('error', done);
+    });
   });
 
   describe("Jobs getters", function(){
