@@ -9,10 +9,6 @@ Carefully written for rock solid stability and atomicity.
 It uses redis for persistence, so the queue is not lost if the server goes
 down for any reason.
 
-If you need similar features than the ones provided by Bull check
-[Kue](https://github.com/learnboost/kue) but keep in mind this open
-[issue](https://github.com/LearnBoost/kue/issues/130).
-
 [![BuildStatus](https://secure.travis-ci.org/OptimalBits/bull.png?branch=master)](http://travis-ci.org/OptimalBits/bull)
 [![NPM version](https://badge.fury.io/js/bull.svg)](http://badge.fury.io/js/bull)
 
@@ -24,9 +20,10 @@ Features:
 - Minimal CPU usage by poll free design.
 - Robust design based on Redis.
 - Delayed jobs.
-- Retrys.
+- Retries.
 - Priority.
-- Concurrency
+- Concurrency.
+- Global pause/resume.
 
 
 Install:
@@ -34,7 +31,7 @@ Install:
 
     npm install bull
 
-Note that you need a redis version higher or equal than 2.6.12 for bull to work.
+Note that you need a redis version higher or equal than 2.8.19 for bull to work properly.
 
 Quick Guide
 -----------
@@ -303,6 +300,43 @@ __Arguments__
     should be fail with a timeout error [optional]
   returns {Promise} A promise that resolves when the job has been succesfully
     added to the queue (or rejects if some error occured).
+```
+
+---------------------------------------
+
+
+<a name="pause"/>
+#### Queue##pause()
+
+Returns a promise that resolves when the queue is paused. The pause is
+global, meaning that all workers in all queue instances for a given queue
+will be paused. A paused queue will not process new jobs until resumed, but
+current jobs being processed will continue until they are finalized.
+
+Pausing a queue that is already paused does nothing.
+
+__Arguments__
+
+```javascript
+  returns {Promise} A promise that resolves when the queue is paused.
+```
+
+---------------------------------------
+
+
+<a name="resume"/>
+#### Queue##pause()
+
+Returns a promise that resolves when the queue is resumed after being paused. 
+The resume is global, meaning that all workers in all queue instances for 
+a given queue will be resumed. 
+
+Resuming a queue that is not paused does nothing.
+
+__Arguments__
+
+```javascript
+  returns {Promise} A promise that resolves when the queue is resumed.
 ```
 
 ---------------------------------------
