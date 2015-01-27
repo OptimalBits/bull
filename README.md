@@ -25,6 +25,8 @@ Features:
 - Robust design based on Redis.
 - Delayed jobs.
 - Retrys.
+- Priority.
+- Concurrency
 
 
 Install:
@@ -258,20 +260,22 @@ __Arguments__
 
 
 <a name="process"/>
-#### Queue##process(function(job, done))
+#### Queue##process([concurrency,] function(job, done))
 
 Defines a processing function for the jobs placed into a given Queue.
 
 The callback is called everytime a job is placed in the queue and
 provides an instance of the job and a done callback to be called after the
-job has been completed. If done can be called providing an Error instsance
+job has been completed. If done can be called providing an Error instance
 to signal that the job did not complete successfully.
+
+You can specify a concurrency. Bull will then call you handler in parallel respecting this max number.
 
 __Arguments__
 
 ```javascript
-    jobName {String} A job type name.
-    cb {Function} A callback called for every job of the given name.
+    job {String} The job to process.
+    done {Function} The done callback to be called after the job has been completed.
 ```
 
 ---------------------------------------
