@@ -229,6 +229,8 @@ listened by some other service that stores the results in a database.
 * [Queue](#queue)
 * [Queue##process](#process)
 * [Queue##add](#add)
+* [Queue##pause](#pause)
+* [Queue##resume](#resume)
 * [Queue##count](#count)
 * [Queue##empty](#empty)
 * [Job](#job)
@@ -325,7 +327,7 @@ __Arguments__
 
 
 <a name="resume"/>
-#### Queue##pause()
+#### Queue##resume()
 
 Returns a promise that resolves when the queue is resumed after being paused. 
 The resume is global, meaning that all workers in all queue instances for 
