@@ -53,7 +53,7 @@ describe('Queue', function(){
       });
     });
 
-    it('should resolve the promise when the streams for botch clients have emitted "close"', function () {
+    it('should resolve the promise when the streams for both clients have emitted "close"', function () {
       testQueue.close();
 
       expect(typeof testQueue.client.stream._events.close).to.be('function');
