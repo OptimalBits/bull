@@ -655,12 +655,13 @@ describe('Queue', function(){
         });
       });
 
-      return queue.add({delayed: 'foobar'}, {delay: delay}).then(function(job){
-        expect(job.jobId).to.be.ok()
-        expect(job.data.delayed).to.be('foobar')
-        expect(job.delay).to.be(delay)
+      queue.on('ready', function () {
+        queue.add({delayed: 'foobar'}, {delay: delay}).then(function(job){
+          expect(job.jobId).to.be.ok()
+          expect(job.data.delayed).to.be('foobar')
+          expect(job.delay).to.be(delay)
+        });
       });
-
     });
 
     it("should process delayed jobs in correct order", function(done){
