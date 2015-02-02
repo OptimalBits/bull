@@ -31,7 +31,7 @@ Install:
 
     npm install bull
 
-Note that you need a redis version higher or equal than 2.8.18 for bull to work properly.
+Note that you need a redis version higher or equal than 2.8.11 for bull to work properly.
 
 Quick Guide
 -----------
