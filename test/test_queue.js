@@ -178,7 +178,7 @@ describe('Queue', function(){
       }, 100)
     });
   });
-  
+
   describe(' a worker', function(){
     it('should process a job', function(done){
     queue = buildQueue();
@@ -350,16 +350,17 @@ describe('Queue', function(){
         }
         setTimeout(jobDone, 100);
       });
+      setTimeout(function() {
+        anotherQueue = buildQueue();
+        anotherQueue.process(function(job, jobDone){
+          err = new Error('The second queue should not have received a job to process');
+          jobDone();
+        });
 
-      anotherQueue = buildQueue();
-      anotherQueue.process(function(job, jobDone){
-        err = new Error('The second queue should not have received a job to process');
-        jobDone();
-      });
-
-      queue.on('completed', function(){
-        cleanupQueue(anotherQueue).then(done.bind(null, err));
-      });
+        queue.on('completed', function(){
+          cleanupQueue(anotherQueue).then(done.bind(null, err));
+        });
+      }, 10);
     });
   });
 
@@ -515,7 +516,7 @@ describe('Queue', function(){
   });
 
   });
-  
+
 
   it('count added, unprocessed jobs', function(){
     var counter = 1;
@@ -554,7 +555,7 @@ describe('Queue', function(){
           counter--;
           if(counter === 0){
             resolve();
-          } 
+          }
         });
       });
 
@@ -595,12 +596,12 @@ describe('Queue', function(){
 
         queue.on('paused', function(){
           ispaused = false;
-          queue.resume();  
+          queue.resume();
         });
 
         queue.on('resumed', function(){
           isresumed = true;
-        });  
+        });
       });
     });
 
@@ -654,12 +655,13 @@ describe('Queue', function(){
         });
       });
 
-      return queue.add({delayed: 'foobar'}, {delay: delay}).then(function(job){
-        expect(job.jobId).to.be.ok()
-        expect(job.data.delayed).to.be('foobar')
-        expect(job.delay).to.be(delay)
+      queue.on('ready', function () {
+        queue.add({delayed: 'foobar'}, {delay: delay}).then(function(job){
+          expect(job.jobId).to.be.ok()
+          expect(job.data.delayed).to.be('foobar')
+          expect(job.delay).to.be(delay)
+        });
       });
-
     });
 
     it("should process delayed jobs in correct order", function(done){
@@ -765,7 +767,7 @@ describe('Queue', function(){
           queue.pause().then(function () {
             Promise.delay(500).then(function(){ // Wait for all the active jobs to finalize.
               expect(nbJobFinish).to.be.above(3);
-              queue.resume();  
+              queue.resume();
             })
           });
         }
