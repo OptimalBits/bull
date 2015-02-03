@@ -157,6 +157,7 @@ describe('Job', function(){
           }).then(function(){
             return job.isFailed().then(function(isFailed){
               expect(isFailed).to.be(true);
+              expect(job.stacktrace).not.be(null);
             });
           });
         });
