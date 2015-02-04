@@ -30,6 +30,7 @@
     "mocha": "~1.21.4"
   },
   "scripts": {
-    "test": "mocha test/* --reporter spec"
+    "test": "mocha test/* --reporter spec",
+    "postpublish": "git push && git push --tags"
   }
 }
