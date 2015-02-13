@@ -66,6 +66,22 @@ describe('Job', function(){
       })
   });
 
+  describe('.retry', function () {
+    it('emits waiting event', function (cb) {
+      queue.add({foo: 'bar'});
+      queue.process(function (job, done) {
+        done(new Error('the job failed'));
+      });
+      queue.on('failed', function (job) {
+        queue.once('waiting', function (job) {
+          expect(job.data.foo).to.be.equal('bar');
+          cb();
+        });
+        job.retry();
+      });
+    });
+  });
+
   describe('Locking', function(){
     var id = 0;
     var job;
