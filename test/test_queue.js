@@ -622,6 +622,19 @@ describe('Queue', function(){
     });
   });
 
+  it("should emit an event when a job becomes active", function (done) {
+    queue = buildQueue();
+    queue.process(function(job, jobDone){
+      jobDone();
+    });
+    queue.add({});
+    queue.once('active', function (job) {
+      queue.once('completed', function (job) {
+        done();
+      });
+    });
+  });
+
   describe("Delayed jobs", function(){
     it("should process a delayed job only after delayed time", function(done){
       var delay = 500;
