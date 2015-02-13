@@ -72,7 +72,7 @@ describe('Job', function(){
       queue.process(function (job, done) {
         done(new Error('the job failed'));
       });
-      queue.on('failed', function (job) {
+      queue.once('failed', function (job) {
         queue.once('waiting', function (job) {
           expect(job.data.foo).to.be.equal('bar');
           cb();
