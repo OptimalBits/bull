@@ -541,6 +541,15 @@ describe('Queue', function(){
       });
   });
 
+  it('emits waiting event when a job is added', function (cb) {
+    queue = buildQueue();
+    queue.add({foo: 'bar'});
+    queue.once('waiting', function (job) {
+      expect(job.data.foo).to.be.equal('bar');
+      cb();
+    });
+  });
+
   describe(".pause", function(){
     it('should pause a queue until resumed', function(){
       var ispaused = false, counter = 2;
