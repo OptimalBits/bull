@@ -64,6 +64,16 @@ describe('Job', function(){
             expect(storedJob).to.be(null);
           });
       })
+
+      it('emits removed event', function (cb) {
+        queue.once('removed', function (job) {
+          expect(job.data.foo).to.be.equal('bar');
+          cb();
+        });
+        Job.create(queue, 1, {foo: 'bar'}).then(function(job){
+          job.remove();
+        });
+      });
   });
 
   describe('.retry', function () {
