@@ -1,3 +1,7 @@
+v0.2.4
+======
+[Changes](https://github.com/OptimalBits/bull/compare/v0.2.3...v0.2.4)
+
 v0.2.3
 ======
 [Changes](https://github.com/OptimalBits/bull/compare/v0.1.9...v0.2.3)
