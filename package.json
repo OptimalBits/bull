@@ -20,14 +20,16 @@
     "bluebird": "~2.3.0",
     "lodash": "~2.2.1",
     "node-uuid": "~1.4.1",
-    "redis": "~0.8.4",
+    "redis": "^0.12.1",
     "semver": "^4.2.0",
     "when": "~2.1.1"
   },
   "devDependencies": {
     "expect.js": "~0.2.0",
-    "sinon": "~1.12.1",
-    "mocha": "~1.21.4"
+    "gulp": "^3.8.11",
+    "gulp-eslint": "^0.7.0",
+    "mocha": "~1.21.4",
+    "sinon": "~1.12.1"
   },
   "scripts": {
     "test": "mocha test/* --reporter spec",
