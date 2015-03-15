@@ -72,11 +72,11 @@ describe('Queue', function(){
       queue = Queue('standard');
 
       queue.once('ready', function(){
-        expect(queue.client.host).to.be('127.0.0.1');
-        expect(queue.bclient.host).to.be('127.0.0.1');
+        expect(queue.client.connectionOption.host).to.be('127.0.0.1');
+        expect(queue.bclient.connectionOption.host).to.be('127.0.0.1');
 
-        expect(queue.client.port).to.be(6379);
-        expect(queue.bclient.port).to.be(6379);
+        expect(queue.client.connectionOption.port).to.be(6379);
+        expect(queue.bclient.connectionOption.port).to.be(6379);
 
         expect(queue.client.selected_db).to.be(0);
         expect(queue.bclient.selected_db).to.be(0);
@@ -89,11 +89,11 @@ describe('Queue', function(){
       queue = Queue('custom', {redis: {DB: 1}});
 
       queue.once('ready', function(){
-        expect(queue.client.host).to.be('127.0.0.1');
-        expect(queue.bclient.host).to.be('127.0.0.1');
+        expect(queue.client.connectionOption.host).to.be('127.0.0.1');
+        expect(queue.bclient.connectionOption.host).to.be('127.0.0.1');
 
-        expect(queue.client.port).to.be(6379);
-        expect(queue.bclient.port).to.be(6379);
+        expect(queue.client.connectionOption.port).to.be(6379);
+        expect(queue.bclient.connectionOption.port).to.be(6379);
 
         expect(queue.client.selected_db).to.be(1);
         expect(queue.bclient.selected_db).to.be(1);
@@ -106,8 +106,8 @@ describe('Queue', function(){
       queue = Queue('custom', {redis: {host: 'localhost'}});
 
       queue.once('ready', function(){
-        expect(queue.client.host).to.be('localhost');
-        expect(queue.bclient.host).to.be('localhost');
+        expect(queue.client.connectionOption.host).to.be('localhost');
+        expect(queue.bclient.connectionOption.host).to.be('localhost');
 
         expect(queue.client.selected_db).to.be(0);
         expect(queue.bclient.selected_db).to.be(0);

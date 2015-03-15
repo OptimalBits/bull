@@ -93,7 +93,7 @@ describe('Job', function(){
   });
 
   describe('Locking', function(){
-    var id = 0;
+    var id = 1000;
     var job;
 
     beforeEach(function () {
@@ -105,40 +105,44 @@ describe('Job', function(){
     });
 
     it('can take a lock', function(){
-      return job.takeLock('123').then(function(lockTaken){
+      return job.takeLock('423').then(function(lockTaken){
         expect(lockTaken).to.be(true);
+      }).then(function(){
+        return job.releaseLock('321').then(function(lockReleased){
+          expect(lockReleased).to.be(false);
+        });
       });
     });
 
     it('cannot take an already taken lock', function(){
-      return job.takeLock('123').then(function(lockTaken){
+      return job.takeLock('1234').then(function(lockTaken){
         expect(lockTaken).to.be(true);
       }).then(function(){
-        return job.takeLock('123').then(function(lockTaken){
+        return job.takeLock('1234').then(function(lockTaken){
           expect(lockTaken).to.be(false);
         });
       });
     });
 
     it('can renew a previously taken lock', function(){
-      return job.takeLock('123').then(function(lockTaken){
+      return job.takeLock('1235').then(function(lockTaken){
         expect(lockTaken).to.be(true);
       }).then(function(){
-        return job.renewLock('123').then(function(lockRenewed){
+        return job.renewLock('1235').then(function(lockRenewed){
           expect(lockRenewed).to.be(true);
         });
       });
     });
 
     it('can release a lock', function(){
-      return job.takeLock('123').then(function(lockTaken){
+      return job.takeLock('1237').then(function(lockTaken){
         expect(lockTaken).to.be(true);
       }).then(function(){
         return job.releaseLock('321').then(function(lockReleased){
           expect(lockReleased).to.be(false);
         });
       }).then(function(){
-        return job.releaseLock('123').then(function(lockReleased){
+        return job.releaseLock('1237').then(function(lockReleased){
           expect(lockReleased).to.be(true);
         });
       });
