@@ -32,7 +32,7 @@
     "sinon": "~1.12.1"
   },
   "scripts": {
-    "test": "mocha test/* --reporter spec",
+    "test": "gulp && mocha test/* --reporter spec",
     "postpublish": "git push && git push --tags"
   }
 }
