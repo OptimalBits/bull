@@ -1,3 +1,11 @@
+v0.2.5
+======
+- [upgrade] Upgraded node redis to version 0.12.x
+- [improvement] eslinted all code.
+- [fix] added missing token when calling takeLock on jobs.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v0.2.4...v0.2.5)
+
 v0.2.4
 ======
 [Changes](https://github.com/OptimalBits/bull/compare/v0.2.3...v0.2.4)
@@ -22,7 +30,6 @@ v0.1.7
 
 v0.1.6
 ======
-
 - [Fix] Improved and corrected job's getters.
 - [Fix] Automatically restart queues in the event of redis disconnections.
 - [Feature] Added support for adding jobs in a LIFO fashion.
