@@ -938,4 +938,47 @@ describe('Queue', function(){
       });
     });
   });
+
+  describe("tags", function(){
+    it("should return one job with tag bar", function(done) {
+        queue = buildQueue();
+        queue.add({first:'second'}, {tags:['foo', 'bar']});
+        queue.process(function(job, done){
+          queue.getByTag('active', 'bar', function(jobs){
+            expect(jobs.length).to.be(1);
+          });
+          job.progress(42);
+          done();
+        });
+    });
+
+    it("should return zero jobs cause wrong tag", function(done) {
+      queue = buildQueue();
+      queue.add({first:'second'}, {tags:['foo', 'bar']});
+      queue.process(function(job, done) {
+          job.progress(42);
+          done();
+      });
+      queue.on('completed', function(job) {
+        queue.getByTag('completed', 'bar42', function(jobs){
+          expect(jobs.length).to.be(0);
+        });
+      });
+    });
+
+    it("should return zero jobs cause wrong type of jobs", function(done) {
+      queue = buildQueue();
+      queue.add({first:'second'}, {tags:['foo', 'bar']});
+      queue.process(function(job, done) {
+          job.progress(42);
+          done();
+      });
+      queue.on('completed', function(job) {
+        queue.getByTag('completedff', 'bar', function(jobs){
+          expect(jobs.length).to.be(0);
+        });
+      });
+    });
+
+  });
 });
