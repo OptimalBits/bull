@@ -364,7 +364,7 @@ describe('Queue', function(){
     });
   });
 
-  it.skip('process stalled jobs without requiring a queue restart');
+  it('process stalled jobs without requiring a queue restart');
 
   it('process a job that fails', function(done){
     var jobError = Error("Job Failed");
@@ -710,8 +710,46 @@ describe('Queue', function(){
       queue.add({order: 7}, {delay: 700});
       queue.add({order: 4}, {delay: 400});
       queue.add({order: 8}, {delay: 800});
+    });
 
-    })
+    it("should process delayed jobs in correct order even in case of restart", function(done){
+      var QUEUE_NAME = "delayed queue multiple";
+      var order = 1;
+
+      queue = Queue(QUEUE_NAME);
+
+      var fn = function(job, jobDone){
+        expect(order).to.be.equal(job.data.order);
+        jobDone();
+
+        if (order === 4 ) {
+          done();
+        }
+
+        order++;
+      };
+
+      Promise.join(
+        queue.add({order: 2}, {delay: 300}),
+        queue.add({order: 4}, {delay: 500}),
+        queue.add({order: 1}, {delay: 200}),
+        queue.add({order: 3}, {delay: 400})).then(function(){
+
+          //
+          // Start processing so that jobs get into the delay set.
+          //
+          queue.process(fn);
+        }).delay(20).then(function(){
+          //We simulate a restart
+          return queue.close().then(function() {
+            return Promise.delay(100).then(function() {
+              queue = Queue(QUEUE_NAME);
+              queue.process(fn);
+            })
+          });
+        });
+    });
+
   });
 
   describe("Concurrency process", function() {
