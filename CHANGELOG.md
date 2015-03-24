@@ -1,3 +1,14 @@
+v0.2.7
+======
+
+[Changes](https://github.com/OptimalBits/bull/compare/v0.2.6...v0.2.7)
+
+v0.2.6
+======
+
+- [Fix] #103 When a queue start it do not process delayed job.
+[Changes](https://github.com/OptimalBits/bull/compare/v0.2.5...v0.2.6)
+
 v0.2.5
 ======
 - [upgrade] Upgraded node redis to version 0.12.x
