@@ -21,8 +21,7 @@
     "lodash": "~2.2.1",
     "node-uuid": "~1.4.1",
     "redis": "^0.12.1",
-    "semver": "^4.2.0",
-    "when": "~2.1.1"
+    "semver": "^4.2.0"
   },
   "devDependencies": {
     "expect.js": "~0.2.0",
