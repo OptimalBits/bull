@@ -7,6 +7,7 @@ var Promise = require('bluebird');
 var redis = require('redis');
 var sinon = require('sinon');
 var _ = require('lodash');
+var uuid = require('node-uuid');
 
 var STD_QUEUE_NAME = 'test queue';
 
@@ -222,8 +223,8 @@ describe('Priority queue', function(){
     this.timeout(5000)
     var err = null;
     var anotherQueue;
-
-    queue = buildQueue();
+    var queueName = uuid();
+    queue = buildQueue(queueName);
 
     queue.add({foo: 'bar'}).then(function(addedJob){
       queue.process(function(job, jobDone){
@@ -235,7 +236,7 @@ describe('Priority queue', function(){
         setTimeout(jobDone, 100);
       });
 
-      anotherQueue = buildQueue();
+      anotherQueue = buildQueue(queueName);
       anotherQueue.process(function(job, jobDone){
         err = new Error('The second queue should not have received a job to process');
         jobDone();
