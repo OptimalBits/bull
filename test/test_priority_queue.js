@@ -233,13 +233,14 @@ describe('Priority queue', function(){
         if(addedJob.jobId !== job.jobId){
           err = new Error('Processed job id does not match that of added job');
         }
-        setTimeout(jobDone, 100);
-      });
 
-      anotherQueue = buildQueue(queueName);
-      anotherQueue.process(function(job, jobDone){
-        err = new Error('The second queue should not have received a job to process');
-        jobDone();
+        anotherQueue = buildQueue(queueName);
+        anotherQueue.process(function(job, jobDone){
+          err = new Error('The second queue should not have received a job to process');
+          jobDone();
+        });
+
+        setTimeout(jobDone, 100);
       });
 
       queue.on('completed', function(){
