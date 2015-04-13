@@ -1,5 +1,7 @@
 language: node_js
 
+sudo: false
+
 # test on node.js versions: 0.10
 node_js:
   - '0.10'
