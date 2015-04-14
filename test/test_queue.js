@@ -368,11 +368,21 @@ describe('Queue', function(){
     });
 
     it('process stalled jobs without requiring a queue restart', function (done) {
-      queue = buildQueue();
+      var collect = _.after(2, done);
+
+      queue = buildQueue('running-stalled-job');
+      queue.LOCK_RENEW_TIME = 500;
+
+      queue.on('completed', function() {
+        collect();
+      });
+
       queue.process(function(job, jobDone){
         expect(job.data.foo).to.be.equal('bar');
         jobDone();
-        done();
+        var client = redis.createClient();
+        client.srem(queue.toKey('completed'), 1);
+        client.lpush(queue.toKey('active'), 1);
       });
 
       queue.add({foo: 'bar'}).then(function(job){
