@@ -8,6 +8,7 @@ var Promise = require('bluebird');
 var redis = require('redis');
 var sinon = require('sinon');
 var _ = require('lodash');
+var uuid = require('node-uuid');
 
 var STD_QUEUE_NAME = 'test queue';
 
@@ -35,7 +36,6 @@ describe('Queue', function(){
 
   describe('.close', function () {
     var testQueue;
-
     beforeEach(function () {
       testQueue = new Queue('test');
     });
@@ -368,10 +368,12 @@ describe('Queue', function(){
     });
 
     it('process stalled jobs without requiring a queue restart', function (done) {
+      this.timeout(5000);
       var collect = _.after(2, done);
 
-      queue = buildQueue('running-stalled-job');
-      queue.LOCK_RENEW_TIME = 500;
+      queue = buildQueue('running-stalled-job-' + uuid());
+
+      queue.LOCK_RENEW_TIME = 1000;
 
       queue.on('completed', function() {
         collect();
