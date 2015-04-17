@@ -10,7 +10,7 @@ gulp.task('lint', function (){
   return gulp.src([
     './lib/job.js',
     './lib/queue.js',
-    '!./test/**'
+    './test/**'
     ])
     .pipe(eslint({
       rules: {
@@ -27,7 +27,13 @@ gulp.task('lint', function (){
             'no-underscore-dangle': 0
         },
         globals: {
-          'define': true
+          'define': true,
+          'describe': true,
+          'it': true,
+          'setTimeout': true,
+          'afterEach': true,
+          'beforeEach': true,
+          'before': true
         }
     }))
     .pipe(eslint.format())
