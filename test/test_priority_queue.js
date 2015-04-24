@@ -1,3 +1,4 @@
+/*global */
 "use strict";
 
 var Job = require('../lib/job');
