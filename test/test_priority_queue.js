@@ -33,6 +33,15 @@ describe('Priority queue', function(){
     sandbox.restore();
   });
 
+  it('allow custom clients', function(){
+    var clients = 0;
+    queue = new Queue(STD_QUEUE_NAME, {redis: {opts: {createClient: function(){
+      clients++;
+      return redis.createClient();
+    }}}});
+    expect(clients).to.be(15);
+  });
+
   describe('.close', function () {
     var testQueue;
 
