@@ -167,6 +167,43 @@ if(cluster.isMaster){
 }
 ```
 
+Authenticated redis client connection
+---------------
+
+Bull can also be used with a Redis server required authentication
+like in Heroku (or other hosting) application hosting. Set-up a Redis
+addons and get configs information. You can deploy bull queue with
+authentication credentials. 
+
+```javascript
+var redisCredentials = {
+  auth: true,
+  password: 'my-password-to-connect'
+};
+
+var redisOptions = {
+  port: 6379,
+  host: '127.0.0.1'
+};
+
+var Bull = require('bull');
+// Create queue object
+var queue = Queue('my-queue-id', {
+  auth: redisCredentials.auth,
+  password: redisCredentials.password,
+  redis: redisOptions
+});
+
+// Or use all parameters pattern
+var queue = Queue(
+  'my-queue-id',
+  redisOptions.port, 
+  redisOptions.host,
+  redisCredentials.auth,
+  redisCredentials.password
+);
+```
+
 Useful patterns
 ---------------
 
