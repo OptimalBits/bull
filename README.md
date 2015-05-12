@@ -233,6 +233,7 @@ listened by some other service that stores the results in a database.
 * [Queue##resume](#resume)
 * [Queue##count](#count)
 * [Queue##empty](#empty)
+* [Queue##close](#close)
 * [Job](#job)
 * [Job##remove](#remove)
 
@@ -370,6 +371,19 @@ __Arguments__
   returns {Promise} A promise that resolves with the queue is emptied.
 ```
 
+---------------------------------------
+
+<a name="close"/>                                                               
+#### Queue##close()                                                             
+Closes the underlying redis client. Use this if you are performing a graceful   
+shutdown.                                                                       
+                                                                                
+__Arguments__                                                                   
+                                                                                
+```javascript                                                                   
+  returns {Promise} A promise that resolves when the redis client closes.       
+```                                                                             
+                                                                                
 ---------------------------------------
 
 <a name="getJob"/>
