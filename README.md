@@ -372,6 +372,19 @@ __Arguments__
 
 ---------------------------------------
 
+<a name="close"/>                                                               
+#### Queue##close()                                                             
+Closes the underlying redis client. Use this if you are performing a graceful   
+shutdown.                                                                       
+                                                                                
+__Arguments__                                                                   
+                                                                                
+```javascript                                                                   
+  returns {Promise} A promise that resolves when the redis client closes.       
+```                                                                             
+                                                                                
+---------------------------------------
+
 <a name="getJob"/>
 #### Queue##getJob(jobId)
 
