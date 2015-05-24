@@ -1,3 +1,4 @@
+/// <reference path='../typings/mocha/mocha.d.ts'/>
 /*eslint-env node */
 /*global Promise:true */
 'use strict';
@@ -144,6 +145,7 @@ describe('Priority queue', function(){
             var doneAfterFour = _.after(4, function () {
               done();
             });
+
             queue2.on('completed', function () {
               doneAfterFour();
             });
@@ -498,7 +500,7 @@ describe('Priority queue', function(){
         if(counter === 0){
           queue.getCompleted().then(function(jobs){
             expect(jobs).to.be.a('array');
-            // We need a "empty completed" kind of function.
+            // We need a 'empty completed' kind of function.
             //expect(jobs.length).to.be.equal(2);
             done();
           });
