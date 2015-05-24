@@ -106,14 +106,18 @@ queue.resume().then(function(){
 
 A queue emits also some useful events:
 ```javascript
+.on('active', function(job, jobPromise){
+  // Job started
+  // You can use jobPromise.cancel() to abort this job.
+})
+.on('progress', function(job, progress){
+  // Job progress updated!
+})
 queue.on('completed', function(job){
   // Job completed!
 })
 .on('failed', function(job, err){
   // Job failed with reason err!
-})
-.on('progress', function(job, progress){
-  // Job progress updated!
 })
 .on('paused', function(){
   // The queue has been paused
@@ -330,9 +334,9 @@ __Arguments__
 <a name="resume"/>
 #### Queue##resume()
 
-Returns a promise that resolves when the queue is resumed after being paused. 
-The resume is global, meaning that all workers in all queue instances for 
-a given queue will be resumed. 
+Returns a promise that resolves when the queue is resumed after being paused.
+The resume is global, meaning that all workers in all queue instances for
+a given queue will be resumed.
 
 Resuming a queue that is not paused does nothing.
 
