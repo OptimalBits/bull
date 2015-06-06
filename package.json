@@ -17,18 +17,18 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
-    "bluebird": "~2.3.0",
-    "lodash": "~2.2.1",
-    "node-uuid": "~1.4.1",
+    "bluebird": "^2.9.27",
+    "lodash": "^3.9.3",
+    "node-uuid": "^1.4.3",
     "redis": "^0.12.1",
     "semver": "^4.2.0"
   },
   "devDependencies": {
-    "expect.js": "~0.2.0",
+    "expect.js": "^0.3.1",
     "gulp": "^3.8.11",
-    "gulp-eslint": "^0.7.0",
-    "mocha": "~1.21.4",
-    "sinon": "~1.12.1"
+    "gulp-eslint": "^0.13.2",
+    "mocha": "^2.2.5",
+    "sinon": "^1.14.1"
   },
   "scripts": {
     "test": "gulp && mocha test/* --reporter spec",
