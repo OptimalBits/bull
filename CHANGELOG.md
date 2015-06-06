@@ -1,3 +1,15 @@
+v0.3.0
+======
+
+- added support for custom clients.
+- added test support for node 0.12.
+- timeout improvements.
+- unit test improvements.
+- added timeout to queue pop blocking call.
+- removed when dependency.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v0.2.7...v0.3.0)
+
 v0.2.7
 ======
 
