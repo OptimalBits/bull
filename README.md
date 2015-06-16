@@ -423,11 +423,12 @@ delayed, and failed.
 __Example__
 
 ```javascript
-//cleans all jobs that completed over 30 seconds ago every 3 minutes.
+//cleans all jobs that completed over 5 seconds ago.
 queue.clean(5000);
+//clean all jobs that failed over 10 seconds ago.
+queue.clean(10000, 'failed');
 queue.on('cleaned', function (job, type) {
   console.log('Cleaned %s %s jobs', job.length, type);
-  //prints 'Cleaned x completed jobs'.
 });
 ```
 
