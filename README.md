@@ -125,6 +125,11 @@ queue.on('completed', function(job){
 .on('resumed', function(job){
   // The queue has been resumed
 })
+.on('cleaned', function(jobs, type) {
+  //jobs is an array of cleaned jobs
+  //type is the type of job cleaned
+  //see clean for details
+});
 ```
 
 Queues are cheap, so if you need many of them just create new ones with different
@@ -237,6 +242,7 @@ listened by some other service that stores the results in a database.
 * [Queue##resume](#resume)
 * [Queue##count](#count)
 * [Queue##empty](#empty)
+* [Queue##clean](#clean)
 * [Queue##close](#close)
 * [Job](#job)
 * [Job##remove](#remove)
@@ -403,6 +409,48 @@ __Arguments__
   jobId {String} A string identifying the ID of the to look up.
   returns {Promise} A promise that resolves with the job instance when the job
   has been retrieved to the queue, or null otherwise.
+```
+
+---------------------------------------
+
+<a name="clean"/>
+#### Queue##clean(options)
+
+Tells the queue remove all jobs created outside of a grace period.
+You can clean the jobs with the following states: completed, waiting, active,
+delayed, and failed.
+
+__Example__
+
+```javascript
+//cleans all jobs that completed over 5 seconds ago.
+queue.clean(5000);
+//clean all jobs that failed over 10 seconds ago.
+queue.clean(10000, 'failed');
+queue.on('cleaned', function (job, type) {
+  console.log('Cleaned %s %s jobs', job.length, type);
+});
+```
+
+__Arguments__
+
+```javascript
+  grace {int} Grace period in milliseconds.
+  type {string} type of job to clean. Values are completed, waiting, active,
+  delayed, and failed. Defaults to completed.
+  returns {Promise} A promise that resolves with an array of removed jobs.
+```
+
+__Events__
+
+The cleaner emits the `cleaned` event anytime the queue is cleaned.
+
+```javascript
+  queue.on('cleaned', function (jobs, type) {}); 
+
+  jobs {Array} An array of jobs that have been cleaned.
+  type {String} The type of job cleaned. Options are completed, waiting, active,
+  delayed, or failed.
 ```
 
 ---------------------------------------
