@@ -129,6 +129,21 @@ describe('Queue', function () {
         });
       });
     });
+
+    it('creates a queue with symbols in its name', function () {
+      queue = new Queue('Long queue name with symbols%20_and%2f 1234 numbers', 6379, '127.0.0.1', {BULL_PREFIX: 'bulltest', CLEAN_NAME: true});
+
+      return queue.add({ foo: 'bar2' }).then(function (job) {
+        expect(job.queue.name).to.be('Long-queue-name-with-symbols-20_and-2f-1234-numbers');
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar2');
+      }).then(function () {
+        queue.process(function (job, jobDone) {
+          expect(job.data.foo).to.be.equal('bar2');
+          jobDone();
+        });
+      });
+    });
   });
 
   describe('connection', function () {
@@ -1066,8 +1081,8 @@ describe('Queue', function () {
       });
     });
     it('should clean two jobs from the queue', function (done) {
-      queue.add({some: 'data'});
-      queue.add({some: 'data'});
+      queue.add({some: 'data1'});
+      queue.add({some: 'data2'});
       queue.process(function (job, jobDone) {
         jobDone();
       });
@@ -1084,23 +1099,23 @@ describe('Queue', function () {
       queue.process(function (job, jobDone) {
         jobDone();
       });
-      queue.add({some: 'data'});
-      queue.add({some: 'data'});
+      queue.add({some: 'data3'});
+      queue.add({some: 'data4'});
       Promise.delay(200).then(function () {
-        queue.add({some: 'data'});
+        queue.add({some: 'data5'});
         queue.clean(100);
       }).delay(100).then(function () {
         return queue.getCompleted();
       }).then(function (jobs) {
         expect(jobs.length).to.be(1);
-        return queue.empty();
+        return queue.cleanAll();
       }).then(function () {
         done();
       });
     });
     it('should clean all failed jobs', function (done) {
-      queue.add({some: 'data'});
-      queue.add({some: 'data'});
+      queue.add({some: 'data6'});
+      queue.add({some: 'data7'});
       queue.process(function (job, jobDone) {
         jobDone(new Error('It failed'));
       });
