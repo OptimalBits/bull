@@ -774,7 +774,7 @@ describe('Queue', function () {
     });
 
     it('should process delayed jobs in correct order even in case of restart', function (done) {
-      var QUEUE_NAME = 'delayed queue multiple';
+      var QUEUE_NAME = 'delayed queue multiple' + uuid();
       var order = 1;
 
       queue = new Queue(QUEUE_NAME);
