@@ -1,3 +1,9 @@
+v0.4.0
+======
+- added a Queue##clean method
+
+[Changes](https://github.com/OptimalBits/bull/compare/v0.3.0...v0.4.0)
+
 v0.3.0
 ======
 
