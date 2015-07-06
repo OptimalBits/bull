@@ -1109,7 +1109,8 @@ describe('Queue', function () {
       }).then(function (jobs) {
         expect(jobs.length).to.be(1);
         return queue.cleanAll();
-      }).then(function () {
+      }).then(function (types) {
+        expect(types.length).to.be(5);
         done();
       });
     });
