@@ -774,6 +774,8 @@ describe('Queue', function () {
     });
 
     it('should process delayed jobs in correct order even in case of restart', function (done) {
+      this.timeout(5000);
+
       var QUEUE_NAME = 'delayed queue multiple' + uuid();
       var order = 1;
 
