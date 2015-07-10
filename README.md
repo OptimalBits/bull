@@ -102,6 +102,26 @@ audioQueue.add({audio: 'http://example.com/audio1.mp3'});
 imageQueue.add({image: 'http://example.com/image1.tiff'});
 ```
 
+Alternatively, you can use return promises instead of using the `done` callback:
+
+```javascript
+videoQueue.process(function(job){ // don't forget to remove the done callback!
+  // Simply return a promise
+  return fetchVideo(job.data.url).then(transcodeVideo);
+
+  // Handles promise rejection
+  return Promise.reject(new Error('error transcoding'));
+
+  // Passes the value the promise is resolved with to the "completed" event 
+  return Promise.resolve({ framerate: 29.5 /* etc... */ });
+
+  // If the job throws an unhandled exception it is also handled correctly
+  throw new Error('some unexpected error');
+  // same as
+  return Promise.reject(new Error('some unexpected error'));
+});
+```
+
 A queue can be paused and resumed:
 ```javascript
 queue.pause().then(function(){
@@ -279,16 +299,47 @@ __Arguments__
 
 
 <a name="process"/>
-#### Queue##process([concurrency,] function(job, done))
+#### Queue##process([concurrency,] function(job[, done]))
 
 Defines a processing function for the jobs placed into a given Queue.
 
-The callback is called everytime a job is placed in the queue and
-provides an instance of the job and a `done` callback to be called after the
-job has been completed. `done` can be called providing an Error instance
-to signal that the job did not complete successfully. It also accepts
-a result as second argument (e.g.: `done(null, result);`) which gets passed
-as a second argument to the "completed" event.
+The callback is called everytime a job is placed in the queue. It is passed
+an instance of the job as first argument.
+
+If the callback signature contains the second optional `done` argument,
+the callback will be passed a `done` callback to be called after the job
+has been completed. The `done` callback can be called with an Error instance,
+to signal that the job did not complete successfully, or with a result as
+second argument as second argument (e.g.: `done(null, result);`) when the
+job is successful.
+Errors will be passed as a second argument to the "failed" event;
+results, as a second argument to the "completed" event.
+
+If, however, the callback signature does not contain the `done` argument,
+a promise must be returned to signal job completion.
+If the promise is rejected, the error will be passed as
+a second argument to the "failed" event.
+If it is resolved, its value will be the "completed" event's second argument.
+
+**Note:** in order to determine whether job completion is signaled by
+returning a promise or calling the `done` callback, Bull looks at
+the length property of the callback you pass to it.
+So watch out, as the following won't work:
+
+```javascript
+// THIS WON'T WORK!!
+queue.process(function(job, done) { // Oops! done callback here!
+    return Promise.resolve();
+});
+```
+
+This, however, will:
+
+```javascript
+queue.process(function(job) { // No done callback here :)
+    return Promise.resolve();
+});
+```
 
 You can specify a concurrency. Bull will then call you handler in parallel respecting this max number.
 
