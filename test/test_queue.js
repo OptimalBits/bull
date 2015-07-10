@@ -255,6 +255,25 @@ describe('Queue', function () {
       });
     });
 
+    it('process a job that returns data in a promise', function (done) {
+      queue = buildQueue();
+      queue.process(function (job) {
+        expect(job.data.foo).to.be.equal('bar');
+        return Promise.delay(42, 250);
+      });
+
+      queue.add({ foo: 'bar' }).then(function (job) {
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+      }).catch(done);
+
+      queue.on('completed', function (job, data) {
+        expect(job).to.be.ok();
+        expect(data).to.be.eql(42);
+        done();
+      });
+    });
+
     it('process a synchronous job', function (done) {
       queue = buildQueue();
       queue.process(function (job) {
@@ -471,6 +490,30 @@ describe('Queue', function () {
       }, function (err) {
           done(err);
         });
+
+      queue.once('failed', function (job, err) {
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+        expect(err).to.be.eql(jobError);
+        done();
+      });
+    });
+
+    it('process a job that returns a rejected promise', function (done) {
+      var jobError = new Error('Job Failed');
+      queue = buildQueue();
+
+      queue.process(function (job) {
+        expect(job.data.foo).to.be.equal('bar');
+        return Promise.reject(jobError);
+      });
+
+      queue.add({ foo: 'bar' }).then(function (job) {
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+      }, function (err) {
+        done(err);
+      });
 
       queue.once('failed', function (job, err) {
         expect(job.jobId).to.be.ok();
