@@ -52,9 +52,12 @@ videoQueue.process(function(job, done){
 
   // call done when finished
   done();
-
+  
   // or give a error if error
   done(Error('error transcoding'));
+  
+  // or pass it a result
+  done(null, { framerate: 29.5 /* etc... */ });
 
   // If the job throws an unhandled exception it is also handled correctly
   throw (Error('some unexpected error'));
@@ -69,6 +72,9 @@ audioQueue.process(function(job, done){
 
   // or give a error if error
   done(Error('error transcoding'));
+  
+  // or pass it a result
+  done(null, { samplerate: 48000 /* etc... */ });
 
   // If the job throws an unhandled exception it is also handled correctly
   throw (Error('some unexpected error'));
@@ -83,6 +89,9 @@ imageQueue.process(function(job, done){
 
   // or give a error if error
   done(Error('error transcoding'));
+  
+  // or pass it a result
+  done(null, { width: 1280, height: 720 /* etc... */ });
 
   // If the job throws an unhandled exception it is also handled correctly
   throw (Error('some unexpected error'));
@@ -113,8 +122,8 @@ A queue emits also some useful events:
 .on('progress', function(job, progress){
   // Job progress updated!
 })
-queue.on('completed', function(job){
-  // Job completed!
+queue.on('completed', function(job, result){
+  // Job completed with output result!
 })
 .on('failed', function(job, err){
   // Job failed with reason err!
@@ -275,9 +284,11 @@ __Arguments__
 Defines a processing function for the jobs placed into a given Queue.
 
 The callback is called everytime a job is placed in the queue and
-provides an instance of the job and a done callback to be called after the
-job has been completed. If done can be called providing an Error instance
-to signal that the job did not complete successfully.
+provides an instance of the job and a `done` callback to be called after the
+job has been completed. `done` can be called providing an Error instance
+to signal that the job did not complete successfully. It also accepts
+a result as second argument (e.g.: `done(null, result);`) which gets passed
+as a second argument to the "completed" event.
 
 You can specify a concurrency. Bull will then call you handler in parallel respecting this max number.
 
