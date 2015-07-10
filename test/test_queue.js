@@ -238,7 +238,9 @@ describe('Queue', function () {
       queue = buildQueue();
       queue.process(function (job) {
         expect(job.data.foo).to.be.equal('bar');
-        return Promise.delay(250);
+        return Promise.delay(250).then(function(){
+          return 'my data';
+        });
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
@@ -246,8 +248,9 @@ describe('Queue', function () {
         expect(job.data.foo).to.be('bar');
       }).catch(done);
 
-      queue.on('completed', function (job) {
+      queue.on('completed', function (job, data) {
         expect(job).to.be.ok();
+        expect(data).to.be.eql('my data');
         done();
       });
     });
