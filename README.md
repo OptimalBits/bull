@@ -448,12 +448,6 @@ __Arguments__
 <a name="close"/>                                                               
 #### Queue##close()                                                             
 Closes the underlying redis client. Use this if you are performing a graceful   
-__Arguments__                                                                   
-                                                                                
-```javascript                                                                   
-  returns {Promise} A promise that resolves when the redis client closes.       
-```                                                                             
-                                                                                
 shutdown.
 
 ```javascript
@@ -467,6 +461,12 @@ process.once('SIGTERM', function () {
     process.exit(1);
   });
 });
+```
+
+__Arguments__
+
+```javascript
+  returns {Promise} A promise that resolves when the redis client closes.
 ```
 
 ---------------------------------------
