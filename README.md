@@ -448,14 +448,27 @@ __Arguments__
 <a name="close"/>                                                               
 #### Queue##close()                                                             
 Closes the underlying redis client. Use this if you are performing a graceful   
-shutdown.                                                                       
-                                                                                
 __Arguments__                                                                   
                                                                                 
 ```javascript                                                                   
   returns {Promise} A promise that resolves when the redis client closes.       
 ```                                                                             
                                                                                 
+shutdown.
+
+```javascript
+var queue = require('bull')('some job', 6379, '127.0.0.1');
+process.once('SIGTERM', function () {
+  queue.close().then(function() {
+    console.log('Bull shutdown gracefully.');
+    process.exit(0);
+  }, function(err) {
+    console.log('Bull closed with error "' + err.message + '".');
+    process.exit(1);
+  });
+});
+```
+
 ---------------------------------------
 
 <a name="getJob"/>
