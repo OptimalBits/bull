@@ -36,8 +36,9 @@ describe('Queue', function () {
 
   describe('.close', function () {
     var testQueue;
-    beforeEach(function () {
+    beforeEach(function (done) {
       testQueue = new Queue('test');
+      testQueue.on('ready', done);
     });
 
     it('should call end on the client', function () {
@@ -54,16 +55,42 @@ describe('Queue', function () {
       });
     });
 
-    it('should resolve the promise when the streams for botch clients have emitted "close"', function () {
-      testQueue.close();
+    it('should call end on the event subscriber client', function () {
+      var endSpy = sandbox.spy(testQueue.eclient, 'end');
+      return testQueue.close().then(function () {
+        expect(endSpy.calledOnce).to.be(true);
+      });
+    });
 
-      expect(typeof testQueue.client.stream._events.close).to.be('function');
-      expect(typeof testQueue.bclient.stream._events.close).to.be('function');
+    it('should resolve the promise when each client has disconnected', function () {
+      expect(testQueue.client.connected).to.be(true);
+      expect(testQueue.bclient.connected).to.be(true);
+      expect(testQueue.eclient.connected).to.be(true);
+
+      testQueue.close().then(function () {
+        expect(testQueue.client.connected).to.be(false);
+        expect(testQueue.bclient.connected).to.be(false);
+        expect(testQueue.eclient.connected).to.be(false);
+      });
     });
 
     it('should return a promise', function () {
       var closePromise = testQueue.close().then(function () {
         expect(closePromise).to.be.a(Promise);
+      });
+    });
+
+    it('should be callable from within a job handler', function (done) {
+      this.timeout(6000);
+      testQueue.add({ foo: 'bar' }).then(function () {
+        testQueue.process(function (job, jobDone) {
+          expect(job.data.foo).to.be('bar');
+          testQueue.close().then(function (arg) {
+            expect(arg).to.be(false);
+            done();
+          });
+          jobDone();
+        });
       });
     });
   });
@@ -304,7 +331,7 @@ describe('Queue', function () {
       Promise.all(jobs).then(function () {
         queueStalled.process(function () {
           // instead of completing we just close the queue to simulate a crash.
-          queueStalled.close();
+          queueStalled.disconnect();
           setTimeout(function () {
             var queue2 = new Queue('test queue stalled', 6379, '127.0.0.1');
             var doneAfterFour = _.after(4, function () {
@@ -365,7 +392,7 @@ describe('Queue', function () {
         var processed = 0;
         var procFn = function () {
           // instead of completing we just close the queue to simulate a crash.
-          this.close();
+          this.disconnect();
 
           processed++;
           if(processed === stalledQueues.length) {
@@ -849,7 +876,7 @@ describe('Queue', function () {
           queue.process(fn);
         }).delay(20).then(function () {
           //We simulate a restart
-          return queue.close().then(function () {
+          return queue.disconnect().then(function () {
             return Promise.delay(100).then(function () {
               queue = new Queue(QUEUE_NAME);
               queue.process(fn);
