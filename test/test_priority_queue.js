@@ -57,16 +57,34 @@ describe('Priority queue', function(){
       });
     });
 
-    it('should be callable from within a job handler', function (done) {
-      this.timeout(6000);
-      testQueue.add({ foo: 'bar' }).then(function () {
+    describe('should be callable from within', function () {
+      it('a job handler that takes a callback', function (done) {
+        this.timeout(6000);
+
         testQueue.process(function (job, jobDone) {
           expect(job.data.foo).to.be('bar');
-          testQueue.close().then(function (args) {
-            expect(args).to.eql([ false, false, false, false, false ]);
-            done();
-          });
+          testQueue.close().then(function () { done(); });
           jobDone();
+        });
+
+        testQueue.add({ foo: 'bar' }).then(function (job) {
+          expect(job.jobId).to.be.ok();
+          expect(job.data.foo).to.be('bar');
+        });
+      });
+
+      it('a job handler that returns a promise', function (done) {
+        this.timeout(6000);
+
+        testQueue.process(function (job) {
+          expect(job.data.foo).to.be('bar');
+          testQueue.close().then(function () { done(); });
+          return Promise.resolve();
+        });
+
+        testQueue.add({ foo: 'bar' }).then(function (job) {
+          expect(job.jobId).to.be.ok();
+          expect(job.data.foo).to.be('bar');
         });
       });
     });

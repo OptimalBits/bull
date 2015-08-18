@@ -38,7 +38,7 @@ describe('Queue', function () {
     var testQueue;
     beforeEach(function (done) {
       testQueue = new Queue('test');
-      testQueue.on('ready', done);
+      testQueue.once('ready', done);
     });
 
     it('should call end on the client', function () {
@@ -67,7 +67,7 @@ describe('Queue', function () {
       expect(testQueue.bclient.connected).to.be(true);
       expect(testQueue.eclient.connected).to.be(true);
 
-      testQueue.close().then(function () {
+      return testQueue.close().then(function () {
         expect(testQueue.client.connected).to.be(false);
         expect(testQueue.bclient.connected).to.be(false);
         expect(testQueue.eclient.connected).to.be(false);
@@ -78,18 +78,41 @@ describe('Queue', function () {
       var closePromise = testQueue.close().then(function () {
         expect(closePromise).to.be.a(Promise);
       });
+      return closePromise;
     });
 
-    it('should be callable from within a job handler', function (done) {
-      this.timeout(6000);
-      testQueue.add({ foo: 'bar' }).then(function () {
-        testQueue.process(function (job, jobDone) {
+    describe('should be callable from within', function () {
+      it('a job handler that takes a callback', function (done) {
+        this.timeout(6000);
+
+        var closeQueue = new Queue('close from handler');
+
+        closeQueue.process(function (job, jobDone) {
           expect(job.data.foo).to.be('bar');
-          testQueue.close().then(function (arg) {
-            expect(arg).to.be(false);
-            done();
-          });
+          closeQueue.close().then(function () { done(); });
           jobDone();
+        });
+
+        closeQueue.add({ foo: 'bar' }).then(function (job) {
+          expect(job.jobId).to.be.ok();
+          expect(job.data.foo).to.be('bar');
+        });
+      });
+
+      it('a job handler that returns a promise', function (done) {
+        this.timeout(6000);
+
+        var closeQueue = new Queue('close from handler');
+
+        closeQueue.process(function (job) {
+          expect(job.data.foo).to.be('bar');
+          closeQueue.close().then(function () { done(); });
+          return Promise.resolve();
+        });
+
+        closeQueue.add({ foo: 'bar' }).then(function (job) {
+          expect(job.jobId).to.be.ok();
+          expect(job.data.foo).to.be('bar');
         });
       });
     });

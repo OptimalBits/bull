@@ -454,11 +454,11 @@ shutdown.
 var Queue = require('bull');
 var queue = Queue('example');
 
-var after100Jobs = _.after(100, function () {
+var after100 = _.after(100, function () {
   queue.close().then(function () { console.log('done') })
 });
 
-queue.on('completed', after100Jobs);
+queue.on('completed', after100);
 ```
 
 `close` can be called from anywhere, with one caveat: if called

@@ -10,6 +10,7 @@ gulp.task('lint', function (){
   return gulp.src([
     './lib/job.js',
     './lib/queue.js',
+    './lib/timer-manager.js',
     './test/**'
     ])
     .pipe(eslint({
@@ -31,6 +32,7 @@ gulp.task('lint', function (){
           'describe': true,
           'it': true,
           'setTimeout': true,
+          'after': true,
           'afterEach': true,
           'beforeEach': true,
           'before': true
