@@ -447,19 +447,47 @@ __Arguments__
 
 <a name="close"/>                                                               
 #### Queue##close()                                                             
-Closes the underlying redis client. Use this if you are performing a graceful   
+Closes the underlying redis client. Use this to perform a graceful
 shutdown.
 
 ```javascript
-var queue = require('bull')('some job', 6379, '127.0.0.1');
-process.once('SIGTERM', function () {
-  queue.close().then(function() {
-    console.log('Bull shutdown gracefully.');
-    process.exit(0);
-  }, function(err) {
-    console.log('Bull closed with error "' + err.message + '".');
-    process.exit(1);
-  });
+var Queue = require('bull');
+var queue = Queue('example');
+
+var after100 = _.after(100, function () {
+  queue.close().then(function () { console.log('done') })
+});
+
+queue.on('completed', after100);
+```
+
+`close` can be called from anywhere, with one caveat: if called
+from within a job handler the queue won't close until *after*
+the job has been processed, so the following won't work:
+
+```javascript
+queue.process(function (job, jobDone) {
+  handle(job);
+  queue.close().then(jobDone);
+});
+```
+
+Instead, do this:
+
+```javascript
+queue.process(function (job, jobDone) {
+  handle(job);
+  queue.close();
+  jobDone();
+});
+```
+
+Or this:
+
+```javascript
+queue.process(function (job) {
+  queue.close();
+  return handle(job).then(...);
 });
 ```
 

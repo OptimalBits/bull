@@ -56,6 +56,38 @@ describe('Priority queue', function(){
         expect(closePromise).to.be.a(Promise);
       });
     });
+
+    describe('should be callable from within', function () {
+      it('a job handler that takes a callback', function (done) {
+        this.timeout(6000);
+
+        testQueue.process(function (job, jobDone) {
+          expect(job.data.foo).to.be('bar');
+          testQueue.close().then(function () { done(); });
+          jobDone();
+        });
+
+        testQueue.add({ foo: 'bar' }).then(function (job) {
+          expect(job.jobId).to.be.ok();
+          expect(job.data.foo).to.be('bar');
+        });
+      });
+
+      it('a job handler that returns a promise', function (done) {
+        this.timeout(6000);
+
+        testQueue.process(function (job) {
+          expect(job.data.foo).to.be('bar');
+          testQueue.close().then(function () { done(); });
+          return Promise.resolve();
+        });
+
+        testQueue.add({ foo: 'bar' }).then(function (job) {
+          expect(job.jobId).to.be.ok();
+          expect(job.data.foo).to.be('bar');
+        });
+      });
+    });
   });
 
   it('creates a queue with dots in its name', function(){
@@ -139,8 +171,8 @@ describe('Priority queue', function(){
     queueStalled.empty().then(function() {
       Promise.all(jobs).then(function(){
         return queueStalled.process(function() {
-          // instead of completing we just close the queue to simulate a crash.
-          return queueStalled.close().then(function() {
+          // instead of completing we just force-close the queue to simulate a crash.
+          return queueStalled.disconnect().then(function() {
             var queue2 = buildQueue('test queue stalled');
             var doneAfterFour = _.after(4, function () {
               done();
@@ -203,8 +235,8 @@ describe('Priority queue', function(){
     Promise.all(jobs).then(function(){
       var processed = 0;
       var procFn = function(){
-        // instead of completing we just close the queue to simulate a crash.
-        this.close().then(function() {
+        // instead of completing we just force-close the queue to simulate a crash.
+        this.disconnect().then(function() {
           processed++;
           if(processed === stalledQueues.length){
             setTimeout(function(){
