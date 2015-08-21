@@ -899,7 +899,7 @@ describe('Queue', function () {
           queue.process(fn);
         }).delay(20).then(function () {
           //We simulate a restart
-          return queue.disconnect().then(function () {
+          return queue.close().then(function () {
             return Promise.delay(100).then(function () {
               queue = new Queue(QUEUE_NAME);
               queue.process(fn);
