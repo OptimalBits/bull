@@ -15,7 +15,7 @@ var STD_QUEUE_NAME = 'test queue';
 
 function buildQueue(name) {
   var qName = name || STD_QUEUE_NAME;
-  return new Queue(qName, 6379, '127.0.0.1');
+  return new Queue(qName);
 }
 
 function cleanupQueue(queue){

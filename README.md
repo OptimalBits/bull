@@ -200,7 +200,7 @@ var
   cluster = require('cluster');
 
 var numWorkers = 8;
-var queue = Queue("test concurrent queue", 6379, '127.0.0.1');
+var queue = Queue("test concurrent queue", redisConfig);
 
 if(cluster.isMaster){
   for (var i = 0; i < numWorkers; i++) {
