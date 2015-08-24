@@ -38,9 +38,29 @@ Quick Guide
 ```javascript
 var Queue = require('bull');
 
-var videoQueue = Queue('video transcoding', 6379, '127.0.0.1');
-var audioQueue = Queue('audio transcoding', 6379, '127.0.0.1');
-var imageQueue = Queue('image transcoding', 6379, '127.0.0.1');
+var redisConfig = {
+    name: 'mymaster',
+    connectTimeout: 5000,
+    db: 0,
+    sentinels: [
+        {
+            host: '10.0.0.1',
+            port: 26379
+        },
+        {
+            host: '10.0.0.2',
+            port: 26380
+        },
+        {
+            host: '10.0.0.3',
+            port: 26380
+        }
+    ]
+};
+
+var videoQueue = Queue('video transcoding', redisConfig);
+var audioQueue = Queue('audio transcoding', redisConfig);
+var imageQueue = Queue('image transcoding', redisConfig);
 
 videoQueue.process(function(job, done){
 
@@ -296,6 +316,7 @@ __Arguments__
             {
                 name: 'mymaster',
                 connectTimeout: 5000,
+                db: 0,
                 sentinels: [
                     {
                         host: '10.0.0.1',
