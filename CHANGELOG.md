@@ -1,3 +1,8 @@
+v0.5.0
+======
+
+- Refactored to support [ioredis](https://github.com/luin/ioredis). **This breaks the original API**.
+
 v0.4.0
 ======
 - added a Queue##clean method

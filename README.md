@@ -310,7 +310,7 @@ __Arguments__
 
 ```javascript
     queueName {String} A unique name for this Queue.
-    redisConfig {Object} see https://github.com/luin/ioredis
+    redisConfig {Object} see [https://github.com/luin/ioredis](https://github.com/luin/ioredis)
 
         Example
             {
