@@ -137,7 +137,7 @@ describe('Queue', function () {
     });
 
     it('creates a queue using the supplied redis DB', function (done) {
-      queue = new Queue('custom', { host: '127.0.0.1', port: 6379, db: 1 });
+      queue = new Queue('custom', { db: 1 });
 
       queue.once('ready', function () {
         expect(queue.client.connectionOption.host).to.be('127.0.0.1');
@@ -586,8 +586,7 @@ describe('Queue', function () {
 
       var client = new Redis({
         host: '127.0.0.1',
-        port: 6379,
-        db: 0
+        port: 6379
       });
 
       client.select(0);
@@ -785,8 +784,7 @@ describe('Queue', function () {
   it('should publish a message when a new message is added to the queue', function (done) {
     var client = new Redis({
       host: '127.0.0.1',
-      port: 6379,
-      db: 0
+      port: 6379
     });
 
     client.select(0);
@@ -821,8 +819,7 @@ describe('Queue', function () {
       queue = new Queue('delayed queue simple');
       var client = new Redis({
         host: '127.0.0.1',
-        port: 6379,
-        db: 0
+        port: 6379
       });
 
       var timestamp = Date.now();
