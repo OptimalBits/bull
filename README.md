@@ -38,9 +38,29 @@ Quick Guide
 ```javascript
 var Queue = require('bull');
 
-var videoQueue = Queue('video transcoding', 6379, '127.0.0.1');
-var audioQueue = Queue('audio transcoding', 6379, '127.0.0.1');
-var imageQueue = Queue('image transcoding', 6379, '127.0.0.1');
+var redisConfig = {
+    name: 'mymaster',
+    connectTimeout: 5000,
+    db: 0,
+    sentinels: [
+        {
+            host: '10.0.0.1',
+            port: 26379
+        },
+        {
+            host: '10.0.0.2',
+            port: 26380
+        },
+        {
+            host: '10.0.0.3',
+            port: 26380
+        }
+    ]
+};
+
+var videoQueue = Queue('video transcoding', redisConfig);
+var audioQueue = Queue('audio transcoding', redisConfig);
+var imageQueue = Queue('image transcoding', redisConfig);
 
 videoQueue.process(function(job, done){
 
@@ -55,7 +75,7 @@ videoQueue.process(function(job, done){
 
   // or give a error if error
   done(Error('error transcoding'));
-  
+
   // or pass it a result
   done(null, { framerate: 29.5 /* etc... */ });
 
@@ -72,7 +92,7 @@ audioQueue.process(function(job, done){
 
   // or give a error if error
   done(Error('error transcoding'));
-  
+
   // or pass it a result
   done(null, { samplerate: 48000 /* etc... */ });
 
@@ -89,7 +109,7 @@ imageQueue.process(function(job, done){
 
   // or give a error if error
   done(Error('error transcoding'));
-  
+
   // or pass it a result
   done(null, { width: 1280, height: 720 /* etc... */ });
 
@@ -112,7 +132,7 @@ videoQueue.process(function(job){ // don't forget to remove the done callback!
   // Handles promise rejection
   return Promise.reject(new Error('error transcoding'));
 
-  // Passes the value the promise is resolved with to the "completed" event 
+  // Passes the value the promise is resolved with to the "completed" event
   return Promise.resolve({ framerate: 29.5 /* etc... */ });
 
   // If the job throws an unhandled exception it is also handled correctly
@@ -180,7 +200,7 @@ var
   cluster = require('cluster');
 
 var numWorkers = 8;
-var queue = Queue("test concurrent queue", 6379, '127.0.0.1');
+var queue = Queue("test concurrent queue", redisConfig);
 
 if(cluster.isMaster){
   for (var i = 0; i < numWorkers; i++) {
@@ -280,7 +300,7 @@ listened by some other service that stores the results in a database.
 ## Reference
 
 <a name="queue"/>
-###Queue(queueName, redisPort, redisHost, [redisOpts])
+###Queue(queueName, redisConfig)
 
 This is the Queue constructor. It creates a new Queue that is persisted in
 Redis. Everytime the same queue is instantiated it tries to process all the
@@ -290,9 +310,28 @@ __Arguments__
 
 ```javascript
     queueName {String} A unique name for this Queue.
-    redisPort {Number} A port where redis server is running.
-    redisHost {String} A host specified as IP or domain where redis is running.
-    redisOptions {Object} Options to pass to the redis client. https://github.com/mranney/node_redis
+    redisConfig {Object} see [https://github.com/luin/ioredis](https://github.com/luin/ioredis)
+
+        Example
+            {
+                name: 'mymaster',
+                connectTimeout: 5000,
+                db: 0,
+                sentinels: [
+                    {
+                        host: '10.0.0.1',
+                        port: 26379
+                    },
+                    {
+                        host: '10.0.0.2',
+                        port: 26380
+                    },
+                    {
+                        host: '10.0.0.3',
+                        port: 26380
+                    }
+                ]
+            }
 ```
 
 ---------------------------------------
@@ -445,8 +484,8 @@ __Arguments__
 
 ---------------------------------------
 
-<a name="close"/>                                                               
-#### Queue##close()                                                             
+<a name="close"/>
+#### Queue##close()
 Closes the underlying redis client. Use this to perform a graceful
 shutdown.
 
@@ -549,7 +588,7 @@ __Events__
 The cleaner emits the `cleaned` event anytime the queue is cleaned.
 
 ```javascript
-  queue.on('cleaned', function (jobs, type) {}); 
+  queue.on('cleaned', function (jobs, type) {});
 
   jobs {Array} An array of jobs that have been cleaned.
   type {String} The type of job cleaned. Options are completed, waiting, active,
@@ -560,7 +599,7 @@ The cleaner emits the `cleaned` event anytime the queue is cleaned.
 
 
 <a name="priorityQueue"/>
-###PriorityQueue(queueName, redisPort, redisHost, [redisOpts])
+###PriorityQueue(queueName, redisConfig)
 
 This is the Queue constructor of priority queue. It works same a normal queue, with same function and parameters.
 The only difference is that the Queue#add() allow an options opts.priority that could take

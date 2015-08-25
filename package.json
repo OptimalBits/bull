@@ -1,6 +1,6 @@
 {
   "name": "bull",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "description": "Job manager",
   "main": "index.js",
   "repository": {
@@ -20,7 +20,7 @@
     "bluebird": "^2.9.30",
     "lodash": "^3.9.3",
     "node-uuid": "^1.4.3",
-    "redis": "^0.12.1",
+    "ioredis": "1.7.5",
     "semver": "^4.2.0"
   },
   "devDependencies": {

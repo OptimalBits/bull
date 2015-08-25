@@ -5,7 +5,7 @@
 var Queue = require('../');
 var expect = require('expect.js');
 var Promise = require('bluebird');
-var redis = require('redis');
+var Redis = require('ioredis');
 var sinon = require('sinon');
 var _ = require('lodash');
 var uuid = require('node-uuid');
@@ -14,7 +14,7 @@ var STD_QUEUE_NAME = 'test queue';
 
 function buildQueue(name) {
   var qName = name || STD_QUEUE_NAME;
-  return new Queue(qName, 6379, '127.0.0.1');
+  return new Queue(qName);
 }
 
 function cleanupQueue(queue) {
@@ -137,7 +137,7 @@ describe('Queue', function () {
     });
 
     it('creates a queue using the supplied redis DB', function (done) {
-      queue = new Queue('custom', { redis: { DB: 1 } });
+      queue = new Queue('custom', { db: 1 });
 
       queue.once('ready', function () {
         expect(queue.client.connectionOption.host).to.be('127.0.0.1');
@@ -154,7 +154,7 @@ describe('Queue', function () {
     });
 
     it('creates a queue using custom the supplied redis host', function (done) {
-      queue = new Queue('custom', { redis: { host: 'localhost' } });
+      queue = new Queue('custom', { host: 'localhost' });
 
       queue.once('ready', function () {
         expect(queue.client.connectionOption.host).to.be('localhost');
@@ -489,7 +489,11 @@ describe('Queue', function () {
       queue.process(function (job, jobDone) {
         expect(job.data.foo).to.be.equal('bar');
         jobDone();
-        var client = redis.createClient();
+        var client = new Redis({
+          host: '127.0.0.1',
+          port: 6379
+        });
+
         client.srem(queue.toKey('completed'), 1);
         client.lpush(queue.toKey('active'), 1);
       });
@@ -579,7 +583,11 @@ describe('Queue', function () {
       var failedOnce = false;
 
       var retryQueue = buildQueue('retry-test-queue');
-      var client = redis.createClient(6379, '127.0.0.1', {});
+
+      var client = new Redis({
+        host: '127.0.0.1',
+        port: 6379
+      });
 
       client.select(0);
 
@@ -774,7 +782,11 @@ describe('Queue', function () {
   });
 
   it('should publish a message when a new message is added to the queue', function (done) {
-    var client = redis.createClient(6379, '127.0.0.1', {});
+    var client = new Redis({
+      host: '127.0.0.1',
+      port: 6379
+    });
+
     client.select(0);
     queue = new Queue('test pub sub');
     client.on('ready', function () {
@@ -805,7 +817,11 @@ describe('Queue', function () {
     it('should process a delayed job only after delayed time', function (done) {
       var delay = 500;
       queue = new Queue('delayed queue simple');
-      var client = redis.createClient(6379, '127.0.0.1', {});
+      var client = new Redis({
+        host: '127.0.0.1',
+        port: 6379
+      });
+
       var timestamp = Date.now();
       var publishHappened = false;
       client.on('ready', function () {
