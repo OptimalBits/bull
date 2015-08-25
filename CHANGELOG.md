@@ -1,7 +1,46 @@
-v0.5.0
+v1.0.0
 ======
 
 - Refactored to support [ioredis](https://github.com/luin/ioredis). **This breaks the original API**.
+
+Non sentinel
+
+````
+var redisConfig = {
+    host: '127.0.0.1',
+    port: 6379,
+    connectTimeout: 5000,
+    db: 0
+};
+
+var videoQueue = Queue('video transcoding', redisConfig);
+````
+
+Sentinel support
+
+````
+var redisConfig = {
+    name: 'mymaster',
+    connectTimeout: 5000,
+    db: 0,
+    sentinels: [
+        {
+            host: '10.0.0.1',
+            port: 26379
+        },
+        {
+            host: '10.0.0.2',
+            port: 26380
+        },
+        {
+            host: '10.0.0.3',
+            port: 26380
+        }
+    ]
+};
+
+var videoQueue = Queue('video transcoding', redisConfig);
+````
 
 v0.4.0
 ======
