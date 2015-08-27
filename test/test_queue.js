@@ -286,7 +286,7 @@ describe('Queue', function () {
 
     it('process a job that returns a promise', function (done) {
       queue = buildQueue();
-      queue.process(function (job) {
+      queue.process(function (job, jobDone) {
         expect(job.data.foo).to.be.equal('bar');
         return Promise.delay(250).then(function(){
           return 'my data';
