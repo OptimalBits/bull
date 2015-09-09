@@ -20,7 +20,6 @@
     "bluebird": "^2.9.30",
     "lodash": "^3.9.3",
     "node-uuid": "^1.4.3",
-    "redis": "^0.12.1",
     "semver": "^4.2.0"
   },
   "devDependencies": {
@@ -28,7 +27,11 @@
     "gulp": "^3.8.11",
     "gulp-eslint": "^0.13.2",
     "mocha": "^2.2.5",
+    "redis": "^1.0.0",
     "sinon": "^1.14.1"
+  },
+  "peerDependencies": {
+    "redis": ">= 0.12.1 < 2"
   },
   "scripts": {
     "test": "gulp && mocha test/* --reporter spec",
