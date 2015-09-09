@@ -31,6 +31,11 @@ Install:
 
     npm install bull
 
+The [redis npm module](https://www.npmjs.com/package/redis) is a [peer dependency](https://blog.domenic.me/peer-dependencies/)
+of Bull, so it will need to be installed if it hasn't been already:
+
+    npm install redis
+
 Note that you need a redis version higher or equal than 2.8.11 for bull to work properly.
 
 Quick Guide
