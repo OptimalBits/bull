@@ -1136,6 +1136,7 @@ describe('Queue', function () {
     beforeEach(function () {
       queue = buildQueue('cleaner' + uuid());
     });
+
     it('should reject the cleaner with no grace', function(done){
       queue.clean().then(function () {
         done(new Error('Promise should not resolve'));
@@ -1144,6 +1145,7 @@ describe('Queue', function () {
         done();
       });
     });
+
     it('should reject the cleaner an unknown type', function (done) {
       queue.clean(0, 'bad').then(function () {
         done(new Error('Promise should not resolve'));
@@ -1152,6 +1154,7 @@ describe('Queue', function () {
         done();
       });
     });
+
     it('should clean an empty queue', function (done) {
       queue.clean(0);
       queue.on('error', function (err) {
@@ -1163,6 +1166,7 @@ describe('Queue', function () {
         done();
       });
     });
+
     it('should clean two jobs from the queue', function (done) {
       queue.add({some: 'data'});
       queue.add({some: 'data'});
@@ -1178,6 +1182,7 @@ describe('Queue', function () {
         done(err);
       });
     });
+
     it('should only remove a job outside of the grace period', function (done) {
       queue.process(function (job, jobDone) {
         jobDone();
@@ -1196,6 +1201,7 @@ describe('Queue', function () {
         done();
       });
     });
+
     it('should clean all failed jobs', function (done) {
       queue.add({some: 'data'});
       queue.add({some: 'data'});
@@ -1206,6 +1212,33 @@ describe('Queue', function () {
         return queue.clean(0, 'failed');
       }).then(function (jobs) {
         expect(jobs.length).to.be(2);
+        return queue.count();
+      }).then(function(len) {
+        expect(len).to.be(0);
+        done();
+      });
+    });
+
+    it('should clean a job without a timestamp', function (done) {
+      var client = redis.createClient(6379, '127.0.0.1', {});
+
+      queue.add({some: 'data'});
+      queue.add({some: 'data'});
+      queue.process(function (job, jobDone) {
+        jobDone(new Error('It failed'));
+      });
+
+      Promise.delay(100).then(function () {
+        return new Promise(function(resolve) {
+          client.hdel('bull:' + queue.name + ':1', 'timestamp', resolve);
+        });
+      }).then(function() {
+        return queue.clean(0, 'failed');
+      }).then(function (jobs) {
+        expect(jobs.length).to.be(2);
+        return queue.getFailed();
+      }).then(function(failed) {
+        expect(failed.length).to.be(0);
         done();
       });
     });
