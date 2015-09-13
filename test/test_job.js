@@ -5,6 +5,7 @@
 var Job = require('../lib/job');
 var Queue = require('../lib/queue');
 var expect = require('expect.js');
+var uuid = require('node-uuid');
 
 
 describe('Job', function(){
@@ -195,6 +196,87 @@ describe('Job', function(){
           });
         });
       });
+    });
+  });
+
+
+  describe('.promote', function() {
+    var promoteQueue;
+
+    beforeEach(function(done){
+      promoteQueue = new Queue('promotequeue' + uuid(), 6379, '127.0.0.1');
+      promoteQueue.once('ready', function() {
+        promoteQueue.client.keys(promoteQueue.toKey('*'), function(err, keys){
+          if(keys.length){
+            promoteQueue.client.del(keys, function(err2){
+              done(err2);
+            });
+          }else{
+            done(err);
+          }
+        });
+      });
+    });
+
+    it('promotes a delayed job to the waiting queue immediately', function(cb) {
+      var delayTime = 5000;
+      var firstJob;
+
+      promoteQueue.client.once('message', function (channel, message) {
+        expect(+message).to.be.a('number');
+
+        expect(new Date(+message)).to.be.below(new Date(+new Date() + delayTime + 1));
+        expect(new Date(+message)).to.be.above(new Date(+new Date() - 50));
+
+        firstJob.promote();
+      });
+
+      promoteQueue.client.subscribe(promoteQueue.toKey('delayed'));
+
+      promoteQueue.process(function (job, jobDone) {
+        jobDone();
+        cb();
+      });
+
+      promoteQueue.add({foo: 'bar'}, {delay: delayTime}).then(function(_job){
+        firstJob = _job;
+      });
+    });
+
+
+    it('delayed jobs scheduled after a promoted job should still execute', function(cb) {
+      var delayTime = 1000;
+      var secondJobOffset = 100;
+      var jobsPromoted = 0;
+      var jobsDone = 0;
+      var firstJob;
+
+      promoteQueue.client.once('message', function (channel, message) {
+        expect(+message).to.be.a('number');
+
+        expect(new Date(+message)).to.be.below(new Date(+new Date() + delayTime + 1));
+        expect(new Date(+message)).to.be.above(new Date(+new Date() - 50));
+
+        jobsPromoted += 1;
+        expect(jobsPromoted).to.be(1);
+        firstJob.promote();
+      });
+
+      promoteQueue.client.subscribe(promoteQueue.toKey('delayed'));
+
+      promoteQueue.process(function (job, jobDone) {
+        jobsDone++;
+        jobDone();
+        if(jobsDone >= 2){
+          cb();
+        }
+      });
+
+      promoteQueue.add({foo: 'bar'}, {delay: delayTime}).then(function(_job) {
+        firstJob = _job;
+      });
+
+      promoteQueue.add({foo: 'bar2'}, {delay: delayTime + secondJobOffset});
     });
   });
 
