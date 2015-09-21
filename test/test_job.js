@@ -177,10 +177,11 @@ describe('Job', function(){
         return job.isCompleted().then(function(isCompleted){
           expect(isCompleted).to.be(false);
         }).then(function(){
-          return job.moveToCompleted();
+          return job.moveToCompleted('succeeded');
         }).then(function(){
           return job.isCompleted().then(function(isCompleted){
             expect(isCompleted).to.be(true);
+            expect(job.returnvalue).to.be('succeeded');
           });
         });
       });
