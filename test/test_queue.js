@@ -280,7 +280,31 @@ describe('Queue', function () {
       queue.on('completed', function (job, data) {
         expect(job).to.be.ok();
         expect(data).to.be.eql(37);
+        expect(job.returnvalue).to.be.eql(37);
         done();
+      });
+    });
+
+    it('process a job that returns data in the process handler and the returnvalue gets stored in the database', function (done) {
+      queue = buildQueue();
+      queue.process(function (job, jobDone) {
+        expect(job.data.foo).to.be.equal('bar');
+        jobDone(null, 37);
+      });
+
+      queue.add({ foo: 'bar' }).then(function (job) {
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+      }).catch(done);
+
+      queue.on('completed', function (job, data) {
+        expect(job).to.be.ok();
+        expect(data).to.be.eql(37);
+        expect(job.returnvalue).to.be.eql(37);
+        queue.client.hgetAsync(queue.toKey(job.jobId), 'returnvalue').then(function (retval) {
+          expect(JSON.parse(retval)).to.be.eql(37);
+          done();
+        });
       });
     });
 
