@@ -3,6 +3,9 @@ Bull Job Manager
 
 [![Join the chat at https://gitter.im/OptimalBits/bull](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/OptimalBits/bull?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+[![BuildStatus](https://secure.travis-ci.org/OptimalBits/bull.png?branch=master)](http://travis-ci.org/OptimalBits/bull)
+[![NPM version](https://badge.fury.io/js/bull.svg)](http://badge.fury.io/js/bull)
+
 ![bull](http://files.softicons.com/download/animal-icons/animal-icons-by-martin-berube/png/128/bull.png)
 
 A lightweight, robust and fast job processing queue.
@@ -11,8 +14,7 @@ Carefully written for rock solid stability and atomicity.
 It uses redis for persistence, so the queue is not lost if the server goes
 down for any reason.
 
-[![BuildStatus](https://secure.travis-ci.org/OptimalBits/bull.png?branch=master)](http://travis-ci.org/OptimalBits/bull)
-[![NPM version](https://badge.fury.io/js/bull.svg)](http://badge.fury.io/js/bull)
+
 
 Follow [manast](http://twitter.com/manast) for news and updates regarding this library.
 
