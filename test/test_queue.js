@@ -396,6 +396,8 @@ describe('Queue', function () {
     });
 
     it('processes several stalled jobs when starting several queues', function (done) {
+      this.timeout(5000);
+
       var NUM_QUEUES = 10;
       var NUM_JOBS_PER_QUEUE = 20;
       var stalledQueues = [];
