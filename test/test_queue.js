@@ -908,7 +908,7 @@ describe('Queue', function () {
         });
     });
 
-    it.skip('should process delayed jobs with exact same timestamps in correct order (FIFO)', function (done) {
+    it('should process delayed jobs with exact same timestamps in correct order (FIFO)', function (done) {
       this.timeout(5000);
 
       var client = redis.createClient(6379, '127.0.0.1', {});
@@ -970,6 +970,7 @@ describe('Queue', function () {
           client.hsetAsync('bull:' + queue.name + ':11', 'delay', 2000),
           client.hsetAsync('bull:' + queue.name + ':12', 'delay', 2000)
         ).then(function () {
+
           queue.process(fn);
         });
       });
