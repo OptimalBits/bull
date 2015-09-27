@@ -69,14 +69,14 @@ describe('Queue', function () {
     });
 
     it('should resolve the promise when each client has disconnected', function () {
-      expect(testQueue.client.connected).to.be(true);
-      expect(testQueue.bclient.connected).to.be(true);
-      expect(testQueue.eclient.connected).to.be(true);
+      expect(testQueue.client.status).to.be('ready');
+      expect(testQueue.bclient.status).to.be('ready');
+      expect(testQueue.eclient.status).to.be('ready');
 
       return testQueue.close().then(function () {
-        expect(testQueue.client.connected).to.be(false);
-        expect(testQueue.bclient.connected).to.be(false);
-        expect(testQueue.eclient.connected).to.be(false);
+        expect(testQueue.client.status).to.be('end');
+        expect(testQueue.bclient.status).to.be('end');
+        expect(testQueue.eclient.status).to.be('end');
       });
     });
 
@@ -138,14 +138,14 @@ describe('Queue', function () {
       var queue = new Queue('standard');
 
       queue.once('ready', function () {
-        expect(queue.client.connection_options.host).to.be('127.0.0.1');
-        expect(queue.bclient.connection_options.host).to.be('127.0.0.1');
+        expect(queue.client.options.host).to.be('127.0.0.1');
+        expect(queue.bclient.options.host).to.be('127.0.0.1');
 
-        expect(queue.client.connection_options.port).to.be(6379);
-        expect(queue.bclient.connection_options.port).to.be(6379);
+        expect(queue.client.options.port).to.be(6379);
+        expect(queue.bclient.options.port).to.be(6379);
 
-        expect(queue.client.selected_db).to.be(0);
-        expect(queue.bclient.selected_db).to.be(0);
+        expect(queue.client.options.db).to.be(0);
+        expect(queue.bclient.options.db).to.be(0);
 
         queue.close().then(done);
       });
@@ -155,14 +155,14 @@ describe('Queue', function () {
       var queue = new Queue('connstring', 'redis://127.0.0.1:6379');
 
       queue.once('ready', function () {
-        expect(queue.client.connection_options.host).to.be('127.0.0.1');
-        expect(queue.bclient.connection_options.host).to.be('127.0.0.1');
+        expect(queue.client.options.host).to.be('127.0.0.1');
+        expect(queue.bclient.options.host).to.be('127.0.0.1');
 
-        expect(queue.client.connection_options.port).to.be(6379);
-        expect(queue.bclient.connection_options.port).to.be(6379);
+        expect(queue.client.options.port).to.be(6379);
+        expect(queue.bclient.options.port).to.be(6379);
 
-        expect(queue.client.selected_db).to.be(0);
-        expect(queue.bclient.selected_db).to.be(0);
+        expect(queue.client.options.db).to.be(0);
+        expect(queue.bclient.options.db).to.be(0);
 
         queue.close().then(done);
 
@@ -173,14 +173,14 @@ describe('Queue', function () {
       var queue = new Queue('custom', { redis: { DB: 1 } });
 
       queue.once('ready', function () {
-        expect(queue.client.connection_options.host).to.be('127.0.0.1');
-        expect(queue.bclient.connection_options.host).to.be('127.0.0.1');
+        expect(queue.client.options.host).to.be('127.0.0.1');
+        expect(queue.bclient.options.host).to.be('127.0.0.1');
 
-        expect(queue.client.connection_options.port).to.be(6379);
-        expect(queue.bclient.connection_options.port).to.be(6379);
+        expect(queue.client.options.port).to.be(6379);
+        expect(queue.bclient.options.port).to.be(6379);
 
-        expect(queue.client.selected_db).to.be(1);
-        expect(queue.bclient.selected_db).to.be(1);
+        expect(queue.client.options.db).to.be(1);
+        expect(queue.bclient.options.db).to.be(1);
 
         queue.close().then(done);
       });
@@ -190,11 +190,11 @@ describe('Queue', function () {
       var queue = new Queue('custom', { redis: { host: 'localhost' } });
 
       queue.once('ready', function () {
-        expect(queue.client.connection_options.host).to.be('localhost');
-        expect(queue.bclient.connection_options.host).to.be('localhost');
+        expect(queue.client.options.host).to.be('localhost');
+        expect(queue.bclient.options.host).to.be('localhost');
 
-        expect(queue.client.selected_db).to.be(0);
-        expect(queue.bclient.selected_db).to.be(0);
+        expect(queue.client.options.db).to.be(0);
+        expect(queue.bclient.options.db).to.be(0);
 
         queue.close().then(done);
       });
