@@ -9,24 +9,38 @@ var Redis = require('ioredis');
 var Promise = require('bluebird');
 var uuid = require('node-uuid');
 
+var prefix = 'bull-test-job';
+
+function buildQueue(name, config){
+  config = config || {};
+  config.prefix = prefix;
+  return new Queue(name, config);
+}
+
+function removeTestKeys(queue, done){
+  queue.client.keysAsync(prefix + ':*').then(function(keys){
+    if (keys.length){
+      return queue.client.delAsync(keys);
+    }
+  }).then(function() {
+    done();
+  }).catch(done);
+}
+
 describe('Job', function(){
   var queue;
 
   before(function(done){
-    queue = new Queue('test');
-    queue.client.keys(queue.toKey('*'), function(err, keys){
-      if(keys.length){
-        queue.client.del(keys, function(err2){
-          done(err2);
-        });
-      }else{
-        done(err);
-      }
-    });
+    queue = buildQueue('test');
+    removeTestKeys(queue, done);
   });
 
   beforeEach(function() {
-    queue = new Queue('test-' + uuid());
+    queue = buildQueue('test-' + uuid());
+  });
+
+  after(function(done) {
+    removeTestKeys(queue, done);
   });
 
   describe('.create', function () {
@@ -202,9 +216,10 @@ describe('Job', function(){
         });
       });
     });
+  });
 
+  describe('.getState', function() {
     it('get job status', function() {
-      var client = Promise.promisifyAll(new Redis());
       return Job.create(queue, 100, {foo: 'baz'}).then(function(job) {
         return job.isStuck().then(function(yes) {
           expect(yes).to.be(true);
@@ -219,8 +234,8 @@ describe('Job', function(){
           return job.getState();
         }).then(function(state) {
           expect(state).to.be('completed');
-          return client.sremAsync(queue.toKey('completed'), job.jobId);
-        }).then(function(){
+          return queue.client.sremAsync(queue.toKey('completed'), job.jobId);
+        }).then(function(result){
           return job.moveToDelayed(Date.now() + 10000);
         }).then(function (){
           return job.isDelayed();
@@ -229,7 +244,7 @@ describe('Job', function(){
           return job.getState();
         }).then(function(state) {
           expect(state).to.be('delayed');
-          return client.zremAsync(queue.toKey('delayed'), job.jobId);
+          return queue.client.zremAsync(queue.toKey('delayed'), job.jobId);
         }).then(function() {
           return job.moveToFailed(new Error('test'));
         }).then(function (){
@@ -239,13 +254,13 @@ describe('Job', function(){
           return job.getState();
         }).then(function(state) {
           expect(state).to.be('failed');
-          return client.sremAsync(queue.toKey('failed'), job.jobId);
+          return queue.client.sremAsync(queue.toKey('failed'), job.jobId);
         }).then(function(res) {
           expect(res).to.be(1);
           return job.getState();
         }).then(function(state) {
           expect(state).to.be('stuck');
-          return client.lpushAsync(queue.toKey('paused'), job.jobId);
+          return queue.client.lpushAsync(queue.toKey('paused'), job.jobId);
         }).then(function() {
           return job.isPaused();
         }).then(function (yes) {
@@ -253,9 +268,9 @@ describe('Job', function(){
           return job.getState();
         }).then(function(state) {
           expect(state).to.be('paused');
-          return client.rpopAsync(queue.toKey('paused'));
+          return queue.client.rpopAsync(queue.toKey('paused'));
         }).then(function() {
-          return client.lpushAsync(queue.toKey('wait'), job.jobId);
+          return queue.client.lpushAsync(queue.toKey('wait'), job.jobId);
         }).then(function() {
           return job.isWaiting();
         }).then(function (yes) {
