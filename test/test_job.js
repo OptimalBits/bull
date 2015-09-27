@@ -5,7 +5,7 @@
 var Job = require('../lib/job');
 var Queue = require('../lib/queue');
 var expect = require('expect.js');
-var redis = require('redis');
+var Redis = require('ioredis');
 var Promise = require('bluebird');
 var uuid = require('node-uuid');
 
@@ -13,7 +13,7 @@ describe('Job', function(){
   var queue;
 
   before(function(done){
-    queue = new Queue('test', 6379, '127.0.0.1');
+    queue = new Queue('test');
     queue.client.keys(queue.toKey('*'), function(err, keys){
       if(keys.length){
         queue.client.del(keys, function(err2){
@@ -26,7 +26,7 @@ describe('Job', function(){
   });
 
   beforeEach(function() {
-    queue = new Queue('test-' + uuid(), 6379, '127.0.0.1');
+    queue = new Queue('test-' + uuid());
   });
 
   describe('.create', function () {
@@ -204,7 +204,7 @@ describe('Job', function(){
     });
 
     it('get job status', function() {
-      var client = Promise.promisifyAll(redis.createClient());
+      var client = Promise.promisifyAll(new Redis());
       return Job.create(queue, 100, {foo: 'baz'}).then(function(job) {
         return job.isStuck().then(function(yes) {
           expect(yes).to.be(true);

@@ -18,9 +18,9 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "bluebird": "^2.9.30",
+    "ioredis": "^1.9.0",
     "lodash": "^3.9.3",
     "node-uuid": "^1.4.3",
-    "redis": "^0.12.1",
     "semver": "^4.2.0"
   },
   "devDependencies": {
@@ -31,7 +31,7 @@
     "sinon": "^1.14.1"
   },
   "scripts": {
-    "test": "gulp && mocha test/* --reporter spec",
+    "test": "gulp && mocha test/* --reporter spec -t 60000",
     "postpublish": "git push && git push --tags"
   }
 }

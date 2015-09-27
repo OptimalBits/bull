@@ -5,7 +5,7 @@
 var Queue = require('../');
 var expect = require('expect.js');
 var Promise = require('bluebird');
-var redis = require('redis');
+var Redis = require('ioredis');
 var sinon = require('sinon');
 var _ = require('lodash');
 var uuid = require('node-uuid');
@@ -14,7 +14,7 @@ var STD_QUEUE_NAME = 'test queue';
 
 function buildQueue(name) {
   var qName = name || STD_QUEUE_NAME;
-  return new Queue(qName, 6379, '127.0.0.1');
+  return new Queue(qName);
 }
 
 function cleanupQueue(queue) {
@@ -22,6 +22,7 @@ function cleanupQueue(queue) {
 }
 
 describe('Queue', function () {
+  this.timeout(50000);
   var queue;
   var sandbox = sinon.sandbox.create();
 
@@ -63,14 +64,14 @@ describe('Queue', function () {
     });
 
     it('should resolve the promise when each client has disconnected', function () {
-      expect(testQueue.client.connected).to.be(true);
-      expect(testQueue.bclient.connected).to.be(true);
-      expect(testQueue.eclient.connected).to.be(true);
+      expect(testQueue.client.status).to.be('ready');
+      expect(testQueue.bclient.status).to.be('ready');
+      expect(testQueue.eclient.status).to.be('ready');
 
       return testQueue.close().then(function () {
-        expect(testQueue.client.connected).to.be(false);
-        expect(testQueue.bclient.connected).to.be(false);
-        expect(testQueue.eclient.connected).to.be(false);
+        expect(testQueue.client.status).to.be('end');
+        expect(testQueue.bclient.status).to.be('end');
+        expect(testQueue.eclient.status).to.be('end');
       });
     });
 
@@ -83,7 +84,6 @@ describe('Queue', function () {
 
     describe('should be callable from within', function () {
       it('a job handler that takes a callback', function (done) {
-        this.timeout(6000);
 
         var closeQueue = new Queue('close from handler');
 
@@ -100,7 +100,6 @@ describe('Queue', function () {
       });
 
       it('a job handler that returns a promise', function (done) {
-        this.timeout(6000);
 
         var closeQueue = new Queue('close from handler');
 
@@ -123,45 +122,45 @@ describe('Queue', function () {
       queue = new Queue('standard');
 
       queue.once('ready', function () {
-        expect(queue.client.connectionOption.host).to.be('127.0.0.1');
-        expect(queue.bclient.connectionOption.host).to.be('127.0.0.1');
+        expect(queue.client.options.host).to.be('127.0.0.1');
+        expect(queue.bclient.options.host).to.be('127.0.0.1');
 
-        expect(queue.client.connectionOption.port).to.be(6379);
-        expect(queue.bclient.connectionOption.port).to.be(6379);
+        expect(queue.client.options.port).to.be(6379);
+        expect(queue.bclient.options.port).to.be(6379);
 
-        expect(queue.client.selected_db).to.be(0);
-        expect(queue.bclient.selected_db).to.be(0);
+        expect(queue.client.options.db).to.be(0);
+        expect(queue.bclient.options.db).to.be(0);
 
         done();
       });
     });
 
     it('creates a queue using the supplied redis DB', function (done) {
-      queue = new Queue('custom', { redis: { DB: 1 } });
+      queue = new Queue('custom', { db: 1 });
 
       queue.once('ready', function () {
-        expect(queue.client.connectionOption.host).to.be('127.0.0.1');
-        expect(queue.bclient.connectionOption.host).to.be('127.0.0.1');
+        expect(queue.client.options.host).to.be('127.0.0.1');
+        expect(queue.bclient.options.host).to.be('127.0.0.1');
 
-        expect(queue.client.connectionOption.port).to.be(6379);
-        expect(queue.bclient.connectionOption.port).to.be(6379);
+        expect(queue.client.options.port).to.be(6379);
+        expect(queue.bclient.options.port).to.be(6379);
 
-        expect(queue.client.selected_db).to.be(1);
-        expect(queue.bclient.selected_db).to.be(1);
+        expect(queue.client.options.db).to.be(1);
+        expect(queue.bclient.options.db).to.be(1);
 
         done();
       });
     });
 
     it('creates a queue using custom the supplied redis host', function (done) {
-      queue = new Queue('custom', { redis: { host: 'localhost' } });
+      queue = new Queue('custom', { host: 'localhost' });
 
       queue.once('ready', function () {
-        expect(queue.client.connectionOption.host).to.be('localhost');
-        expect(queue.bclient.connectionOption.host).to.be('localhost');
+        expect(queue.client.options.host).to.be('localhost');
+        expect(queue.bclient.options.host).to.be('localhost');
 
-        expect(queue.client.selected_db).to.be(0);
-        expect(queue.bclient.selected_db).to.be(0);
+        expect(queue.client.options.db).to.be(0);
+        expect(queue.bclient.options.db).to.be(0);
         done();
       });
     });
@@ -192,12 +191,14 @@ describe('Queue', function () {
         done();
       });
 
-      // Simulate disconnect
-      queue.bclient.stream.end();
-      queue.bclient.emit('error', new Error('ECONNRESET'));
+      queue.bclient.once('ready', function() {
+        // Simulate disconnect
+        queue.bclient.stream.end();
+        queue.bclient.emit('error', new Error('ECONNRESET'));
 
-      // add something to the queue
-      queue.add({ 'foo': 'bar' });
+        // add something to the queue
+        queue.add({ 'foo': 'bar' });
+      });
     });
 
     it('should reconnect when the blocking client triggers an "end" event', function (done) {
@@ -342,7 +343,7 @@ describe('Queue', function () {
     });
 
     it('process stalled jobs when starting a queue', function (done) {
-      var queueStalled = new Queue('test queue stalled', 6379, '127.0.0.1');
+      var queueStalled = new Queue('test queue stalled');
       queueStalled.LOCK_RENEW_TIME = 10;
       var jobs = [
         queueStalled.add({ bar: 'baz' }),
@@ -354,9 +355,8 @@ describe('Queue', function () {
       Promise.all(jobs).then(function () {
         queueStalled.process(function () {
           // instead of completing we just close the queue to simulate a crash.
-          queueStalled.disconnect();
-          setTimeout(function () {
-            var queue2 = new Queue('test queue stalled', 6379, '127.0.0.1');
+          queueStalled.disconnect().then(function() {
+            var queue2 = new Queue('test queue stalled');
             var doneAfterFour = _.after(4, function () {
               done();
             });
@@ -365,13 +365,13 @@ describe('Queue', function () {
             queue2.process(function (job, jobDone) {
               jobDone();
             });
-          }, 100);
+          });
         });
       });
     });
 
     it('processes jobs that were added before the queue backend started', function () {
-      var queueStalled = new Queue('test queue added before', 6379, '127.0.0.1');
+      var queueStalled = new Queue('test queue added before');
       queueStalled.LOCK_RENEW_TIME = 10;
       var jobs = [
         queueStalled.add({ bar: 'baz' }),
@@ -383,7 +383,7 @@ describe('Queue', function () {
       return Promise.all(jobs)
         .then(queueStalled.close.bind(queueStalled))
         .then(function () {
-        queue = new Queue('test queue added before', 6379, '127.0.0.1');
+        queue = new Queue('test queue added before');
         queue.process(function (job, jobDone) {
           jobDone();
         });
@@ -402,7 +402,7 @@ describe('Queue', function () {
       var jobs = [];
 
       for(var i = 0; i < NUM_QUEUES; i++) {
-        var queueStalled2 = new Queue('test queue stalled 2', 6379, '127.0.0.1');
+        var queueStalled2 = new Queue('test queue stalled 2');
         stalledQueues.push(queueStalled2);
         queueStalled2.LOCK_RENEW_TIME = 10;
 
@@ -420,7 +420,7 @@ describe('Queue', function () {
           processed++;
           if(processed === stalledQueues.length) {
             setTimeout(function () {
-              var queue2 = new Queue('test queue stalled 2', 6379, '127.0.0.1');
+              var queue2 = new Queue('test queue stalled 2');
               queue2.process(function (job2, jobDone) {
                 jobDone();
               });
@@ -445,7 +445,6 @@ describe('Queue', function () {
     });
 
     it('does not process a job that is being processed when a new queue starts', function (done) {
-      this.timeout(5000);
       var err = null;
       var anotherQueue;
 
@@ -475,7 +474,6 @@ describe('Queue', function () {
     });
 
     it('process stalled jobs without requiring a queue restart', function (done) {
-      this.timeout(5000);
       var collect = _.after(2, done);
 
       queue = buildQueue('running-stalled-job-' + uuid());
@@ -489,7 +487,7 @@ describe('Queue', function () {
       queue.process(function (job, jobDone) {
         expect(job.data.foo).to.be.equal('bar');
         jobDone();
-        var client = redis.createClient();
+        var client = new Redis();
         client.srem(queue.toKey('completed'), 1);
         client.lpush(queue.toKey('active'), 1);
       });
@@ -579,7 +577,7 @@ describe('Queue', function () {
       var failedOnce = false;
 
       var retryQueue = buildQueue('retry-test-queue');
-      var client = redis.createClient(6379, '127.0.0.1', {});
+      var client = new Redis();
 
       client.select(0);
 
@@ -774,7 +772,7 @@ describe('Queue', function () {
   });
 
   it('should publish a message when a new message is added to the queue', function (done) {
-    var client = redis.createClient(6379, '127.0.0.1', {});
+    var client = new Redis();
     client.select(0);
     queue = new Queue('test pub sub');
     client.on('ready', function () {
@@ -805,7 +803,7 @@ describe('Queue', function () {
     it('should process a delayed job only after delayed time', function (done) {
       var delay = 500;
       queue = new Queue('delayed queue simple');
-      var client = redis.createClient(6379, '127.0.0.1', {});
+      var client = new Redis();
       var timestamp = Date.now();
       var publishHappened = false;
       client.on('ready', function () {
@@ -870,7 +868,6 @@ describe('Queue', function () {
     });
 
     it('should process delayed jobs in correct order even in case of restart', function (done) {
-      this.timeout(5000);
 
       var QUEUE_NAME = 'delayed queue multiple' + uuid();
       var order = 1;
@@ -1220,7 +1217,7 @@ describe('Queue', function () {
     });
 
     it('should clean a job without a timestamp', function (done) {
-      var client = redis.createClient(6379, '127.0.0.1', {});
+      var client = new Redis();
 
       queue.add({some: 'data'});
       queue.add({some: 'data'});

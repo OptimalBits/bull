@@ -9,13 +9,13 @@ var Promise = require('bluebird');
 var sinon = require('sinon');
 var _ = require('lodash');
 var uuid = require('node-uuid');
-var redis = require('redis');
+var Redis = require('ioredis');
 
 var STD_QUEUE_NAME = 'test queue';
 
 function buildQueue(name) {
   var qName = name || STD_QUEUE_NAME;
-  return new Queue(qName, 6379, '127.0.0.1');
+  return new Queue(qName);
 }
 
 function cleanupQueue(queue){
@@ -23,6 +23,7 @@ function cleanupQueue(queue){
 }
 
 describe('Priority queue', function(){
+  this.timeout(50000);
   var queue;
   var sandbox = sinon.sandbox.create();
 
@@ -37,10 +38,10 @@ describe('Priority queue', function(){
 
   it('allow custom clients', function(){
     var clients = 0;
-    queue = new Queue(STD_QUEUE_NAME, {redis: {opts: {createClient: function(){
+    queue = new Queue(STD_QUEUE_NAME, { createClient: function(){
       clients++;
-      return redis.createClient();
-    }}}});
+      return new Redis();
+    }});
     expect(clients).to.be(15);
   });
 
@@ -59,7 +60,6 @@ describe('Priority queue', function(){
 
     describe('should be callable from within', function () {
       it('a job handler that takes a callback', function (done) {
-        this.timeout(6000);
 
         testQueue.process(function (job, jobDone) {
           expect(job.data.foo).to.be('bar');
@@ -74,7 +74,6 @@ describe('Priority queue', function(){
       });
 
       it('a job handler that returns a promise', function (done) {
-        this.timeout(6000);
 
         testQueue.process(function (job) {
           expect(job.data.foo).to.be('bar');
@@ -187,7 +186,7 @@ describe('Priority queue', function(){
             });
           });
         });
-      }).catch(done);
+      });
     });
   });
 
@@ -266,7 +265,6 @@ describe('Priority queue', function(){
   });
 
   it('does not process a job that is being processed when a new queue starts', function(done){
-    this.timeout(5000);
     var err = null;
     var anotherQueue;
     var queueName = uuid();
