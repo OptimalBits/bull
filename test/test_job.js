@@ -3,44 +3,32 @@
 'use strict';
 
 var Job = require('../lib/job');
-var Queue = require('../lib/queue');
 var expect = require('expect.js');
-var Redis = require('ioredis');
-var Promise = require('bluebird');
 var uuid = require('node-uuid');
+var helper = require('./helper');
 
 var prefix = 'bull-test-job';
-
-function buildQueue(name, config){
-  config = config || {};
-  config.prefix = prefix;
-  return new Queue(name, config);
-}
-
-function removeTestKeys(queue, done){
-  queue.client.keysAsync(prefix + ':*').then(function(keys){
-    if (keys.length){
-      return queue.client.delAsync(keys);
-    }
-  }).then(function() {
-    done();
-  }).catch(done);
-}
 
 describe('Job', function(){
   var queue;
 
   before(function(done){
-    queue = buildQueue('test');
-    removeTestKeys(queue, done);
+    helper.removeTestKeys(prefix).then(function() {
+      done();
+    });
   });
 
-  beforeEach(function() {
-    queue = buildQueue('test-' + uuid());
+  beforeEach(function(done) {
+    queue = helper.buildQueue('test-' + uuid(), { prefix: prefix });
+    queue.once('ready', function() {
+      done();
+    });
   });
 
   after(function(done) {
-    removeTestKeys(queue, done);
+    helper.removeTestKeys(prefix).then(function() {
+      done();
+    });
   });
 
   describe('.create', function () {
@@ -252,7 +240,7 @@ describe('Job', function(){
       }).then(function(state) {
         expect(state).to.be('completed');
         return queue.client.sremAsync(queue.toKey('completed'), job.jobId);
-      }).then(function(result){
+      }).then(function(){
         return job.moveToDelayed(Date.now() + 10000);
       }).then(function (){
         return job.isDelayed();
