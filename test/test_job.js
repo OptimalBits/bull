@@ -198,6 +198,7 @@ describe('Job', function(){
           return job.isFailed().then(function(isFailed){
             expect(isFailed).to.be(true);
             expect(job.stacktrace).not.be(null);
+            expect(job.stacktrace.length).to.be(1);
           });
         });
       });
@@ -213,6 +214,7 @@ describe('Job', function(){
           return job.isFailed().then(function(isFailed){
             expect(isFailed).to.be(false);
             expect(job.stacktrace).not.be(null);
+            expect(job.stacktrace.length).to.be(1);
             return job.isWaiting().then(function(isWaiting){
               expect(isWaiting).to.be(true);
             });
@@ -231,6 +233,7 @@ describe('Job', function(){
           return job.isFailed().then(function(isFailed){
             expect(isFailed).to.be(true);
             expect(job.stacktrace).not.be(null);
+            expect(job.stacktrace.length).to.be(1);
           });
         });
       });
@@ -246,6 +249,7 @@ describe('Job', function(){
           return job.isFailed().then(function(isFailed){
             expect(isFailed).to.be(false);
             expect(job.stacktrace).not.be(null);
+            expect(job.stacktrace.length).to.be(1);
             return job.isDelayed().then(function(isDelayed){
               expect(isDelayed).to.be(true);
             });
