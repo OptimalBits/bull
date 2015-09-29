@@ -9,9 +9,6 @@ var Queue = require('../');
 var expect = require('expect.js');
 var Promise = require('bluebird');
 var redis = require('redis');
-var sinon = require('sinon');
-var _ = require('lodash');
-var uuid = require('node-uuid');
 
 var STD_QUEUE_NAME = 'cluster test queue';
 
@@ -21,6 +18,8 @@ function buildQueue(name) {
 }
 
 function purgeQueue(queue) {
+  // Since workers spawned only listen to the default queue,
+  // we need to purge all keys after each test
   var client = redis.createClient(6379, '127.0.0.1', {});
   client = Promise.promisifyAll(client);
   client.selectAsync(0);
@@ -52,10 +51,10 @@ var _i = 0;
 for(_i; _i < os.cpus().length - 1; _i++) {
   worker = cluster.fork();
   worker.on('message', workerMessageHandlerWrapper);
-  console.log('Worker spawned, #', worker.id);
+  console.log('Worker spawned: #', worker.id);
 }
 
-describe.only('Cluster', function () {
+describe('Cluster', function () {
 
   var queue;
 
@@ -94,25 +93,63 @@ describe.only('Cluster', function () {
   });
 
   it('should process delayed jobs in correct order', function(done) {
-    this.timeout(12000);
+    this.timeout(5000);
     queue = buildQueue();
-    var orders = [];
+    var order = 0;
 
     workerMessageHandler = function(job) {
-      orders.push(job.data.order);
-      console.log(orders);
+      expect(order).to.be.below(job.data.order);
+      order = job.data.order;
+      if(order === 10) {
+        done();
+      }
     };
 
-    queue.add({ order: 1 }, { delay: 1000 });
-    queue.add({ order: 6 }, { delay: 6000 });
-    queue.add({ order: 10 }, { delay: 10000 });
-    queue.add({ order: 2 }, { delay: 2000 });
-    queue.add({ order: 9 }, { delay: 9000 });
-    queue.add({ order: 5 }, { delay: 5000 });
-    queue.add({ order: 3 }, { delay: 3000 });
-    queue.add({ order: 7 }, { delay: 7000 });
-    queue.add({ order: 4 }, { delay: 4000 });
-    queue.add({ order: 8 }, { delay: 8000 });
+    queue.add({ order: 1 }, { delay: 100 });
+    queue.add({ order: 6 }, { delay: 600 });
+    queue.add({ order: 10 }, { delay: 1000 });
+    queue.add({ order: 2 }, { delay: 200 });
+    queue.add({ order: 9 }, { delay: 900 });
+    queue.add({ order: 5 }, { delay: 500 });
+    queue.add({ order: 3 }, { delay: 300 });
+    queue.add({ order: 7 }, { delay: 700 });
+    queue.add({ order: 4 }, { delay: 400 });
+    queue.add({ order: 8 }, { delay: 800 });
+  });
+
+  it.skip('should process delayed jobs scheduled at the same timestamp in correct order (FIFO)', function(done) {
+    /**
+     * Note:
+     * By logging out the jobId that is fetched in `updateDelaySet via redis`:
+     * `redis.log(redis.LOG_WARNING, jobId)``
+     * via redis, we can actually see that the jobs are being promoted in a correct order.
+     * However, the following test almost always fails, one possible reason is that even though
+     * jobs are fetched in order, there are enough workers to process them at the same time
+     * therefore they appear to finish simultaneously.
+     */
+
+    this.timeout(5000);
+    queue = buildQueue();
+    var order = 0;
+
+    workerMessageHandler = function(job) {
+      expect(order).to.be.below(job.data.order);
+      order = job.data.order;
+      if(order === 10) {
+        done();
+      }
+    };
+
+    queue.add({ order: 1 }, { delay: 200 });
+    queue.add({ order: 2 }, { delay: 200 });
+    queue.add({ order: 3 }, { delay: 200 });
+    queue.add({ order: 4 }, { delay: 200 });
+    queue.add({ order: 5 }, { delay: 200 });
+    queue.add({ order: 6 }, { delay: 200 });
+    queue.add({ order: 7 }, { delay: 200 });
+    queue.add({ order: 8 }, { delay: 200 });
+    queue.add({ order: 9 }, { delay: 200 });
+    queue.add({ order: 10 }, { delay: 200 });
   });
 
 });

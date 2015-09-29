@@ -932,53 +932,59 @@ describe('Queue', function () {
         order++;
       };
 
+      var now = Date.now();
       queue.on('ready', function() {
-
         Promise.join(
-          queue.add({ order: 1 }, { delay: 1000 }),
-          queue.add({ order: 2 }, { delay: 1000 }),
-          queue.add({ order: 3 }, { delay: 1000 }),
-          queue.add({ order: 4 }, { delay: 1000 }),
-          queue.add({ order: 5 }, { delay: 1000 }),
-          queue.add({ order: 6 }, { delay: 1000 }),
-          queue.add({ order: 7 }, { delay: 1000 }),
-          queue.add({ order: 8 }, { delay: 1000 }),
-          queue.add({ order: 9 }, { delay: 1000 }),
-          queue.add({ order: 10 }, { delay: 1000 }),
-          queue.add({ order: 11 }, { delay: 1000 }),
-          queue.add({ order: 12 }, { delay: 1000 })
+          queue.add({ order: 1 }, {
+            delay: 1000,
+            timestamp: Date.now()
+          }),
+          queue.add({ order: 2 }, {
+            delay: 1000,
+            timestamp: Date.now()
+          }),
+          queue.add({ order: 3 }, {
+            delay: 1000,
+            timestamp: Date.now()
+          }),
+          queue.add({ order: 4 }, {
+            delay: 1000,
+            timestamp: Date.now()
+          }),
+          queue.add({ order: 5 }, {
+            delay: 1000,
+            timestamp: Date.now()
+          }),
+          queue.add({ order: 6 }, {
+            delay: 1000,
+            timestamp: Date.now()
+          }),
+          queue.add({ order: 7 }, {
+            delay: 1000,
+            timestamp: Date.now()
+          }),
+          queue.add({ order: 8 }, {
+            delay: 1000,
+            timestamp: Date.now()
+          }),
+          queue.add({ order: 9 }, {
+            delay: 1000,
+            timestamp: Date.now()
+          }),
+          queue.add({ order: 10 }, {
+            delay: 1000,
+            timestamp: Date.now()
+          }),
+          queue.add({ order: 11 }, {
+            delay: 1000,
+            timestamp: Date.now()
+          }),
+          queue.add({ order: 12 }, {
+            delay: 1000,
+            timestamp: Date.now()
+          })
         ).then(function () {
-          var now = Date.now();
-
-          return Promise.join(
-            client.hsetAsync('bull:' + queue.name + ':1', 'timestamp', now),
-            client.hsetAsync('bull:' + queue.name + ':2', 'timestamp', now),
-            client.hsetAsync('bull:' + queue.name + ':3', 'timestamp', now),
-            client.hsetAsync('bull:' + queue.name + ':4', 'timestamp', now),
-            client.hsetAsync('bull:' + queue.name + ':5', 'timestamp', now),
-            client.hsetAsync('bull:' + queue.name + ':6', 'timestamp', now),
-            client.hsetAsync('bull:' + queue.name + ':7', 'timestamp', now),
-            client.hsetAsync('bull:' + queue.name + ':8', 'timestamp', now),
-            client.hsetAsync('bull:' + queue.name + ':9', 'timestamp', now),
-            client.hsetAsync('bull:' + queue.name + ':10', 'timestamp', now),
-            client.hsetAsync('bull:' + queue.name + ':11', 'timestamp', now),
-            client.hsetAsync('bull:' + queue.name + ':12', 'timestamp', now),
-            client.hsetAsync('bull:' + queue.name + ':1', 'delay', 2000),
-            client.hsetAsync('bull:' + queue.name + ':2', 'delay', 2000),
-            client.hsetAsync('bull:' + queue.name + ':3', 'delay', 2000),
-            client.hsetAsync('bull:' + queue.name + ':4', 'delay', 2000),
-            client.hsetAsync('bull:' + queue.name + ':5', 'delay', 2000),
-            client.hsetAsync('bull:' + queue.name + ':6', 'delay', 2000),
-            client.hsetAsync('bull:' + queue.name + ':7', 'delay', 2000),
-            client.hsetAsync('bull:' + queue.name + ':8', 'delay', 2000),
-            client.hsetAsync('bull:' + queue.name + ':9', 'delay', 2000),
-            client.hsetAsync('bull:' + queue.name + ':10', 'delay', 2000),
-            client.hsetAsync('bull:' + queue.name + ':11', 'delay', 2000),
-            client.hsetAsync('bull:' + queue.name + ':12', 'delay', 2000)
-          ).then(function () {
-
-            queue.process(fn);
-          });
+          queue.process(fn);
         });
       });
     });

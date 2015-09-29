@@ -14,7 +14,6 @@ function buildQueue(name) {
 var queue = buildQueue();
 
 queue.process(1, function(job, jobDone) {
-  console.log('Start processing: ', job.jobId);
   jobDone();
   process.send({
     id: job.jobId,
