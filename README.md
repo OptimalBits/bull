@@ -372,7 +372,11 @@ __Arguments__
     to the job processing function in job.opts
   opts.delay {Number} An amount of miliseconds to wait until this job
   can be processed. Note that for accurate delays, both server and clients
-  should have their clocks synchronized.
+  should have their clocks synchronized. [optional]
+  opts.attempts {Number} A number of attempts to retry if the job fails [optional]
+  opts.backoff {Number|Object} Backoff setting for automatic retries if the job fails
+  opts.backoff.type {String} Backoff type, which can be either `fixed` or `exponential`
+  opts.backoff.delay {String} Backoff delay, in milliseconds
   opts.lifo {Boolean} A boolean which, if true, adds the job to the right
     of the queue instead of the left (default false)
   opts.timeout {Number} The number of milliseconds after which the job
@@ -611,6 +615,13 @@ __Arguments__
 ```javascript
   returns {Promise} A promise that resolves when the job is removed.
 ```
+
+---------------------------------------
+
+<a name="retry"/>
+#### Job##retry()
+
+Rerun a Job that has failed.
 
 ---------------------------------------
 
