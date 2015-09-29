@@ -937,51 +937,51 @@ describe('Queue', function () {
         Promise.join(
           queue.add({ order: 1 }, {
             delay: 1000,
-            timestamp: Date.now()
+            timestamp: now
           }),
           queue.add({ order: 2 }, {
             delay: 1000,
-            timestamp: Date.now()
+            timestamp: now
           }),
           queue.add({ order: 3 }, {
             delay: 1000,
-            timestamp: Date.now()
+            timestamp: now
           }),
           queue.add({ order: 4 }, {
             delay: 1000,
-            timestamp: Date.now()
+            timestamp: now
           }),
           queue.add({ order: 5 }, {
             delay: 1000,
-            timestamp: Date.now()
+            timestamp: now
           }),
           queue.add({ order: 6 }, {
             delay: 1000,
-            timestamp: Date.now()
+            timestamp: now
           }),
           queue.add({ order: 7 }, {
             delay: 1000,
-            timestamp: Date.now()
+            timestamp: now
           }),
           queue.add({ order: 8 }, {
             delay: 1000,
-            timestamp: Date.now()
+            timestamp: now
           }),
           queue.add({ order: 9 }, {
             delay: 1000,
-            timestamp: Date.now()
+            timestamp: now
           }),
           queue.add({ order: 10 }, {
             delay: 1000,
-            timestamp: Date.now()
+            timestamp: now
           }),
           queue.add({ order: 11 }, {
             delay: 1000,
-            timestamp: Date.now()
+            timestamp: now
           }),
           queue.add({ order: 12 }, {
             delay: 1000,
-            timestamp: Date.now()
+            timestamp: now
           })
         ).then(function () {
           queue.process(fn);
