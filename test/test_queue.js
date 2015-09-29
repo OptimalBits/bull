@@ -932,58 +932,17 @@ describe('Queue', function () {
         order++;
       };
 
-      var now = Date.now();
       queue.on('ready', function() {
-        Promise.join(
-          queue.add({ order: 1 }, {
+        var now = Date.now();
+        var _promises = [];
+        var _i = 1;
+        for(_i; _i <= 12; _i++){
+          _promises.push(queue.add({ order: _i }, {
             delay: 1000,
             timestamp: now
-          }),
-          queue.add({ order: 2 }, {
-            delay: 1000,
-            timestamp: now
-          }),
-          queue.add({ order: 3 }, {
-            delay: 1000,
-            timestamp: now
-          }),
-          queue.add({ order: 4 }, {
-            delay: 1000,
-            timestamp: now
-          }),
-          queue.add({ order: 5 }, {
-            delay: 1000,
-            timestamp: now
-          }),
-          queue.add({ order: 6 }, {
-            delay: 1000,
-            timestamp: now
-          }),
-          queue.add({ order: 7 }, {
-            delay: 1000,
-            timestamp: now
-          }),
-          queue.add({ order: 8 }, {
-            delay: 1000,
-            timestamp: now
-          }),
-          queue.add({ order: 9 }, {
-            delay: 1000,
-            timestamp: now
-          }),
-          queue.add({ order: 10 }, {
-            delay: 1000,
-            timestamp: now
-          }),
-          queue.add({ order: 11 }, {
-            delay: 1000,
-            timestamp: now
-          }),
-          queue.add({ order: 12 }, {
-            delay: 1000,
-            timestamp: now
-          })
-        ).then(function () {
+          }));
+        }
+        Promise.join.apply(null, _promises).then(function () {
           queue.process(fn);
         });
       });
