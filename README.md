@@ -623,6 +623,12 @@ __Arguments__
 
 Rerun a Job that has failed.
 
+__Arguments__
+
+```javascript
+  returns {Promise} A promise that resolves when the job is scheduled for retry.
+```
+
 ---------------------------------------
 
 
