@@ -120,12 +120,13 @@ describe('Cluster', function () {
   it.skip('should process delayed jobs scheduled at the same timestamp in correct order (FIFO)', function(done) {
     /**
      * Note:
-     * By logging out the jobId that is fetched in `updateDelaySet via redis`:
+     * By logging out the jobId that is fetched in `updateDelaySet` via redis:
      * `redis.log(redis.LOG_WARNING, jobId)``
-     * via redis, we can actually see that the jobs are being promoted in a correct order.
+     * we can actually see that the jobs are being promoted in a correct order.
      * However, the following test almost always fails, one possible reason is that even though
      * jobs are fetched in order, there are enough workers to process them at the same time
      * therefore they appear to finish simultaneously.
+     * TODO: find a better way to test this
      */
 
     this.timeout(5000);
