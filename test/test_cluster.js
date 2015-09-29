@@ -46,11 +46,13 @@ function workerMessageHandlerWrapper(message) {
   }
 }
 
+var workers = [];
 var worker;
 var _i = 0;
 for(_i; _i < os.cpus().length - 1; _i++) {
   worker = cluster.fork();
   worker.on('message', workerMessageHandlerWrapper);
+  workers.push(worker);
   console.log('Worker spawned: #', worker.id);
 }
 
@@ -151,6 +153,13 @@ describe('Cluster', function () {
     queue.add({ order: 8 }, { delay: 200 });
     queue.add({ order: 9 }, { delay: 200 });
     queue.add({ order: 10 }, { delay: 200 });
+  });
+
+  after(function() {
+    _i = 0;
+    for(_i; _i < workers.length; _i++) {
+      workers[_i].kill();
+    }
   });
 
 });

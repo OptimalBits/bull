@@ -1099,6 +1099,114 @@ describe('Queue', function () {
     });
   });
 
+  describe('Retries and backoffs', function() {
+
+    it('should automatically retry a failed job if attempts is bigger than 1', function(done) {
+      queue = buildQueue('test retries and backoffs');
+      queue.on('ready', function() {
+
+        var tries = 0;
+        queue.process(function (job, jobDone) {
+          tries++;
+          if(job.attemptsMade < 2){
+            throw new Error('Not yet!');
+          }
+          expect(job.attemptsMade).to.be(tries - 1);
+          jobDone();
+        });
+
+        queue.add({ foo: 'bar' }, {
+          attempts: 3
+        });
+      });
+      queue.on('completed', function() {
+        done();
+      });
+    });
+
+    it('should not retry a failed job more than the number of given attempts times', function(done) {
+      queue = buildQueue('test retries and backoffs');
+      var tries = 0;
+      queue.on('ready', function() {
+        queue.process(function (job, jobDone) {
+          tries++;
+          if(job.attemptsMade < 3){
+            throw new Error('Not yet!');
+          }
+          expect(job.attemptsMade).to.be(tries - 1);
+          jobDone();
+        });
+
+        queue.add({ foo: 'bar' }, {
+          attempts: 3
+        });
+      });
+      queue.on('completed', function() {
+        done(new Error('Failed job was retried more than it should be!'));
+      });
+      queue.on('failed', function() {
+        if(tries === 3){
+          done();
+        }
+      });
+    });
+
+    it('should retry a job after a delay if a fixed backoff is given', function(done) {
+      this.timeout(5000);
+      queue = buildQueue('test retries and backoffs');
+      var start;
+      queue.on('ready', function() {
+        queue.process(function (job, jobDone) {
+          if(job.attemptsMade < 2){
+            throw new Error('Not yet!');
+          }
+          jobDone();
+        });
+
+        start = Date.now();
+        queue.add({ foo: 'bar' }, {
+          attempts: 3,
+          backoff: 1000
+        });
+      });
+      queue.on('completed', function() {
+        var elapse = Date.now() - start;
+        expect(elapse).to.be.greaterThan(2000);
+        done();
+      });
+    });
+
+    it('should retry a job after a delay if an exponential backoff is given', function(done) {
+      this.timeout(5000);
+      queue = buildQueue('test retries and backoffs');
+      var start;
+      queue.on('ready', function() {
+        queue.process(function (job, jobDone) {
+          if(job.attemptsMade < 2){
+            throw new Error('Not yet!');
+          }
+          jobDone();
+        });
+
+        start = Date.now();
+        queue.add({ foo: 'bar' }, {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 1000
+          }
+        });
+      });
+      queue.on('completed', function() {
+        var elapse = Date.now() - start;
+        var expected = 1000 * (Math.pow(2, 2) - 1);
+        expect(elapse).to.be.greaterThan(expected);
+        done();
+      });
+    });
+
+  });
+
   describe('Jobs getters', function () {
     it('should get waitting jobs', function (done) {
       queue = buildQueue();

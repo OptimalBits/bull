@@ -203,6 +203,57 @@ describe('Job', function(){
       });
     });
 
+    it('moves the job to wait for retry if attempts are given', function() {
+      return Job.create(queue, 5, {foo: 'bar'}, {attempts: 3}).then(function(job){
+        return job.isFailed().then(function(isFailed){
+          expect(isFailed).to.be(false);
+        }).then(function(){
+          return job.moveToFailed(new Error('test error'));
+        }).then(function(){
+          return job.isFailed().then(function(isFailed){
+            expect(isFailed).to.be(false);
+            expect(job.stacktrace).not.be(null);
+            return job.isWaiting().then(function(isWaiting){
+              expect(isWaiting).to.be(true);
+            });
+          });
+        });
+      });
+    });
+
+    it('marks the job as failed when attempts made equal to attempts given', function() {
+      return Job.create(queue, 6, {foo: 'bar'}, {attempts: 1}).then(function(job){
+        return job.isFailed().then(function(isFailed){
+          expect(isFailed).to.be(false);
+        }).then(function(){
+          return job.moveToFailed(new Error('test error'));
+        }).then(function(){
+          return job.isFailed().then(function(isFailed){
+            expect(isFailed).to.be(true);
+            expect(job.stacktrace).not.be(null);
+          });
+        });
+      });
+    });
+
+    it('moves the job to delayed for retry if attempts are given and backoff is non zero', function() {
+      return Job.create(queue, 7, {foo: 'bar'}, {attempts: 3, backoff: 300}).then(function(job){
+        return job.isFailed().then(function(isFailed){
+          expect(isFailed).to.be(false);
+        }).then(function(){
+          return job.moveToFailed(new Error('test error'));
+        }).then(function(){
+          return job.isFailed().then(function(isFailed){
+            expect(isFailed).to.be(false);
+            expect(job.stacktrace).not.be(null);
+            return job.isDelayed().then(function(isDelayed){
+              expect(isDelayed).to.be(true);
+            });
+          });
+        });
+      });
+    });
+
     it('get job status', function() {
       var client = Promise.promisifyAll(redis.createClient());
       return Job.create(queue, 100, {foo: 'baz'}).then(function(job) {
