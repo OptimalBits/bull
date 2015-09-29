@@ -396,6 +396,8 @@ describe('Queue', function () {
     });
 
     it('processes several stalled jobs when starting several queues', function (done) {
+      this.timeout(5000);
+
       var NUM_QUEUES = 10;
       var NUM_JOBS_PER_QUEUE = 20;
       var stalledQueues = [];
@@ -847,26 +849,30 @@ describe('Queue', function () {
       var order = 0;
       queue = new Queue('delayed queue multiple');
 
-      queue.process(function (job, jobDone) {
-        expect(order).to.be.below(job.data.order);
-        order = job.data.order;
+      queue.on('ready', function() {
 
-        jobDone();
-        if(order === 10) {
-          done();
-        }
+        queue.process(function (job, jobDone) {
+          expect(order).to.be.below(job.data.order);
+          order = job.data.order;
+
+          jobDone();
+          if(order === 10) {
+            done();
+          }
+        });
+
+        queue.add({ order: 1 }, { delay: 100 });
+        queue.add({ order: 6 }, { delay: 600 });
+        queue.add({ order: 10 }, { delay: 1000 });
+        queue.add({ order: 2 }, { delay: 200 });
+        queue.add({ order: 9 }, { delay: 900 });
+        queue.add({ order: 5 }, { delay: 500 });
+        queue.add({ order: 3 }, { delay: 300 });
+        queue.add({ order: 7 }, { delay: 700 });
+        queue.add({ order: 4 }, { delay: 400 });
+        queue.add({ order: 8 }, { delay: 800 });
+
       });
-
-      queue.add({ order: 1 }, { delay: 100 });
-      queue.add({ order: 6 }, { delay: 600 });
-      queue.add({ order: 10 }, { delay: 1000 });
-      queue.add({ order: 2 }, { delay: 200 });
-      queue.add({ order: 9 }, { delay: 900 });
-      queue.add({ order: 5 }, { delay: 500 });
-      queue.add({ order: 3 }, { delay: 300 });
-      queue.add({ order: 7 }, { delay: 700 });
-      queue.add({ order: 4 }, { delay: 400 });
-      queue.add({ order: 8 }, { delay: 800 });
     });
 
     it('should process delayed jobs in correct order even in case of restart', function (done) {
@@ -906,6 +912,75 @@ describe('Queue', function () {
             });
           });
         });
+    });
+
+    it('should process delayed jobs with exact same timestamps in correct order (FIFO)', function (done) {
+      var client = redis.createClient(6379, '127.0.0.1', {});
+      client = Promise.promisifyAll(client);
+      var QUEUE_NAME = 'delayed queue multiple' + uuid();
+      queue = new Queue(QUEUE_NAME);
+      var order = 1;
+
+      var fn = function (job, jobDone) {
+        expect(order).to.be.equal(job.data.order);
+        jobDone();
+
+        if(order === 12) {
+          done();
+        }
+
+        order++;
+      };
+
+      queue.on('ready', function() {
+
+        Promise.join(
+          queue.add({ order: 1 }, { delay: 1000 }),
+          queue.add({ order: 2 }, { delay: 1000 }),
+          queue.add({ order: 3 }, { delay: 1000 }),
+          queue.add({ order: 4 }, { delay: 1000 }),
+          queue.add({ order: 5 }, { delay: 1000 }),
+          queue.add({ order: 6 }, { delay: 1000 }),
+          queue.add({ order: 7 }, { delay: 1000 }),
+          queue.add({ order: 8 }, { delay: 1000 }),
+          queue.add({ order: 9 }, { delay: 1000 }),
+          queue.add({ order: 10 }, { delay: 1000 }),
+          queue.add({ order: 11 }, { delay: 1000 }),
+          queue.add({ order: 12 }, { delay: 1000 })
+        ).then(function () {
+          var now = Date.now();
+
+          return Promise.join(
+            client.hsetAsync('bull:' + queue.name + ':1', 'timestamp', now),
+            client.hsetAsync('bull:' + queue.name + ':2', 'timestamp', now),
+            client.hsetAsync('bull:' + queue.name + ':3', 'timestamp', now),
+            client.hsetAsync('bull:' + queue.name + ':4', 'timestamp', now),
+            client.hsetAsync('bull:' + queue.name + ':5', 'timestamp', now),
+            client.hsetAsync('bull:' + queue.name + ':6', 'timestamp', now),
+            client.hsetAsync('bull:' + queue.name + ':7', 'timestamp', now),
+            client.hsetAsync('bull:' + queue.name + ':8', 'timestamp', now),
+            client.hsetAsync('bull:' + queue.name + ':9', 'timestamp', now),
+            client.hsetAsync('bull:' + queue.name + ':10', 'timestamp', now),
+            client.hsetAsync('bull:' + queue.name + ':11', 'timestamp', now),
+            client.hsetAsync('bull:' + queue.name + ':12', 'timestamp', now),
+            client.hsetAsync('bull:' + queue.name + ':1', 'delay', 2000),
+            client.hsetAsync('bull:' + queue.name + ':2', 'delay', 2000),
+            client.hsetAsync('bull:' + queue.name + ':3', 'delay', 2000),
+            client.hsetAsync('bull:' + queue.name + ':4', 'delay', 2000),
+            client.hsetAsync('bull:' + queue.name + ':5', 'delay', 2000),
+            client.hsetAsync('bull:' + queue.name + ':6', 'delay', 2000),
+            client.hsetAsync('bull:' + queue.name + ':7', 'delay', 2000),
+            client.hsetAsync('bull:' + queue.name + ':8', 'delay', 2000),
+            client.hsetAsync('bull:' + queue.name + ':9', 'delay', 2000),
+            client.hsetAsync('bull:' + queue.name + ':10', 'delay', 2000),
+            client.hsetAsync('bull:' + queue.name + ':11', 'delay', 2000),
+            client.hsetAsync('bull:' + queue.name + ':12', 'delay', 2000)
+          ).then(function () {
+
+            queue.process(fn);
+          });
+        });
+      });
     });
   });
 
