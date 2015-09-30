@@ -396,6 +396,8 @@ describe('Queue', function () {
     });
 
     it('processes several stalled jobs when starting several queues', function (done) {
+      this.timeout(5000);
+
       var NUM_QUEUES = 10;
       var NUM_JOBS_PER_QUEUE = 20;
       var stalledQueues = [];
@@ -847,26 +849,30 @@ describe('Queue', function () {
       var order = 0;
       queue = new Queue('delayed queue multiple');
 
-      queue.process(function (job, jobDone) {
-        expect(order).to.be.below(job.data.order);
-        order = job.data.order;
+      queue.on('ready', function() {
 
-        jobDone();
-        if(order === 10) {
-          done();
-        }
+        queue.process(function (job, jobDone) {
+          expect(order).to.be.below(job.data.order);
+          order = job.data.order;
+
+          jobDone();
+          if(order === 10) {
+            done();
+          }
+        });
+
+        queue.add({ order: 1 }, { delay: 100 });
+        queue.add({ order: 6 }, { delay: 600 });
+        queue.add({ order: 10 }, { delay: 1000 });
+        queue.add({ order: 2 }, { delay: 200 });
+        queue.add({ order: 9 }, { delay: 900 });
+        queue.add({ order: 5 }, { delay: 500 });
+        queue.add({ order: 3 }, { delay: 300 });
+        queue.add({ order: 7 }, { delay: 700 });
+        queue.add({ order: 4 }, { delay: 400 });
+        queue.add({ order: 8 }, { delay: 800 });
+
       });
-
-      queue.add({ order: 1 }, { delay: 100 });
-      queue.add({ order: 6 }, { delay: 600 });
-      queue.add({ order: 10 }, { delay: 1000 });
-      queue.add({ order: 2 }, { delay: 200 });
-      queue.add({ order: 9 }, { delay: 900 });
-      queue.add({ order: 5 }, { delay: 500 });
-      queue.add({ order: 3 }, { delay: 300 });
-      queue.add({ order: 7 }, { delay: 700 });
-      queue.add({ order: 4 }, { delay: 400 });
-      queue.add({ order: 8 }, { delay: 800 });
     });
 
     it('should process delayed jobs in correct order even in case of restart', function (done) {
@@ -906,6 +912,40 @@ describe('Queue', function () {
             });
           });
         });
+    });
+
+    it('should process delayed jobs with exact same timestamps in correct order (FIFO)', function (done) {
+      var client = redis.createClient(6379, '127.0.0.1', {});
+      client = Promise.promisifyAll(client);
+      var QUEUE_NAME = 'delayed queue multiple' + uuid();
+      queue = new Queue(QUEUE_NAME);
+      var order = 1;
+
+      var fn = function (job, jobDone) {
+        expect(order).to.be.equal(job.data.order);
+        jobDone();
+
+        if(order === 12) {
+          done();
+        }
+
+        order++;
+      };
+
+      queue.on('ready', function() {
+        var now = Date.now();
+        var _promises = [];
+        var _i = 1;
+        for(_i; _i <= 12; _i++){
+          _promises.push(queue.add({ order: _i }, {
+            delay: 1000,
+            timestamp: now
+          }));
+        }
+        Promise.join.apply(null, _promises).then(function () {
+          queue.process(fn);
+        });
+      });
     });
   });
 
@@ -1016,6 +1056,114 @@ describe('Queue', function () {
       queue.on('failed', cb);
       queue.on('error', done);
     });
+  });
+
+  describe('Retries and backoffs', function() {
+
+    it('should automatically retry a failed job if attempts is bigger than 1', function(done) {
+      queue = buildQueue('test retries and backoffs');
+      queue.on('ready', function() {
+
+        var tries = 0;
+        queue.process(function (job, jobDone) {
+          tries++;
+          if(job.attemptsMade < 2){
+            throw new Error('Not yet!');
+          }
+          expect(job.attemptsMade).to.be(tries - 1);
+          jobDone();
+        });
+
+        queue.add({ foo: 'bar' }, {
+          attempts: 3
+        });
+      });
+      queue.on('completed', function() {
+        done();
+      });
+    });
+
+    it('should not retry a failed job more than the number of given attempts times', function(done) {
+      queue = buildQueue('test retries and backoffs');
+      var tries = 0;
+      queue.on('ready', function() {
+        queue.process(function (job, jobDone) {
+          tries++;
+          if(job.attemptsMade < 3){
+            throw new Error('Not yet!');
+          }
+          expect(job.attemptsMade).to.be(tries - 1);
+          jobDone();
+        });
+
+        queue.add({ foo: 'bar' }, {
+          attempts: 3
+        });
+      });
+      queue.on('completed', function() {
+        done(new Error('Failed job was retried more than it should be!'));
+      });
+      queue.on('failed', function() {
+        if(tries === 3){
+          done();
+        }
+      });
+    });
+
+    it('should retry a job after a delay if a fixed backoff is given', function(done) {
+      this.timeout(5000);
+      queue = buildQueue('test retries and backoffs');
+      var start;
+      queue.on('ready', function() {
+        queue.process(function (job, jobDone) {
+          if(job.attemptsMade < 2){
+            throw new Error('Not yet!');
+          }
+          jobDone();
+        });
+
+        start = Date.now();
+        queue.add({ foo: 'bar' }, {
+          attempts: 3,
+          backoff: 1000
+        });
+      });
+      queue.on('completed', function() {
+        var elapse = Date.now() - start;
+        expect(elapse).to.be.greaterThan(2000);
+        done();
+      });
+    });
+
+    it('should retry a job after a delay if an exponential backoff is given', function(done) {
+      this.timeout(5000);
+      queue = buildQueue('test retries and backoffs');
+      var start;
+      queue.on('ready', function() {
+        queue.process(function (job, jobDone) {
+          if(job.attemptsMade < 2){
+            throw new Error('Not yet!');
+          }
+          jobDone();
+        });
+
+        start = Date.now();
+        queue.add({ foo: 'bar' }, {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 1000
+          }
+        });
+      });
+      queue.on('completed', function() {
+        var elapse = Date.now() - start;
+        var expected = 1000 * (Math.pow(2, 2) - 1);
+        expect(elapse).to.be.greaterThan(expected);
+        done();
+      });
+    });
+
   });
 
   describe('Jobs getters', function () {

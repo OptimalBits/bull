@@ -217,6 +217,8 @@ describe('Priority queue', function(){
   });
 
   it('processes several stalled jobs when starting several queues', function(done){
+    this.timeout(5000);
+
     var NUM_QUEUES = 5;
     var NUM_JOBS_PER_QUEUE = 10;
     var stalledQueues = [];
