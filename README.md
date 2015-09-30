@@ -177,7 +177,7 @@ var userLisa = Queue('lisa');
 
 Queues are robust and can be run in parallel in several threads or processes
 without any risk of hazards or queue corruption. Check this simple example
-using cluster to parallelize jobs accross processes:
+using cluster to parallelize jobs across processes:
 ```javascript
 var
   Queue = require('bull'),
