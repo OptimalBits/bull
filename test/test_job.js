@@ -258,67 +258,107 @@ describe('Job', function(){
       });
     });
 
-    it('get job status', function() {
-      var client = Promise.promisifyAll(redis.createClient());
-      return Job.create(queue, 100, {foo: 'baz'}).then(function(job) {
-        return job.isStuck().then(function(yes) {
-          expect(yes).to.be(true);
-          return job.getState();
-        }).then(function(state) {
-          expect(state).to.be('stuck');
-          return job.moveToCompleted();
-        }).then(function (){
-          return job.isCompleted();
-        }).then(function (yes) {
-          expect(yes).to.be(true);
-          return job.getState();
-        }).then(function(state) {
-          expect(state).to.be('completed');
-          return client.sremAsync(queue.toKey('completed'), job.jobId);
-        }).then(function(){
-          return job.moveToDelayed(Date.now() + 10000);
-        }).then(function (){
-          return job.isDelayed();
-        }).then(function (yes) {
-          expect(yes).to.be(true);
-          return job.getState();
-        }).then(function(state) {
-          expect(state).to.be('delayed');
-          return client.zremAsync(queue.toKey('delayed'), job.jobId);
-        }).then(function() {
-          return job.moveToFailed(new Error('test'));
-        }).then(function (){
-          return job.isFailed();
-        }).then(function (yes) {
-          expect(yes).to.be(true);
-          return job.getState();
-        }).then(function(state) {
-          expect(state).to.be('failed');
-          return client.sremAsync(queue.toKey('failed'), job.jobId);
-        }).then(function(res) {
-          expect(res).to.be(1);
-          return job.getState();
-        }).then(function(state) {
-          expect(state).to.be('stuck');
-          return client.lpushAsync(queue.toKey('paused'), job.jobId);
-        }).then(function() {
-          return job.isPaused();
-        }).then(function (yes) {
-          expect(yes).to.be(true);
-          return job.getState();
-        }).then(function(state) {
-          expect(state).to.be('paused');
-          return client.rpopAsync(queue.toKey('paused'));
-        }).then(function() {
-          return client.lpushAsync(queue.toKey('wait'), job.jobId);
-        }).then(function() {
-          return job.isWaiting();
-        }).then(function (yes) {
-          expect(yes).to.be(true);
-          return job.getState();
-        }).then(function(state) {
-          expect(state).to.be('waiting');
+  });
+
+  describe('.promote', function() {
+
+    it('can promote a delayed job to be executed immediately', function() {
+      return Job.create(queue, 8, {foo: 'bar'}, {delay: 1500}).then(function(job){
+        var delay = job.timestamp + job.delay;
+        return job._addToDelayed(delay).then(function() {
+          return job.isDelayed().then(function(isDelayed) {
+            expect(isDelayed).to.be(true);
+          }).then(function() {
+            return job.promote();
+          }).then(function() {
+            return job.isDelayed().then(function(isDelayed) {
+              expect(isDelayed).to.be(false);
+              return job.isWaiting().then(function(isWaiting) {
+                expect(isWaiting).to.be(true);
+                return;
+              });
+            });
+          });
         });
+      });
+    });
+
+    it('should not promote a job that is not delayed', function() {
+      return Job.create(queue, 9, {foo: 'bar'}).then(function(job){
+        return job.isDelayed().then(function(isDelayed) {
+          expect(isDelayed).to.be(false);
+        }).then(function() {
+          return job.promote();
+        }).then(function() {
+          throw new Error('Job should not be promoted!');
+        }).catch(function(err) {
+          expect(err).to.be.ok();
+        });
+      });
+    });
+
+  });
+
+  it('get job status', function() {
+    var client = Promise.promisifyAll(redis.createClient());
+    return Job.create(queue, 100, {foo: 'baz'}).then(function(job) {
+      return job.isStuck().then(function(yes) {
+        expect(yes).to.be(true);
+        return job.getState();
+      }).then(function(state) {
+        expect(state).to.be('stuck');
+        return job.moveToCompleted();
+      }).then(function (){
+        return job.isCompleted();
+      }).then(function (yes) {
+        expect(yes).to.be(true);
+        return job.getState();
+      }).then(function(state) {
+        expect(state).to.be('completed');
+        return client.sremAsync(queue.toKey('completed'), job.jobId);
+      }).then(function(){
+        return job.moveToDelayed(Date.now() + 10000);
+      }).then(function (){
+        return job.isDelayed();
+      }).then(function (yes) {
+        expect(yes).to.be(true);
+        return job.getState();
+      }).then(function(state) {
+        expect(state).to.be('delayed');
+        return client.zremAsync(queue.toKey('delayed'), job.jobId);
+      }).then(function() {
+        return job.moveToFailed(new Error('test'));
+      }).then(function (){
+        return job.isFailed();
+      }).then(function (yes) {
+        expect(yes).to.be(true);
+        return job.getState();
+      }).then(function(state) {
+        expect(state).to.be('failed');
+        return client.sremAsync(queue.toKey('failed'), job.jobId);
+      }).then(function(res) {
+        expect(res).to.be(1);
+        return job.getState();
+      }).then(function(state) {
+        expect(state).to.be('stuck');
+        return client.lpushAsync(queue.toKey('paused'), job.jobId);
+      }).then(function() {
+        return job.isPaused();
+      }).then(function (yes) {
+        expect(yes).to.be(true);
+        return job.getState();
+      }).then(function(state) {
+        expect(state).to.be('paused');
+        return client.rpopAsync(queue.toKey('paused'));
+      }).then(function() {
+        return client.lpushAsync(queue.toKey('wait'), job.jobId);
+      }).then(function() {
+        return job.isWaiting();
+      }).then(function (yes) {
+        expect(yes).to.be(true);
+        return job.getState();
+      }).then(function(state) {
+        expect(state).to.be('waiting');
       });
     });
   });
