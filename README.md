@@ -382,7 +382,8 @@ __Arguments__
   opts.timeout {Number} The number of milliseconds after which the job
     should be fail with a timeout error [optional]
   returns {Promise} A promise that resolves when the job has been succesfully
-    added to the queue (or rejects if some error occured).
+    added to the queue (or rejects if some error occured). On success, the promise
+    resolves to the new Job.
 ```
 
 ---------------------------------------
