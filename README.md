@@ -139,6 +139,13 @@ queue.resume().then(function(){
 
 A queue emits also some useful events:
 ```javascript
+.on('ready', function() {
+  // Queue ready for job
+  // All Redis connections are done
+})
+.on('error', function(error) {
+  // Error
+})
 .on('active', function(job, jobPromise){
   // Job started
   // You can use jobPromise.cancel() to abort this job.
