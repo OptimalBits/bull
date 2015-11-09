@@ -153,7 +153,7 @@ A queue emits also some useful events:
 .on('progress', function(job, progress){
   // Job progress updated!
 })
-queue.on('completed', function(job, result){
+.on('completed', function(job, result){
   // Job completed with output result!
 })
 .on('failed', function(job, err){
