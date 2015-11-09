@@ -31,7 +31,7 @@
     "sinon": "^1.14.1"
   },
   "scripts": {
-    "test": "gulp && mocha test/test_* --reporter spec",
+    "test": "gulp && mocha test/test_* --reporter spec --timeout 5000",
     "postpublish": "git push && git push --tags"
   }
 }
