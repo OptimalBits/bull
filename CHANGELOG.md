@@ -1,3 +1,12 @@
+v0.7.0
+======
+
+- store the return value from the job handlers.
+- store stacktraces.
+- improvements in delayed jobs.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v0.6.0...v0.7.0)
+
 v0.4.0
 ======
 - added a Queue##clean method
