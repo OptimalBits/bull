@@ -1304,6 +1304,51 @@ describe('Queue', function () {
     });
   });
 
+  describe('Exception propagation', () => {
+    it('throws exceptions in complete handler', function (done) {
+
+      queue = buildQueue();
+      queue.process(function (job, jobDone) {
+        jobDone();
+      });
+
+      var handler = process.listeners('uncaughtException').pop()
+      process.removeListener('uncaughtException', handler);
+
+      process.once('uncaughtException', function(){
+        process.on('uncaughtException', handler);
+        done()
+      })
+
+      queue.on('completed', function () {
+        throw new Error('Error')
+      });
+
+      queue.add({});
+    });
+
+    it('throws exceptions in failed handler', function (done) {
+      queue = buildQueue();
+      queue.process(function (job, jobDone) {
+        jobDone(new Error('Failing Job'));
+      });
+
+      var handler = process.listeners('uncaughtException').pop()
+      process.removeListener('uncaughtException', handler);
+
+      process.once('uncaughtException', function(){
+        process.on('uncaughtException', handler);
+        done()
+      })
+
+      queue.on('failed', function () {
+        throw new Error('Error')
+      });
+
+      queue.add({});
+    });
+  })
+
   describe('Cleaner', function () {
     beforeEach(function () {
       queue = buildQueue('cleaner' + uuid());
