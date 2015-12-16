@@ -139,6 +139,13 @@ queue.resume().then(function(){
 
 A queue emits also some useful events:
 ```javascript
+.on('ready', function() {
+  // Queue ready for job
+  // All Redis connections are done
+})
+.on('error', function(error) {
+  // Error
+})
 .on('active', function(job, jobPromise){
   // Job started
   // You can use jobPromise.cancel() to abort this job.
@@ -146,7 +153,7 @@ A queue emits also some useful events:
 .on('progress', function(job, progress){
   // Job progress updated!
 })
-queue.on('completed', function(job, result){
+.on('completed', function(job, result){
   // Job completed with output result!
 })
 .on('failed', function(job, err){
@@ -382,7 +389,8 @@ __Arguments__
   opts.timeout {Number} The number of milliseconds after which the job
     should be fail with a timeout error [optional]
   returns {Promise} A promise that resolves when the job has been succesfully
-    added to the queue (or rejects if some error occured).
+    added to the queue (or rejects if some error occured). On success, the promise
+    resolves to the new Job.
 ```
 
 ---------------------------------------
