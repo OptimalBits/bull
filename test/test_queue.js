@@ -575,6 +575,28 @@ describe('Queue', function () {
       });
     });
 
+
+    it('process a job that returns data with a circular dependency', function(done){
+      queue = buildQueue();
+
+      queue.on('error', function (err) {
+        done(err);
+      });
+      queue.on('failed', function () {
+        done();
+      });
+      queue.on('completed', function () {
+        done(Error('Should not complete'));
+      });
+      queue.process(function (job) {
+        var circular = {};
+        circular.x = circular;
+        return Promise.resolve(circular);
+      });
+
+      queue.add('foobar');
+    });
+
     it('process a job that returns a rejected promise', function (done) {
       var jobError = new Error('Job Failed');
       queue = buildQueue();
