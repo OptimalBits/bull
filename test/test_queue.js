@@ -81,6 +81,21 @@ describe('Queue', function () {
       return closePromise;
     });
 
+    it('should close if the job expires after the LOCK_RENEW_TIME', function (done) {
+      var closeQueue = new Queue('close timeout');
+      closeQueue.LOCK_RENEW_TIME = 10;
+      closeQueue.process(function () {
+        return Promise.delay(40);
+      });
+
+      closeQueue.on('completed', function () {
+        closeQueue.close().then(function () {
+          done();
+        });
+      });
+      closeQueue.add({ foo: 'bar' });
+    });
+
     describe('should be callable from within', function () {
       it('a job handler that takes a callback', function (done) {
         this.timeout(6000);
