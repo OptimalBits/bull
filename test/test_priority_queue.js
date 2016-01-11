@@ -13,7 +13,7 @@ var redis = require('redis');
 
 var STD_QUEUE_NAME = 'test queue';
 
-function buildQueue(name) {
+function buildQueue(name){
   var qName = name || STD_QUEUE_NAME;
   return new Queue(qName, 6379, '127.0.0.1');
 }
@@ -37,52 +37,66 @@ describe('Priority queue', function(){
 
   it('allow custom clients', function(){
     var clients = 0;
-    queue = new Queue(STD_QUEUE_NAME, {redis: {opts: {createClient: function(){
-      clients++;
-      return redis.createClient();
-    }}}});
+    queue = new Queue(STD_QUEUE_NAME, {
+      redis: {
+        opts: {
+          createClient: function(){
+            clients++;
+            return redis.createClient();
+          }
+        }
+      }
+    });
     expect(clients).to.be(15);
   });
 
-  describe('.close', function () {
+  describe('.close', function(){
     var testQueue;
 
-    beforeEach(function () {
+    beforeEach(function(){
       testQueue = buildQueue('test');
     });
 
-    it('should return a promise', function () {
+    it('should return a promise', function(){
       var closePromise = testQueue.close().then(function(){
         expect(closePromise).to.be.a(Promise);
       });
     });
 
-    describe('should be callable from within', function () {
-      it('a job handler that takes a callback', function (done) {
+    describe('should be callable from within', function(){
+      it('a job handler that takes a callback', function(done){
         this.timeout(6000);
 
-        testQueue.process(function (job, jobDone) {
+        testQueue.process(function(job, jobDone){
           expect(job.data.foo).to.be('bar');
-          testQueue.close().then(function () { done(); });
+          testQueue.close().then(function(){
+            done();
+          });
           jobDone();
         });
 
-        testQueue.add({ foo: 'bar' }).then(function (job) {
+        testQueue.add({
+          foo: 'bar'
+        }).then(function(job){
           expect(job.jobId).to.be.ok();
           expect(job.data.foo).to.be('bar');
         });
       });
 
-      it('a job handler that returns a promise', function (done) {
+      it('a job handler that returns a promise', function(done){
         this.timeout(6000);
 
-        testQueue.process(function (job) {
+        testQueue.process(function(job){
           expect(job.data.foo).to.be('bar');
-          testQueue.close().then(function () { done(); });
+          testQueue.close().then(function(){
+            done();
+          });
           return Promise.resolve();
         });
 
-        testQueue.add({ foo: 'bar' }).then(function (job) {
+        testQueue.add({
+          foo: 'bar'
+        }).then(function(job){
           expect(job.jobId).to.be.ok();
           expect(job.data.foo).to.be('bar');
         });
@@ -93,7 +107,9 @@ describe('Priority queue', function(){
   it('creates a queue with dots in its name', function(){
     queue = new Queue('using. dots. in.name.');
 
-    return queue.add({foo: 'bar'}).then(function(job){
+    return queue.add({
+        foo: 'bar'
+      }).then(function(job){
         expect(job.jobId).to.be.ok();
         expect(job.data.foo).to.be('bar');
       })
@@ -101,6 +117,47 @@ describe('Priority queue', function(){
         queue.process(function(job, jobDone){
           expect(job.data.foo).to.be.equal('bar');
           jobDone();
+        });
+      });
+  });
+
+  it('processes jobs by priority', function(done){
+    queue = buildQueue();
+
+    var normalPriority = [],
+      mediumPriority = [],
+      highPriority = [];
+
+    // for the current strategy this number should not exceed 8 (2^2*2)
+    // this is done to maitain a deterministic output.
+    var numJobsPerPriority = 6;
+
+    for(var i = 0; i < numJobsPerPriority; i++){
+      normalPriority.push(queue.add({p: 1}, {priority: 'normal'}));
+      mediumPriority.push(queue.add({p: 2}, {priority: 'medium'}));
+      highPriority.push(queue.add({p: 3}, {priority: 'high'}));
+    }
+
+    // wait for all jobs to enter the queue and then start processing
+    Promise
+      .all(normalPriority, mediumPriority, highPriority)
+      .then(function(){
+        var currentPriority = 3;
+        var counter = 0;
+        queue.process(function(job, jobDone){
+          expect(job.jobId).to.be.ok();
+          expect(job.data.p).to.be(currentPriority);
+
+          jobDone();
+
+          if(++counter === numJobsPerPriority){
+            currentPriority--;
+            counter = 0;
+
+            if(currentPriority < 1){
+              done();
+            }
+          }
         });
       });
   });
@@ -113,7 +170,9 @@ describe('Priority queue', function(){
       done();
     });
 
-    queue.add({foo: 'bar'}).then(function(job){
+    queue.add({
+      foo: 'bar'
+    }).then(function(job){
       expect(job.jobId).to.be.ok();
       expect(job.data.foo).to.be('bar');
     }).catch(done);
@@ -127,7 +186,9 @@ describe('Priority queue', function(){
       jobDone();
     });
 
-    queue.add({foo: 'bar'}).then(function(job){
+    queue.add({
+      foo: 'bar'
+    }).then(function(job){
       expect(job.jobId).to.be.ok();
       expect(job.data.foo).to.be('bar');
     }).catch(done);
@@ -146,7 +207,9 @@ describe('Priority queue', function(){
       jobDone(null, 37);
     });
 
-    queue.add({foo: 'bar'}).then(function(job){
+    queue.add({
+      foo: 'bar'
+    }).then(function(job){
       expect(job.jobId).to.be.ok();
       expect(job.data.foo).to.be('bar');
     }).catch(done);
@@ -162,27 +225,35 @@ describe('Priority queue', function(){
     var queueStalled = buildQueue('test queue stalled');
     queueStalled.setLockRenewTime(10);
     var jobs = [
-      queueStalled.add({bar: 'baz'}),
-      queueStalled.add({bar1: 'baz1'}),
-      queueStalled.add({bar2: 'baz2'}),
-      queueStalled.add({bar3: 'baz3'})
+      queueStalled.add({
+        bar: 'baz'
+      }),
+      queueStalled.add({
+        bar1: 'baz1'
+      }),
+      queueStalled.add({
+        bar2: 'baz2'
+      }),
+      queueStalled.add({
+        bar3: 'baz3'
+      })
     ];
 
-    queueStalled.empty().then(function() {
+    queueStalled.empty().then(function(){
       Promise.all(jobs).then(function(){
-        return queueStalled.process(function() {
+        return queueStalled.process(function(){
           // instead of completing we just force-close the queue to simulate a crash.
-          return queueStalled.disconnect().then(function() {
+          return queueStalled.disconnect().then(function(){
             var queue2 = buildQueue('test queue stalled');
-            var doneAfterFour = _.after(4, function () {
+            var doneAfterFour = _.after(4, function(){
               done();
             });
 
-            queue2.on('completed', function () {
+            queue2.on('completed', function(){
               doneAfterFour();
             });
 
-            queue2.process(function (job, jobDone) {
+            queue2.process(function(job, jobDone){
               jobDone();
             });
           });
@@ -195,10 +266,18 @@ describe('Priority queue', function(){
     var queueStalled = buildQueue('test queue added before');
     queueStalled.setLockRenewTime(10);
     var jobs = [
-      queueStalled.add({bar: 'baz'}),
-      queueStalled.add({bar1: 'baz1'}),
-      queueStalled.add({bar2: 'baz2'}),
-      queueStalled.add({bar3: 'baz3'})
+      queueStalled.add({
+        bar: 'baz'
+      }),
+      queueStalled.add({
+        bar1: 'baz1'
+      }),
+      queueStalled.add({
+        bar2: 'baz2'
+      }),
+      queueStalled.add({
+        bar3: 'baz3'
+      })
     ];
 
     return Promise.all(jobs)
@@ -230,7 +309,9 @@ describe('Priority queue', function(){
       stalledQueue.setLockRenewTime(10);
 
       for(var j = 0; j < NUM_JOBS_PER_QUEUE; j++){
-        jobs.push(stalledQueue.add({job: j}));
+        jobs.push(stalledQueue.add({
+          job: j
+        }));
       }
     }
 
@@ -238,7 +319,7 @@ describe('Priority queue', function(){
       var processed = 0;
       var procFn = function(){
         // instead of completing we just force-close the queue to simulate a crash.
-        this.disconnect().then(function() {
+        this.disconnect().then(function(){
           processed++;
           if(processed === stalledQueues.length){
             setTimeout(function(){
@@ -250,7 +331,7 @@ describe('Priority queue', function(){
               var counter = 0;
               queue2.on('completed', function(){
                 counter++;
-                if(counter === NUM_QUEUES * NUM_JOBS_PER_QUEUE) {
+                if(counter === NUM_QUEUES * NUM_JOBS_PER_QUEUE){
                   queue2.close().then(function(){
                     done();
                   });
@@ -274,7 +355,9 @@ describe('Priority queue', function(){
     var queueName = uuid();
     queue = buildQueue(queueName);
 
-    queue.add({foo: 'bar'}).then(function(addedJob){
+    queue.add({
+      foo: 'bar'
+    }).then(function(addedJob){
       queue.process(function(job, jobDone){
         expect(job.data.foo).to.be.equal('bar');
 
@@ -308,7 +391,9 @@ describe('Priority queue', function(){
       jobDone(jobError);
     });
 
-    queue.add({foo: 'bar'}).then(function(job){
+    queue.add({
+      foo: 'bar'
+    }).then(function(job){
       expect(job.jobId).to.be.ok();
       expect(job.data.foo).to.be('bar');
     }, function(err){
@@ -333,7 +418,9 @@ describe('Priority queue', function(){
       throw jobError;
     });
 
-    queue.add({foo: 'bar'}).then(function(job){
+    queue.add({
+      foo: 'bar'
+    }).then(function(job){
       expect(job.jobId).to.be.ok();
       expect(job.data.foo).to.be('bar');
     }, function(err){
@@ -365,7 +452,10 @@ describe('Priority queue', function(){
     });
 
     for(var i = 1; i <= maxJobs; i++){
-      queue.add({foo: 'bar', num: i});
+      queue.add({
+        foo: 'bar',
+        num: i
+      });
     }
   });
 
@@ -376,7 +466,10 @@ describe('Priority queue', function(){
     queue = buildQueue();
 
     for(var i = 1; i <= maxJobs; i++){
-      added.push(queue.add({foo: 'bar', num: i}));
+      added.push(queue.add({
+        foo: 'bar',
+        num: i
+      }));
     }
 
     return Promise.all(added)
@@ -392,7 +485,8 @@ describe('Priority queue', function(){
   });
 
   it('add jobs to a paused queue', function(done){
-    var ispaused = false, counter = 2;
+    var ispaused = false,
+      counter = 2;
 
     queue = buildQueue();
 
@@ -410,8 +504,12 @@ describe('Priority queue', function(){
 
     ispaused = true;
 
-    queue.add({foo: 'paused'});
-    queue.add({foo: 'paused'});
+    queue.add({
+      foo: 'paused'
+    });
+    queue.add({
+      foo: 'paused'
+    });
 
     setTimeout(function(){
       ispaused = false;
@@ -421,7 +519,9 @@ describe('Priority queue', function(){
   });
 
   it('paused a running queue', function(done){
-    var ispaused = false, isresumed = true, first = true;
+    var ispaused = false,
+      isresumed = true,
+      first = true;
 
     queue = buildQueue();
 
@@ -434,14 +534,18 @@ describe('Priority queue', function(){
         first = false;
         queue.pause();
         ispaused = true;
-      }else{
+      } else{
         expect(isresumed).to.be(true);
         done();
       }
     });
 
-    queue.add({foo: 'paused'});
-    queue.add({foo: 'paused'});
+    queue.add({
+      foo: 'paused'
+    });
+    queue.add({
+      foo: 'paused'
+    });
 
     queue.on('paused', function(){
       setTimeout(function(){
@@ -456,7 +560,8 @@ describe('Priority queue', function(){
   });
 
   it('process a lifo queue', function(done){
-    var currentValue = 0, first = true;
+    var currentValue = 0,
+      first = true;
     queue = new Queue('test lifo');
 
     queue.once('ready', function(){
@@ -475,12 +580,18 @@ describe('Priority queue', function(){
       });
 
       // Add a job to pend proccessing
-      queue.add({'count': 0}).then(function(){
-        Promise.delay(500).then(function() {
+      queue.add({
+        'count': 0
+      }).then(function(){
+        Promise.delay(500).then(function(){
           queue.pause().then(function(){
             // Add a series of jobs in a predictable order
             var fn = function(cb){
-              queue.add({'count': ++currentValue}, {'lifo': true}).then(cb);
+              queue.add({
+                'count': ++currentValue
+              }, {
+                'lifo': true
+              }).then(cb);
             };
             fn(fn(fn(fn(function(){
               queue.resume();
@@ -494,7 +605,11 @@ describe('Priority queue', function(){
   describe('Jobs getters', function(){
     it('should get waitting jobs', function(done){
       queue = buildQueue();
-      Promise.join(queue.add({foo: 'bar'}), queue.add({baz: 'qux'})).then(function(){
+      Promise.join(queue.add({
+        foo: 'bar'
+      }), queue.add({
+        baz: 'qux'
+      })).then(function(){
         queue.getWaiting().then(function(jobs){
           expect(jobs).to.be.a('array');
           expect(jobs.length).to.be.equal(2);
@@ -517,7 +632,9 @@ describe('Priority queue', function(){
         jobDone();
       });
 
-      queue.add({foo: 'bar'});
+      queue.add({
+        foo: 'bar'
+      });
     });
 
     it('should get completed jobs', function(done){
@@ -541,8 +658,12 @@ describe('Priority queue', function(){
         }
       });
 
-      queue.add({foo: 'bar'});
-      queue.add({baz: 'qux'});
+      queue.add({
+        foo: 'bar'
+      });
+      queue.add({
+        baz: 'qux'
+      });
     });
 
     it('should get failed jobs', function(done){
@@ -565,8 +686,12 @@ describe('Priority queue', function(){
         }
       });
 
-      queue.add({foo: 'bar'});
-      queue.add({baz: 'qux'});
+      queue.add({
+        foo: 'bar'
+      });
+      queue.add({
+        baz: 'qux'
+      });
     });
 
     it('fails jobs that exceed their specified timeout', function(done){
@@ -586,7 +711,9 @@ describe('Priority queue', function(){
         done(error);
       });
 
-      queue.add({some: 'data'}, {
+      queue.add({
+        some: 'data'
+      }, {
         timeout: 100
       });
     });
