@@ -81,6 +81,21 @@ describe('Queue', function () {
       return closePromise;
     });
 
+    it('should close if the job expires after the LOCK_RENEW_TIME', function (done) {
+      var closeQueue = new Queue('close timeout');
+      closeQueue.LOCK_RENEW_TIME = 10;
+      closeQueue.process(function () {
+        return Promise.delay(40);
+      });
+
+      closeQueue.on('completed', function () {
+        closeQueue.close().then(function () {
+          done();
+        });
+      });
+      closeQueue.add({ foo: 'bar' });
+    });
+
     describe('should be callable from within', function () {
       it('a job handler that takes a callback', function (done) {
         this.timeout(6000);
@@ -573,6 +588,28 @@ describe('Queue', function () {
         expect(err).to.be.eql(jobError);
         done();
       });
+    });
+
+
+    it('process a job that returns data with a circular dependency', function(done){
+      queue = buildQueue();
+
+      queue.on('error', function (err) {
+        done(err);
+      });
+      queue.on('failed', function () {
+        done();
+      });
+      queue.on('completed', function () {
+        done(Error('Should not complete'));
+      });
+      queue.process(function (job) {
+        var circular = {};
+        circular.x = circular;
+        return Promise.resolve(circular);
+      });
+
+      queue.add('foobar');
     });
 
     it('process a job that returns a rejected promise', function (done) {
