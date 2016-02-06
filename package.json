@@ -17,7 +17,7 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
-    "bluebird": "^2.10.2",
+    "bluebird": "^3.2.2",
     "lodash": "^3.10.1",
     "node-uuid": "^1.4.7",
     "redis": "^2.4.2",
