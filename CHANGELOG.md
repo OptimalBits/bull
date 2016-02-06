@@ -1,3 +1,10 @@
+v0.7.1
+======
+
+- fixed storing of stacktraces
+
+[Changes](https://github.com/OptimalBits/bull/compare/v0.7.0...v0.7.1)v0.7.1
+
 v0.7.0
 ======
 
