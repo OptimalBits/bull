@@ -718,4 +718,116 @@ describe('Priority queue', function(){
       });
     });
   });
+
+  describe('Cleaner', function () {
+    beforeEach(function () {
+      queue = buildQueue('cleaner' + uuid());
+    });
+
+    it('should reject the cleaner with no grace', function(done){
+      queue.clean().then(function () {
+        done(new Error('Promise should not resolve'));
+      }, function (err) {
+        expect(err).to.be.a(Error);
+        done();
+      });
+    });
+
+    it('should reject the cleaner an unknown type', function (done) {
+      queue.clean(0, 'bad').then(function () {
+        done(new Error('Promise should not resolve'));
+      }, function (e) {
+        expect(e).to.be.a(Error);
+        done();
+      });
+    });
+
+    it('should clean an empty queue', function (done) {
+      queue.clean(0);
+      queue.on('error', function (err) {
+        done(err);
+      });
+      queue.on('cleaned', function (jobs, type) {
+        expect(type).to.be('completed');
+        expect(jobs.length).to.be(0);
+        done();
+      });
+    });
+
+    it('should clean two jobs from the queue', function (done) {
+      queue.add({some: 'data'}, {priority: 'normal'});
+      queue.add({some: 'data'}, {priority: 'normal'});
+      queue.process(function (job, jobDone) {
+        jobDone();
+      });
+      Promise.delay(100).then(function () {
+        return queue.clean(0);
+      }).then(function (jobs) {
+        expect(jobs.length).to.be(2);
+        done();
+      }, function (err) {
+        done(err);
+      });
+    });
+
+    it('should only remove a job outside of the grace period', function (done) {
+      queue.process(function (job, jobDone) {
+        jobDone();
+      });
+      queue.add({some: 'data'}, {priority: 'normal'});
+      queue.add({some: 'data'}, {priority: 'normal'});
+      Promise.delay(200).then(function () {
+        queue.add({some: 'data'});
+        queue.clean(100);
+      }).delay(100).then(function () {
+        return queue.getCompleted();
+      }).then(function (jobs) {
+        expect(jobs.length).to.be(1);
+        return queue.empty();
+      }).then(function () {
+        done();
+      });
+    });
+
+    it('should clean all failed jobs', function (done) {
+      queue.add({some: 'data'}, {priority: 'normal'});
+      queue.add({some: 'data'}, {priority: 'normal'});
+      queue.process(function (job, jobDone) {
+        jobDone(new Error('It failed'));
+      });
+      Promise.delay(100).then(function () {
+        return queue.clean(0, 'failed');
+      }).then(function (jobs) {
+        expect(jobs.length).to.be(2);
+        return queue.count();
+      }).then(function(len) {
+        expect(len).to.be(0);
+        done();
+      });
+    });
+
+    it('should clean a job without a timestamp', function (done) {
+      var client = redis.createClient(6379, '127.0.0.1', {});
+
+      queue.add({some: 'data'}, {priority: 'normal'});
+      queue.add({some: 'data'}, {priority: 'normal'});
+      queue.process(function (job, jobDone) {
+        jobDone(new Error('It failed'));
+      });
+
+      Promise.delay(100).then(function () {
+        return new Promise(function(resolve) {
+          client.hdel('bull:' + queue.name + ':1', 'timestamp', resolve);
+        });
+      }).then(function() {
+        return queue.clean(0, 'failed');
+      }).then(function (jobs) {
+        expect(jobs.length).to.be(2);
+        return queue.getFailed();
+      }).then(function(failed) {
+        expect(failed.length).to.be(0);
+        done();
+      });
+    });
+  });
 });
