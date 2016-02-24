@@ -126,7 +126,7 @@ videoQueue.process(function(job){ // don't forget to remove the done callback!
 });
 ```
 
-A queue can be paused and resumed:
+A queue can be paused and resumed globally:
 ```javascript
 queue.pause().then(function(){
   // queue is paused now
@@ -280,6 +280,8 @@ listened by some other service that stores the results in a database.
 * [Queue##add](#add)
 * [Queue##pause](#pause)
 * [Queue##resume](#resume)
+* [Queue##pauseLocal](#pauseLocal)
+* [Queue##resumeLocal](#resumeLocal)
 * [Queue##count](#count)
 * [Queue##empty](#empty)
 * [Queue##clean](#clean)
@@ -421,6 +423,42 @@ __Arguments__
 Returns a promise that resolves when the queue is resumed after being paused.
 The resume is global, meaning that all workers in all queue instances for
 a given queue will be resumed.
+
+Resuming a queue that is not paused does nothing.
+
+__Arguments__
+
+```javascript
+  returns {Promise} A promise that resolves when the queue is resumed.
+```
+
+---------------------------------------
+
+
+<a name="pause"/>
+#### Queue##pauseLocal()
+
+Returns a promise that resolves when the queue is paused. Unlike its global
+counterpart, this pauses only this queue instance. It is useful if you're
+shutting down the server. A paused queue will not process new jobs until resumed, but
+current jobs being processed will continue until they are finalized.
+
+Pausing a queue that is already paused does nothing.
+
+__Arguments__
+
+```javascript
+  returns {Promise} A promise that resolves when the queue is paused.
+```
+
+---------------------------------------
+
+
+<a name="resume"/>
+#### Queue##resumeLocal()
+
+Returns a promise that resolves when the queue is resumed after being paused.
+Unlike its global counterpart, it resumes only this queue instance.
 
 Resuming a queue that is not paused does nothing.
 
