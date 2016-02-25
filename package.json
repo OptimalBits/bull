@@ -18,7 +18,7 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "bluebird": "^3.2.2",
-    "lodash": "^3.10.1",
+    "lodash": "^4.2.1",
     "node-uuid": "^1.4.7",
     "redis": "^2.4.2",
     "semver": "^4.2.0"
