@@ -445,6 +445,8 @@ current jobs being processed will continue until they are finalized.
 
 Pausing a queue that is already paused does nothing.
 
+Calling this method will set `Queue##isPausedLocal` to `true`.
+
 __Arguments__
 
 ```javascript
@@ -461,6 +463,8 @@ Returns a promise that resolves when the queue is resumed after being paused.
 Unlike its global counterpart, it resumes only this queue instance.
 
 Resuming a queue that is not paused does nothing.
+
+Calling this method will set `Queue##isPausedLocal` to `false`.
 
 __Arguments__
 
