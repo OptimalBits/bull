@@ -402,8 +402,7 @@ __Arguments__
 
 Returns a promise that resolves when the queue is paused. A paused queue will not 
 process new jobs until resumed, but current jobs being processed will continue until
-they are finalized. The pause can be either global or local. If global, all workers in all queue instances for a given queue will be paused. If local, just this worker will stop processing new jobs. This can be useful to stop a worker from
-taking new jobs prior to shutting down.
+they are finalized. The pause can be either global or local. If global, all workers in all queue instances for a given queue will be paused. If local, just this worker will stop processing new jobs after the current lock expires. This can be useful to stop a worker from taking new jobs prior to shutting down.
 
 Pausing a queue that is already paused does nothing.
 

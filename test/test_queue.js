@@ -840,6 +840,9 @@ describe('Queue', function () {
       queue = buildQueue();
 
       queue.pause(true /* Local */).then(function(){
+        // Add the worker after the queue is in paused mode since the normal behavior is to pause
+        // it after the current lock expires. This way, we can ensure there isn't a lock already
+        // to test that pausing behavior works.
         queue.process(function(job, done){
           expect(queue.paused).not.to.be.ok();
           done();
