@@ -834,6 +834,30 @@ describe('Queue', function () {
       });
     });
 
+    it('should pause the queue locally', function(testDone){
+      var ispaused = false, counter = 2;
+
+      queue = buildQueue();
+
+      queue.pause(true /* Local */).then(function(){
+        queue.process(function(job, done){
+          expect(queue.paused).not.to.be.ok();
+          done();
+          counter--;
+          if(counter === 0){
+            testDone();
+          }
+        });
+      }).then(function(){
+        return queue.add({ foo: 'paused' });
+      }).then(function(){
+        return queue.add({ foo: 'paused' });
+      }).then(function(){
+        expect(counter).to.be(2);
+        expect(queue.paused).to.be.ok(); // Parameter should exist.
+        return queue.resume(true /* Local */);
+      });
+    });
   });
 
   it('should publish a message when a new message is added to the queue', function (done) {
