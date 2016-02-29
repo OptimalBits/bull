@@ -265,19 +265,16 @@ describe('Job', function(){
 
     it('can promote a delayed job to be executed immediately', function() {
       return Job.create(queue, {foo: 'bar'}, {delay: 1500}).then(function(job){
-        var delay = job.timestamp + job.delay;
-        return job._addToDelayed(delay).then(function() {
+        return job.isDelayed().then(function(isDelayed) {
+          expect(isDelayed).to.be(true);
+        }).then(function() {
+          return job.promote();
+        }).then(function() {
           return job.isDelayed().then(function(isDelayed) {
-            expect(isDelayed).to.be(true);
-          }).then(function() {
-            return job.promote();
-          }).then(function() {
-            return job.isDelayed().then(function(isDelayed) {
-              expect(isDelayed).to.be(false);
-              return job.isWaiting().then(function(isWaiting) {
-                expect(isWaiting).to.be(true);
-                return;
-              });
+            expect(isDelayed).to.be(false);
+            return job.isWaiting().then(function(isWaiting) {
+              expect(isWaiting).to.be(true);
+              return;
             });
           });
         });
@@ -300,14 +297,17 @@ describe('Job', function(){
 
   });
 
-  it.skip('get job status', function() {
+  // TODO:
+  // Divide into several tests
+  //
+  it('get job status', function() {
     var client = Promise.promisifyAll(redis.createClient());
     return Job.create(queue, {foo: 'baz'}).then(function(job) {
       return job.isStuck().then(function(yes) {
-        expect(yes).to.be(true);
+        expect(yes).to.be(false);
         return job.getState();
       }).then(function(state) {
-        expect(state).to.be('stuck');
+        expect(state).to.be('waiting');
         return job.moveToCompleted();
       }).then(function (){
         return job.isCompleted();
@@ -341,7 +341,9 @@ describe('Job', function(){
         expect(res).to.be(1);
         return job.getState();
       }).then(function(state) {
-        expect(state).to.be('stuck');
+        expect(state).to.be('waiting');
+        return client.rpopAsync(queue.toKey('wait'));
+      }).then(function(){
         return client.lpushAsync(queue.toKey('paused'), job.jobId);
       }).then(function() {
         return job.isPaused();
