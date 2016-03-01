@@ -416,12 +416,16 @@ describe('Queue', function () {
         });
 
         setTimeout(function(){
+          var stalledCallback = sandbox.spy();
+
           return queueStalled.disconnect().then(function(){
             var queue2 = new Queue('test queue stalled', 6379, '127.0.0.1');
             var doneAfterFour = _.after(4, function () {
+              expect(stalledCallback.calledOnce).to.be(true);
               done();
             });
             queue2.on('completed', doneAfterFour);
+            queue2.on('stalled', stalledCallback);
 
             queue2.process(function (job, jobDone2) {
               jobDone2();
