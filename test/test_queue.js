@@ -49,7 +49,7 @@ describe('Queue', function () {
   var queue;
   var sandbox = sinon.sandbox.create();
 
-  before(function(){
+  beforeEach(function(){
     var client = redis.createClient();
     return client.flushdbAsync();
   });
@@ -179,7 +179,7 @@ describe('Queue', function () {
         expect(queue.client.selected_db).to.be(0);
         expect(queue.bclient.selected_db).to.be(0);
 
-        done();
+        queue.close().then(done);
       });
     });
 
@@ -196,7 +196,7 @@ describe('Queue', function () {
         expect(queue.client.selected_db).to.be(1);
         expect(queue.bclient.selected_db).to.be(1);
 
-        done();
+        queue.close().then(done);
       });
     });
 
@@ -209,7 +209,8 @@ describe('Queue', function () {
 
         expect(queue.client.selected_db).to.be(0);
         expect(queue.bclient.selected_db).to.be(0);
-        done();
+
+        queue.close().then(done);
       });
     });
 
@@ -224,6 +225,8 @@ describe('Queue', function () {
           expect(job.data.foo).to.be.equal('bar');
           jobDone();
         });
+      }).then(function(){
+        return queue.close();
       });
     });
   });
@@ -236,7 +239,7 @@ describe('Queue', function () {
       }).process(function (job, jobDone) {
         expect(job.data.foo).to.be.equal('bar');
         jobDone();
-        done();
+        queue.close().then(done);
       });
 
       // Simulate disconnect
@@ -254,7 +257,7 @@ describe('Queue', function () {
       queue.process(function (job, jobDone) {
         expect(runSpy.callCount).to.be(2);
         jobDone();
-        done();
+        queue.close().then(done);
       });
 
       expect(runSpy.callCount).to.be(1);
@@ -272,7 +275,7 @@ describe('Queue', function () {
 
       setTimeout(function () {
         expect(runSpy.callCount).to.be(0);
-        done();
+        queue.close().then(done);
       }, 100);
     });
   });
@@ -280,15 +283,14 @@ describe('Queue', function () {
   describe(' a worker', function () {
 
     beforeEach(function(){
-      queue = buildQueue();
-      return queue.clean(1000);
+      var client = redis.createClient();
+      return client.flushdbAsync().then(function(){
+        queue = buildQueue();
+      });
     });
 
-    afterEach(function(done){
-      var client = redis.createClient();
-      client.flushdb(function(err){
-        done(err);
-      });
+    afterEach(function(){
+      return queue.close();
     });
 
     it('should process a job', function (done) {
@@ -301,7 +303,27 @@ describe('Queue', function () {
       queue.add({ foo: 'bar' }).then(function (job) {
         expect(job.jobId).to.be.ok();
         expect(job.data.foo).to.be('bar');
-      }).catch(done);
+      }, done);
+    });
+
+    it('process several jobs serially', function (done) {
+      this.timeout(5000);
+      var counter = 1;
+      var maxJobs = 35;
+
+      queue.process(function (job, jobDone) {
+        expect(job.data.num).to.be.equal(counter);
+        expect(job.data.foo).to.be.equal('bar');
+        jobDone();
+        if(counter === maxJobs) {
+          done();
+        }
+        counter++;
+      });
+
+      for(var i = 1; i <= maxJobs; i++) {
+        queue.add({ foo: 'bar', num: i });
+      }
     });
 
     it('process a job that updates progress', function (done) {
@@ -452,7 +474,7 @@ describe('Queue', function () {
       return null;
     });
 
-    it('processes jobs that were added before the queue backend started', function () {
+    it.skip('processes jobs that were added before the queue backend started', function () {
       var queueStalled = new Queue('test queue added before', 6379, '127.0.0.1');
       queueStalled.LOCK_RENEW_TIME = 10;
       var jobs = [
@@ -473,6 +495,8 @@ describe('Queue', function () {
         return new Promise(function (resolve) {
           var resolveAfterAllJobs = _.after(jobs.length, resolve);
           queue.on('completed', resolveAfterAllJobs);
+        }).then(function(){
+          return queueStalled.close();
         });
       });
     });
@@ -539,8 +563,6 @@ describe('Queue', function () {
       var err = null;
       var anotherQueue;
 
-      queue = buildQueue();
-
       queue.add({ foo: 'bar' }).then(function (addedJob) {
         queue.process(function (job, jobDone) {
           expect(job.data.foo).to.be.equal('bar');
@@ -548,7 +570,7 @@ describe('Queue', function () {
           if(addedJob.jobId !== job.jobId) {
             err = new Error('Processed job id does not match that of added job');
           }
-          setTimeout(jobDone, 100);
+          setTimeout(jobDone, 500);
         });
         setTimeout(function () {
           anotherQueue = buildQueue();
@@ -560,7 +582,7 @@ describe('Queue', function () {
           queue.on('completed', function () {
             cleanupQueue(anotherQueue).then(done.bind(null, err));
           });
-        }, 10);
+        }, 50);
       });
     });
 
@@ -732,27 +754,6 @@ describe('Queue', function () {
       });
     });
 
-    it('process several jobs serially', function (done) {
-      var counter = 1;
-      var maxJobs = 100;
-
-      queue = buildQueue();
-
-      queue.process(function (job, jobDone) {
-        expect(job.data.num).to.be.equal(counter);
-        expect(job.data.foo).to.be.equal('bar');
-        jobDone();
-        if(counter === maxJobs) {
-          done();
-        }
-        counter++;
-      });
-
-      for(var i = 1; i <= maxJobs; i++) {
-        queue.add({ foo: 'bar', num: i });
-      }
-    });
-
     it('process a lifo queue', function (done) {
       var currentValue = 0, first = true;
       queue = new Queue('test lifo');
@@ -914,6 +915,12 @@ describe('Queue', function () {
   });
 
   describe('Delayed jobs', function () {
+
+    beforeEach(function(){
+      var client = redis.createClient();
+      return client.flushdbAsync();
+    });
+
     it('should process a delayed job only after delayed time', function (done) {
       var delay = 500;
       queue = new Queue('delayed queue simple');
@@ -1067,6 +1074,12 @@ describe('Queue', function () {
   });
 
   describe('Concurrency process', function () {
+
+    beforeEach(function(){
+      var client = redis.createClient();
+      return client.flushdbAsync();
+    });
+
     it('should run job in sequence if I specify a concurrency of 1', function (done) {
       queue = buildQueue();
 
