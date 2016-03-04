@@ -1,9 +1,18 @@
+v0.7.2
+======
+
+- Added local pause/resume functionality
+- fixed memory leaks present in the run promise chain.
+- fixed "Illegal access to a strict mode caller function".
+
+[Changes](https://github.com/OptimalBits/bull/compare/v0.7.1...v0.7.2)
+
 v0.7.1
 ======
 
 - fixed storing of stacktraces
 
-[Changes](https://github.com/OptimalBits/bull/compare/v0.7.0...v0.7.1)v0.7.1
+[Changes](https://github.com/OptimalBits/bull/compare/v0.7.0...v0.7.1)
 
 v0.7.0
 ======

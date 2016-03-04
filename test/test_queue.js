@@ -457,12 +457,16 @@ describe('Queue', function () {
         });
 
         setTimeout(function(){
+          var stalledCallback = sandbox.spy();
+
           return queueStalled.disconnect().then(function(){
             var queue2 = new Queue('test queue stalled', 6379, '127.0.0.1');
             var doneAfterFour = _.after(4, function () {
+              expect(stalledCallback.calledOnce).to.be(true);
               queueStalled.clean(1000).then(done, done);
             });
             queue2.on('completed', doneAfterFour);
+            queue2.on('stalled', stalledCallback);
 
             queue2.process(function (job, jobDone2) {
               jobDone2();
@@ -884,6 +888,33 @@ describe('Queue', function () {
       });
     });
 
+    it('should pause the queue locally', function(testDone){
+      var ispaused = false, counter = 2;
+
+      queue = buildQueue();
+
+      queue.pause(true /* Local */).then(function(){
+        // Add the worker after the queue is in paused mode since the normal behavior is to pause
+        // it after the current lock expires. This way, we can ensure there isn't a lock already
+        // to test that pausing behavior works.
+        queue.process(function(job, done){
+          expect(queue.paused).not.to.be.ok();
+          done();
+          counter--;
+          if(counter === 0){
+            testDone();
+          }
+        });
+      }).then(function(){
+        return queue.add({ foo: 'paused' });
+      }).then(function(){
+        return queue.add({ foo: 'paused' });
+      }).then(function(){
+        expect(counter).to.be(2);
+        expect(queue.paused).to.be.ok(); // Parameter should exist.
+        return queue.resume(true /* Local */);
+      });
+    });
   });
 
   it('should publish a message when a new message is added to the queue', function (done) {
