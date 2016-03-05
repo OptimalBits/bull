@@ -9,6 +9,7 @@ var redis = require('redis');
 var sinon = require('sinon');
 var _ = require('lodash');
 var uuid = require('node-uuid');
+var utils = require('./utils');
 
 Promise.promisifyAll(redis.RedisClient.prototype);
 Promise.promisifyAll(redis.Multi.prototype);
@@ -28,25 +29,7 @@ Promise.config({
   cancellation: true
 });
 
-function simulateDisconnect(queue){
-  queue.client.stream.end();
-  queue.bclient.stream.end();
-  queue.eclient.stream.end();
-}
-
-var STD_QUEUE_NAME = 'test queue';
-
-function buildQueue(name) {
-  var qName = name || STD_QUEUE_NAME;
-  return new Queue(qName, 6379, '127.0.0.1');
-}
-
-function cleanupQueue(queue) {
-  return queue.empty().then(queue.close.bind(queue));
-}
-
 describe('Queue', function () {
-  var queue;
   var sandbox = sinon.sandbox.create();
 
   beforeEach(function(){
@@ -55,11 +38,6 @@ describe('Queue', function () {
   });
 
   afterEach(function(){
-    if(queue){
-      return cleanupQueue(queue).then(function () {
-        queue = undefined;
-      });
-    }
     sandbox.restore();
   });
 
@@ -167,7 +145,7 @@ describe('Queue', function () {
 
   describe('instantiation', function () {
     it('should create a queue with standard redis opts', function (done) {
-      queue = new Queue('standard');
+      var queue = new Queue('standard');
 
       queue.once('ready', function () {
         expect(queue.client.connection_options.host).to.be('127.0.0.1');
@@ -184,7 +162,7 @@ describe('Queue', function () {
     });
 
     it('creates a queue using the supplied redis DB', function (done) {
-      queue = new Queue('custom', { redis: { DB: 1 } });
+      var queue = new Queue('custom', { redis: { DB: 1 } });
 
       queue.once('ready', function () {
         expect(queue.client.connection_options.host).to.be('127.0.0.1');
@@ -201,7 +179,7 @@ describe('Queue', function () {
     });
 
     it('creates a queue using custom the supplied redis host', function (done) {
-      queue = new Queue('custom', { redis: { host: 'localhost' } });
+      var queue = new Queue('custom', { redis: { host: 'localhost' } });
 
       queue.once('ready', function () {
         expect(queue.client.connection_options.host).to.be('localhost');
@@ -215,7 +193,7 @@ describe('Queue', function () {
     });
 
     it('creates a queue with dots in its name', function () {
-      queue = new Queue('using. dots. in.name.');
+      var queue = new Queue('using. dots. in.name.');
 
       return queue.add({ foo: 'bar' }).then(function (job) {
         expect(job.jobId).to.be.ok();
@@ -231,61 +209,13 @@ describe('Queue', function () {
     });
   });
 
-  describe('connection', function () {
-    it('should recover from a connection loss', function (done) {
-      queue = new Queue('test connection loss');
-      queue.on('error', function () {
-        // error event has to be observed or the exception will bubble up
-      }).process(function (job, jobDone) {
-        expect(job.data.foo).to.be.equal('bar');
-        jobDone();
-        queue.close().then(done);
-      });
-
-      // Simulate disconnect
-      queue.bclient.stream.end();
-      queue.bclient.emit('error', new Error('ECONNRESET'));
-
-      // add something to the queue
-      queue.add({ 'foo': 'bar' });
-    });
-
-    it('should reconnect when the blocking client triggers an "end" event', function (done) {
-      queue = buildQueue();
-
-      var runSpy = sandbox.spy(queue, 'run');
-      queue.process(function (job, jobDone) {
-        expect(runSpy.callCount).to.be(2);
-        jobDone();
-        queue.close().then(done);
-      });
-
-      expect(runSpy.callCount).to.be(1);
-
-      queue.add({ 'foo': 'bar' });
-      queue.bclient.emit('end');
-    });
-
-    it('should not try to reconnect when the blocking client triggers an "end" event and no process have been called', function (done) {
-      queue = buildQueue();
-
-      var runSpy = sandbox.spy(queue, 'run');
-
-      queue.bclient.emit('end');
-
-      setTimeout(function () {
-        expect(runSpy.callCount).to.be(0);
-        queue.close().then(done);
-      }, 100);
-    });
-  });
-
   describe(' a worker', function () {
+    var queue;
 
     beforeEach(function(){
       var client = redis.createClient();
       return client.flushdbAsync().then(function(){
-        queue = buildQueue();
+        queue = utils.buildQueue();
       });
     });
 
@@ -527,7 +457,7 @@ describe('Queue', function () {
         var processed = 0;
         var procFn = function () {
           // instead of completing we just close the queue to simulate a crash.
-          simulateDisconnect(this);
+          utils.simulateDisconnect(this);
 
           //this.client.stream.end();
           //this.bclient.stream.end();
@@ -577,14 +507,14 @@ describe('Queue', function () {
           setTimeout(jobDone, 500);
         });
         setTimeout(function () {
-          anotherQueue = buildQueue();
+          anotherQueue = utils.buildQueue();
           anotherQueue.process(function (job, jobDone) {
             err = new Error('The second queue should not have received a job to process');
             jobDone();
           });
 
           queue.on('completed', function () {
-            cleanupQueue(anotherQueue).then(done.bind(null, err));
+            utils.cleanupQueue(anotherQueue).then(done.bind(null, err));
           });
         }, 50);
       });
@@ -594,7 +524,7 @@ describe('Queue', function () {
       this.timeout(5000);
       var collect = _.after(2, done);
 
-      queue = buildQueue('running-stalled-job-' + uuid());
+      queue = utils.buildQueue('running-stalled-job-' + uuid());
 
       queue.LOCK_RENEW_TIME = 1000;
 
@@ -618,7 +548,7 @@ describe('Queue', function () {
 
     it('process a job that fails', function (done) {
       var jobError = new Error('Job Failed');
-      queue = buildQueue();
+      queue = utils.buildQueue();
 
       queue.process(function (job, jobDone) {
         expect(job.data.foo).to.be.equal('bar');
@@ -643,7 +573,7 @@ describe('Queue', function () {
     it('process a job that throws an exception', function (done) {
       var jobError = new Error('Job Failed');
 
-      queue = buildQueue();
+      queue = utils.buildQueue();
 
       queue.process(function (job) {
         expect(job.data.foo).to.be.equal('bar');
@@ -667,7 +597,7 @@ describe('Queue', function () {
 
 
     it('process a job that returns data with a circular dependency', function(done){
-      queue = buildQueue();
+      queue = utils.buildQueue();
 
       queue.on('error', function (err) {
         done(err);
@@ -689,7 +619,7 @@ describe('Queue', function () {
 
     it('process a job that returns a rejected promise', function (done) {
       var jobError = new Error('Job Failed');
-      queue = buildQueue();
+      queue = utils.buildQueue();
 
       queue.process(function (job) {
         expect(job.data.foo).to.be.equal('bar');
@@ -716,7 +646,7 @@ describe('Queue', function () {
       var messages = 0;
       var failedOnce = false;
 
-      var retryQueue = buildQueue('retry-test-queue');
+      var retryQueue = utils.buildQueue('retry-test-queue');
       var client = redis.createClient(6379, '127.0.0.1', {});
 
       client.select(0);
@@ -797,7 +727,7 @@ describe('Queue', function () {
     var maxJobs = 100;
     var added = [];
 
-    queue = buildQueue();
+    var queue = utils.buildQueue();
 
     for(var i = 1; i <= maxJobs; i++) {
       added.push(queue.add({ foo: 'bar', num: i }));
@@ -812,15 +742,16 @@ describe('Queue', function () {
       .then(queue.count.bind(queue))
       .then(function (count) {
       expect(count).to.be(0);
+      return queue.close();
     });
   });
 
-  it('emits waiting event when a job is added', function (cb) {
-    queue = buildQueue();
+  it('emits waiting event when a job is added', function (done) {
+    var queue = utils.buildQueue();
     queue.add({ foo: 'bar' });
     queue.once('waiting', function (job) {
       expect(job.data.foo).to.be.equal('bar');
-      cb();
+      queue.close().then(done);
     });
   });
 
@@ -828,7 +759,7 @@ describe('Queue', function () {
     it('should pause a queue until resumed', function () {
       var ispaused = false, counter = 2;
 
-      queue = buildQueue();
+      var queue = utils.buildQueue();
 
       var resultPromise = new Promise(function (resolve) {
         queue.process(function (job, jobDone) {
@@ -837,7 +768,7 @@ describe('Queue', function () {
           jobDone();
           counter--;
           if(counter === 0) {
-            resolve();
+            resolve(queue.close());
           }
         });
       });
@@ -856,7 +787,7 @@ describe('Queue', function () {
     it('should be able to pause a running queue and emit relevant events', function (done) {
       var ispaused = false, isresumed = true, first = true;
 
-      queue = buildQueue();
+      var queue = utils.buildQueue();
 
       queue.empty().then(function () {
         queue.process(function (job, jobDone) {
@@ -870,7 +801,7 @@ describe('Queue', function () {
             queue.pause();
           }else{
             expect(isresumed).to.be(true);
-            done();
+            queue.close().then(done);
           }
         });
 
@@ -891,7 +822,7 @@ describe('Queue', function () {
     it('should pause the queue locally', function(testDone){
       var ispaused = false, counter = 2;
 
-      queue = buildQueue();
+      var queue = utils.buildQueue();
 
       queue.pause(true /* Local */).then(function(){
         // Add the worker after the queue is in paused mode since the normal behavior is to pause
@@ -902,7 +833,7 @@ describe('Queue', function () {
           done();
           counter--;
           if(counter === 0){
-            testDone();
+            queue.close().then(testDone);
           }
         });
       }).then(function(){
@@ -920,12 +851,12 @@ describe('Queue', function () {
   it('should publish a message when a new message is added to the queue', function (done) {
     var client = redis.createClient(6379, '127.0.0.1', {});
     client.select(0);
-    queue = new Queue('test pub sub');
+    var queue = new Queue('test pub sub');
     client.on('ready', function () {
       client.on('message', function (channel, message) {
         expect(channel).to.be.equal(queue.toKey('jobs'));
         expect(parseInt(message, 10)).to.be.a('number');
-        done();
+        queue.close().then(done);
       });
       client.subscribe(queue.toKey('jobs'));
       queue.add({ test: 'stuff' });
@@ -933,19 +864,20 @@ describe('Queue', function () {
   });
 
   it('should emit an event when a job becomes active', function (done) {
-    queue = buildQueue();
+    var queue = utils.buildQueue();
     queue.process(function (job, jobDone) {
       jobDone();
     });
     queue.add({});
     queue.once('active', function () {
       queue.once('completed', function () {
-        done();
+        queue.close().then(done);
       });
     });
   });
 
   describe('Delayed jobs', function () {
+    var queue;
 
     beforeEach(function(){
       var client = redis.createClient();
@@ -1105,6 +1037,7 @@ describe('Queue', function () {
   });
 
   describe('Concurrency process', function () {
+    var queue;
 
     beforeEach(function(){
       var client = redis.createClient();
@@ -1112,7 +1045,7 @@ describe('Queue', function () {
     });
 
     it('should run job in sequence if I specify a concurrency of 1', function (done) {
-      queue = buildQueue();
+      queue = utils.buildQueue();
 
       var processing = false;
 
@@ -1135,7 +1068,7 @@ describe('Queue', function () {
     //This job use delay to check that at any time we have 4 process in parallel.
     //Due to time to get new jobs and call process, false negative can appear.
     it('should process job respecting the concurrency set', function (done) {
-      queue = buildQueue('test concurrency');
+      queue = utils.buildQueue('test concurrency');
       queue.empty().then(function () {
         var nbProcessing = 0;
         var pendingMessageToProcess = 8;
@@ -1173,7 +1106,7 @@ describe('Queue', function () {
     });
 
     it('should wait for all concurrent processing in case of pause', function (done) {
-      queue = buildQueue();
+      queue = utils.buildQueue();
 
       var i = 0;
       var nbJobFinish = 0;
@@ -1220,9 +1153,10 @@ describe('Queue', function () {
   });
 
   describe('Retries and backoffs', function() {
+    var queue;
 
     it('should automatically retry a failed job if attempts is bigger than 1', function(done) {
-      queue = buildQueue('test retries and backoffs');
+      queue = utils.buildQueue('test retries and backoffs');
       queue.on('ready', function() {
 
         var tries = 0;
@@ -1245,7 +1179,7 @@ describe('Queue', function () {
     });
 
     it('should not retry a failed job more than the number of given attempts times', function(done) {
-      queue = buildQueue('test retries and backoffs');
+      queue = utils.buildQueue('test retries and backoffs');
       var tries = 0;
       queue.on('ready', function() {
         queue.process(function (job, jobDone) {
@@ -1273,7 +1207,7 @@ describe('Queue', function () {
 
     it('should retry a job after a delay if a fixed backoff is given', function(done) {
       this.timeout(5000);
-      queue = buildQueue('test retries and backoffs');
+      queue = utils.buildQueue('test retries and backoffs');
       var start;
       queue.on('ready', function() {
         queue.process(function (job, jobDone) {
@@ -1298,7 +1232,7 @@ describe('Queue', function () {
 
     it('should retry a job after a delay if an exponential backoff is given', function(done) {
       this.timeout(5000);
-      queue = buildQueue('test retries and backoffs');
+      queue = utils.buildQueue('test retries and backoffs');
       var start;
       queue.on('ready', function() {
         queue.process(function (job, jobDone) {
@@ -1328,9 +1262,10 @@ describe('Queue', function () {
   });
 
   describe('Jobs getters', function () {
+    var queue;
 
     beforeEach(function(){
-      queue = buildQueue();
+      queue = utils.buildQueue();
       return queue.clean(1000);
     });
 
@@ -1439,8 +1374,10 @@ describe('Queue', function () {
   });
 
   describe('Cleaner', function () {
+    var queue;
+
     beforeEach(function () {
-      queue = buildQueue('cleaner' + uuid());
+      queue = utils.buildQueue('cleaner' + uuid());
     });
 
     it('should reject the cleaner with no grace', function(done){
