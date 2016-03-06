@@ -220,7 +220,9 @@ describe('Queue', function () {
     });
 
     afterEach(function(){
-      return queue.close();
+      return queue.clean(1000).then(function(){
+        return queue.close();
+      });
     });
 
     it('should process a job', function (done) {
@@ -229,11 +231,45 @@ describe('Queue', function () {
         jobDone();
         done();
       });
-
       queue.add({ foo: 'bar' }).then(function (job) {
         expect(job.jobId).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }, done);
+    });
+
+    it('process a lifo queue', function (done) {
+      this.timeout(5000);
+      var currentValue = 0, first = true;
+      queue = new Queue('test lifo');
+
+      queue.once('ready', function () {
+        queue.process(function (job, jobDone) {
+          // Catching the job before the pause
+          if(first) {
+            expect(job.data.count).to.be.equal(0);
+            first = false;
+            return jobDone();
+          }
+          expect(job.data.count).to.be.equal(currentValue--);
+          jobDone();
+          if(currentValue === 0) {
+            done();
+          }
+        });
+
+        // Add a job to pend proccessing
+        queue.add({ 'count': 0 }).then(function () {
+          queue.pause().then(function () {
+            // Add a series of jobs in a predictable order
+            var fn = function (cb) {
+              queue.add({ 'count': ++currentValue }, { 'lifo': true }).then(cb);
+            };
+            fn(fn(fn(fn(function () {
+              queue.resume();
+            }))));
+          });
+        });
+      });
     });
 
     it('process several jobs serially', function (done) {
@@ -370,7 +406,7 @@ describe('Queue', function () {
       });
     });
 
-    it.skip('process stalled jobs when starting a queue', function (done) {
+    it('process stalled jobs when starting a queue', function (done) {
       this.timeout(5000);
       var queueStalled = new Queue('test queue stalled', 6379, '127.0.0.1');
       queueStalled.LOCK_RENEW_TIME = 10;
@@ -389,11 +425,14 @@ describe('Queue', function () {
         setTimeout(function(){
           var stalledCallback = sandbox.spy();
 
-          return queueStalled.disconnect().then(function(){
+          return queueStalled.close().then(function(){
+
             var queue2 = new Queue('test queue stalled', 6379, '127.0.0.1');
             var doneAfterFour = _.after(4, function () {
               expect(stalledCallback.calledOnce).to.be(true);
-              queueStalled.clean(1000).then(done, done);
+              queue2.clean(1000).then(function(){
+                done();
+              }, done);
             });
             queue2.on('completed', doneAfterFour);
             queue2.on('stalled', stalledCallback);
@@ -401,6 +440,7 @@ describe('Queue', function () {
             queue2.process(function (job, jobDone2) {
               jobDone2();
             });
+
           });
         }, 100);
       });
@@ -408,7 +448,7 @@ describe('Queue', function () {
       return null;
     });
 
-    it.skip('processes jobs that were added before the queue backend started', function () {
+    it('processes jobs that were added before the queue backend started', function () {
       var queueStalled = new Queue('test queue added before', 6379, '127.0.0.1');
       queueStalled.LOCK_RENEW_TIME = 10;
       var jobs = [
@@ -421,16 +461,16 @@ describe('Queue', function () {
       return Promise.all(jobs)
         .then(queueStalled.close.bind(queueStalled))
         .then(function () {
-        queue = new Queue('test queue added before', 6379, '127.0.0.1');
-        queue.process(function (job, jobDone) {
+        var queue2 = new Queue('test queue added before', 6379, '127.0.0.1');
+        queue2.process(function (job, jobDone) {
           jobDone();
         });
 
         return new Promise(function (resolve) {
           var resolveAfterAllJobs = _.after(jobs.length, resolve);
-          queue.on('completed', resolveAfterAllJobs);
+          queue2.on('completed', resolveAfterAllJobs);
         }).then(function(){
-          return queueStalled.close();
+          return queue2.close();
         });
       });
     });
@@ -520,27 +560,27 @@ describe('Queue', function () {
       });
     });
 
-    it.skip('process stalled jobs without requiring a queue restart', function (done) {
+    it('process stalled jobs without requiring a queue restart', function (done) {
       this.timeout(5000);
       var collect = _.after(2, done);
 
-      queue = utils.buildQueue('running-stalled-job-' + uuid());
+      var queue2 = utils.buildQueue('running-stalled-job-' + uuid());
 
-      queue.LOCK_RENEW_TIME = 1000;
+      queue2.LOCK_RENEW_TIME = 500;
 
-      queue.on('completed', function () {
+      queue2.on('completed', function () {
         collect();
       });
 
-      queue.process(function (job, jobDone) {
+      queue2.process(function (job, jobDone) {
         expect(job.data.foo).to.be.equal('bar');
         jobDone();
         var client = redis.createClient();
-        client.srem(queue.toKey('completed'), 1);
-        client.lpush(queue.toKey('active'), 1);
+        client.srem(queue2.toKey('completed'), 1);
+        client.lpush(queue2.toKey('active'), 1);
       });
 
-      queue.add({ foo: 'bar' }).then(function (job) {
+      queue2.add({ foo: 'bar' }).then(function (job) {
         expect(job.jobId).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }).catch(done);
@@ -688,39 +728,6 @@ describe('Queue', function () {
       });
     });
 
-    it('process a lifo queue', function (done) {
-      var currentValue = 0, first = true;
-      queue = new Queue('test lifo');
-
-      queue.once('ready', function () {
-        queue.process(function (job, jobDone) {
-          // Catching the job before the pause
-          if(first) {
-            expect(job.data.count).to.be.equal(0);
-            first = false;
-            return jobDone();
-          }
-          expect(job.data.count).to.be.equal(currentValue--);
-          jobDone();
-          if(currentValue === 0) {
-            done();
-          }
-        });
-
-        // Add a job to pend proccessing
-        queue.add({ 'count': 0 }).then(function () {
-          queue.pause().then(function () {
-            // Add a series of jobs in a predictable order
-            var fn = function (cb) {
-              queue.add({ 'count': ++currentValue }, { 'lifo': true }).then(cb);
-            };
-            fn(fn(fn(fn(function () {
-              queue.resume();
-            }))));
-          });
-        });
-      });
-    });
   });
 
   it('count added, unprocessed jobs', function () {
