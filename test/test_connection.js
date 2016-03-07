@@ -5,9 +5,18 @@
 var expect = require('expect.js');
 var utils = require('./utils');
 var sinon = require('sinon');
+var redis = require('redis');
+var Promise = require('bluebird');
+
+Promise.promisifyAll(redis.RedisClient.prototype);
 
 describe('connection', function () {
   var sandbox = sinon.sandbox.create();
+
+  beforeEach(function(){
+    var client = redis.createClient();
+    return client.flushdbAsync();
+  });
 
   it('should recover from a connection loss', function (done) {
     var queue = utils.buildQueue();
@@ -18,14 +27,18 @@ describe('connection', function () {
       expect(job.data.foo).to.be.equal('bar');
       jobDone();
       queue.close().then(done);
+    }).catch(function(err){
+      console.log('werwer', err);
     });
 
     // Simulate disconnect
-    queue.bclient.stream.end();
-    queue.bclient.emit('error', new Error('ECONNRESET'));
+    queue.on('ready', function(){
+      queue.bclient.stream.end();
+      queue.bclient.emit('error', new Error('ECONNRESET'));
 
-    // add something to the queue
-    queue.add({ 'foo': 'bar' });
+      // add something to the queue
+      queue.add({ 'foo': 'bar' });
+    });
   });
 
   it('should reconnect when the blocking client triggers an "end" event', function (done) {

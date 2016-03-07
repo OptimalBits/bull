@@ -48,6 +48,10 @@ describe('Queue', function () {
       testQueue.once('ready', done);
     });
 
+    afterEach(function(){
+      return testQueue.close();
+    });
+
     it('should call end on the client', function () {
       var endSpy = sandbox.spy(testQueue.client, 'end');
       return testQueue.close().then(function () {
@@ -919,7 +923,7 @@ describe('Queue', function () {
           });
         }).then(function () {
           expect(publishHappened).to.be(true);
-          done();
+          queue.close(done, done);
         });
       });
 
@@ -947,7 +951,7 @@ describe('Queue', function () {
           expect(order).to.be.equal(job.data.order);
           jobDone();
           if(order === 10) {
-            done();
+            queue.close(done, done);
           }
         });
 
@@ -978,7 +982,7 @@ describe('Queue', function () {
         jobDone();
 
         if(order === 4) {
-          done();
+          queue.close(done, done);
         }
 
         order++;
@@ -1020,7 +1024,7 @@ describe('Queue', function () {
         jobDone();
 
         if(order === 12) {
-          done();
+          queue.close(done, done);
         }
 
         order++;
@@ -1051,6 +1055,10 @@ describe('Queue', function () {
       return client.flushdbAsync();
     });
 
+    afterEach(function(){
+      return queue.close();
+    });
+
     it('should run job in sequence if I specify a concurrency of 1', function (done) {
       queue = utils.buildQueue();
 
@@ -1071,45 +1079,41 @@ describe('Queue', function () {
       queue.on('completed', _.after(2, done.bind(null, null)));
     });
 
-
     //This job use delay to check that at any time we have 4 process in parallel.
     //Due to time to get new jobs and call process, false negative can appear.
     it('should process job respecting the concurrency set', function (done) {
       queue = utils.buildQueue('test concurrency');
-      queue.empty().then(function () {
-        var nbProcessing = 0;
-        var pendingMessageToProcess = 8;
-        var wait = 100;
 
-        queue.process(4, function (job, jobDone) {
-          nbProcessing++;
-          expect(nbProcessing).to.be.lessThan(5);
+      var nbProcessing = 0;
+      var pendingMessageToProcess = 8;
+      var wait = 100;
 
-          wait += 20;
+      queue.process(4, function (job) {
+        nbProcessing++;
+        expect(nbProcessing).to.be.lessThan(5);
 
-          Promise.delay(wait).then(function () {
-            //We should not have 4 more in parallel.
-            //At the end, due to empty list, no new job will process, so nbProcessing will decrease.
-            expect(nbProcessing).to.be(Math.min(pendingMessageToProcess, 4));
+        wait += 100;
 
-            pendingMessageToProcess--;
-            nbProcessing--;
-            jobDone();
-          });
-        }).catch(done);
+        return Promise.delay(wait).then(function () {
+          //We should not have 4 more in parallel.
+          //At the end, due to empty list, no new job will process, so nbProcessing will decrease.
+          expect(nbProcessing).to.be(Math.min(pendingMessageToProcess, 4));
+          pendingMessageToProcess--;
+          nbProcessing--;
+        });
+      }).catch(done);
 
-        queue.add();
-        queue.add();
-        queue.add();
-        queue.add();
-        queue.add();
-        queue.add();
-        queue.add();
-        queue.add();
+      queue.add();
+      queue.add();
+      queue.add();
+      queue.add();
+      queue.add();
+      queue.add();
+      queue.add();
+      queue.add();
 
-        queue.on('completed', _.after(8, done.bind(null, null)));
-        queue.on('failed', done);
-      });
+      queue.on('completed', _.after(8, done.bind(null, null)));
+      queue.on('failed', done);
     });
 
     it('should wait for all concurrent processing in case of pause', function (done) {
@@ -1161,6 +1165,10 @@ describe('Queue', function () {
 
   describe('Retries and backoffs', function() {
     var queue;
+
+    afterEach(function(){
+      return queue.close();
+    });
 
     it('should automatically retry a failed job if attempts is bigger than 1', function(done) {
       queue = utils.buildQueue('test retries and backoffs');
@@ -1276,6 +1284,10 @@ describe('Queue', function () {
       return queue.clean(1000);
     });
 
+    afterEach(function(){
+      return queue.close();
+    });
+
     it('should get waiting jobs', function () {
       return Promise.join(queue.add({ foo: 'bar' }), queue.add({ baz: 'qux' })).then(function () {
         return queue.getWaiting().then(function (jobs) {
@@ -1385,6 +1397,10 @@ describe('Queue', function () {
 
     beforeEach(function () {
       queue = utils.buildQueue('cleaner' + uuid());
+    });
+
+    afterEach(function(){
+      return queue.close();
     });
 
     it('should reject the cleaner with no grace', function(done){

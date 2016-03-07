@@ -9,25 +9,23 @@ var redis = require('redis');
 var Promise = require('bluebird');
 var uuid = require('node-uuid');
 
+Promise.promisifyAll(redis.RedisClient.prototype);
+Promise.promisifyAll(redis.Multi.prototype);
+
 describe('Job', function(){
   var queue;
 
-  before(function(done){
-    this.timeout(50000);
-    queue = new Queue('test', 6379, '127.0.0.1');
-    queue.client.keys(queue.toKey('*'), function(err, keys){
-      if(keys.length){
-        queue.client.del(keys, function(err2){
-          done(err2);
-        });
-      }else{
-        done(err);
-      }
-    });
+  beforeEach(function(){
+    var client = redis.createClient();
+    return client.flushdbAsync();
   });
 
-  beforeEach(function() {
+  beforeEach(function(){
     queue = new Queue('test-' + uuid(), 6379, '127.0.0.1');
+  });
+
+  afterEach(function(){
+    return queue.close();
   });
 
   describe('.create', function () {
