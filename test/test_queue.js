@@ -48,10 +48,6 @@ describe('Queue', function () {
       testQueue.once('ready', done);
     });
 
-    afterEach(function(){
-      return testQueue.close();
-    });
-
     it('should call end on the client', function () {
       var endSpy = sandbox.spy(testQueue.client, 'end');
       return testQueue.close().then(function () {
@@ -93,18 +89,15 @@ describe('Queue', function () {
     });
 
     it('should close if the job expires after the LOCK_RENEW_TIME', function (done) {
-      var closeQueue = new Queue('close timeout');
-      closeQueue.LOCK_RENEW_TIME = 10;
-      closeQueue.process(function () {
+      testQueue.LOCK_RENEW_TIME = 10;
+      testQueue.process(function () {
         return Promise.delay(40);
       });
 
-      closeQueue.on('completed', function () {
-        closeQueue.close().then(function () {
-          done();
-        });
+      testQueue.on('completed', function () {
+        testQueue.close().then(done);
       });
-      closeQueue.add({ foo: 'bar' });
+      testQueue.add({ foo: 'bar' });
     });
 
     describe('should be callable from within', function () {
@@ -115,10 +108,8 @@ describe('Queue', function () {
 
         closeQueue.process(function (job, jobDone) {
           expect(job.data.foo).to.be('bar');
-          closeQueue.close().then(function () {
-            jobDone();
-            done();
-          });
+          jobDone();
+          closeQueue.close().then(done);
         });
 
         closeQueue.add({ foo: 'bar' }).then(function (job) {
@@ -134,9 +125,7 @@ describe('Queue', function () {
 
         closeQueue.process(function (job) {
           expect(job.data.foo).to.be('bar');
-          return closeQueue.close().then(function () {
-            done();
-          });
+          return closeQueue.close().then(done);
         });
 
         closeQueue.add({ foo: 'bar' }).then(function (job) {

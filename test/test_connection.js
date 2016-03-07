@@ -28,7 +28,7 @@ describe('connection', function () {
       jobDone();
       queue.close().then(done);
     }).catch(function(err){
-      console.log('werwer', err);
+      console.log(err);
     });
 
     // Simulate disconnect
