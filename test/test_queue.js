@@ -104,31 +104,25 @@ describe('Queue', function () {
       it('a job handler that takes a callback', function (done) {
         this.timeout(10000); // Close can be a slow operation
 
-        var closeQueue = new Queue('close from handler');
-
-        closeQueue.process(function (job, jobDone) {
+        testQueue.process(function (job, jobDone) {
           expect(job.data.foo).to.be('bar');
           jobDone();
-          closeQueue.close().then(done);
+          testQueue.close().then(done);
         });
 
-        closeQueue.add({ foo: 'bar' }).then(function (job) {
+        testQueue.add({ foo: 'bar' }).then(function (job) {
           expect(job.jobId).to.be.ok();
           expect(job.data.foo).to.be('bar');
         });
       });
 
       it('a job handler that returns a promise', function (done) {
-        this.timeout(10000);
-
-        var closeQueue = new Queue('close from handler');
-
-        closeQueue.process(function (job) {
+        testQueue.process(function (job) {
           expect(job.data.foo).to.be('bar');
-          return closeQueue.close().then(done);
+          return testQueue.close().then(done);
         });
 
-        closeQueue.add({ foo: 'bar' }).then(function (job) {
+        testQueue.add({ foo: 'bar' }).then(function (job) {
           expect(job.jobId).to.be.ok();
           expect(job.data.foo).to.be('bar');
         });
@@ -553,9 +547,12 @@ describe('Queue', function () {
 
     it('process stalled jobs without requiring a queue restart', function (done) {
       this.timeout(5000);
-      var collect = _.after(2, done);
 
       var queue2 = utils.buildQueue('running-stalled-job-' + uuid());
+
+      var collect = _.after(2, function(){
+        queue2.close().then(done);
+      });
 
       queue2.LOCK_RENEW_TIME = 500;
 
@@ -604,8 +601,6 @@ describe('Queue', function () {
     it('process a job that throws an exception', function (done) {
       var jobError = new Error('Job Failed');
 
-      queue = utils.buildQueue();
-
       queue.process(function (job) {
         expect(job.data.foo).to.be.equal('bar');
         throw jobError;
@@ -626,10 +621,7 @@ describe('Queue', function () {
       });
     });
 
-
     it('process a job that returns data with a circular dependency', function(done){
-      queue = utils.buildQueue();
-
       queue.on('error', function (err) {
         done(err);
       });
@@ -650,7 +642,6 @@ describe('Queue', function () {
 
     it('process a job that returns a rejected promise', function (done) {
       var jobError = new Error('Job Failed');
-      queue = utils.buildQueue();
 
       queue.process(function (job) {
         expect(job.data.foo).to.be.equal('bar');
@@ -715,7 +706,7 @@ describe('Queue', function () {
       retryQueue.once('completed', function () {
         expect(failedOnce).to.be(true);
         expect(messages).to.eql(2);
-        done();
+        retryQueue.close().then(done);
       });
     });
 
@@ -1039,6 +1030,7 @@ describe('Queue', function () {
 
     beforeEach(function(){
       var client = redis.createClient();
+      queue = utils.buildQueue();
       return client.flushdbAsync();
     });
 
@@ -1047,8 +1039,6 @@ describe('Queue', function () {
     });
 
     it('should run job in sequence if I specify a concurrency of 1', function (done) {
-      queue = utils.buildQueue();
-
       var processing = false;
 
       queue.process(1, function (job, jobDone) {
@@ -1069,8 +1059,6 @@ describe('Queue', function () {
     //This job use delay to check that at any time we have 4 process in parallel.
     //Due to time to get new jobs and call process, false negative can appear.
     it('should process job respecting the concurrency set', function (done) {
-      queue = utils.buildQueue('test concurrency');
-
       var nbProcessing = 0;
       var pendingMessageToProcess = 8;
       var wait = 100;
@@ -1104,8 +1092,6 @@ describe('Queue', function () {
     });
 
     it('should wait for all concurrent processing in case of pause', function (done) {
-      queue = utils.buildQueue();
-
       var i = 0;
       var nbJobFinish = 0;
 
