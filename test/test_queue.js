@@ -233,10 +233,10 @@ describe('Queue', function () {
     it('process a lifo queue', function (done) {
       this.timeout(5000);
       var currentValue = 0, first = true;
-      queue = new Queue('test lifo');
+      var queue2 = new Queue('test lifo');
 
-      queue.once('ready', function () {
-        queue.process(function (job, jobDone) {
+      queue2.once('ready', function () {
+        queue2.process(function (job, jobDone) {
           // Catching the job before the pause
           if(first) {
             expect(job.data.count).to.be.equal(0);
@@ -246,19 +246,19 @@ describe('Queue', function () {
           expect(job.data.count).to.be.equal(currentValue--);
           jobDone();
           if(currentValue === 0) {
-            done();
+            queue2.close().then(done);
           }
         });
 
         // Add a job to pend proccessing
-        queue.add({ 'count': 0 }).then(function () {
-          queue.pause().then(function () {
+        queue2.add({ 'count': 0 }).then(function () {
+          queue2.pause().then(function () {
             // Add a series of jobs in a predictable order
             var fn = function (cb) {
-              queue.add({ 'count': ++currentValue }, { 'lifo': true }).then(cb);
+              queue2.add({ 'count': ++currentValue }, { 'lifo': true }).then(cb);
             };
             fn(fn(fn(fn(function () {
-              queue.resume();
+              queue2.resume();
             }))));
           });
         });
@@ -423,9 +423,7 @@ describe('Queue', function () {
             var queue2 = new Queue('test queue stalled', 6379, '127.0.0.1');
             var doneAfterFour = _.after(4, function () {
               expect(stalledCallback.calledOnce).to.be(true);
-              queue2.clean(1000).then(function(){
-                done();
-              }, done);
+              queue2.close().then(done, done);
             });
             queue2.on('completed', doneAfterFour);
             queue2.on('stalled', stalledCallback);
