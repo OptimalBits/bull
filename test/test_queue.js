@@ -363,6 +363,73 @@ describe('Queue', function () {
       });
     });
 
+    it('should try to coerce the process function to a promise (return a promise and also specify a callback)', function (done) {
+      // return a promise and also specify a callback
+      queue = buildQueue();
+      queue.process(function (job, jobDone) {
+        expect(jobDone).to.be.ok();
+        expect(job.data.foo).to.be.equal('bar');
+        return Promise.delay(250).then(function(){
+          return 'my data';
+        });
+      });
+
+      queue.add({ foo: 'bar' }).then(function (job) {
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+      }).catch(done);
+
+      queue.on('completed', function (job, data) {
+        expect(job).to.be.ok();
+        expect(data).to.be.eql('my data');
+        done();
+      });
+    });
+
+    it('should try to coerce the process function to a promise (ignore callback and return a value)', function (done) {
+      // return a value and ignore promise or callback
+      queue = buildQueue();
+      queue.process(function (job, jobDone) {
+        expect(jobDone).to.be.ok();
+        expect(job.data.foo).to.be.equal('bar');
+        return 'my-data';
+      });
+
+      queue.add({ foo: 'bar' }).then(function (job) {
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+      }).catch(done);
+
+      queue.on('completed', function (job, data) {
+        console.log('completed?');
+        expect(job).to.be.ok();
+        expect(data).to.be.eql('my-data');
+        done();
+      });
+    });
+
+    it('should try to coerce the process function to a promise (should catch exception and fail job when callback is specified and error is thrown)', function (done) {
+      // return a value and ignore promise or callback
+      var error = new Error('Oh noes!');
+      queue = buildQueue();
+      queue.process(function (job, jobDone) {
+        expect(job.data.foo).to.be.equal('bar');
+        expect(jobDone).to.be.ok();
+        throw error;
+      });
+
+      queue.add({ foo: 'bar' }).then(function (job) {
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+      }).catch(done);
+
+      queue.on('failed', function (job) {
+        expect(job).to.be.ok();
+        expect(job.stacktrace).to.be.ok();
+        done();
+      });
+    });
+
     it('process a job that returns data in a promise', function (done) {
       queue = buildQueue();
       queue.process(function (job) {
@@ -613,8 +680,8 @@ describe('Queue', function () {
         expect(job.jobId).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }, function (err) {
-          done(err);
-        });
+        done(err);
+      });
 
       queue.once('failed', function (job, err) {
         expect(job.jobId).to.be.ok();
