@@ -835,6 +835,54 @@ describe('Queue', function () {
         return queue.resume(true /* Local */);
       });
     });
+
+    it('should wait until active jobs are finished before resolving pause', function (done) {
+      var queue = utils.buildQueue();
+      queue.process(function (job, completed) {
+        setTimeout(completed, 200);
+      });
+
+      queue.on('ready', function () {
+        var jobs = [];
+        for(var i = 0; i < 10; i++) {
+          jobs.push(queue.add(i));
+        }
+        Promise.all(jobs).then(function() {
+          queue.pause(true).then(function() {
+            var active = queue.getJobCountByTypes(['active']).then(function(count) {
+              expect(count).to.be(0);
+              expect(queue.paused).to.be.ok();
+              return null;
+            });
+
+            // One job from the 10 posted above will be processed, so we expect 9 jobs pending
+            var paused = queue.getJobCountByTypes(['wait', 'delayed']).then(function(count) {
+              expect(count).to.be(9);
+              return null;
+            });
+
+            return Promise.all([active, paused]);
+
+          }).then(function() {
+            return queue.add({});
+          }).then(function() {
+            var active = queue.getJobCountByTypes(['active']).then(function(count) {
+              expect(count).to.be(0);
+              return null;
+            });
+
+            var paused = queue.getJobCountByTypes(['wait', 'delayed']).then(function(count) {
+              expect(count).to.be(10);
+              return null;
+            });
+
+            return Promise.all([active, paused]);
+          }).then(function() {
+            done();
+          });
+        });
+      });
+    });
   });
 
   it('should publish a message when a new message is added to the queue', function (done) {
