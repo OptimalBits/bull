@@ -3,6 +3,7 @@
 'use strict';
 
 var Queue = require('../');
+var Promise = require('bluebird');
 var STD_QUEUE_NAME = 'test queue';
 
 function simulateDisconnect(queue){
@@ -16,6 +17,16 @@ function buildQueue(name) {
   return new Queue(qName, 6379, '127.0.0.1');
 }
 
+function newQueue(name){
+  var qName = name || STD_QUEUE_NAME;
+  var queue = new Queue(qName, 6379, '127.0.0.1');
+  return new Promise(function(resolve){
+    queue.on('ready', function(){
+      resolve(queue);
+    });
+  });
+}
+
 function cleanupQueue(queue) {
   return queue.empty().then(queue.close.bind(queue));
 }
@@ -23,5 +34,6 @@ function cleanupQueue(queue) {
 module.exports = {
   simulateDisconnect: simulateDisconnect,
   buildQueue: buildQueue,
-  cleanupQueue: cleanupQueue
+  cleanupQueue: cleanupQueue,
+  newQueue: newQueue
 };
