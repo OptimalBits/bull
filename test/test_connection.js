@@ -10,23 +10,28 @@ var Promise = require('bluebird');
 
 Promise.promisifyAll(redis.RedisClient.prototype);
 
-describe('connection', function () {
+describe.only('connection', function () {
   var sandbox = sinon.sandbox.create();
+  var queue;
 
   beforeEach(function(){
     var client = redis.createClient();
-    return client.flushdbAsync();
+    return client.flushdbAsync().then(function(){
+      queue = utils.buildQueue();
+    });
+  });
+
+  afterEach(function(){
+    return queue.close();
   });
 
   it('should recover from a connection loss', function (done) {
-    var queue = utils.buildQueue();
-
     queue.on('error', function () {
       // error event has to be observed or the exception will bubble up
     }).process(function (job, jobDone) {
       expect(job.data.foo).to.be.equal('bar');
       jobDone();
-      queue.close().then(done);
+      done();
     }).catch(function(err){
       console.log(err);
     });
@@ -42,13 +47,11 @@ describe('connection', function () {
   });
 
   it('should reconnect when the blocking client triggers an "end" event', function (done) {
-    var queue = utils.buildQueue();
-
     var runSpy = sandbox.spy(queue, 'run');
     queue.process(function (job, jobDone) {
       expect(runSpy.callCount).to.be(2);
       jobDone();
-      queue.close().then(done);
+      done();
     });
 
     expect(runSpy.callCount).to.be(1);
@@ -58,15 +61,13 @@ describe('connection', function () {
   });
 
   it('should not try to reconnect when the blocking client triggers an "end" event and no process have been called', function (done) {
-    var queue = utils.buildQueue();
-
     var runSpy = sandbox.spy(queue, 'run');
 
     queue.bclient.emit('end');
 
     setTimeout(function () {
       expect(runSpy.callCount).to.be(0);
-      queue.close().then(done);
+      done();
     }, 100);
   });
 });
