@@ -20,3 +20,12 @@ queue.process(1, function(job, jobDone) {
     data: job.data
   });
 });
+
+process.on('disconnect', function () {
+  queue.close().then(function () {
+    process.exit(0);
+  }).catch(function (err) {
+    console.err(err);
+    process.exit(-1);
+  });
+});
