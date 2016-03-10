@@ -410,14 +410,13 @@ describe('Queue', function () {
 
       Promise.all(jobs).then(function () {
         queueStalled.process(function () {
-          return Promise.delay(1000);
+          return Promise.delay(1500);
         });
 
         setTimeout(function(){
           var stalledCallback = sandbox.spy();
 
-          return queueStalled.close().then(function(){
-
+          return queueStalled.close(true).then(function(){
             var queue2 = new Queue('test queue stalled', 6379, '127.0.0.1');
             var doneAfterFour = _.after(4, function () {
               expect(stalledCallback.calledOnce).to.be(true);
@@ -431,7 +430,7 @@ describe('Queue', function () {
             });
 
           });
-        }, 100);
+        }, 0);
       });
 
       return null;
@@ -956,7 +955,7 @@ describe('Queue', function () {
           });
         }).then(function () {
           expect(publishHappened).to.be(true);
-          queue.close(done, done);
+          queue.close().then(done, done);
         });
       });
 
@@ -984,7 +983,7 @@ describe('Queue', function () {
           expect(order).to.be.equal(job.data.order);
           jobDone();
           if(order === 10) {
-            queue.close(done, done);
+            queue.close().then(done, done);
           }
         });
 
@@ -1015,7 +1014,7 @@ describe('Queue', function () {
         jobDone();
 
         if(order === 4) {
-          queue.close(done, done);
+          queue.close().then(done, done);
         }
 
         order++;
@@ -1057,7 +1056,7 @@ describe('Queue', function () {
         jobDone();
 
         if(order === 12) {
-          queue.close(done, done);
+          queue.close().then(done, done);
         }
 
         order++;
