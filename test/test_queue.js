@@ -401,38 +401,48 @@ describe('Queue', function () {
       this.timeout(5000);
       var queueStalled = new Queue('test queue stalled', 6379, '127.0.0.1');
       queueStalled.LOCK_RENEW_TIME = 10;
-      var jobs = [
-        queueStalled.add({ bar: 'baz' }),
-        queueStalled.add({ bar1: 'baz1' }),
-        queueStalled.add({ bar2: 'baz2' }),
-        queueStalled.add({ bar3: 'baz3' })
-      ];
+      queueStalled.once('ready', function() {
+        var jobs = [
+          queueStalled.add({ bar: 'baz' }),
+          queueStalled.add({ bar1: 'baz1' }),
+          queueStalled.add({ bar2: 'baz2' }),
+          queueStalled.add({ bar3: 'baz3' })
+        ];
 
-      Promise.all(jobs).then(function () {
-        queueStalled.process(function () {
-          return Promise.delay(1500);
+        Promise.all(jobs).then(function () {
+          var afterJobsRunning = function () {
+            var stalledCallback = sandbox.spy();
+
+            return queueStalled.close(true).then(function(){
+              return new Promise(function(resolve, reject) {
+                var queue2 = new Queue('test queue stalled', 6379, '127.0.0.1');
+                queue2.LOCK_RENEW_TIME = 100;
+                queue2.once('ready', function() {
+                  var doneAfterFour = _.after(4, function () {
+                    expect(stalledCallback.calledOnce).to.be(true);
+                    resolve(queue2.close());
+                  });
+                  queue2.on('completed', doneAfterFour);
+                  queue2.on('stalled', stalledCallback);
+
+                  queue2.process(function (job, jobDone2) {
+                    jobDone2();
+                  });
+                });
+              }).then(done);
+            });
+          };
+
+          var onceRunning = _.once(afterJobsRunning);
+
+          queueStalled.process(function () {
+            onceRunning();
+            return Promise.delay(150);
+          });
+
         });
 
-        setTimeout(function(){
-          var stalledCallback = sandbox.spy();
-
-          return queueStalled.close(true).then(function(){
-            var queue2 = new Queue('test queue stalled', 6379, '127.0.0.1');
-            var doneAfterFour = _.after(4, function () {
-              expect(stalledCallback.calledOnce).to.be(true);
-              queue2.close().then(done, done);
-            });
-            queue2.on('completed', doneAfterFour);
-            queue2.on('stalled', stalledCallback);
-
-            queue2.process(function (job, jobDone2) {
-              jobDone2();
-            });
-
-          });
-        }, 0);
       });
-
       return null;
     });
 

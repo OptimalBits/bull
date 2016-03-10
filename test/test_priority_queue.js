@@ -22,7 +22,7 @@ function cleanupQueue(queue){
   return queue.empty().then(queue.close.bind(queue));
 }
 
-describe.skip('Priority queue', function(){
+describe('Priority queue', function(){
   var queue;
   var sandbox = sinon.sandbox.create();
 
@@ -245,18 +245,24 @@ describe.skip('Priority queue', function(){
           // instead of completing we just force-close the queue to simulate a crash.
           return queueStalled.disconnect().then(function(){
             var queue2 = buildQueue('test queue stalled');
-            var doneAfterFour = _.after(4, function(){
-              done();
-            });
+            queue2.once('ready', function() {
+              var doneAfterFour = _.after(4, function(){
+                done();
+              });
 
-            queue2.on('completed', function(){
-              doneAfterFour();
-            });
+              queue2.on('completed', function(){
+                doneAfterFour();
+              });
 
-            queue2.process(function(job, jobDone){
-              jobDone();
+              queue2.process(function(job, jobDone){
+                jobDone();
+              });
             });
           });
+          // The sudden simulated crash will throw,
+          // catch it here to let the tests continue normally
+        }).catch(function () {
+          return Promise.resolve();
         });
       }).catch(done);
     });
