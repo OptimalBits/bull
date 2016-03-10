@@ -23,9 +23,9 @@ queue.process(1, function(job, jobDone) {
 
 process.on('disconnect', function () {
   queue.close().then(function () {
-    process.exit(0);
+//    process.exit(0);
   }).catch(function (err) {
     console.err(err);
-    process.exit(-1);
+  //  process.exit(-1);
   });
 });
