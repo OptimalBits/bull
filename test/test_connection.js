@@ -10,7 +10,7 @@ var Promise = require('bluebird');
 
 Promise.promisifyAll(redis.RedisClient.prototype);
 
-describe.only('connection', function () {
+describe('connection', function () {
   var sandbox = sinon.sandbox.create();
   var queue;
 
