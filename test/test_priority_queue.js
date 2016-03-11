@@ -26,6 +26,11 @@ describe('Priority queue', function(){
   var queue;
   var sandbox = sinon.sandbox.create();
 
+  beforeEach(function(){
+    var client = redis.createClient();
+    return client.flushdbAsync();
+  });
+
   afterEach(function(){
     if(queue){
       return cleanupQueue(queue).then(function(){
@@ -54,7 +59,7 @@ describe('Priority queue', function(){
     var testQueue;
 
     beforeEach(function(){
-      testQueue = buildQueue('test');
+      testQueue = buildQueue('test close');
     });
 
     it('should return a promise', function(){
