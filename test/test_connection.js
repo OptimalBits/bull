@@ -21,16 +21,14 @@ describe('connection', function () {
     });
   });
 
-  afterEach(function(){
-    return queue.close();
-  });
-
   it('should recover from a connection loss', function (done) {
     queue.on('error', function () {
       // error event has to be observed or the exception will bubble up
     }).process(function (job, jobDone) {
       expect(job.data.foo).to.be.equal('bar');
       jobDone();
+      // We do not wait since this close is expected to fail...
+      queue.close();
       done();
     }).catch(function(err){
       console.log(err);
@@ -51,6 +49,8 @@ describe('connection', function () {
     queue.process(function (job, jobDone) {
       expect(runSpy.callCount).to.be(2);
       jobDone();
+      // We do not wait since this close is expected to fail...
+      queue.close();
       done();
     });
 
@@ -67,7 +67,7 @@ describe('connection', function () {
 
     setTimeout(function () {
       expect(runSpy.callCount).to.be(0);
-      done();
+      queue.close(done());
     }, 100);
   });
 });
