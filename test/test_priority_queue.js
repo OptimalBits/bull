@@ -306,7 +306,7 @@ describe('Priority queue', function(){
       });
   });
 
-  it('processes several stalled jobs when starting several queues', function(done){
+  it.skip('processes several stalled jobs when starting several queues', function(done){
     this.timeout(5000);
 
     var NUM_QUEUES = 5;
