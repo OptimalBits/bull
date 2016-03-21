@@ -531,7 +531,7 @@ describe('Queue', function () {
       });
     });
 
-    it.only('does not process a job that is being processed when a new queue starts', function (done) {
+    it('does not process a job that is being processed when a new queue starts', function (done) {
       this.timeout(5000);
       var err = null;
 
