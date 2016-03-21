@@ -43,9 +43,10 @@ describe('Queue', function () {
 
   describe('.close', function () {
     var testQueue;
-    beforeEach(function (done) {
-      testQueue = new Queue('test');
-      testQueue.once('ready', done);
+    beforeEach(function () {
+      return utils.newQueue('test').then(function(queue){
+        testQueue = queue;
+      });
     });
 
     it('should call end on the client', function () {
@@ -206,14 +207,14 @@ describe('Queue', function () {
     beforeEach(function(){
       var client = redis.createClient();
       return client.flushdbAsync().then(function(){
-        queue = utils.buildQueue();
+        return utils.newQueue();
+      }).then(function(_queue){
+        queue = _queue;
       });
     });
 
     afterEach(function(){
-     // return queue.clean(1000).then(function(){
       return queue.close();
-     // });
     });
 
     it('should process a job', function (done) {
@@ -263,7 +264,7 @@ describe('Queue', function () {
       });
     });
 
-    it.skip('process several jobs serially', function (done) {
+    it('process several jobs serially', function (done) {
       this.timeout(5000);
       var counter = 1;
       var maxJobs = 35;
@@ -530,10 +531,9 @@ describe('Queue', function () {
       });
     });
 
-    it('does not process a job that is being processed when a new queue starts', function (done) {
+    it.only('does not process a job that is being processed when a new queue starts', function (done) {
       this.timeout(5000);
       var err = null;
-      var anotherQueue;
 
       queue.add({ foo: 'bar' }).then(function (addedJob) {
         queue.process(function (job, jobDone) {
@@ -545,14 +545,15 @@ describe('Queue', function () {
           setTimeout(jobDone, 500);
         });
         setTimeout(function () {
-          anotherQueue = utils.buildQueue();
-          anotherQueue.process(function (job, jobDone) {
-            err = new Error('The second queue should not have received a job to process');
-            jobDone();
-          });
+          utils.newQueue().then(function(anotherQueue){
+            anotherQueue.process(function (job, jobDone) {
+              err = new Error('The second queue should not have received a job to process');
+              jobDone();
+            });
 
-          queue.on('completed', function () {
-            utils.cleanupQueue(anotherQueue).then(done.bind(null, err));
+            queue.on('completed', function () {
+              utils.cleanupQueue(anotherQueue).then(done.bind(null, err));
+            });
           });
         }, 50);
       });
