@@ -247,11 +247,11 @@ describe('Priority queue', function(){
       Promise.all(jobs).then(function(){
         return queueStalled.process(function(){
           // instead of completing we just force-close the queue to simulate a crash.
-          return queueStalled.disconnect().then(function(){
+          return queueStalled.close().then(function(){
             var queue2 = buildQueue('test queue stalled');
             queue2.once('ready', function() {
               var doneAfterFour = _.after(4, function(){
-                done();
+                queue2.close().then(done, done);
               });
 
               queue2.on('completed', function(){
@@ -795,6 +795,7 @@ describe('Priority queue', function(){
         expect(jobs.length).to.be(1);
         return queue.empty();
       }).then(function () {
+        queue = undefined;
         done();
       });
     });
@@ -812,6 +813,7 @@ describe('Priority queue', function(){
         return queue.count();
       }).then(function(len) {
         expect(len).to.be(0);
+        queue = undefined;
         done();
       });
     });
@@ -836,6 +838,7 @@ describe('Priority queue', function(){
         return queue.getFailed();
       }).then(function(failed) {
         expect(failed.length).to.be(0);
+        queue = undefined;
         done();
       });
     });

@@ -590,7 +590,6 @@ describe('Queue', function () {
 
     it('process a job that fails', function (done) {
       var jobError = new Error('Job Failed');
-      queue = utils.buildQueue();
 
       queue.process(function (job, jobDone) {
         expect(job.data.foo).to.be.equal('bar');
@@ -895,7 +894,7 @@ describe('Queue', function () {
 
             return Promise.all([active, paused]);
           }).then(function() {
-            done();
+            return queue.close().then(done, done);
           });
         });
       });
@@ -910,7 +909,7 @@ describe('Queue', function () {
       client.on('message', function (channel, message) {
         expect(channel).to.be.equal(queue.toKey('jobs'));
         expect(parseInt(message, 10)).to.be.a('number');
-        queue.close().then(done);
+        queue.close().then(done, done);
       });
       client.subscribe(queue.toKey('jobs'));
       queue.add({ test: 'stuff' });
