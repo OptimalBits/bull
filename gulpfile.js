@@ -15,8 +15,8 @@ gulp.task('lint', function () {
   ])
     .pipe(eslint({
       rules: {
-        'space-after-keywords': [2, 'never'],
-        indent: [2, 2],
+      //  'keyword-spacing': [2, 'never'],
+        indent: [2, 2, {"SwitchCase": 1}],
         'valid-jsdoc': 0,
         'func-style': 0,
         'no-use-before-define': 0,
