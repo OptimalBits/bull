@@ -113,17 +113,16 @@ describe('Priority queue', function(){
     queue = new Queue('using. dots. in.name.');
 
     return queue.add({
-        foo: 'bar'
-      }).then(function(job){
-        expect(job.jobId).to.be.ok();
-        expect(job.data.foo).to.be('bar');
-      })
-      .then(function(){
-        queue.process(function(job, jobDone){
-          expect(job.data.foo).to.be.equal('bar');
-          jobDone();
-        });
+      foo: 'bar'
+    }).then(function(job){
+      expect(job.jobId).to.be.ok();
+      expect(job.data.foo).to.be('bar');
+    }).then(function(){
+      queue.process(function(job, jobDone){
+        expect(job.data.foo).to.be.equal('bar');
+        jobDone();
       });
+    });
   });
 
   it('processes jobs by priority', function(done){

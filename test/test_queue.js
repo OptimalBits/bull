@@ -460,18 +460,18 @@ describe('Queue', function () {
       return Promise.all(jobs)
         .then(queueStalled.close.bind(queueStalled))
         .then(function () {
-        var queue2 = new Queue('test queue added before', 6379, '127.0.0.1');
-        queue2.process(function (job, jobDone) {
-          jobDone();
-        });
+          var queue2 = new Queue('test queue added before', 6379, '127.0.0.1');
+          queue2.process(function (job, jobDone) {
+            jobDone();
+          });
 
-        return new Promise(function (resolve) {
-          var resolveAfterAllJobs = _.after(jobs.length, resolve);
-          queue2.on('completed', resolveAfterAllJobs);
-        }).then(function(){
-          return queue2.close();
+          return new Promise(function (resolve) {
+            var resolveAfterAllJobs = _.after(jobs.length, resolve);
+            queue2.on('completed', resolveAfterAllJobs);
+          }).then(function(){
+            return queue2.close();
+          });
         });
-      });
     });
 
     it.skip('processes several stalled jobs when starting several queues', function (done) {
@@ -601,8 +601,8 @@ describe('Queue', function () {
         expect(job.jobId).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }, function (err) {
-          done(err);
-        });
+        done(err);
+      });
 
       queue.once('failed', function (job, err) {
         expect(job.jobId).to.be.ok();
@@ -624,8 +624,8 @@ describe('Queue', function () {
         expect(job.jobId).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }, function (err) {
-          done(err);
-        });
+        done(err);
+      });
 
       queue.once('failed', function (job, err) {
         expect(job.jobId).to.be.ok();
@@ -739,14 +739,14 @@ describe('Queue', function () {
     return Promise.all(added)
       .then(queue.count.bind(queue))
       .then(function (count) {
-      expect(count).to.be(100);
-    })
+        expect(count).to.be(100);
+      })
       .then(queue.empty.bind(queue))
       .then(queue.count.bind(queue))
       .then(function (count) {
-      expect(count).to.be(0);
-      return queue.close();
-    });
+        expect(count).to.be(0);
+        return queue.close();
+      });
   });
 
   it('emits waiting event when a job is added', function (done) {
