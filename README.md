@@ -59,7 +59,7 @@ videoQueue.process(function(job, done){
 
   // or give a error if error
   done(Error('error transcoding'));
-  
+
   // or pass it a result
   done(null, { framerate: 29.5 /* etc... */ });
 
@@ -76,7 +76,7 @@ audioQueue.process(function(job, done){
 
   // or give a error if error
   done(Error('error transcoding'));
-  
+
   // or pass it a result
   done(null, { samplerate: 48000 /* etc... */ });
 
@@ -93,7 +93,7 @@ imageQueue.process(function(job, done){
 
   // or give a error if error
   done(Error('error transcoding'));
-  
+
   // or pass it a result
   done(null, { width: 1280, height: 720 /* etc... */ });
 
@@ -116,7 +116,7 @@ videoQueue.process(function(job){ // don't forget to remove the done callback!
   // Handles promise rejection
   return Promise.reject(new Error('error transcoding'));
 
-  // Passes the value the promise is resolved with to the "completed" event 
+  // Passes the value the promise is resolved with to the "completed" event
   return Promise.resolve({ framerate: 29.5 /* etc... */ });
 
   // If the job throws an unhandled exception it is also handled correctly
@@ -404,7 +404,7 @@ __Arguments__
 <a name="pause"/>
 #### Queue##pause([isLocal])
 
-Returns a promise that resolves when the queue is paused. A paused queue will not 
+Returns a promise that resolves when the queue is paused. A paused queue will not
 process new jobs until resumed, but current jobs being processed will continue until
 they are finalized. The pause can be either global or local. If global, all workers in all queue instances for a given queue will be paused. If local, just this worker will stop processing new jobs after the current lock expires. This can be useful to stop a worker from taking new jobs prior to shutting down.
 
@@ -424,7 +424,7 @@ __Arguments__
 #### Queue##resume([isLocal])
 
 Returns a promise that resolves when the queue is resumed after being paused.
-The resume can be either local or global. If global, all workers in all queue 
+The resume can be either local or global. If global, all workers in all queue
 instances for a given queue will be resumed. If local, only this worker will be
 resumed. Note that resuming a queue globally will *not* resume workers that have been
 paused locally; for those, `resume(true)` must be called directly on their instances.
@@ -469,8 +469,8 @@ __Arguments__
 
 ---------------------------------------
 
-<a name="close"/>                                                               
-#### Queue##close()                                                             
+<a name="close"/>
+#### Queue##close()
 Closes the underlying redis client. Use this to perform a graceful
 shutdown.
 
@@ -573,7 +573,7 @@ __Events__
 The cleaner emits the `cleaned` event anytime the queue is cleaned.
 
 ```javascript
-  queue.on('cleaned', function (jobs, type) {}); 
+  queue.on('cleaned', function (jobs, type) {});
 
   jobs {Array} An array of jobs that have been cleaned.
   type {String} The type of job cleaned. Options are completed, waiting, active,
@@ -647,6 +647,13 @@ __Arguments__
 
 ---------------------------------------
 
+####Debugging
+
+To see debug statements set or add `bull` to the NODE_DEBUG environment variable.
+
+```bash
+export NODE_DEBUG=bull
+```
 
 ##License
 
