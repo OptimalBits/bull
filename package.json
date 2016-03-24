@@ -18,7 +18,7 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "bluebird": "^3.3.4",
-    "gulp-eslint": "^2.0.0",
+    "debuglog": "^1.0.0",
     "lodash": "^4.6.1",
     "node-uuid": "^1.4.7",
     "redis": "^2.5.3",
@@ -27,7 +27,7 @@
   "devDependencies": {
     "expect.js": "^0.3.1",
     "gulp": "^3.9.1",
-    "gulp-eslint": "^0.13.2",
+    "gulp-eslint": "^2.0.0",
     "mocha": "^2.4.5",
     "sinon": "^1.17.2"
   },
