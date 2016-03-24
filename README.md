@@ -29,6 +29,15 @@ Features:
 - Concurrency.
 - Pause/resume (globally or locally).
 
+UIs:
+----
+
+There are a few third party UIs that can be used for easier administration of the queues (not in any particular order):
+
+[matador](https://github.com/ShaneK/Matador)
+[react-bull](https://github.com/kfatehi/react-bull)
+[toureiro](https://github.com/Epharmix/Toureiro)
+
 
 Install:
 --------
