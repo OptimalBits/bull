@@ -214,7 +214,7 @@ describe('Queue', function () {
     });
 
     afterEach(function(){
-      return queue.close();
+      return utils.cleanupQueues();
     });
 
     it('should process a job', function (done) {
@@ -229,12 +229,11 @@ describe('Queue', function () {
       }, done);
     });
 
-    it.skip('process a lifo queue', function (done) {
+    it('process a lifo queue', function (done) {
       this.timeout(5000);
       var currentValue = 0, first = true;
-      var queue2 = new Queue('test lifo');
 
-      queue2.once('ready', function () {
+      utils.newQueue('test lifo').then(function(queue2){
         queue2.process(function (job, jobDone) {
           // Catching the job before the pause
           if(first) {
@@ -245,7 +244,7 @@ describe('Queue', function () {
           expect(job.data.count).to.be.equal(currentValue--);
           jobDone();
           if(currentValue === 0) {
-            queue2.close().then(done);
+            done();
           }
         });
 
@@ -400,9 +399,8 @@ describe('Queue', function () {
 
     it('process stalled jobs when starting a queue', function (done) {
       this.timeout(5000);
-      var queueStalled = new Queue('test queue stalled', 6379, '127.0.0.1');
-      queueStalled.LOCK_RENEW_TIME = 10;
-      queueStalled.once('ready', function() {
+      utils.newQueue('test queue stalled').then(function(queueStalled){
+        queueStalled.LOCK_RENEW_TIME = 10;
         var jobs = [
           queueStalled.add({ bar: 'baz' }),
           queueStalled.add({ bar1: 'baz1' }),
@@ -416,12 +414,11 @@ describe('Queue', function () {
 
             return queueStalled.close(true).then(function(){
               return new Promise(function(resolve, reject) {
-                var queue2 = new Queue('test queue stalled', 6379, '127.0.0.1');
-                queue2.LOCK_RENEW_TIME = 100;
-                queue2.once('ready', function() {
+                utils.newQueue('test queue stalled').then(function(queue2){
+                  queue2.LOCK_RENEW_TIME = 100;
                   var doneAfterFour = _.after(4, function () {
                     expect(stalledCallback.calledOnce).to.be(true);
-                    resolve(queue2.close());
+                    resolve();
                   });
                   queue2.on('completed', doneAfterFour);
                   queue2.on('stalled', stalledCallback);
@@ -430,8 +427,8 @@ describe('Queue', function () {
                     jobDone2();
                   });
                 });
-              }).then(done);
-            });
+              });
+            }).then(done, done);
           };
 
           var onceRunning = _.once(afterJobsRunning);
@@ -440,38 +437,35 @@ describe('Queue', function () {
             onceRunning();
             return Promise.delay(150);
           });
-
         });
-
       });
-      return null;
     });
 
     it('processes jobs that were added before the queue backend started', function () {
-      var queueStalled = new Queue('test queue added before', 6379, '127.0.0.1');
-      queueStalled.LOCK_RENEW_TIME = 10;
-      var jobs = [
-        queueStalled.add({ bar: 'baz' }),
-        queueStalled.add({ bar1: 'baz1' }),
-        queueStalled.add({ bar2: 'baz2' }),
-        queueStalled.add({ bar3: 'baz3' })
-      ];
+      utils.newQueue('test queue added before').then(function(queueStalled){
+        queueStalled.LOCK_RENEW_TIME = 10;
+        var jobs = [
+          queueStalled.add({ bar: 'baz' }),
+          queueStalled.add({ bar1: 'baz1' }),
+          queueStalled.add({ bar2: 'baz2' }),
+          queueStalled.add({ bar3: 'baz3' })
+        ];
 
-      return Promise.all(jobs)
-        .then(queueStalled.close.bind(queueStalled))
-        .then(function () {
-          var queue2 = new Queue('test queue added before', 6379, '127.0.0.1');
-          queue2.process(function (job, jobDone) {
-            jobDone();
-          });
+        return Promise.all(jobs)
+          .then(queueStalled.close.bind(queueStalled))
+          .then(function () {
+            utils.newQueue('test queue added before').then(function(queue2){
+              queue2.process(function (job, jobDone) {
+                jobDone();
+              });
 
-          return new Promise(function (resolve) {
-            var resolveAfterAllJobs = _.after(jobs.length, resolve);
-            queue2.on('completed', resolveAfterAllJobs);
-          }).then(function(){
-            return queue2.close();
+              return new Promise(function (resolve) {
+                var resolveAfterAllJobs = _.after(jobs.length, resolve);
+                queue2.on('completed', resolveAfterAllJobs);
+              });
+            });
           });
-        });
+      });
     });
 
     it.skip('processes several stalled jobs when starting several queues', function (done) {
@@ -497,10 +491,6 @@ describe('Queue', function () {
         var procFn = function () {
           // instead of completing we just close the queue to simulate a crash.
           utils.simulateDisconnect(this);
-
-          //this.client.stream.end();
-          //this.bclient.stream.end();
-          //this.eclient.stream.end();
 
           //return this.disconnect().then(function(){
           processed++;
