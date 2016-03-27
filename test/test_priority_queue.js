@@ -26,6 +26,11 @@ describe('Priority queue', function(){
   var queue;
   var sandbox = sinon.sandbox.create();
 
+  beforeEach(function(){
+    var client = redis.createClient();
+    return client.flushdbAsync();
+  });
+
   afterEach(function(){
     if(queue){
       return cleanupQueue(queue).then(function(){
@@ -54,7 +59,7 @@ describe('Priority queue', function(){
     var testQueue;
 
     beforeEach(function(){
-      testQueue = buildQueue('test');
+      testQueue = buildQueue('test close');
     });
 
     it('should return a promise', function(){
@@ -108,17 +113,16 @@ describe('Priority queue', function(){
     queue = new Queue('using. dots. in.name.');
 
     return queue.add({
-        foo: 'bar'
-      }).then(function(job){
-        expect(job.jobId).to.be.ok();
-        expect(job.data.foo).to.be('bar');
-      })
-      .then(function(){
-        queue.process(function(job, jobDone){
-          expect(job.data.foo).to.be.equal('bar');
-          jobDone();
-        });
+      foo: 'bar'
+    }).then(function(job){
+      expect(job.jobId).to.be.ok();
+      expect(job.data.foo).to.be('bar');
+    }).then(function(){
+      queue.process(function(job, jobDone){
+        expect(job.data.foo).to.be.equal('bar');
+        jobDone();
       });
+    });
   });
 
   it('processes jobs by priority', function(done){
@@ -243,20 +247,26 @@ describe('Priority queue', function(){
       Promise.all(jobs).then(function(){
         return queueStalled.process(function(){
           // instead of completing we just force-close the queue to simulate a crash.
-          return queueStalled.disconnect().then(function(){
+          return queueStalled.close().then(function(){
             var queue2 = buildQueue('test queue stalled');
-            var doneAfterFour = _.after(4, function(){
-              done();
-            });
+            queue2.once('ready', function() {
+              var doneAfterFour = _.after(4, function(){
+                queue2.close().then(done, done);
+              });
 
-            queue2.on('completed', function(){
-              doneAfterFour();
-            });
+              queue2.on('completed', function(){
+                doneAfterFour();
+              });
 
-            queue2.process(function(job, jobDone){
-              jobDone();
+              queue2.process(function(job, jobDone){
+                jobDone();
+              });
             });
           });
+          // The sudden simulated crash will throw,
+          // catch it here to let the tests continue normally
+        }).catch(function () {
+          return Promise.resolve();
         });
       }).catch(done);
     });
@@ -295,7 +305,7 @@ describe('Priority queue', function(){
       });
   });
 
-  it('processes several stalled jobs when starting several queues', function(done){
+  it.skip('processes several stalled jobs when starting several queues', function(done){
     this.timeout(5000);
 
     var NUM_QUEUES = 5;
@@ -785,6 +795,7 @@ describe('Priority queue', function(){
         expect(jobs.length).to.be(1);
         return queue.empty();
       }).then(function () {
+        queue = undefined;
         done();
       });
     });
@@ -802,6 +813,7 @@ describe('Priority queue', function(){
         return queue.count();
       }).then(function(len) {
         expect(len).to.be(0);
+        queue = undefined;
         done();
       });
     });
@@ -826,6 +838,7 @@ describe('Priority queue', function(){
         return queue.getFailed();
       }).then(function(failed) {
         expect(failed.length).to.be(0);
+        queue = undefined;
         done();
       });
     });

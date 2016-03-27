@@ -9,24 +9,23 @@ var redis = require('redis');
 var Promise = require('bluebird');
 var uuid = require('node-uuid');
 
+Promise.promisifyAll(redis.RedisClient.prototype);
+Promise.promisifyAll(redis.Multi.prototype);
+
 describe('Job', function(){
   var queue;
 
-  before(function(done){
-    queue = new Queue('test', 6379, '127.0.0.1');
-    queue.client.keys(queue.toKey('*'), function(err, keys){
-      if(keys.length){
-        queue.client.del(keys, function(err2){
-          done(err2);
-        });
-      }else{
-        done(err);
-      }
-    });
+  beforeEach(function(){
+    var client = redis.createClient();
+    return client.flushdbAsync();
   });
 
-  beforeEach(function() {
+  beforeEach(function(){
     queue = new Queue('test-' + uuid(), 6379, '127.0.0.1');
+  });
+
+  afterEach(function(){
+    return queue.close();
   });
 
   describe('.create', function () {
@@ -38,10 +37,9 @@ describe('Job', function(){
       data = {foo: 'bar'};
       opts = {testOpt: 'enabled'};
 
-      return Job.create(queue, 1, data, opts)
-        .then(function(createdJob){
-          job = createdJob;
-        });
+      return Job.create(queue, data, opts).then(function(createdJob){
+        job = createdJob;
+      });
     });
 
     it('returns a promise for the job', function () {
@@ -63,7 +61,7 @@ describe('Job', function(){
 
   describe('.remove', function () {
     it('removes the job from redis', function(){
-      return Job.create(queue, 1, {foo: 'bar'})
+      return Job.create(queue, {foo: 'bar'})
         .tap(function(job){
           return job.remove();
         })
@@ -80,7 +78,7 @@ describe('Job', function(){
         expect(job.data.foo).to.be.equal('bar');
         cb();
       });
-      Job.create(queue, 1, {foo: 'bar'}).then(function(job){
+      Job.create(queue, {foo: 'bar'}).then(function(job){
         job.remove();
       });
     });
@@ -108,7 +106,7 @@ describe('Job', function(){
 
     beforeEach(function () {
       id++;
-      return Job.create(queue, id, {foo: 'bar'})
+      return Job.create(queue, {foo: 'bar'})
         .then(function(createdJob){
           job = createdJob;
         });
@@ -161,7 +159,7 @@ describe('Job', function(){
 
   describe('.progress', function () {
     it('can set and get progress', function () {
-      return Job.create(queue, 2, {foo: 'bar'}).then(function(job){
+      return Job.create(queue, {foo: 'bar'}).then(function(job){
         return job.progress(42).then(function(){
           return Job.fromId(queue, job.jobId).then(function(storedJob){
             expect(storedJob.progress()).to.be(42);
@@ -173,7 +171,7 @@ describe('Job', function(){
 
   describe('.moveToCompleted', function () {
     it('marks the job as completed', function(){
-      return Job.create(queue, 3, {foo: 'bar'}).then(function(job){
+      return Job.create(queue, {foo: 'bar'}).then(function(job){
         return job.isCompleted().then(function(isCompleted){
           expect(isCompleted).to.be(false);
         }).then(function(){
@@ -190,7 +188,7 @@ describe('Job', function(){
 
   describe('.moveToFailed', function () {
     it('marks the job as failed', function(){
-      return Job.create(queue, 4, {foo: 'bar'}).then(function(job){
+      return Job.create(queue, {foo: 'bar'}).then(function(job){
         return job.isFailed().then(function(isFailed){
           expect(isFailed).to.be(false);
         }).then(function(){
@@ -206,7 +204,7 @@ describe('Job', function(){
     });
 
     it('moves the job to wait for retry if attempts are given', function() {
-      return Job.create(queue, 5, {foo: 'bar'}, {attempts: 3}).then(function(job){
+      return Job.create(queue, {foo: 'bar'}, {attempts: 3}).then(function(job){
         return job.isFailed().then(function(isFailed){
           expect(isFailed).to.be(false);
         }).then(function(){
@@ -225,7 +223,7 @@ describe('Job', function(){
     });
 
     it('marks the job as failed when attempts made equal to attempts given', function() {
-      return Job.create(queue, 6, {foo: 'bar'}, {attempts: 1}).then(function(job){
+      return Job.create(queue, {foo: 'bar'}, {attempts: 1}).then(function(job){
         return job.isFailed().then(function(isFailed){
           expect(isFailed).to.be(false);
         }).then(function(){
@@ -241,7 +239,7 @@ describe('Job', function(){
     });
 
     it('moves the job to delayed for retry if attempts are given and backoff is non zero', function() {
-      return Job.create(queue, 7, {foo: 'bar'}, {attempts: 3, backoff: 300}).then(function(job){
+      return Job.create(queue, {foo: 'bar'}, {attempts: 3, backoff: 300}).then(function(job){
         return job.isFailed().then(function(isFailed){
           expect(isFailed).to.be(false);
         }).then(function(){
@@ -264,20 +262,17 @@ describe('Job', function(){
   describe('.promote', function() {
 
     it('can promote a delayed job to be executed immediately', function() {
-      return Job.create(queue, 8, {foo: 'bar'}, {delay: 1500}).then(function(job){
-        var delay = job.timestamp + job.delay;
-        return job._addToDelayed(delay).then(function() {
+      return Job.create(queue, {foo: 'bar'}, {delay: 1500}).then(function(job){
+        return job.isDelayed().then(function(isDelayed) {
+          expect(isDelayed).to.be(true);
+        }).then(function() {
+          return job.promote();
+        }).then(function() {
           return job.isDelayed().then(function(isDelayed) {
-            expect(isDelayed).to.be(true);
-          }).then(function() {
-            return job.promote();
-          }).then(function() {
-            return job.isDelayed().then(function(isDelayed) {
-              expect(isDelayed).to.be(false);
-              return job.isWaiting().then(function(isWaiting) {
-                expect(isWaiting).to.be(true);
-                return;
-              });
+            expect(isDelayed).to.be(false);
+            return job.isWaiting().then(function(isWaiting) {
+              expect(isWaiting).to.be(true);
+              return;
             });
           });
         });
@@ -285,7 +280,7 @@ describe('Job', function(){
     });
 
     it('should not promote a job that is not delayed', function() {
-      return Job.create(queue, 9, {foo: 'bar'}).then(function(job){
+      return Job.create(queue, {foo: 'bar'}).then(function(job){
         return job.isDelayed().then(function(isDelayed) {
           expect(isDelayed).to.be(false);
         }).then(function() {
@@ -300,14 +295,17 @@ describe('Job', function(){
 
   });
 
+  // TODO:
+  // Divide into several tests
+  //
   it('get job status', function() {
     var client = Promise.promisifyAll(redis.createClient());
-    return Job.create(queue, 100, {foo: 'baz'}).then(function(job) {
+    return Job.create(queue, {foo: 'baz'}).then(function(job) {
       return job.isStuck().then(function(yes) {
-        expect(yes).to.be(true);
+        expect(yes).to.be(false);
         return job.getState();
       }).then(function(state) {
-        expect(state).to.be('stuck');
+        expect(state).to.be('waiting');
         return job.moveToCompleted();
       }).then(function (){
         return job.isCompleted();
@@ -341,7 +339,9 @@ describe('Job', function(){
         expect(res).to.be(1);
         return job.getState();
       }).then(function(state) {
-        expect(state).to.be('stuck');
+        expect(state).to.be('waiting');
+        return client.rpopAsync(queue.toKey('wait'));
+      }).then(function(){
         return client.lpushAsync(queue.toKey('paused'), job.jobId);
       }).then(function() {
         return job.isPaused();
