@@ -1,6 +1,5 @@
 /// <reference path='../typings/mocha/mocha.d.ts'/>
 /*eslint-env node */
-/*global Promise:true */
 'use strict';
 
 var Queue = require('../lib/priority-queue');

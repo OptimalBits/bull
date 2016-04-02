@@ -1,5 +1,4 @@
 /*eslint-env node */
-/*global Promise:true */
 'use strict';
 
 var Job = require('../lib/job');

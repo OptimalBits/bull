@@ -1,5 +1,4 @@
 /*eslint-env node */
-/*global Promise:true */
 'use strict';
 
 var Queue = require('../');
@@ -413,7 +412,7 @@ describe('Queue', function () {
             var stalledCallback = sandbox.spy();
 
             return queueStalled.close(true).then(function(){
-              return new Promise(function(resolve, reject) {
+              return new Promise(function(resolve) {
                 utils.newQueue('test queue stalled').then(function(queue2){
                   queue2.LOCK_RENEW_TIME = 100;
                   var doneAfterFour = _.after(4, function () {
@@ -634,7 +633,7 @@ describe('Queue', function () {
       queue.on('completed', function () {
         done(Error('Should not complete'));
       });
-      queue.process(function (job) {
+      queue.process(function () {
         var circular = {};
         circular.x = circular;
         return Promise.resolve(circular);
@@ -815,7 +814,7 @@ describe('Queue', function () {
     });
 
     it('should pause the queue locally', function(testDone){
-      var ispaused = false, counter = 2;
+      var counter = 2;
 
       var queue = utils.buildQueue();
 
@@ -1117,7 +1116,7 @@ describe('Queue', function () {
       var pendingMessageToProcess = 8;
       var wait = 100;
 
-      queue.process(4, function (job) {
+      queue.process(4, function () {
         nbProcessing++;
         expect(nbProcessing).to.be.lessThan(5);
 
