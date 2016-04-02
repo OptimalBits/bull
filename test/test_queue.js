@@ -1419,6 +1419,118 @@ describe('Queue', function () {
     });
   });
 
+  describe('getJobs', function() {
+    var queue;
+
+    beforeEach(function(){
+      queue = utils.buildQueue();
+      return queue.clean(1000);
+    });
+
+    afterEach(function(){
+      return queue.close();
+    });
+
+    it('should return all completed jobs when not setting start/end', function(done) {
+      queue.process(function(job, completed) {
+        completed();
+      });
+
+      queue.on('completed', _.after(3, function() {
+        queue.getJobs('completed', 'SET').then(function(jobs) {
+          expect(jobs).to.be.an(Array);
+          expect(jobs).to.have.length(3);
+          done();
+        }).catch(done);
+      }));
+
+      queue.add({ foo: 1 });
+      queue.add({ foo: 2 });
+      queue.add({ foo: 3 });
+    });
+
+    it('should return all failed jobs when not setting start/end', function(done) {
+      queue.process(function(job, completed) {
+        completed(new Error('error'));
+      });
+
+      queue.on('failed', _.after(3, function() {
+        queue.getJobs('failed', 'SET').then(function(jobs) {
+          expect(jobs).to.be.an(Array);
+          expect(jobs).to.have.length(3);
+          done();
+        }).catch(done);
+      }));
+
+      queue.add({ foo: 1 });
+      queue.add({ foo: 2 });
+      queue.add({ foo: 3 });
+    });
+
+    it('should return subset of jobs when setting positive range', function(done) {
+      queue.process(function(job, completed) {
+        completed();
+      });
+
+      queue.on('completed', _.after(3, function() {
+        queue.getJobs('completed', 'SET', 1, 2).then(function(jobs) {
+          expect(jobs).to.be.an(Array);
+          expect(jobs).to.have.length(2);
+          expect(jobs[0].data.foo).to.be.equal(2);
+          expect(jobs[1].data.foo).to.be.eql(3);
+          done();
+        }).catch(done);
+      }));
+
+      queue.add({ foo: 1 });
+      queue.add({ foo: 2 });
+      queue.add({ foo: 3 });
+    });
+
+    it('should return subset of jobs when setting a negative range', function(done) {
+      queue.process(function(job, completed) {
+        completed();
+      });
+
+      queue.on('completed', _.after(3, function() {
+        queue.getJobs('completed', 'SET', -3, -1).then(function(jobs) {
+          expect(jobs).to.be.an(Array);
+          expect(jobs).to.have.length(3);
+          expect(jobs[0].data.foo).to.be.equal(1);
+          expect(jobs[1].data.foo).to.be.eql(2);
+          expect(jobs[2].data.foo).to.be.eql(3);
+          done();
+        }).catch(done);
+      }));
+
+      queue.add({ foo: 1 });
+      queue.add({ foo: 2 });
+      queue.add({ foo: 3 });
+    });
+
+    it('should return subset of jobs when range overflows', function(done) {
+      queue.process(function(job, completed) {
+        completed();
+      });
+
+      queue.on('completed', _.after(3, function() {
+        queue.getJobs('completed', 'SET', -300, 99999).then(function(jobs) {
+          expect(jobs).to.be.an(Array);
+          expect(jobs).to.have.length(3);
+          expect(jobs[0].data.foo).to.be.equal(1);
+          expect(jobs[1].data.foo).to.be.eql(2);
+          expect(jobs[2].data.foo).to.be.eql(3);
+          done();
+        }).catch(done);
+      }));
+
+      queue.add({ foo: 1 });
+      queue.add({ foo: 2 });
+      queue.add({ foo: 3 });
+    });
+
+  });
+
   describe('Cleaner', function () {
     var queue;
 
