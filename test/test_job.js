@@ -72,6 +72,41 @@ describe('Job', function(){
         });
     });
 
+    it('fails to remove a locked job', function() {
+      return Job.create(queue, 1, {foo: 'bar'}).then(function(job) {
+        return job.takeLock().then(function(lock) {
+          expect(lock).to.be(true);
+        }).then(function() {
+          return job.remove();
+        }).then(function() {
+          throw new Error('Should not be able to remove a locked job');
+        }).catch(function(err) {
+          expect(err.message).to.equal('Could not get lock for job: ' + job.jobId + '. Cannot remove job.');
+        });
+      });
+    });
+
+    it('removes any job from active set', function() {
+      return queue.add({ foo: 'bar' }).then(function(job) {
+        // Simulate a job in active state but not locked
+        return queue.moveJob('wait', 'active').then(function() {
+          return job.isActive().then(function(isActive) {
+            expect(isActive).to.be(true);
+            return job.remove();
+          });
+        }).then(function() {
+          return Job.fromId(queue, job.jobId);
+        }).then(function(stored) {
+          expect(stored).to.be(null);
+          return job.getState();
+        }).then(function(state) {
+          // This check is a bit of a hack. A job that is not found in any list will return the state
+          // stuck.
+          expect(state).to.equal('stuck');
+        });
+      });
+    });
+
     it('emits removed event', function (cb) {
       queue.once('removed', function (job) {
         expect(job.data.foo).to.be.equal('bar');
@@ -79,6 +114,30 @@ describe('Job', function(){
       });
       Job.create(queue, {foo: 'bar'}).then(function(job){
         job.remove();
+      });
+    });
+
+    it('a succesful job should be removable', function(done) {
+      queue.process(function () {
+        return Promise.resolve();
+      });
+
+      queue.add({ foo: 'bar' });
+
+      queue.on('completed', function(job) {
+        job.remove().then(done).catch(done);
+      });
+    });
+
+    it('a failed job should be removable', function(done) {
+      queue.process(function () {
+        throw new Error();
+      });
+
+      queue.add({ foo: 'bar' });
+
+      queue.on('failed', function(job) {
+        job.remove().then(done).catch(done);
       });
     });
   });
