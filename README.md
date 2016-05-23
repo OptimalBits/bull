@@ -598,9 +598,9 @@ The cleaner emits the `cleaned` event anytime the queue is cleaned.
 
 This is the Queue constructor of priority queue. It works same a normal queue, with same function and parameters.
 The only difference is that the Queue#add() allow an options opts.priority that could take
-["low", "normal", "medium", "hight", "critical"]. If no options provider, "normal" will be taken.
+["low", "normal", "medium", "high", "critical"]. If no options provider, "normal" will be taken.
 
-The priority queue will process more often highter priority jobs than lower.
+The priority queue will process more often higher priority jobs than lower.
 
 ```javascript
   var PriorityQueue = require("bull/lib/priority-queue");
