@@ -69,4 +69,38 @@ describe('connection', function () {
       queue.close(done());
     }, 100);
   });
+
+  it('should handle jobs added before and after a redis disconnect', function(done){
+    var count = 0;
+    queue.process(function (job, jobDone) {
+      if(count == 0){
+        expect(job.data.foo).to.be.equal('bar');
+        jobDone();
+      } else {
+        jobDone();
+        queue.close().then(done, done);
+      }
+      count ++;
+    }).catch(function(err){
+      console.log(err);
+    });
+
+    queue.on('completed', function(){
+      if(count === 1){
+        queue.bclient.stream.end();
+        queue.bclient.emit('error', new Error('ECONNRESET'));
+      }
+    });
+
+    queue.on('ready', function(){
+      queue.add({ 'foo': 'bar' });
+    });
+
+    queue.on('error', function (err) {
+      if(count === 1) {
+        queue.add({ 'foo': 'bar' });
+      }
+    });
+  });
+
 });
