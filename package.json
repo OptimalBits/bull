@@ -21,7 +21,7 @@
     "debuglog": "^1.0.0",
     "lodash": "^4.6.1",
     "node-uuid": "^1.4.7",
-    "redis": "^2.5.3",
+    "redis": "^2.6.0-2",
     "semver": "^4.2.0"
   },
   "devDependencies": {
