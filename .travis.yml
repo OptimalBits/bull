@@ -4,7 +4,6 @@ sudo: false
 
 # test on node.js versions
 node_js:
-  - '0.10'
   - '0.11'
   - '0.12'
   - '4'
