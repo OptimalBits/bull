@@ -15,15 +15,14 @@ Promise.promisifyAll(redis.Multi.prototype);
 
 /*
 console.error = function(){
-
 };
 */
 
 Promise.config({
   // Enable warnings.
-  //warnings: true,
+  // warnings: true,
   // Enable long stack traces.
-  longStackTraces: true,
+  longStackTraces: process.NODE_ENV !== 'production',
   // Enable cancellation.
   cancellation: true
 });
@@ -48,11 +47,11 @@ describe('Queue', function () {
       });
     });
 
-    it('should call end on the client', function () {
-      var endSpy = sandbox.spy(testQueue.client, 'end');
-      return testQueue.close().then(function () {
-        expect(endSpy.calledOnce).to.be(true);
+    it('should call end on the client', function (done) {
+      testQueue.client.once('end', function(){
+        done();
       });
+      testQueue.close();
     });
 
     it('should call end on the blocking client', function () {
@@ -62,11 +61,11 @@ describe('Queue', function () {
       });
     });
 
-    it('should call end on the event subscriber client', function () {
-      var endSpy = sandbox.spy(testQueue.eclient, 'end');
-      return testQueue.close().then(function () {
-        expect(endSpy.calledOnce).to.be(true);
+    it('should call end on the event subscriber client', function (done) {
+      testQueue.eclient.once('end', function(){
+        done();
       });
+      testQueue.close();
     });
 
     it('should resolve the promise when each client has disconnected', function () {
@@ -102,7 +101,7 @@ describe('Queue', function () {
 
     describe('should be callable from within', function () {
       it('a job handler that takes a callback', function (done) {
-        this.timeout(10000); // Close can be a slow operation
+        this.timeout(12000); // Close can be a slow operation
 
         testQueue.process(function (job, jobDone) {
           expect(job.data.foo).to.be('bar');
@@ -229,18 +228,16 @@ describe('Queue', function () {
     });
 
     it('process a lifo queue', function (done) {
-      this.timeout(5000);
+      this.timeout(12000);
       var currentValue = 0, first = true;
-
       utils.newQueue('test lifo').then(function(queue2){
         queue2.process(function (job, jobDone) {
           // Catching the job before the pause
+          expect(job.data.count).to.be.equal(currentValue--);
           if(first) {
-            expect(job.data.count).to.be.equal(0);
             first = false;
             return jobDone();
           }
-          expect(job.data.count).to.be.equal(currentValue--);
           jobDone();
           if(currentValue === 0) {
             done();
@@ -263,7 +260,7 @@ describe('Queue', function () {
     });
 
     it('process several jobs serially', function (done) {
-      this.timeout(5000);
+      this.timeout(12000);
       var counter = 1;
       var maxJobs = 35;
 
@@ -397,7 +394,7 @@ describe('Queue', function () {
     });
 
     it('process stalled jobs when starting a queue', function (done) {
-      this.timeout(5000);
+      this.timeout(12000);
       utils.newQueue('test queue stalled').then(function(queueStalled){
         queueStalled.LOCK_RENEW_TIME = 10;
         var jobs = [
@@ -521,7 +518,7 @@ describe('Queue', function () {
     });
 
     it('does not process a job that is being processed when a new queue starts', function (done) {
-      this.timeout(5000);
+      this.timeout(12000);
       var err = null;
 
       queue.add({ foo: 'bar' }).then(function (addedJob) {
@@ -549,7 +546,7 @@ describe('Queue', function () {
     });
 
     it('process stalled jobs without requiring a queue restart', function (done) {
-      this.timeout(5000);
+      this.timeout(12000);
 
       var queue2 = utils.buildQueue('running-stalled-job-' + uuid());
 
@@ -1247,7 +1244,7 @@ describe('Queue', function () {
     });
 
     it('should retry a job after a delay if a fixed backoff is given', function(done) {
-      this.timeout(5000);
+      this.timeout(12000);
       queue = utils.buildQueue('test retries and backoffs');
       var start;
       queue.on('ready', function() {
@@ -1272,7 +1269,7 @@ describe('Queue', function () {
     });
 
     it('should retry a job after a delay if an exponential backoff is given', function(done) {
-      this.timeout(5000);
+      this.timeout(12000);
       queue = utils.buildQueue('test retries and backoffs');
       var start;
       queue.on('ready', function() {
@@ -1419,6 +1416,7 @@ describe('Queue', function () {
   });
 
   describe('getJobs', function() {
+    this.timeout(12000);
     var queue;
 
     beforeEach(function(){

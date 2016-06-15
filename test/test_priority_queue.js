@@ -225,6 +225,7 @@ describe('Priority queue', function(){
   });
 
   it('process stalled jobs when starting a queue', function(done){
+    this.timeout(16000);
     var queueStalled = buildQueue('test queue stalled');
     queueStalled.setLockRenewTime(10);
     var jobs = [
@@ -246,17 +247,18 @@ describe('Priority queue', function(){
       Promise.all(jobs).then(function(){
         return queueStalled.process(function(){
           // instead of completing we just force-close the queue to simulate a crash.
-          return queueStalled.close().then(function(){
+          return queueStalled.close( true ).then(function(){
             var queue2 = buildQueue('test queue stalled');
             queue2.once('ready', function() {
-              var doneAfterFour = _.after(4, function(){
-                queue2.close().then(done, done);
-              });
 
+              var doneAfterFour = _.after(4, function(){
+                queue2.close().then(function(){
+                  done()
+                }, done);
+              });
               queue2.on('completed', function(){
                 doneAfterFour();
               });
-
               queue2.process(function(job, jobDone){
                 jobDone();
               });

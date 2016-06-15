@@ -165,10 +165,9 @@ describe('Job', function(){
 
     beforeEach(function () {
       id++;
-      return Job.create(queue, {foo: 'bar'})
-        .then(function(createdJob){
-          job = createdJob;
-        });
+      return Job.create(queue, {foo: 'bar'}).then(function(createdJob){
+        job = createdJob;
+      });
     });
 
     it('can take a lock', function(){
@@ -358,6 +357,8 @@ describe('Job', function(){
   // Divide into several tests
   //
   it('get job status', function() {
+    this.timeout(12000);
+
     var client = Promise.promisifyAll(redis.createClient());
     return Job.create(queue, {foo: 'baz'}).then(function(job) {
       return job.isStuck().then(function(yes) {
