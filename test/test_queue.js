@@ -1621,6 +1621,34 @@ describe('Queue', function () {
       });
     });
 
+    it('should clean all waiting jobs', function (done) {
+      queue.add({some: 'data'});
+      queue.add({some: 'data'});
+      Promise.delay(100).then(function () {
+        return queue.clean(0, 'wait');
+      }).then(function (jobs) {
+        expect(jobs.length).to.be(2);
+        return queue.count();
+      }).then(function(len) {
+        expect(len).to.be(0);
+        done();
+      });
+    });
+
+    it('should clean all delayed jobs', function (done) {
+      queue.add({some: 'data'}, { delay: 5000 });
+      queue.add({some: 'data'}, { delay: 5000 });
+      Promise.delay(100).then(function () {
+        return queue.clean(0, 'delayed');
+      }).then(function (jobs) {
+        expect(jobs.length).to.be(2);
+        return queue.count();
+      }).then(function(len) {
+        expect(len).to.be(0);
+        done();
+      });
+    });
+
     it('should clean a job without a timestamp', function (done) {
       var client = redis.createClient(6379, '127.0.0.1', {});
 
