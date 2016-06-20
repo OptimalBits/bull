@@ -1649,6 +1649,21 @@ describe('Queue', function () {
       });
     });
 
+    it('should clean the number of jobs requested', function (done) {
+      queue.add({some: 'data'});
+      queue.add({some: 'data'});
+      queue.add({some: 'data'});
+      Promise.delay(100).then(function () {
+        return queue.clean(0, 'wait', 1);
+      }).then(function (jobs) {
+        expect(jobs.length).to.be(1);
+        return queue.count();
+      }).then(function(len) {
+        expect(len).to.be(2);
+        done();
+      });
+    });
+
     it('should clean a job without a timestamp', function (done) {
       var client = redis.createClient(6379, '127.0.0.1', {});
 
