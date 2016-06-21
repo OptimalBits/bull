@@ -317,7 +317,7 @@ listened by some other service that stores the results in a database.
 ## Reference
 
 <a name="queue"/>
-###Queue(queueName, redisPort, redisHost, [redisOpts])
+###Queue(queueName, redisPort, redisHost, [redisOpts], [queueOpts])
 
 This is the Queue constructor. It creates a new Queue that is persisted in
 Redis. Everytime the same queue is instantiated it tries to process all the
@@ -330,6 +330,9 @@ __Arguments__
     redisPort {Number} A port where redis server is running.
     redisHost {String} A host specified as IP or domain where redis is running.
     redisOptions {Object} Options to pass to the redis client. https://github.com/mranney/node_redis
+    queueOpts {Object} Options to drive the Queue behavior
+    queueOpts.processStalledJobs {Boolean} Automatically process potentially jobs stuck in active
+    state (default: true)
 ```
 
 ---------------------------------------
