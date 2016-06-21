@@ -13,8 +13,8 @@ function simulateDisconnect(queue){
   queue.eclient.stream.end();
 }
 
-function buildQueue(name) {
-  var queue = new Queue(name || STD_QUEUE_NAME, 6379, '127.0.0.1');
+function buildQueue(name, queueOptions) {
+  var queue = new Queue(name || STD_QUEUE_NAME, 6379, '127.0.0.1', {}, queueOptions);
   queues.push(queue);
   return queue;
 }
