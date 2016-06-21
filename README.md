@@ -406,7 +406,7 @@ __Arguments__
   opts.delay {Number} An amount of miliseconds to wait until this job
   can be processed. Note that for accurate delays, both server and clients
   should have their clocks synchronized. [optional]
-  opts.attempts {Number} A number of attempts to retry if the job fails [optional]
+  opts.attempts {Number} The total number of attempts to try the job until it completes.
   opts.backoff {Number|Object} Backoff setting for automatic retries if the job fails
   opts.backoff.type {String} Backoff type, which can be either `fixed` or `exponential`
   opts.backoff.delay {String} Backoff delay, in milliseconds
