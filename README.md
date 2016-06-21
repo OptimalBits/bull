@@ -111,6 +111,11 @@ imageQueue.process(function(job, done){
   throw (Error('some unexpected error'));
 });
 
+pdfQueue.process(function(job){
+  // Processors can also return promises instead of using the done callback
+  return pdfAsyncProcessor();
+}
+
 videoQueue.add({video: 'http://example.com/video1.mov'});
 audioQueue.add({audio: 'http://example.com/audio1.mp3'});
 imageQueue.add({image: 'http://example.com/image1.tiff'});
