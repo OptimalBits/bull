@@ -8,7 +8,7 @@ Bull Job Manager
 
 ![bull](http://files.softicons.com/download/animal-icons/animal-icons-by-martin-berube/png/128/bull.png)
 
-A lightweight, robust and fast job processing queue.
+The fastest, more reliable redis based queue for nodejs.
 Carefully written for rock solid stability and atomicity.
 
 It uses redis for persistence, so the queue is not lost if the server goes
