@@ -1,3 +1,38 @@
+v1.0.0
+======
+
+- improvements in clean (fixes and performance).
+
+[Changes](https://github.com/OptimalBits/bull/compare/v1.0.0-rc4...v1.0.0)
+
+v1.0.0-rc4
+==========
+
+- fixed lock renew logic.
+- atomized code for getting stalled jobs.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v1.0.0-rc3...v1.0.0-rc4)
+
+v1.0.0-rc3
+==========
+
+- smaller fixes.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v1.0.0-rc2...v1.0.0-rc3)
+
+v1.0.0-rc2
+==========
+
+- Improved locking when removing and processing stalled jobs.
+- Fixed #302 EVALSHA failure.
+- Fixed #295 error with redis 3.2.
+- Correctly allows the specification of the db
+- Honor start/end range for complete/failed jobs.
+- Fixed #277 Memory Leaks With Large Queue.
+- Support for custom key prefix for redis keys.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v1.0.0-rc1...v1.0.0-rc2)
+
 v1.0.0-rc1
 ==========
 
