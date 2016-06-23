@@ -565,7 +565,7 @@ __Arguments__
 #### Queue##clean(options)
 
 Tells the queue remove all jobs created outside of a grace period.
-You can clean the jobs with the following states: completed, waiting, active,
+You can clean the jobs with the following states: completed, wait, active,
 delayed, and failed.
 
 __Example__
