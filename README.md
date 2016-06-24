@@ -2,6 +2,7 @@ Bull Job Manager
 ================
 
 [![Join the chat at https://gitter.im/OptimalBits/bull](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/OptimalBits/bull?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![npm](https://img.shields.io/npm/dm/localeval.svg?maxAge=2592000)]()
 
 [![BuildStatus](https://secure.travis-ci.org/OptimalBits/bull.png?branch=master)](http://travis-ci.org/OptimalBits/bull)
 [![NPM version](https://badge.fury.io/js/bull.svg)](http://badge.fury.io/js/bull)
