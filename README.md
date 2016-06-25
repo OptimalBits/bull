@@ -658,7 +658,7 @@ __Arguments__
 <a name="retry"/>
 #### Job##retry()
 
-Rerun a Job that has failed.
+Rerun a Job that has finished (completed or failed).
 
 __Arguments__
 
