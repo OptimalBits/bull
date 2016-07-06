@@ -1297,6 +1297,124 @@ describe('Queue', function () {
       });
     });
 
+    it('should not retry a job that has been removed', function(done) {
+      queue = utils.buildQueue('retry a removed job');
+      queue.on('ready', function() {
+        var attempts = 0;
+        queue.process(function (job, jobDone) {
+          if(attempts === 0) {
+            attempts++;
+            jobDone(new Error('failed'));
+          } else {
+            jobDone();
+          }
+        });
+
+        queue.add({ foo: 'bar' });
+      });
+
+      var failedHandler = _.once(function (job, err) {
+        expect(job.data.foo).to.equal('bar');
+        expect(err.message).to.equal('failed');
+
+        job.retry().delay(100)
+          .then(function() {
+            return queue.getCompletedCount().then(function(count) {
+              return expect(count).to.equal(1);
+            });
+          })
+          .then(function() {
+            return queue.clean(0).then(function() {
+              return job.retry().catch(function(err) {
+                expect(err.message).to.equal('Couldn\'t retry job: The job doesn\'t exist');
+              });
+            });
+          })
+          .then(function() {
+            return Promise.all([
+              queue.getCompletedCount().then(function(count) {
+                return expect(count).to.equal(0);
+              }),
+              queue.getFailedCount().then(function(count) {
+                return expect(count).to.equal(0);
+              })
+            ]);
+          })
+          .then(function() {
+            done();
+          }, done);
+      });
+
+      queue.on('failed', failedHandler);
+    });
+
+    it('should not retry a job that has been retried already', function(done) {
+      queue = utils.buildQueue('retry already retried job');
+      queue.on('ready', function() {
+        var attempts = 0;
+        queue.process(function (job, jobDone) {
+          if(attempts === 0) {
+            attempts++;
+            jobDone(new Error('failed'));
+          } else {
+            jobDone();
+          }
+        });
+
+        queue.add({ foo: 'bar' });
+      });
+
+      var failedHandler = _.once(function (job, err) {
+        expect(job.data.foo).to.equal('bar');
+        expect(err.message).to.equal('failed');
+
+        job.retry().delay(100)
+          .then(function() {
+            return queue.getCompletedCount().then(function(count) {
+              return expect(count).to.equal(1);
+            });
+          })
+          .then(function() {
+            return job.retry().catch(function(err) {
+              expect(err.message).to.equal('Couldn\'t retry job: The job has been already retried or has not failed');
+            });
+          })
+          .then(function() {
+            return Promise.all([
+              queue.getCompletedCount().then(function(count) {
+                return expect(count).to.equal(1);
+              }),
+              queue.getFailedCount().then(function(count) {
+                return expect(count).to.equal(0);
+              })
+            ]);
+          })
+          .then(function() {
+            done();
+          }, done);
+      });
+
+      queue.on('failed', failedHandler);
+    });
+
+    it('should not retry a job that is locked', function(done) {
+      queue = utils.buildQueue('retry a locked job');
+      var addedHandler = _.once(function (job) {
+        expect(job.data.foo).to.equal('bar');
+
+        job.retry().catch(function(err) {
+          expect(err.message).to.equal('Couldn\'t retry job: The job has been already retried or has not failed');
+          return null;
+        }).then(done, done);
+      });
+
+      queue.on('ready', function() {
+        queue.process(function (job, jobDone) {
+          return Promise.delay(200).then(jobDone);
+        });
+        queue.add({ foo: 'bar' }).then(addedHandler);
+      });
+    });
   });
 
   describe('Jobs getters', function () {
