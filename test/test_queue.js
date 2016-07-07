@@ -1304,7 +1304,7 @@ describe('Queue', function () {
         queue.process(function (job, jobDone) {
           if(attempts === 0) {
             attempts++;
-            jobDone(new Error('failed'));
+            throw new Error('failed');
           } else {
             jobDone();
           }
@@ -1355,7 +1355,7 @@ describe('Queue', function () {
         queue.process(function (job, jobDone) {
           if(attempts === 0) {
             attempts++;
-            jobDone(new Error('failed'));
+            throw new Error('failed');
           } else {
             jobDone();
           }
