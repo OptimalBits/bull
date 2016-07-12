@@ -318,6 +318,7 @@ listened by some other service that stores the results in a database.
 
 <a name="queue"/>
 ###Queue(queueName, redisPort, redisHost, [redisOpts])
+###Queue(queueName, redisConnectionString, [redisOpts])
 
 This is the Queue constructor. It creates a new Queue that is persisted in
 Redis. Everytime the same queue is instantiated it tries to process all the
@@ -329,6 +330,16 @@ __Arguments__
     queueName {String} A unique name for this Queue.
     redisPort {Number} A port where redis server is running.
     redisHost {String} A host specified as IP or domain where redis is running.
+    redisOptions {Object} Options to pass to the redis client. https://github.com/mranney/node_redis
+```
+
+Alternatively, it's possible to pass a connection string to create a new queue.
+
+__Arguments__
+
+```javascript
+    queueName {String} A unique name for this Queue.
+    redisConnectionString {String} A connection string containing the redis server host, port and (optional) authentication.
     redisOptions {Object} Options to pass to the redis client. https://github.com/mranney/node_redis
 ```
 
