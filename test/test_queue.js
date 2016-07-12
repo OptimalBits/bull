@@ -574,6 +574,178 @@ describe('Queue', function () {
       }).catch(done);
     });
 
+    it('only process a limited amount of stalled jobs', function(done) {
+      this.timeout(12000);
+
+      var queue2 = utils.buildQueue('limited-stalled-job-processing' + uuid(), {
+        processStalledJobs: false
+      });
+
+      var completed = _.after(5, function(){
+        queue2.removeListener('completed', completed);
+        var client = redis.createClient();
+        var movingPromises = [];
+        // This simulates all 5 jobs to be in a stalled state.
+        for(var i = 1; i <= 5; i++) {
+          movingPromises.push(client.multi()
+                              .srem(queue2.toKey('completed'), i)
+                              .lpush(queue2.toKey('active'), i)
+                              .execAsync());
+        }
+
+        Promise.all(movingPromises).then(function() {
+          return queue2.getActiveCount().then(function(count) {
+            expect(count).to.equal(5);
+          });
+        }).then(function() {
+          return queue2.processStalledJobs(3);
+        }).then(function() {
+          return queue2.getActiveCount().then(function(count) {
+            expect(count).to.equal(2);
+          });
+        }).then(function() {
+          return queue2.getCompletedCount().then(function(count) {
+            expect(count).to.equal(3);
+          });
+        }).catch(function(err) {
+          expect(err).to.be(null);
+        }).finally(function() {
+          queue2.close(true).then(done);
+        });
+      });
+
+      queue2.on('completed', completed);
+
+      for(var i = 1; i <= 5; i++) {
+        queue2.add({ foo: 'bar' });
+      }
+
+      queue2.process(function (job, jobDone) {
+        expect(job.data.foo).to.be.equal('bar');
+        jobDone();
+      });
+    });
+
+    it('should not process stalled jobs if disabled', function(done) {
+      this.timeout(12000);
+
+      var queue2 = utils.buildQueue('limited-stalled-job-processing' + uuid(), {
+        processStalledJobs: false
+      });
+
+      queue2.LOCK_RENEW_TIME = 100;
+
+      var completed = _.after(5, function(){
+        queue2.removeListener('completed', completed);
+        var client = redis.createClient();
+        var movingPromises = [];
+        // This simulates all 5 jobs to be in a stalled state.
+        for(var i = 1; i <= 5; i++) {
+          movingPromises.push(client.multi()
+                              .srem(queue2.toKey('completed'), i)
+                              .lpush(queue2.toKey('active'), i)
+                              .execAsync());
+        }
+
+        Promise.all(movingPromises).then(function() {
+          return queue2.getActiveCount().then(function(count) {
+            expect(count).to.equal(5);
+          });
+        }).delay(200).then(function() {
+          return queue2.getActiveCount().then(function(count) {
+            expect(count).to.equal(5);
+          });
+        }).catch(function(err) {
+          expect(err).to.be(null);
+        }).finally(function() {
+          queue2.close(true).then(done);
+        });
+      });
+
+      queue2.on('completed', completed);
+
+      for(var i = 1; i <= 5; i++) {
+        queue2.add({ foo: 'bar' });
+      }
+
+      queue2.process(function (job, jobDone) {
+        expect(job.data.foo).to.be.equal('bar');
+        jobDone();
+      });
+    });
+
+    it('should not process stalled jobs on a reconnection', function(done) {
+      this.timeout(12000);
+      var queueName = 'dont-process-stalled-jobs-on-reconnection' + uuid();
+
+      var queue2 = utils.buildQueue(queueName, {
+        processStalledJobs: false
+      });
+
+      var queue3;
+
+      var jobHandler = function(job, jobDone) {
+        jobDone();
+      };
+
+      queue2.LOCK_RENEW_TIME = 30;
+
+      var completed = _.after(5, function(){
+        queue2.removeListener('completed', completed);
+        var client = redis.createClient();
+        var movingPromises = [];
+        // This simulates all 5 jobs to be in a stalled state.
+        for(var i = 1; i <= 5; i++) {
+          movingPromises.push(client.multi()
+                              .srem(queue2.toKey('completed'), i)
+                              .lpush(queue2.toKey('active'), i)
+                              .execAsync());
+        }
+
+        Promise.all(movingPromises).then(function() {
+          return queue2.getActiveCount().then(function(count) {
+            expect(count).to.equal(5);
+          });
+        }).delay(100).then(function() {
+          return queue2.getActiveCount().then(function(count) {
+            expect(count).to.equal(5);
+          });
+        }).then(function() {
+          queue3 = utils.buildQueue(queueName, {
+            processStalledJobs: false
+          });
+
+          return new Promise(function(resolve) {
+            queue3.on('ready', function() {
+              queue3.process(jobHandler);
+              resolve();
+            });
+          });
+        }).delay(100).then(function() {
+          return queue3.getActiveCount().then(function(count) {
+            expect(count).to.equal(5);
+          });
+        }).catch(function(err) {
+          expect(err).to.be(null);
+        }).finally(function() {
+          var closing = [queue2.close(true)];
+          if (queue3) closing.push(queue3.close(true));
+
+          Promise.all(closing).then(function() {
+            done();
+          });
+        });
+      });
+
+      queue2.on('completed', completed);
+
+      for(var i = 1; i <= 5; i++) {
+        queue2.add({ foo: 'bar' });
+      }
+
+      queue2.process(jobHandler);
+    });
+
     it('process a job that fails', function (done) {
       var jobError = new Error('Job Failed');
 
