@@ -414,6 +414,10 @@ __Arguments__
     of the queue instead of the left (default false)
   opts.timeout {Number} The number of milliseconds after which the job
     should be fail with a timeout error [optional]
+  opts.jobId {Number|String} Override the job ID - by default, the job ID is a
+    unique integer, but you can use this setting to change it to something else,
+    for example some kind of unique key that will prevent two jobs of the same
+    value from existing at the same time
   returns {Promise} A promise that resolves when the job has been succesfully
     added to the queue (or rejects if some error occured). On success, the promise
     resolves to the new Job.
