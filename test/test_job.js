@@ -63,6 +63,21 @@ describe('Job', function(){
         expect(createdJob.jobId).to.be.equal(customJobId);
       });
     });
+
+    it('should process jobs with custom jobIds', function(done) {
+      var customJobId = 'customjob';
+      queue.process(function () {
+        return Promise.resolve();
+      });
+
+      queue.add({ foo: 'bar' }, { jobId: customJobId });
+
+      queue.on('completed', function(job) {
+        if (job.opts.jobId == customJobId) {
+          done();
+        }
+      });
+    });
   });
 
   describe('.remove', function () {
