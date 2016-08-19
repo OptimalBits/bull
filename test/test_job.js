@@ -56,6 +56,13 @@ describe('Job', function(){
         expect(storedJob.opts.testOpt).to.be('enabled');
       });
     });
+
+    it('should use the custom jobId if one is provided', function() {
+      var customJobId = 'customjob';
+      return Job.create(queue, data, { jobId: customJobId }).then(function(createdJob){
+        expect(createdJob.jobId).to.be.equal(customJobId);
+      });
+    });
   });
 
   describe('.remove', function () {
