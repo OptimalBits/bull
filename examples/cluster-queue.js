@@ -1,7 +1,7 @@
 "use strict"
 
 var
-  Queue = require('./queue'),
+  Queue = require('..'),
   cluster = require('cluster');
 
 var numWorkers = 8;

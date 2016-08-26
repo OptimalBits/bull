@@ -1,6 +1,6 @@
 "use strict";
 
-var Queue = require('./queue');
+var Queue = require('..');
 var Promise = require("bluebird");
 var events = require('events');
 var util = require('util');
