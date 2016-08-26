@@ -2,7 +2,7 @@
 /*eslint-env node */
 'use strict';
 
-var Queue = require('../lib/priority-queue');
+var Queue = require('../examples/priority-queue');
 var expect = require('expect.js');
 var Promise = require('bluebird');
 var sinon = require('sinon');
