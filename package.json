@@ -25,7 +25,7 @@
     "semver": "^5.1.0"
   },
   "devDependencies": {
-    "eslint": "^3.3.1",
+    "eslint": "^2.13.1",
     "expect.js": "^0.3.1",
     "mocha": "^2.5.3",
     "sinon": "^1.17.4"
