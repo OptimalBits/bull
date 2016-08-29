@@ -446,4 +446,63 @@ describe('Job', function(){
     });
   });
 
+  describe('.finished', function() {
+    it('should resolve when the job has been completed', function(done){
+      queue.process(function () {
+        return Promise.resolve();
+      });
+      queue.add({ foo: 'bar' }).then(function(job){
+        return job.finished();
+      }).then(function(){
+        done();
+      }, done);
+    });
+
+    it('should reject when the job has been completed', function(done){
+      queue.process(function () {
+        return Promise.reject(Error('test error'));
+      });
+      queue.add({ foo: 'bar' }).then(function(job){
+        return job.finished();
+      }).then(function(){
+        done(Error('should have been rejected'));
+      }, function(err){
+        expect(err.message).equal('test error');
+        done();
+      });
+    });
+
+    it('should resolve directly if already processed', function(done){
+      queue.process(function () {
+        return Promise.resolve();
+      });
+      queue.add({ foo: 'bar' }).then(function(job){
+        return Promise.delay(1500).then(function(){
+          return job.finished();
+        })
+      }).then(function(){
+        done();
+      }, done);
+    });
+
+    it('should reject directly if already processed', function(done){
+      queue.process(function () {
+        return Promise.reject(Error('test error'));
+      });
+      queue.add({ foo: 'bar' }).then(function(job){
+        return Promise.delay(1500).then(function(){
+          return job.finished();
+        });
+      }).then(function(){
+        done(Error('should have been rejected'));
+      }, function(err){
+        expect(err.message).equal('test error');
+        done();
+      });
+    });
+
+    it.skip('should resolve using the watchdog if pubsub was lost');
+    it.skip('should reject using the watchdog if pubsub was lost');
+
+  });
 });
