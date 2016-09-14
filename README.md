@@ -55,6 +55,7 @@ var Queue = require('bull');
 var videoQueue = Queue('video transcoding', 6379, '127.0.0.1');
 var audioQueue = Queue('audio transcoding', 6379, '127.0.0.1');
 var imageQueue = Queue('image transcoding', 6379, '127.0.0.1');
+var pdfQueue = Queue('pdf transcoding', 6379, '127.0.0.1');
 
 videoQueue.process(function(job, done){
 
@@ -111,6 +112,10 @@ imageQueue.process(function(job, done){
   throw (Error('some unexpected error'));
 });
 
+pdfQueue.process(function(job){
+  // Processors can also return promises instead of using the done callback
+  return pdfAsyncProcessor();
+});
 
 videoQueue.add({video: 'http://example.com/video1.mov'});
 audioQueue.add({audio: 'http://example.com/audio1.mp3'});
@@ -714,3 +719,4 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
