@@ -55,6 +55,7 @@ var Queue = require('bull');
 var videoQueue = Queue('video transcoding', 6379, '127.0.0.1');
 var audioQueue = Queue('audio transcoding', 6379, '127.0.0.1');
 var imageQueue = Queue('image transcoding', 6379, '127.0.0.1');
+var pdfQueue = Queue('pdf transcoding', 6379, '127.0.0.1');
 
 videoQueue.process(function(job, done){
 
@@ -410,26 +411,26 @@ executed as soon as possible.
 __Arguments__
 
 ```javascript
-  data {PlainObject} A plain object with arguments that will be passed to 
+  data {PlainObject} A plain object with arguments that will be passed to
                      the job processing function in job.data.
   opts  A plain object with arguments that will be passed to the job
         processing function in job.opts.
   {
     delay {Number} An amount of miliseconds to wait until this job can be processed. Note that for accurate delays, both                   server and clients should have their clocks synchronized. [optional]
     attempts {Number} The total number of attempts to try the job until it completes.
-     
+
     backoff {Number|Object} Backoff setting for automatic retries if the job fails
     backoff.type {String} Backoff type, which can be either `fixed` or `exponential`
     backoff.delay {String} Backoff delay, in milliseconds
-     
-    lifo {Boolean} A boolean which, if true, adds the job to the right of the queue 
+
+    lifo {Boolean} A boolean which, if true, adds the job to the right of the queue
                    instead of the left (default false)
     timeout {Number} The number of milliseconds after which the job should be fail
                      with a timeout error [optional]
     jobId {Number|String} Override the job ID - by default, the job ID is a unique
                           integer, but you can use this setting to override it.
                           If you use this option, it is up to you to ensure the
-                          jobId is unique. If you attempt to add a job with an id that 
+                          jobId is unique. If you attempt to add a job with an id that
                           already exists, it will not be added.
   }
   returns {Promise} A promise that resolves when the job has been succesfully
