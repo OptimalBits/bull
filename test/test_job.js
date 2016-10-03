@@ -56,6 +56,28 @@ describe('Job', function(){
         expect(storedJob.opts.testOpt).to.be('enabled');
       });
     });
+
+    it('should use the custom jobId if one is provided', function() {
+      var customJobId = 'customjob';
+      return Job.create(queue, data, { jobId: customJobId }).then(function(createdJob){
+        expect(createdJob.jobId).to.be.equal(customJobId);
+      });
+    });
+
+    it('should process jobs with custom jobIds', function(done) {
+      var customJobId = 'customjob';
+      queue.process(function () {
+        return Promise.resolve();
+      });
+
+      queue.add({ foo: 'bar' }, { jobId: customJobId });
+
+      queue.on('completed', function(job) {
+        if (job.opts.jobId == customJobId) {
+          done();
+        }
+      });
+    });
   });
 
   describe('.remove', function () {
