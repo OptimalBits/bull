@@ -603,6 +603,7 @@ __Arguments__
   grace {int} Grace period in milliseconds.
   type {string} type of job to clean. Values are completed, waiting, active,
   delayed, and failed. Defaults to completed.
+  limit {int} maximum amount of jobs to clean per call. If not provided will clean all matching jobs.
   returns {Promise} A promise that resolves with an array of removed jobs.
 ```
 
