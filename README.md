@@ -581,11 +581,11 @@ __Arguments__
 ---------------------------------------
 
 <a name="clean"/>
-#### Queue##clean(options)
+#### Queue##clean(grace, [type], [limit])
 
-Tells the queue remove all jobs created outside of a grace period.
-You can clean the jobs with the following states: completed, wait, active,
-delayed, and failed.
+Tells the queue remove jobs created outside of a grace period (in ms).
+You can clean the jobs with the following states: completed, wait, active, delayed, and failed. (Defaults to completed)
+If a limit is specified, at most that many jobs will be cleaned.
 
 __Example__
 
