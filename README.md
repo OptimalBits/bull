@@ -581,11 +581,9 @@ __Arguments__
 ---------------------------------------
 
 <a name="clean"/>
-#### Queue##clean(options)
+#### Queue##clean(grace, [type], [limit])
 
-Tells the queue remove all jobs created outside of a grace period.
-You can clean the jobs with the following states: completed, wait, active,
-delayed, and failed.
+Tells the queue remove jobs of a specific type created outside of a grace period.
 
 __Example__
 
@@ -605,6 +603,7 @@ __Arguments__
   grace {int} Grace period in milliseconds.
   type {string} type of job to clean. Values are completed, waiting, active,
   delayed, and failed. Defaults to completed.
+  limit {int} maximum amount of jobs to clean per call. If not provided will clean all matching jobs.
   returns {Promise} A promise that resolves with an array of removed jobs.
 ```
 
