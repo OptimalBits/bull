@@ -311,6 +311,7 @@ listened by some other service that stores the results in a database.
 * [Queue##empty](#empty)
 * [Queue##clean](#clean)
 * [Queue##close](#close)
+* [Queue##getJob](#getJob)
 * [Job](#job)
 * [Job##remove](#remove)
 
