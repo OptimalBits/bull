@@ -433,6 +433,8 @@ __Arguments__
                           If you use this option, it is up to you to ensure the
                           jobId is unique. If you attempt to add a job with an id that
                           already exists, it will not be added.
+    removeOnComplete {Boolean} A boolean which, if true, removes the job when it successfully
+                               completes. Default behavior is to keep the job in the completed queue.
   }
   returns {Promise} A promise that resolves when the job has been succesfully
     added to the queue (or rejects if some error occured). On success, the promise
