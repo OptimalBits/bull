@@ -167,8 +167,8 @@ A queue emits also some useful events:
   // Job started
   // You can use jobPromise.cancel() to abort this job.
 })
-.on('stalled', function(job){
-  // The job was considered stalled (i.e. its lock was not renewed in LOCK_RENEW_TIME).
+.on('stalled', function(jobs){
+  // Array of jobs that were considered 'stalled' and re-enqueued (from 'active' to 'wait').
   // Useful for debugging job workers that crash or pause the event loop.
 })
 .on('progress', function(job, progress){
