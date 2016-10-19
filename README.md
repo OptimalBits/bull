@@ -6,7 +6,7 @@ Bull Job Manager
 [![BuildStatus](https://secure.travis-ci.org/OptimalBits/bull.png?branch=master)](http://travis-ci.org/OptimalBits/bull)
 [![NPM version](https://badge.fury.io/js/bull.svg)](http://badge.fury.io/js/bull)
 
-![bull](http://files.softicons.com/download/animal-icons/animal-icons-by-martin-berube/png/128/bull.png)
+<img src="https://image.freepik.com/free-icon/strong-bull-side-view_318-52710.jpg", width="200" />
 
 The fastest, more reliable redis based queue for nodejs.
 Carefully written for rock solid stability and atomicity.
