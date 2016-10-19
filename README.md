@@ -18,6 +18,12 @@ down for any reason.
 
 Follow [manast](http://twitter.com/manast) for news and updates regarding this library.
 
+
+Sponsors:
+---------
+
+<img src="https://mixmax.com/images/logo_confirmation.png" alt="Mixmax, Inc" width="100" />
+
 Features:
 ---------
 
