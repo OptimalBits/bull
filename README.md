@@ -21,8 +21,14 @@ Follow [manast](http://twitter.com/manast) for news and updates regarding this l
 
 Sponsors:
 ---------
-
+<a href="http://mixmax.com">
 <img src="https://mixmax.com/images/logo_confirmation.png" alt="Mixmax, Inc" width="100" />
+</a>
+<a href="http://optimalbits.com">
+  <img src="http://optimalbits.com/images/logo.png" />
+</a>
+
+Are you developing bull sponsored by a company? Please, let us now!
 
 Features:
 ---------
