@@ -28,6 +28,7 @@ Features:
 - Priority.
 - Concurrency.
 - Pause/resume (globally or locally).
+- Automatic recovery from process crashes.
 
 UIs:
 ----
@@ -241,6 +242,7 @@ Important Notes
 
 The queue aims for "at most once" working strategy. When a worker is processing a job, it will keep the job locked until the work is done. However, it is important that the worker does not lock the event loop too long, otherwise other workers could pick the job believing that the worker processing it has been stalled.
 
+If the process that is handling the job fails the reacquire the lock (because it hung or crashed), the job will be automatically restarted by any worker.
 
 Useful patterns
 ---------------
