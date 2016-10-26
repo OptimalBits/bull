@@ -40,15 +40,16 @@ Features:
 - Priority.
 - Concurrency.
 - Pause/resume (globally or locally).
+- Automatic recovery from process crashes.
 
 UIs:
 ----
 
 There are a few third party UIs that can be used for easier administration of the queues (not in any particular order):
 
-[matador](https://github.com/ShaneK/Matador)
-[react-bull](https://github.com/kfatehi/react-bull)
-[toureiro](https://github.com/Epharmix/Toureiro)
+* [matador](https://github.com/ShaneK/Matador)
+* [react-bull](https://github.com/kfatehi/react-bull)
+* [toureiro](https://github.com/Epharmix/Toureiro)
 
 We also have an official UI which is at the moment bare bones project: [bull-ui](https://github.com/OptimalBits/bull-ui)
 
@@ -180,8 +181,7 @@ A queue emits also some useful events:
   // You can use jobPromise.cancel() to abort this job.
 })
 .on('stalled', function(job){
-  // The job was considered stalled (i.e. its lock was not renewed in LOCK_RENEW_TIME).
-  // Useful for debugging job workers that crash or pause the event loop.
+  // Job that was considered stalled. Useful for debugging job workers that crash or pause the event loop.
 })
 .on('progress', function(job, progress){
   // Job progress updated!
@@ -254,6 +254,7 @@ Important Notes
 
 The queue aims for "at most once" working strategy. When a worker is processing a job, it will keep the job locked until the work is done. However, it is important that the worker does not lock the event loop too long, otherwise other workers could pick the job believing that the worker processing it has been stalled.
 
+If the process that is handling the job fails the reacquire the lock (because it hung or crashed), the job will be automatically restarted by any worker.
 
 Useful patterns
 ---------------
