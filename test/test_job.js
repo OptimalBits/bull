@@ -383,16 +383,16 @@ describe('Job', function(){
 
     var client = Promise.promisifyAll(redis.createClient());
     return Job.create(queue, {foo: 'baz'}).then(function(job) {
-      return job.isStuck().then(function(yes) {
-        expect(yes).to.be(false);
+      return job.isStuck().then(function(isStuck) {
+        expect(isStuck).to.be(false);
         return job.getState();
       }).then(function(state) {
         expect(state).to.be('waiting');
-        return job.moveToCompleted();
+        return job.move('wait', 'completed');
       }).then(function (){
         return job.isCompleted();
-      }).then(function (yes) {
-        expect(yes).to.be(true);
+      }).then(function (isCompleted) {
+        expect(isCompleted).to.be(true);
         return job.getState();
       }).then(function(state) {
         expect(state).to.be('completed');
@@ -411,8 +411,8 @@ describe('Job', function(){
         return job.moveToFailed(new Error('test'));
       }).then(function (){
         return job.isFailed();
-      }).then(function (yes) {
-        expect(yes).to.be(true);
+      }).then(function (isFailed) {
+        expect(isFailed).to.be(true);
         return job.getState();
       }).then(function(state) {
         expect(state).to.be('failed');
@@ -421,14 +421,14 @@ describe('Job', function(){
         expect(res).to.be(1);
         return job.getState();
       }).then(function(state) {
-        expect(state).to.be('waiting');
+        expect(state).to.be('stuck');
         return client.rpopAsync(queue.toKey('wait'));
       }).then(function(){
         return client.lpushAsync(queue.toKey('paused'), job.jobId);
       }).then(function() {
         return job.isPaused();
-      }).then(function (yes) {
-        expect(yes).to.be(true);
+      }).then(function (isPaused) {
+        expect(isPaused).to.be(true);
         return job.getState();
       }).then(function(state) {
         expect(state).to.be('paused');
@@ -437,8 +437,8 @@ describe('Job', function(){
         return client.lpushAsync(queue.toKey('wait'), job.jobId);
       }).then(function() {
         return job.isWaiting();
-      }).then(function (yes) {
-        expect(yes).to.be(true);
+      }).then(function (isWaiting) {
+        expect(isWaiting).to.be(true);
         return job.getState();
       }).then(function(state) {
         expect(state).to.be('waiting');
