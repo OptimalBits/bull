@@ -19,7 +19,7 @@
   "dependencies": {
     "bluebird": "^3.4.1",
     "debuglog": "^1.0.0",
-    "disturbed": "^1.0.1",
+    "disturbed": "^1.0.3",
     "lodash": "^4.13.1",
     "node-uuid": "^1.4.7",
     "redis": "^2.6.3",
