@@ -22,7 +22,7 @@
     "disturbed": "^1.0.1",
     "lodash": "^4.13.1",
     "node-uuid": "^1.4.7",
-    "redis": "^2.6.2",
+    "redis": "^2.6.3",
     "semver": "^5.1.0"
   },
   "devDependencies": {
