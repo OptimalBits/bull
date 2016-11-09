@@ -17,20 +17,20 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
-    "bluebird": "^3.4.1",
+    "bluebird": "^3.4.6",
     "debuglog": "^1.0.0",
     "disturbed": "^1.0.3",
-    "lodash": "^4.13.1",
+    "lodash": "^4.16.6",
     "node-uuid": "^1.4.7",
     "redis": "^2.6.3",
-    "semver": "^5.1.0"
+    "semver": "^5.3.0"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",
     "gulp": "^3.9.1",
-    "gulp-eslint": "^2.0.0",
+    "gulp-eslint": "^2.1.0",
     "mocha": "^2.5.3",
-    "sinon": "^1.17.4"
+    "sinon": "^1.17.6"
   },
   "scripts": {
     "test": "gulp && mocha test/test_* --reporter spec --timeout 5000",
