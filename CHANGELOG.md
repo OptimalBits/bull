@@ -1,3 +1,13 @@
+v1.1.0
+======
+
+- Fixed [job corruption issue](https://github.com/OptimalBits/bull/pull/359)
+- The job id can be [overridden](https://github.com/OptimalBits/bull/pull/335) to implement job throttling behavior
+- Added [`removeOnComplete` job option](https://github.com/OptimalBits/bull/pull/361)
+- Events are [now broadcast to all workers](https://github.com/OptimalBits/bull/commit/d55ad1c8f44f86be9b4e9f4fa9a3fc8a16c6e02d)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v1.0.0...v1.1.0)
+
 v1.0.0
 ======
 
