@@ -1,3 +1,11 @@
+v1.1.1
+======
+
+- Returned this in queue##on and queue##once for backwards compatibility.
+- [Fixes PriorityQueue Events and Local Worker Pause/Resume](https://github.com/OptimalBits/bull/pull/341)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v1.1.0...v1.1.1)
+
 v1.1.0
 ======
 
