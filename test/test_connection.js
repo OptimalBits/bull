@@ -96,7 +96,7 @@ describe('connection', function () {
       queue.add({ 'foo': 'bar' });
     });
 
-    queue.on('error', function (err) {
+    queue.on('error', function () {
       if(count === 1) {
         queue.add({ 'foo': 'bar' });
       }
