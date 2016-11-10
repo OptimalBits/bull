@@ -21,6 +21,7 @@
     "debuglog": "^1.0.0",
     "disturbed": "^1.0.3",
     "lodash": "^4.16.6",
+    "mocha": "^3.1.2",
     "node-uuid": "^1.4.7",
     "redis": "^2.6.3",
     "semver": "^5.3.0"
