@@ -4,10 +4,8 @@
 var expect = require('expect.js');
 var utils = require('./utils');
 var sinon = require('sinon');
-var redis = require('redis');
-var Promise = require('bluebird');
+var redis = require('ioredis');
 
-Promise.promisifyAll(redis.RedisClient.prototype);
 
 describe('connection', function () {
   var sandbox = sinon.sandbox.create();
@@ -15,7 +13,7 @@ describe('connection', function () {
 
   beforeEach(function(){
     var client = redis.createClient();
-    return client.flushdbAsync().then(function(){
+    return client.flushdb().then(function(){
       queue = utils.buildQueue();
     });
   });

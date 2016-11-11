@@ -8,7 +8,7 @@ var Promise = require('bluebird');
 var sinon = require('sinon');
 var _ = require('lodash');
 var uuid = require('node-uuid');
-var redis = require('redis');
+var redis = require('ioredis');
 
 var STD_QUEUE_NAME = 'test queue';
 
@@ -27,7 +27,7 @@ describe.skip('Priority queue', function(){
 
   beforeEach(function(){
     var client = redis.createClient();
-    return client.flushdbAsync();
+    return client.flushdb();
   });
 
   afterEach(function(){
