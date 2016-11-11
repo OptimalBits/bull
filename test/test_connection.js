@@ -24,8 +24,8 @@ describe('connection', function () {
     }).process(function (job, jobDone) {
       expect(job.data.foo).to.be.equal('bar');
       jobDone();
-      // We do not wait since this close is expected to fail...
       queue.close();
+    }).then(function() {
       done();
     }).catch(function(err){
       console.log(err);
