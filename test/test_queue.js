@@ -253,7 +253,7 @@ describe('Queue', function () {
         expect(job.data.foo).to.be.equal('bar');
         jobDone();
         done();
-      });
+      }).catch(done);
       queue.add({ foo: 'bar' }).then(function (job) {
         expect(job.jobId).to.be.ok();
         expect(job.data.foo).to.be('bar');
@@ -562,7 +562,7 @@ describe('Queue', function () {
             err = new Error('Processed job id does not match that of added job');
           }
           setTimeout(jobDone, 500);
-        });
+        }).catch(done);
 
         utils.newQueue().then(function (_anotherQueue) {
           anotherQueue = _anotherQueue;
@@ -841,7 +841,7 @@ describe('Queue', function () {
       });
     });
 
-    it('should pause the queue locally', function (testDone) {
+    it('should pause the queue locally', function (done) {
       var counter = 2;
 
       var queue = utils.buildQueue();
@@ -850,14 +850,14 @@ describe('Queue', function () {
         // Add the worker after the queue is in paused mode since the normal behavior is to pause
         // it after the current lock expires. This way, we can ensure there isn't a lock already
         // to test that pausing behavior works.
-        queue.process(function (job, done) {
+        queue.process(function (job, jobDone) {
           expect(queue.paused).not.to.be.ok();
-          done();
+          jobDone();
           counter--;
           if (counter === 0) {
-            queue.close().then(testDone);
+            queue.close().then(done);
           }
-        });
+        }).catch(done);
       }).then(function () {
         return queue.add({ foo: 'paused' });
       }).then(function () {
@@ -866,7 +866,7 @@ describe('Queue', function () {
         expect(counter).to.be(2);
         expect(queue.paused).to.be.ok(); // Parameter should exist.
         return queue.resume(true /* Local */);
-      });
+      }).catch(done);
     });
 
     it('should wait until active jobs are finished before resolving pause', function (done) {
@@ -881,7 +881,7 @@ describe('Queue', function () {
           jobs.push(queue.add(i));
         }
         Promise.all(jobs).then(function () {
-          queue.pause(true).then(function () {
+          return queue.pause(true).then(function () {
             var active = queue.getJobCountByTypes(['active']).then(function (count) {
               expect(count).to.be(0);
               expect(queue.paused).to.be.ok();
@@ -913,7 +913,7 @@ describe('Queue', function () {
           }).then(function () {
             return queue.close().then(done, done);
           });
-        });
+        }).catch(done);
       });
     });
   });
