@@ -999,7 +999,8 @@ describe('Queue', function () {
       var order = 0;
       queue = new Queue('delayed queue multiple');
 
-      queue.on('failed', function (err) {
+      queue.on('failed', function (job, err) {
+        err.job = job;
         done(err);
       });
 
