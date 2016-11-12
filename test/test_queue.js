@@ -846,7 +846,7 @@ describe('Queue', function () {
 
       var queue = utils.buildQueue();
 
-      queue.pause(true /* Local */).then(function () {
+      queue.pause(true /* Local */).tap(function () {
         // Add the worker after the queue is in paused mode since the normal behavior is to pause
         // it after the current lock expires. This way, we can ensure there isn't a lock already
         // to test that pausing behavior works.
