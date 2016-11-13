@@ -215,6 +215,23 @@ describe('Queue', function () {
         return queue.close();
       });
     });
+
+    it('creates a queue accepting port as a string', function () {
+      var queue = new Queue('foobar', '6379', 'localhost');
+
+      return queue.add({ foo: 'bar' }).then(function (job) {
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+      }).then(function () {
+        queue.process(function (job, jobDone) {
+          expect(job.data.foo).to.be.equal('bar');
+          jobDone();
+        });
+      }).then(function () {
+        return queue.close();
+      });
+    });
+
   });
 
   describe(' a worker', function () {
