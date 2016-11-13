@@ -437,11 +437,15 @@ describe('Queue', function () {
             var stalledCallback = sandbox.spy();
 
             return queueStalled.close(true).then(function () {
-              return new Promise(function (resolve) {
+              return new Promise(function (resolve, reject) {
                 utils.newQueue('test queue stalled').then(function (queue2) {
                   queue2.LOCK_RENEW_TIME = 100;
                   var doneAfterFour = _.after(4, function () {
-                    expect(stalledCallback.calledOnce).to.be(true);
+                    try {
+                      expect(stalledCallback.calledOnce).to.be(true);
+                    } catch (e) {
+                      reject(e);
+                    }
                     resolve();
                   });
                   queue2.on('completed', doneAfterFour);
