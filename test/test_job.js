@@ -7,6 +7,7 @@ var expect = require('expect.js');
 var redis = require('ioredis');
 var Promise = require('bluebird');
 var uuid = require('node-uuid');
+var Redlock = require('redlock');
 
 
 describe('Job', function(){
@@ -93,12 +94,11 @@ describe('Job', function(){
     });
 
     it('fails to remove a locked job', function() {
-      var token = uuid();
       return Job.create(queue, 1, {foo: 'bar'}).then(function(job) {
-        return job.takeLock(token).then(function(lock) {
-          expect(lock).to.be(true);
+        return job.takeLock().then(function(lock) {
+          expect(lock).to.be.a(Redlock.Lock);
         }).then(function() {
-          return job.remove(token);
+          return job.remove();
         }).then(function() {
           throw new Error('Should not be able to remove a locked job');
         }).catch(function(err) {
@@ -191,45 +191,41 @@ describe('Job', function(){
     });
 
     it('can take a lock', function(){
-      return job.takeLock('423').then(function(lockTaken){
-        expect(lockTaken).to.be(true);
+      return job.takeLock().then(function(lockTaken){
+        expect(lockTaken).to.be.a(Redlock.Lock);
       }).then(function(){
-        return job.releaseLock('321').then(function(lockReleased){
-          expect(lockReleased).to.be(false);
+        return job.releaseLock().then(function(lockReleased){
+          expect(lockReleased).to.not.exist;
         });
       });
     });
 
     it('cannot take an already taken lock', function(){
-      return job.takeLock('1234').then(function(lockTaken){
-        expect(lockTaken).to.be(true);
+      return job.takeLock().then(function(lockTaken){
+        expect(lockTaken).to.be.a(Redlock.Lock);
       }).then(function(){
-        return job.takeLock('1234').then(function(lockTaken){
+        return job.takeLock().then(function(lockTaken){
           expect(lockTaken).to.be(false);
         });
       });
     });
 
     it('can renew a previously taken lock', function(){
-      return job.takeLock('1235').then(function(lockTaken){
-        expect(lockTaken).to.be(true);
+      return job.takeLock().then(function(lockTaken){
+        expect(lockTaken).to.be.a(Redlock.Lock);
       }).then(function(){
-        return job.renewLock('1235').then(function(lockRenewed){
-          expect(lockRenewed).to.be(true);
+        return job.renewLock().then(function(lockRenewed){
+          expect(lockRenewed).to.be.a(Redlock.Lock);
         });
       });
     });
 
     it('can release a lock', function(){
-      return job.takeLock('1237').then(function(lockTaken){
-        expect(lockTaken).to.be(true);
+      return job.takeLock().then(function(lockTaken){
+        expect(lockTaken).to.be.a(Redlock.Lock);
       }).then(function(){
-        return job.releaseLock('321').then(function(lockReleased){
-          expect(lockReleased).to.be(false);
-        });
-      }).then(function(){
-        return job.releaseLock('1237').then(function(lockReleased){
-          expect(lockReleased).to.be(true);
+        return job.releaseLock().then(function(lockReleased){
+          expect(lockReleased).to.not.exist;
         });
       });
     });
