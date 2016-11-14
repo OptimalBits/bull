@@ -76,6 +76,10 @@ describe('Cluster', function () {
     queue = buildQueue();
     var numJobs = 100;
 
+    queue.on('stalled', function(job){
+      jobs.splice(jobs.indexOf(job.jobId), 1);
+    });
+
     workerMessageHandler = function(job) {
       jobs.push(job.id);
       if(jobs.length === numJobs) {
