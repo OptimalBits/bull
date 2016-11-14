@@ -73,10 +73,11 @@ describe('Cluster', function () {
   it('should process each job once', function(done) {
     var jobs = [];
     queue = buildQueue();
+    var numJobs = 100;
 
     workerMessageHandler = function(job) {
       jobs.push(job.id);
-      if(jobs.length === 11) {
+      if(jobs.length === numJobs) {
         var counts = {};
         var j = 0;
         for(j; j < jobs.length; j++) {
@@ -88,7 +89,7 @@ describe('Cluster', function () {
     };
 
     var i = 0;
-    for(i; i < 11; i++) {
+    for(i; i < numJobs; i++) {
       queue.add({});
     }
   });
