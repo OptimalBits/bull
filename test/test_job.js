@@ -23,6 +23,7 @@ describe('Job', function(){
   });
 
   afterEach(function(){
+    this.timeout(queue.STALLED_JOB_CHECK_INTERVAL * (1 + queue.MAX_STALLED_JOB_COUNT));
     return queue.close();
   });
 
