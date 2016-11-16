@@ -172,14 +172,14 @@ describe('Queue', function () {
       var queue = new Queue('connstring', '6379', '127.0.0.1');
 
       queue.once('ready', function () {
-        expect(queue.client.connection_options.host).to.be('127.0.0.1');
-        expect(queue.bclient.connection_options.host).to.be('127.0.0.1');
+        expect(queue.client.options.host).to.be('127.0.0.1');
+        expect(queue.bclient.options.host).to.be('127.0.0.1');
 
-        expect(queue.client.connection_options.port).to.be(6379);
-        expect(queue.bclient.connection_options.port).to.be(6379);
+        expect(queue.client.options.port).to.be(6379);
+        expect(queue.bclient.options.port).to.be(6379);
 
-        expect(queue.client.selected_db).to.be(0);
-        expect(queue.bclient.selected_db).to.be(0);
+        expect(queue.client.condition.select).to.be(0);
+        expect(queue.bclient.condition.select).to.be(0);
 
         queue.close().then(done);
 
