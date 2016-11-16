@@ -169,6 +169,24 @@ describe('Queue', function () {
       });
     });
 
+    it('should create a queue with a port number and a hostname', function (done) {
+      var queue = new Queue('connstring', '6379', '127.0.0.1');
+
+      queue.once('ready', function () {
+        expect(queue.client.connection_options.host).to.be('127.0.0.1');
+        expect(queue.bclient.connection_options.host).to.be('127.0.0.1');
+
+        expect(queue.client.connection_options.port).to.be(6379);
+        expect(queue.bclient.connection_options.port).to.be(6379);
+
+        expect(queue.client.selected_db).to.be(0);
+        expect(queue.bclient.selected_db).to.be(0);
+
+        queue.close().then(done);
+
+      });
+    });
+
     it('creates a queue using the supplied redis DB', function (done) {
       var queue = new Queue('custom', { redis: { DB: 1 } });
 
