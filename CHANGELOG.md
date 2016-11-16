@@ -1,3 +1,10 @@
+v1.1.2
+======
+
+- regained backwards compatibility in events by using disturbed 1.0.6
+
+[Changes](https://github.com/OptimalBits/bull/compare/v1.1.1...v1.1.2)
+
 v1.1.1
 ======
 
