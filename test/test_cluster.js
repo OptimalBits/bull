@@ -6,8 +6,7 @@ var os = require('os');
 var path = require('path');
 var Queue = require('../');
 var expect = require('expect.js');
-var Promise = require('bluebird');
-var redis = require('redis');
+var redis = require('ioredis');
 
 var STD_QUEUE_NAME = 'cluster test queue';
 
@@ -20,15 +19,14 @@ function purgeQueue(queue) {
   // Since workers spawned only listen to the default queue,
   // we need to purge all keys after each test
   var client = redis.createClient(6379, '127.0.0.1', {});
-  client = Promise.promisifyAll(client);
-  client.selectAsync(0);
+  client.select(0);
 
   var script = [
     'local KS = redis.call("KEYS", ARGV[1])',
     'local result = redis.call("DEL", unpack(KS))',
     'return'].join('\n');
 
-  return queue.client.evalAsync(
+  return queue.client.eval(
     script,
     0,
     queue.toKey('*'));
@@ -45,17 +43,20 @@ function workerMessageHandlerWrapper(message) {
   }
 }
 
-var workers = [];
-var worker;
-var _i = 0;
-for(_i; _i < os.cpus().length - 1; _i++) {
-  worker = cluster.fork();
-  worker.on('message', workerMessageHandlerWrapper);
-  workers.push(worker);
-  console.log('Worker spawned: #', worker.id);
-}
-
 describe('Cluster', function () {
+
+  var workers = [];
+
+  before(function() {
+    var worker;
+    var _i = 0;
+    for(_i; _i < os.cpus().length - 1; _i++) {
+      worker = cluster.fork();
+      worker.on('message', workerMessageHandlerWrapper);
+      workers.push(worker);
+      console.log('Worker spawned: #', worker.id);
+    }
+  });
 
   var queue;
 
@@ -74,6 +75,10 @@ describe('Cluster', function () {
     var jobs = [];
     queue = buildQueue();
     var numJobs = 100;
+
+    queue.on('stalled', function(job){
+      jobs.splice(jobs.indexOf(job.jobId), 1);
+    });
 
     workerMessageHandler = function(job) {
       jobs.push(job.id);
@@ -156,7 +161,7 @@ describe('Cluster', function () {
   });
 
   after(function() {
-    _i = 0;
+    var _i = 0;
     for(_i; _i < workers.length; _i++) {
       workers[_i].kill();
     }

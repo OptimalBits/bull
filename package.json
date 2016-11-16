@@ -20,9 +20,10 @@
     "bluebird": "^3.4.6",
     "debuglog": "^1.0.0",
     "disturbed": "^1.0.6",
+    "ioredis": "^2.4.0",
     "lodash": "^4.16.6",
     "node-uuid": "^1.4.7",
-    "redis": "^2.6.3",
+    "redlock": "^2.1.0",
     "semver": "^5.3.0"
   },
   "devDependencies": {

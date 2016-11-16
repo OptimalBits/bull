@@ -4,10 +4,8 @@
 var expect = require('expect.js');
 var utils = require('./utils');
 var sinon = require('sinon');
-var redis = require('redis');
-var Promise = require('bluebird');
+var redis = require('ioredis');
 
-Promise.promisifyAll(redis.RedisClient.prototype);
 
 describe('connection', function () {
   var sandbox = sinon.sandbox.create();
@@ -15,7 +13,7 @@ describe('connection', function () {
 
   beforeEach(function(){
     var client = redis.createClient();
-    return client.flushdbAsync().then(function(){
+    return client.flushdb().then(function(){
       queue = utils.buildQueue();
     });
   });
@@ -26,8 +24,8 @@ describe('connection', function () {
     }).process(function (job, jobDone) {
       expect(job.data.foo).to.be.equal('bar');
       jobDone();
-      // We do not wait since this close is expected to fail...
       queue.close();
+    }).then(function() {
       done();
     }).catch(function(err){
       console.log(err);
