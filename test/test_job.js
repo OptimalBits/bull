@@ -46,6 +46,10 @@ describe('Job', function(){
       expect(job).to.have.property('data');
     });
 
+    it('should not modify input options', function() {
+      expect(opts).not.to.have.property('jobId');
+    });
+
     it('saves the job in redis', function () {
       return Job.fromId(queue, job.jobId).then(function(storedJob){
         expect(storedJob).to.have.property('jobId');
