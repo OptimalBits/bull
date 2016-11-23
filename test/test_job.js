@@ -6,7 +6,7 @@ var Queue = require('../lib/queue');
 var expect = require('expect.js');
 var redis = require('ioredis');
 var Promise = require('bluebird');
-var uuid = require('node-uuid');
+var uuid = require('uuid');
 var Redlock = require('redlock');
 
 
