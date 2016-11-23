@@ -7,7 +7,7 @@ var expect = require('expect.js');
 var Promise = require('bluebird');
 var sinon = require('sinon');
 var _ = require('lodash');
-var uuid = require('node-uuid');
+var uuid = require('uuid');
 var redis = require('ioredis');
 
 var STD_QUEUE_NAME = 'test queue';

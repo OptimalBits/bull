@@ -22,9 +22,9 @@
     "disturbed": "^1.0.6",
     "ioredis": "^2.4.0",
     "lodash": "^4.16.6",
-    "node-uuid": "^1.4.7",
     "redlock": "^2.1.0",
-    "semver": "^5.3.0"
+    "semver": "^5.3.0",
+    "uuid": "^3.0.0"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",
