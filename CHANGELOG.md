@@ -1,3 +1,11 @@
+v.2.0.0
+=======
+
+- Changed redis module to ioredis fixing many issues along the way, see changes.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v1.1.3...v2.0.0)
+
+
 v.1.1.3
 =======
 
