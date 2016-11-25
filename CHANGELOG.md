@@ -1,3 +1,11 @@
+v.1.1.3
+=======
+
+- fixed "Broken constructor pattern from recent commit" #384
+- fixed "Queue.prototype.getWaiting() returns empty list if Queue is paused" #342
+
+[Changes](https://github.com/OptimalBits/bull/compare/v1.1.2...v1.1.3)
+
 v1.1.2
 ======
 
