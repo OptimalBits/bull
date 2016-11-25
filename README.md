@@ -6,7 +6,7 @@ Bull Job Manager
 [![BuildStatus](https://secure.travis-ci.org/OptimalBits/bull.png?branch=master)](http://travis-ci.org/OptimalBits/bull)
 [![NPM version](https://badge.fury.io/js/bull.svg)](http://badge.fury.io/js/bull)
 
-<img src="https://image.freepik.com/free-icon/strong-bull-side-view_318-52710.jpg", width="200" />
+<img src="https://image.freepik.com/free-icon/strong-bull-side-view_318-52710.jpg" width="200" />
 
 The fastest, more reliable redis based queue for nodejs.
 Carefully written for rock solid stability and atomicity.
@@ -203,6 +203,12 @@ A queue emits also some useful events:
   //type is the type of job cleaned
   //see clean for details
 });
+```
+
+Events are by default local, i.e., they only fire on the listeners that are registered on the given worker,
+if you need to listen to events globally, just set to true the last argument:
+```
+queue.on('completed', listener, true):
 ```
 
 Queues are cheap, so if you need many of them just create new ones with different

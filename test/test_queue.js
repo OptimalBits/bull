@@ -249,6 +249,17 @@ describe('Queue', function () {
       });
     });
 
+    it('should create a queue with a prefix option', function () {
+      var queue = new Queue('q', 'redis://127.0.0.1', { keyPrefix: 'myQ' });
+
+      return queue.add({ foo: 'bar' }).then(function (job) {
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+      }).then(function () {
+        return queue.close();
+      });
+    });
+
   });
 
   describe(' a worker', function () {
@@ -1495,6 +1506,19 @@ describe('Queue', function () {
           expect(jobs.length).to.be.equal(2);
           expect(jobs[1].data.foo).to.be.equal('bar');
           expect(jobs[0].data.baz).to.be.equal('qux');
+        });
+      });
+    });
+
+    it('should get paused jobs', function () {
+      return queue.pause().then(function () {
+        return Promise.join(queue.add({ foo: 'bar' }), queue.add({ baz: 'qux' })).then(function () {
+          return queue.getWaiting().then(function (jobs) {
+            expect(jobs).to.be.a('array');
+            expect(jobs.length).to.be.equal(2);
+            expect(jobs[1].data.foo).to.be.equal('bar');
+            expect(jobs[0].data.baz).to.be.equal('qux');
+          });
         });
       });
     });
