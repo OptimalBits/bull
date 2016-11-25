@@ -205,6 +205,12 @@ A queue emits also some useful events:
 });
 ```
 
+Events are by default local, i.e., they only fire on the listeners that are registered on the given worker,
+if you need to listen to events globally, just set to true the last argument:
+```
+queue.on('completed', listener, true):
+```
+
 Queues are cheap, so if you need many of them just create new ones with different
 names:
 ```javascript
