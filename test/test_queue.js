@@ -7,7 +7,7 @@ var Promise = require('bluebird');
 var redis = require('ioredis');
 var sinon = require('sinon');
 var _ = require('lodash');
-var uuid = require('node-uuid');
+var uuid = require('uuid');
 var utils = require('./utils');
 
 

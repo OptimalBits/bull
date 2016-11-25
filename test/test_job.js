@@ -6,7 +6,7 @@ var Queue = require('../lib/queue');
 var expect = require('expect.js');
 var redis = require('ioredis');
 var Promise = require('bluebird');
-var uuid = require('node-uuid');
+var uuid = require('uuid');
 var Redlock = require('redlock');
 
 
@@ -44,6 +44,10 @@ describe('Job', function(){
     it('returns a promise for the job', function () {
       expect(job).to.have.property('jobId');
       expect(job).to.have.property('data');
+    });
+
+    it('should not modify input options', function() {
+      expect(opts).not.to.have.property('jobId');
     });
 
     it('saves the job in redis', function () {
