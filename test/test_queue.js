@@ -250,6 +250,17 @@ describe('Queue', function () {
       });
     });
 
+    it('should create a queue with a prefix option', function(){
+      var queue = new Queue('q', 'redis://127.0.0.1', { keyPrefix: 'myQ' });
+
+      return queue.add({ foo: 'bar' }).then(function (job) {
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+      }).then(function () {
+        return queue.close();
+      });
+    });
+
   });
 
   describe(' a worker', function () {
