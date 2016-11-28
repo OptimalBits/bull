@@ -1937,4 +1937,44 @@ describe('Queue', function () {
       });
     });
   });
+
+  describe('Rate limiting', function() {
+    var queue;
+
+    beforeEach(function () {
+      var client = redis.createClient();
+      queue = utils.buildQueue();
+      return client.flushdb();
+    });
+
+    afterEach(function () {
+      this.timeout(queue.STALLED_JOB_CHECK_INTERVAL * (1 + queue.MAX_STALLED_JOB_COUNT));
+      return queue.close();
+    });
+
+    it('should obey the rate limit', function(done) {
+      var startTime = new Date().getTime();
+      var nbProcessed = 0;
+
+      queue.process({ rateLimit: { max: 1, duration: 1000 }}, function() {
+        return Promise.resolve();
+      });
+
+      queue.add();
+      queue.add();
+      queue.add();
+      queue.add();
+
+      queue.on('completed', _.after(4, function() {
+        try {
+          expect(new Date().getTime() - startTime).to.be.above(3000);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }));
+
+      queue.on('failed', done);
+    });
+  });
 });

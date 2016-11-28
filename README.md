@@ -363,7 +363,7 @@ __Arguments__
 
 
 <a name="process"/>
-#### Queue##process([concurrency,] function(job[, done]))
+#### Queue##process([options,] function(job[, done]))
 
 Defines a processing function for the jobs placed into a given Queue.
 
@@ -405,7 +405,13 @@ queue.process(function(job) { // No done callback here :)
 });
 ```
 
-You can specify a concurrency. Bull will then call you handler in parallel respecting this max number.
+##### Valid options
+
+| Key                 | Default   | Description              |
+|---------------------|-----------|--------------------------|
+| options.concurrency | 1         | You can specify a concurrency. Bull will then call your handler in parallel respecting this max number. |
+| options.rateLimit   | undefined | An object with the signature `{ max, duration }`. Applies rate limiting so that `max` jobs are processed in `duration` ms.
+
 
 __Arguments__
 
