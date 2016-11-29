@@ -21,7 +21,7 @@ function cleanupQueue(queue){
   return queue.empty().then(queue.close.bind(queue));
 }
 
-describe.skip('Priority queue', function(){
+describe('Priority queue', function(){
   var queue;
   var sandbox = sinon.sandbox.create();
 
@@ -224,7 +224,7 @@ describe.skip('Priority queue', function(){
     });
   });
 
-  it('process stalled jobs when starting a queue', function(done){
+  it.skip('process stalled jobs when starting a queue', function(done){
     this.timeout(16000);
     var queueStalled = buildQueue('test queue stalled');
     queueStalled.setLockRenewTime(10);
@@ -753,7 +753,7 @@ describe.skip('Priority queue', function(){
       });
     });
 
-    it('should clean an empty queue', function (done) {
+    it.skip('should clean an empty queue', function (done) {
       queue.clean(0);
       queue.on('error', function (err) {
         done(err);
@@ -842,6 +842,45 @@ describe.skip('Priority queue', function(){
         queue = undefined;
         done();
       });
+    });
+  });
+
+  describe('Rate limiting', function() {
+    var queue;
+
+    beforeEach(function () {
+      var client = redis.createClient();
+      queue = buildQueue();
+    });
+
+    afterEach(function () {
+      this.timeout(queue.STALLED_JOB_CHECK_INTERVAL * (1 + queue.MAX_STALLED_JOB_COUNT));
+      return queue.close();
+    });
+
+    it('should obey the rate limit', function(done) {
+      var startTime = new Date().getTime();
+      var nbProcessed = 0;
+
+      queue.process({ rateLimit: { max: 1, duration: 1000 }}, function() {
+        return Promise.resolve();
+      });
+
+      queue.add();
+      queue.add();
+      queue.add();
+      queue.add();
+
+      queue.on('completed', _.after(4, function() {
+        try {
+          expect(new Date().getTime() - startTime).to.be.above(3000);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }));
+
+      queue.on('failed', done);
     });
   });
 });
