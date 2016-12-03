@@ -728,6 +728,32 @@ describe('Queue', function () {
       });
     });
 
+    it('does not renew a job lock after the lock has been released [#397]', function (done) {
+      this.timeout(queue.LOCK_RENEW_TIME * 3);
+
+      queue.process(function (job) {
+        expect(job.data.foo).to.be.equal('bar');
+        return Promise.resolve();
+      }).then(function() { done(); }, done);
+
+      var distEmit = queue.distEmit.bind(queue);
+      queue.distEmit = function() {
+        var args = arguments;
+        return Promise.delay(queue.LOCK_RENEW_TIME * 2).then(function() {
+          return distEmit.apply(null, args);
+        });
+      };
+
+      queue.add({ foo: 'bar' }).then(function (job) {
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+      }, function (err) {
+        done(err);
+      });
+
+      setTimeout(queue.close.bind(queue), queue.LOCK_RENEW_TIME * 2.5);
+    });
+
     it('retry a job that fails', function (done) {
       var called = 0;
       var messages = 0;
