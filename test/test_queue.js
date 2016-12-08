@@ -1479,7 +1479,7 @@ describe('Queue', function () {
     });
   });
 
-  describe.only('Jobs getters', function () {
+  describe('Jobs getters', function () {
     var queue;
 
     beforeEach(function () {
