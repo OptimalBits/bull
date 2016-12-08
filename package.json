@@ -18,6 +18,7 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "bluebird": "^3.4.6",
+    "coveralls": "^2.11.15",
     "debuglog": "^1.0.0",
     "disturbed": "^1.0.6",
     "lodash": "^4.16.6",
@@ -29,11 +30,12 @@
     "expect.js": "^0.3.1",
     "gulp": "^3.9.1",
     "gulp-eslint": "^2.1.0",
+    "istanbul": "^0.4.5",
     "mocha": "^2.5.3",
     "sinon": "^1.17.6"
   },
   "scripts": {
-    "test": "gulp && mocha test/test_* --reporter spec --timeout 5000",
+    "test": "gulp && istanbul cover _mocha -- test/test_* --reporter spec --timeout 5000",
     "postpublish": "git push && git push --tags"
   }
 }
