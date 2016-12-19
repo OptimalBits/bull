@@ -1294,9 +1294,9 @@ describe('Queue', function () {
       queue.on('ready', function () {
         queue.process(function (job, jobDone) {
           tries++;
-          expect(tries).to.equal(1)
+          expect(tries).to.equal(1);
           job.markUnrecoverable();
-          jobDone(new Error('unrecoverable error'))
+          jobDone(new Error('unrecoverable error'));
         });
 
         queue.add({ foo: 'bar' }, {
@@ -1304,7 +1304,6 @@ describe('Queue', function () {
         });
       });
       queue.on('failed', function () {
-        //console.log('failed?', arguments);
         done()
       });
     });
