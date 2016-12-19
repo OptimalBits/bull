@@ -708,6 +708,19 @@ __Arguments__
 
 ---------------------------------------
 
+<a name="markUnrecoverable"/>
+#### Job##markUnrecoverable()
+
+Ensure this job is never ran again even if attemptsMade is less than `job.attempts`
+
+__Arguments__
+
+```javascript
+  returns {Promise} A promise that resolves when the job is scheduled for retry.
+```
+
+---------------------------------------
+
 ####Debugging
 
 To see debug statements set or add `bull` to the NODE_DEBUG environment variable.
