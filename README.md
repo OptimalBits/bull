@@ -623,7 +623,7 @@ __Arguments__
 
 ```javascript
   grace {int} Grace period in milliseconds.
-  type {string} type of job to clean. Values are completed, waiting, active,
+  type {string} type of job to clean. Values are completed, wait, active,
   delayed, and failed. Defaults to completed.
   limit {int} maximum amount of jobs to clean per call. If not provided will clean all matching jobs.
   returns {Promise} A promise that resolves with an array of removed jobs.
@@ -637,7 +637,7 @@ The cleaner emits the `cleaned` event anytime the queue is cleaned.
   queue.on('cleaned', function (jobs, type) {});
 
   jobs {Array} An array of jobs that have been cleaned.
-  type {String} The type of job cleaned. Options are completed, waiting, active,
+  type {String} The type of job cleaned. Options are completed, wait, active,
   delayed, or failed.
 ```
 
