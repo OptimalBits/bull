@@ -1288,6 +1288,26 @@ describe('Queue', function () {
       return queue.close();
     });
 
+    it('should not retry a job if it has been marked as unrecoverable', function (done) {
+      var tries = 0;
+      queue = utils.buildQueue('test retries and backoffs');
+      queue.on('ready', function () {
+        queue.process(function (job, jobDone) {
+          tries++;
+          expect(tries).to.equal(1);
+          job.discard();
+          jobDone(new Error('unrecoverable error'));
+        });
+
+        queue.add({ foo: 'bar' }, {
+          attempts: 5
+        });
+      });
+      queue.on('failed', function () {
+        done()
+      });
+    });
+
     it('should automatically retry a failed job if attempts is bigger than 1', function (done) {
       queue = utils.buildQueue('test retries and backoffs');
       queue.on('ready', function () {
