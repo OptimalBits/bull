@@ -1295,7 +1295,7 @@ describe('Queue', function () {
         queue.process(function (job, jobDone) {
           tries++;
           expect(tries).to.equal(1);
-          job.markUnrecoverable();
+          job.discard();
           jobDone(new Error('unrecoverable error'));
         });
 

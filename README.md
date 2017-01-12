@@ -708,8 +708,8 @@ __Arguments__
 
 ---------------------------------------
 
-<a name="markUnrecoverable"/>
-#### Job##markUnrecoverable()
+<a name="discard"/>
+#### Job##discard()
 
 Ensure this job is never ran again even if attemptsMade is less than `job.attempts`
 
