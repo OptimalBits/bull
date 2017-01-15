@@ -1,3 +1,14 @@
+v.2.1.0
+=======
+
+- Fixed #397, Error: Unable to renew nonexisting lock
+- Fixed #402, Job.prototype.finished contains error in promise 
+- Fixed #371, "Unexpected token u in JSON at position 0" while processing job
+- New feature #363, "method to permanently fail a job"
+- Fix job.progress() to return the correct progress  
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.0.0...v2.1.0)
+
 v.2.0.0
 =======
 
