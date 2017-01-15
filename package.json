@@ -17,21 +17,21 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
-    "bluebird": "^3.4.6",
+    "bluebird": "^3.4.7",
     "debuglog": "^1.0.0",
     "disturbed": "^1.0.6",
-    "ioredis": "^2.4.0",
-    "lodash": "^4.17.2",
+    "ioredis": "^2.5.0",
+    "lodash": "^4.17.4",
     "redlock": "^2.1.0",
     "semver": "^5.3.0",
-    "uuid": "^3.0.0"
+    "uuid": "^3.0.1"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",
     "gulp": "^3.9.1",
     "gulp-eslint": "^2.1.0",
     "mocha": "^2.5.3",
-    "sinon": "^1.17.6"
+    "sinon": "^1.17.7"
   },
   "scripts": {
     "test": "gulp && mocha test/test_* --reporter spec --timeout 5000",
