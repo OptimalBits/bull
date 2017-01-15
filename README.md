@@ -11,10 +11,6 @@ Bull Job Manager
 The fastest, more reliable redis based queue for nodejs.
 Carefully written for rock solid stability and atomicity.
 
-It uses redis for persistence, so the queue is not lost if the server goes
-down for any reason.
-
-
 
 Follow [manast](http://twitter.com/manast) for news and updates regarding this library.
 
