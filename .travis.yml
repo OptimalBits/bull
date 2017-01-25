@@ -4,7 +4,11 @@ sudo: false
 
 # test on node.js versions
 node_js:
+  - '6'
   - '4'
 
 services:
   - redis-server
+
+after_success:
+  - "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"

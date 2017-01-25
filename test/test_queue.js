@@ -1479,7 +1479,7 @@ describe('Queue', function () {
     });
   });
 
-  describe.only('Jobs getters', function () {
+  describe('Jobs getters', function () {
     var queue;
 
     beforeEach(function () {
@@ -1497,6 +1497,34 @@ describe('Queue', function () {
           expect(jobs).to.be.a('array');
           expect(jobs.length).to.be.equal(2);
           expect(jobs[1].data.foo).to.be.equal('bar');
+          expect(jobs[0].data.baz).to.be.equal('qux');
+        });
+      });
+    });
+
+    it('should get delayed jobs', function () {
+      return queue.add({ baz: 'qux' }, { delay: 5000 })
+      .then(function () { return queue.add({ foo: 'bar' }, { delay: 5000 }); })
+      .then(function () {
+        return queue.getDelayed().then(function (jobs) {
+          expect(jobs).to.be.a('array');
+          expect(jobs.length).to.be.equal(2);
+          expect(jobs[1].data.foo).to.be.equal('bar');
+          expect(jobs[0].data.baz).to.be.equal('qux');
+        });
+      });
+    });
+
+    it('should get delayed jobs with custom IDs', function () {
+      return queue.add({ baz: 'qux' }, { delay: 5000, jobId: 'qux1' })
+      .then(function () { return queue.add({ foo: 'bar' }, { delay: 5000, jobId: 'bar1' }); })
+      .then(function () {
+        return queue.getDelayed().then(function (jobs) {
+          expect(jobs).to.be.a('array');
+          expect(jobs.length).to.be.equal(2);
+          expect(jobs[1].jobId).to.be.equal('bar1');
+          expect(jobs[1].data.foo).to.be.equal('bar');
+          expect(jobs[0].jobId).to.be.equal('qux1');
           expect(jobs[0].data.baz).to.be.equal('qux');
         });
       });

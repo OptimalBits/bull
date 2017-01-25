@@ -57,6 +57,18 @@ describe('Job', function(){
       });
     });
 
+    it('should return jobId as a string', function() {
+      return Job.create(queue, data).then(function(createdJob){
+        expect(typeof createdJob.jobId).to.be.a('string');
+      });
+    });
+
+    it('should return jobId as a string when job is delayed', function() {
+      return Job.create(queue, data, { delay: 5000 }).then(function(createdJob){
+        expect(typeof createdJob.jobId).to.be.a('string');
+      });
+    });
+
     it('should use the custom jobId if one is provided', function() {
       var customJobId = 'customjob';
       return Job.create(queue, data, { jobId: customJobId }).then(function(createdJob){

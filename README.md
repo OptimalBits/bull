@@ -3,7 +3,8 @@ Bull Job Manager
 
 [![Join the chat at https://gitter.im/OptimalBits/bull](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/OptimalBits/bull?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![npm](https://img.shields.io/npm/dm/bull.svg?maxAge=2592000)]()
-[![BuildStatus](https://secure.travis-ci.org/OptimalBits/bull.png?branch=master)](http://travis-ci.org/OptimalBits/bull)
+[![BuildStatus](https://secure.travis-ci.org/OptimalBits/bull.png?branch=1.1.3)](http://travis-ci.org/OptimalBits/bull)
+[![Coverage Status](https://coveralls.io/repos/github/OptimalBits/bull/badge.svg?branch=1.1.3)](https://coveralls.io/github/OptimalBits/bull?branch=1.1.3)
 [![NPM version](https://badge.fury.io/js/bull.svg)](http://badge.fury.io/js/bull)
 
 <img src="https://image.freepik.com/free-icon/strong-bull-side-view_318-52710.jpg", width="200" />
