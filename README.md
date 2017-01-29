@@ -436,7 +436,7 @@ __Arguments__
 
     backoff {Number|Object} Backoff setting for automatic retries if the job fails
     backoff.type {String} Backoff type, which can be either `fixed` or `exponential`
-    backoff.delay {String} Backoff delay, in milliseconds
+    backoff.delay {Number} Backoff delay, in milliseconds
 
     lifo {Boolean} A boolean which, if true, adds the job to the right of the queue
                    instead of the left (default false)
