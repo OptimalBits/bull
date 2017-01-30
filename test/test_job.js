@@ -11,15 +11,16 @@ var Redlock = require('redlock');
 
 
 describe('Job', function(){
-  var queue;
+  var queue, client, options;
 
   beforeEach(function(){
-    var client = redis.createClient();
+    options = { keyPrefix: 'bull-test' }
+    client = redis.createClient(options);
     return client.flushdb();
   });
 
   beforeEach(function(){
-    queue = new Queue('test-' + uuid(), 6379, '127.0.0.1');
+    queue = new Queue('test-' + uuid(), 6379, '127.0.0.1', options);
   });
 
   afterEach(function(){
@@ -35,7 +36,6 @@ describe('Job', function(){
     beforeEach(function () {
       data = {foo: 'bar'};
       opts = {testOpt: 'enabled'};
-
       return Job.create(queue, data, opts).then(function(createdJob){
         job = createdJob;
       });
@@ -380,7 +380,6 @@ describe('Job', function(){
   it('get job status', function() {
     this.timeout(12000);
 
-    var client = redis.createClient();
     return Job.create(queue, {foo: 'baz'}).then(function(job) {
       return job.isStuck().then(function(isStuck) {
         expect(isStuck).to.be(false);
