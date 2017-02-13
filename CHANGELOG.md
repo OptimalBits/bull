@@ -1,3 +1,11 @@
+v.2.1.2
+=======
+
+- Fixed Error renewing lock LockError: Exceeded 0 attempts to lock the resource #437
+- Fixed Unable to renew nonexisting lock on job fail #441
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.1.1...v2.1.2)
+
 v.2.1.1
 =======
 
