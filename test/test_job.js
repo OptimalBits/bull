@@ -103,7 +103,9 @@ describe('Job', function(){
         return job.takeLock().then(function(lock) {
           expect(lock).to.be.a(Redlock.Lock);
         }).then(function() {
-          return job.remove();
+          return Job.fromId(queue, job.jobId).then(function(job){
+            return job.remove();
+          });
         }).then(function() {
           throw new Error('Should not be able to remove a locked job');
         }).catch(function(err) {
@@ -205,12 +207,14 @@ describe('Job', function(){
       });
     });
 
-    it('cannot take an already taken lock', function(){
+    it('take an already taken lock', function(){
+      var lock;
       return job.takeLock().then(function(lockTaken){
+        lock = lockTaken;
         expect(lockTaken).to.be.a(Redlock.Lock);
       }).then(function(){
         return job.takeLock().then(function(lockTaken){
-          expect(lockTaken).to.be(false);
+          expect(lockTaken).to.be(lock);
         });
       });
     });
