@@ -1019,6 +1019,39 @@ describe('Queue', function () {
         });
       });
     });
+
+    it('should wait for blocking job retrieval to complete before pausing locally', function() {
+      var queue = utils.buildQueue();
+      queue.process(function(job, jobDone) {
+        setTimeout(jobDone, 200);
+      });
+
+      return new Promise(function(resolve, reject) { //eslint-disable-line no-unused-vars
+        queue.on('ready', resolve);
+      }).then(function() {
+        //start the pause process
+        var queueIsPaused = queue.pause(true);
+        //add some jobs
+        return Promise.all([ queue.add(1), queue.add(2) ]).then(function() {
+          //wait for the queue to finish pausing
+          return queueIsPaused;
+        });
+      }).then(function() {
+        var active = queue.getJobCountByTypes(['active']).then(function(count) {
+          expect(count).to.be(0);
+        });
+
+        var pending = queue.getJobCountByTypes(['wait']).then(function(count) {
+          expect(count).to.be(1);
+        });
+
+        var completed = queue.getJobCountByTypes(['completed']).then(function(count) {
+          expect(count).to.be(1);
+        });
+
+        return Promise.all([active, pending, completed]);
+      });
+    });
   });
 
   it('should publish a message when a new message is added to the queue', function (done) {
