@@ -977,6 +977,48 @@ describe('Queue', function () {
         }).catch(done);
       });
     });
+
+    it('should pause the queue locally when more than one worker is active', function () {
+      var queue1 = utils.buildQueue('pause-queue');
+      var queue1IsProcessing = new Promise(function(resolve, reject) { //eslint-disable-line no-unused-vars
+        queue1.process(function(job, jobDone) {
+          resolve();
+          setTimeout(jobDone, 200);
+        });
+      });
+
+      var queue2 = utils.buildQueue('pause-queue');
+      var queue2IsProcessing = new Promise(function(resolve, reject) { //eslint-disable-line no-unused-vars
+        queue2.process(function(job, jobDone) {
+          resolve();
+          setTimeout(jobDone, 200);
+        });
+      });
+
+      queue1.add(1);
+      queue1.add(2);
+      queue1.add(3);
+      queue1.add(4);
+
+      return Promise.all([queue1IsProcessing, queue2IsProcessing]).then(function() {
+        return Promise.all([queue1.pause(true /* local */), queue2.pause(true /* local */)]).then(function() {
+
+          var active = queue1.getJobCountByTypes(['active']).then(function(count) {
+            expect(count).to.be(0);
+          });
+
+          var pending = queue1.getJobCountByTypes(['wait']).then(function(count) {
+            expect(count).to.be(2);
+          });
+
+          var completed = queue1.getJobCountByTypes(['completed']).then(function(count) {
+            expect(count).to.be(2);
+          });
+
+          return Promise.all([active, pending, completed]);
+        });
+      });
+    });
   });
 
   it('should publish a message when a new message is added to the queue', function (done) {
