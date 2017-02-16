@@ -980,7 +980,7 @@ describe('Queue', function () {
 
     it('should pause the queue locally when more than one worker is active', function () {
       var queue1 = utils.buildQueue('pause-queue');
-      var queue1IsProcessing = new Promise(function(resolve, reject) { //eslint-disable-line no-unused-vars
+      var queue1IsProcessing = new Promise(function(resolve) {
         queue1.process(function(job, jobDone) {
           resolve();
           setTimeout(jobDone, 200);
@@ -988,7 +988,7 @@ describe('Queue', function () {
       });
 
       var queue2 = utils.buildQueue('pause-queue');
-      var queue2IsProcessing = new Promise(function(resolve, reject) { //eslint-disable-line no-unused-vars
+      var queue2IsProcessing = new Promise(function(resolve) {
         queue2.process(function(job, jobDone) {
           resolve();
           setTimeout(jobDone, 200);
@@ -1026,7 +1026,7 @@ describe('Queue', function () {
         setTimeout(jobDone, 200);
       });
 
-      return new Promise(function(resolve, reject) { //eslint-disable-line no-unused-vars
+      return new Promise(function(resolve) {
         queue.on('ready', resolve);
       }).then(function() {
         //start the pause process
