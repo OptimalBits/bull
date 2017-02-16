@@ -729,7 +729,7 @@ describe('Queue', function () {
     });
 
     it('does not renew a job lock after the lock has been released [#397]', function (done) {
-      this.timeout(queue.LOCK_RENEW_TIME * 3);
+      this.timeout(queue.LOCK_RENEW_TIME * 4);
 
       queue.process(function (job) {
         expect(job.data.foo).to.be.equal('bar');
@@ -975,6 +975,81 @@ describe('Queue', function () {
             return queue.close().then(done, done);
           });
         }).catch(done);
+      });
+    });
+
+    it('should pause the queue locally when more than one worker is active', function () {
+      var queue1 = utils.buildQueue('pause-queue');
+      var queue1IsProcessing = new Promise(function(resolve) {
+        queue1.process(function(job, jobDone) {
+          resolve();
+          setTimeout(jobDone, 200);
+        });
+      });
+
+      var queue2 = utils.buildQueue('pause-queue');
+      var queue2IsProcessing = new Promise(function(resolve) {
+        queue2.process(function(job, jobDone) {
+          resolve();
+          setTimeout(jobDone, 200);
+        });
+      });
+
+      queue1.add(1);
+      queue1.add(2);
+      queue1.add(3);
+      queue1.add(4);
+
+      return Promise.all([queue1IsProcessing, queue2IsProcessing]).then(function() {
+        return Promise.all([queue1.pause(true /* local */), queue2.pause(true /* local */)]).then(function() {
+
+          var active = queue1.getJobCountByTypes(['active']).then(function(count) {
+            expect(count).to.be(0);
+          });
+
+          var pending = queue1.getJobCountByTypes(['wait']).then(function(count) {
+            expect(count).to.be(2);
+          });
+
+          var completed = queue1.getJobCountByTypes(['completed']).then(function(count) {
+            expect(count).to.be(2);
+          });
+
+          return Promise.all([active, pending, completed]);
+        });
+      });
+    });
+
+    it('should wait for blocking job retrieval to complete before pausing locally', function() {
+      var queue = utils.buildQueue();
+      queue.process(function(job, jobDone) {
+        setTimeout(jobDone, 200);
+      });
+
+      return new Promise(function(resolve) {
+        queue.on('ready', resolve);
+      }).then(function() {
+        //start the pause process
+        var queueIsPaused = queue.pause(true);
+        //add some jobs
+        return Promise.all([ queue.add(1), queue.add(2) ]).then(function() {
+          //wait for the queue to finish pausing
+          return queueIsPaused;
+        });
+      }).then(function() {
+        var active = queue.getJobCountByTypes(['active']).then(function(count) {
+          expect(count).to.be(0);
+        });
+
+        var pending = queue.getJobCountByTypes(['wait']).then(function(count) {
+          expect(count).to.be(1);
+        });
+
+        var completed = queue.getJobCountByTypes(['completed']).then(function(count) {
+          expect(count).to.be(1);
+        });
+
+        return Promise.all([active, pending, completed]);
       });
     });
   });
