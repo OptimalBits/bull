@@ -729,7 +729,7 @@ describe('Queue', function () {
     });
 
     it('does not renew a job lock after the lock has been released [#397]', function (done) {
-      this.timeout(queue.LOCK_RENEW_TIME * 3);
+      this.timeout(queue.LOCK_RENEW_TIME * 4);
 
       queue.process(function (job) {
         expect(job.data.foo).to.be.equal('bar');
