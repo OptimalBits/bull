@@ -1118,7 +1118,7 @@ describe('Queue', function () {
           });
         }).then(function () {
           expect(publishHappened).to.be(true);
-          queue.close().then(done, done);
+          queue.close(true).then(done, done);
         });
       });
 
