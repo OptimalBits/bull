@@ -26,7 +26,7 @@ describe.skip('Priority queue', function(){
   var sandbox = sinon.sandbox.create();
 
   beforeEach(function(){
-    var client = redis.createClient();
+    var client = new redis();
     return client.flushdb();
   });
 
@@ -46,7 +46,7 @@ describe.skip('Priority queue', function(){
         opts: {
           createClient: function(){
             clients++;
-            return redis.createClient();
+            return new redis();
           }
         }
       }
@@ -820,7 +820,7 @@ describe.skip('Priority queue', function(){
     });
 
     it('should clean a job without a timestamp', function (done) {
-      var client = redis.createClient(6379, '127.0.0.1', {});
+      var client = new redis(6379, '127.0.0.1', {});
 
       queue.add({some: 'data'}, {priority: 'normal'});
       queue.add({some: 'data'}, {priority: 'normal'});

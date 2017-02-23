@@ -12,7 +12,7 @@ describe('connection', function () {
   var queue;
 
   beforeEach(function(){
-    var client = redis.createClient();
+    var client = new redis();
     return client.flushdb().then(function(){
       queue = utils.buildQueue();
     });
