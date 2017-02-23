@@ -18,7 +18,7 @@ function buildQueue(name) {
 function purgeQueue(queue) {
   // Since workers spawned only listen to the default queue,
   // we need to purge all keys after each test
-  var client = redis.createClient(6379, '127.0.0.1', {});
+  var client = new redis(6379, '127.0.0.1', {});
   client.select(0);
 
   var script = [

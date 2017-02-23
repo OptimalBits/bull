@@ -29,7 +29,7 @@ describe('Queue', function () {
   var sandbox = sinon.sandbox.create();
 
   beforeEach(function () {
-    var client = redis.createClient();
+    var client = new redis();
     return client.flushdb();
   });
 
@@ -266,7 +266,7 @@ describe('Queue', function () {
     var queue;
 
     beforeEach(function () {
-      var client = redis.createClient();
+      var client = new redis();
       return client.flushdb().then(function () {
         return utils.newQueue();
       }).then(function (_queue) {
@@ -629,7 +629,7 @@ describe('Queue', function () {
       queue2.process(function (job, jobDone) {
         expect(job.data.foo).to.be.equal('bar');
         jobDone();
-        var client = redis.createClient();
+        var client = new redis();
         client.srem(queue2.toKey('completed'), 1);
         client.lpush(queue2.toKey('active'), 1);
       });
@@ -760,7 +760,7 @@ describe('Queue', function () {
       var failedOnce = false;
 
       var retryQueue = utils.buildQueue('retry-test-queue');
-      var client = redis.createClient(6379, '127.0.0.1', {});
+      var client = new redis(6379, '127.0.0.1', {});
 
       client.select(0);
 
@@ -837,7 +837,7 @@ describe('Queue', function () {
 
   describe('.pause', function () {
     beforeEach(function () {
-      var client = redis.createClient();
+      var client = new redis();
       return client.flushdb();
     });
 
@@ -1055,7 +1055,7 @@ describe('Queue', function () {
   });
 
   it('should publish a message when a new message is added to the queue', function (done) {
-    var client = redis.createClient(6379, '127.0.0.1', {});
+    var client = new redis(6379, '127.0.0.1', {});
     client.select(0);
     var queue = new Queue('test pub sub');
     client.on('ready', function () {
@@ -1086,14 +1086,14 @@ describe('Queue', function () {
     var queue;
 
     beforeEach(function () {
-      var client = redis.createClient();
+      var client = new redis();
       return client.flushdb();
     });
 
     it('should process a delayed job only after delayed time', function (done) {
       var delay = 500;
       queue = new Queue('delayed queue simple');
-      var client = redis.createClient(6379, '127.0.0.1', {});
+      var client = new redis(6379, '127.0.0.1', {});
       var timestamp = Date.now();
       var publishHappened = false;
       client.on('ready', function () {
@@ -1209,7 +1209,7 @@ describe('Queue', function () {
     });
 
     it('should process delayed jobs with exact same timestamps in correct order (FIFO)', function (done) {
-      var client = redis.createClient(6379, '127.0.0.1', {});
+      var client = new redis(6379, '127.0.0.1', {});
       client = Promise.promisifyAll(client);
       var QUEUE_NAME = 'delayed queue multiple' + uuid();
       queue = new Queue(QUEUE_NAME);
@@ -1247,7 +1247,7 @@ describe('Queue', function () {
     var queue;
 
     beforeEach(function () {
-      var client = redis.createClient();
+      var client = new redis();
       queue = utils.buildQueue();
       return client.flushdb();
     });
@@ -1989,7 +1989,7 @@ describe('Queue', function () {
     });
 
     it('should clean a job without a timestamp', function (done) {
-      var client = redis.createClient(6379, '127.0.0.1', {});
+      var client = new redis(6379, '127.0.0.1', {});
 
       queue.add({ some: 'data' });
       queue.add({ some: 'data' });
