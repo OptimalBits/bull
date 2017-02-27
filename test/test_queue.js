@@ -318,6 +318,49 @@ describe('Queue', function () {
       });
     });
 
+    it('should processes jobs by priority', function(done){
+      var normalPriority = [],
+        mediumPriority = [],
+        highPriority = [];
+
+      // for the current strategy this number should not exceed 8 (2^2*2)
+      // this is done to maitain a deterministic output.
+      var numJobsPerPriority = 6;
+
+      for(var i = 0; i < numJobsPerPriority; i++){
+        normalPriority.push(queue.add({p: 2}, {priority: 2}));
+        mediumPriority.push(queue.add({p: 3}, {priority: 3}));
+        highPriority.push(queue.add({p: 1}, {priority: 1}));
+      }
+
+      // wait for all jobs to enter the queue and then start processing
+      Promise
+        .all(normalPriority, mediumPriority, highPriority)
+        .then(function(){
+          var currentPriority = 1;
+          var counter = 0;
+          var total = 0;
+          
+          queue.process(function(job, jobDone){
+            expect(job.jobId).to.be.ok();
+            expect(job.data.p).to.be(currentPriority);
+
+            jobDone();
+
+            total ++;
+
+            if(++counter === numJobsPerPriority){
+              currentPriority++;
+              counter = 0;
+
+              if(currentPriority === 4 && total === numJobsPerPriority * 3){
+                done();
+              }
+            }
+          });
+        }, done);
+    });
+
     it('process several jobs serially', function (done) {
       this.timeout(12000);
       var counter = 1;
