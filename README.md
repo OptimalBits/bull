@@ -431,22 +431,29 @@ __Arguments__
   opts  A plain object with arguments that will be passed to the job
         processing function in job.opts.
   {
+    priority {Number} Optional priority value, ranges from 1 (highest priority) to MAX_INT  (lowest priority). Note that
+    using priorities has a slight impact on performance, so do not use if not required.
+
     delay {Number} An amount of miliseconds to wait until this job can be processed. Note that for accurate delays, both                   server and clients should have their clocks synchronized. [optional]
+
     attempts {Number} The total number of attempts to try the job until it completes.
 
     backoff {Number|Object} Backoff setting for automatic retries if the job fails
     backoff.type {String} Backoff type, which can be either `fixed` or `exponential`
-    backoff.delay {Number} Backoff delay, in milliseconds
+    backoff.delay {Number} Backoff delay, in milliseconds.
 
     lifo {Boolean} A boolean which, if true, adds the job to the right of the queue
                    instead of the left (default false)
+    
     timeout {Number} The number of milliseconds after which the job should be fail
                      with a timeout error [optional]
+    
     jobId {Number|String} Override the job ID - by default, the job ID is a unique
                           integer, but you can use this setting to override it.
                           If you use this option, it is up to you to ensure the
                           jobId is unique. If you attempt to add a job with an id that
                           already exists, it will not be added.
+    
     removeOnComplete {Boolean} A boolean which, if true, removes the job when it successfully
                                completes. Default behavior is to keep the job in the completed queue.
   }
@@ -638,9 +645,13 @@ The cleaner emits the `cleaned` event anytime the queue is cleaned.
 
 ---------------------------------------
 
-
 <a name="priorityQueue"/>
 ###PriorityQueue(queueName, redisPort, redisHost, [redisOpts])
+
+### DEPRECATION notice
+The priority queue has been deprecated since version 2.2.0 in favor of a new option, *priority* in [Queue##add](#add).
+The priorityQueue will be removed from the code base in version 3.0.0.
+--
 
 This is the Queue constructor of priority queue. It works same a normal queue, with same function and parameters.
 The only difference is that the Queue#add() allow an options opts.priority that could take
@@ -672,7 +683,7 @@ A job includes all data needed to perform its execution, as well as the progress
 method needed to update its progress.
 
 The most important property for the user is Job##data that includes the
-object that was passed to Queue##add, and that is normally used to
+object that was passed to [Queue##add](#add), and that is normally used to
 perform the job.
 
 ---------------------------------------
