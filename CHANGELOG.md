@@ -1,3 +1,14 @@
+v.2.2.0
+=======
+
+- Much improved priority queues, simpler, faster and more reliable.
+- Fixed issue where lua scripts where leaking memory.
+- Improvements in local pause, fixing #446 and #447.
+- Fix to increase delay time over 24 days #244
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.1.2...v2.2.0)
+
+
 v.2.1.2
 =======
 
