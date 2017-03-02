@@ -993,7 +993,7 @@ describe('Queue', function () {
             });
 
             // One job from the 10 posted above will be processed, so we expect 9 jobs pending
-            var paused = queue.getJobCountByTypes(['wait', 'delayed']).then(function (count) {
+            var paused = queue.getJobCountByTypes(['delayed','wait']).then(function (count) {
               expect(count).to.be(9);
               return null;
             });
@@ -1008,7 +1008,7 @@ describe('Queue', function () {
               return null;
             });
 
-            var paused = queue.getJobCountByTypes(['wait', 'delayed']).then(function (count) {
+            var paused = queue.getJobCountByTypes(['paused','wait', 'delayed']).then(function (count) {
               expect(count).to.be(10);
               return null;
             });
