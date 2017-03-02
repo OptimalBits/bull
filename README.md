@@ -5,6 +5,9 @@ Bull Job Manager
 [![npm](https://img.shields.io/npm/dm/bull.svg?maxAge=2592000)]()
 [![BuildStatus](https://secure.travis-ci.org/OptimalBits/bull.png?branch=master)](http://travis-ci.org/OptimalBits/bull)
 [![NPM version](https://badge.fury.io/js/bull.svg)](http://badge.fury.io/js/bull)
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/OptimalBits/bull.svg)](http://isitmaintained.com/project/OptimalBits/bull "Percentage of issues still open")
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/OptimalBits/bull.svg)](http://isitmaintained.com/project/OptimalBits/bull "Average time to resolve an issue")
+
 
 <img src="https://image.freepik.com/free-icon/strong-bull-side-view_318-52710.jpg" width="200" />
 
