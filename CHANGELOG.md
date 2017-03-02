@@ -1,3 +1,11 @@
+v.2.2.1
+=======
+
+- Re-added createClient option that was removed by mistake.
+- Corrected getJobCountByTypes, fixes #419 and #401
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.0...v2.2.1)
+
 v.2.2.0
 =======
 
