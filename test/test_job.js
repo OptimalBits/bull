@@ -7,7 +7,7 @@ var expect = require('expect.js');
 var redis = require('ioredis');
 var Promise = require('bluebird');
 var uuid = require('uuid');
-var Redlock = require('redlock');
+var Redlock = require('bull-redlock');
 
 
 describe('Job', function(){

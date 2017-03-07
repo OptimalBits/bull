@@ -18,11 +18,11 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "bluebird": "^3.4.7",
+    "bull-redlock": "^2.2.1",
     "debuglog": "^1.0.0",
     "disturbed": "^1.0.6",
     "ioredis": "^2.5.0",
     "lodash": "^4.17.4",
-    "redlock": "git@github.com:OptimalBits/node-redlock.git",
     "semver": "^5.3.0",
     "uuid": "^3.0.1"
   },
