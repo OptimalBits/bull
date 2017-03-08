@@ -1,3 +1,9 @@
+v.2.2.2
+=======
+- Fixed redis script cache gets bloated after update to bull 2.0 #426
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.1...v2.2.2)
+
 v.2.2.1
 =======
 
