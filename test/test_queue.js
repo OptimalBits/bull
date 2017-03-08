@@ -498,10 +498,10 @@ describe('Queue', function () {
     //
     // This text is wrong, since it is not correctly simulating a stalled job.
     // Probably some special method is needed to create stalled jobs.
-    it.skip('process stalled jobs when starting a queue', function (done) {
+    it('process stalled jobs when starting a queue', function (done) {
       this.timeout(12000);
       utils.newQueue('test queue stalled').then(function (queueStalled) {
-        queueStalled.LOCK_RENEW_TIME = 10;
+        queueStalled.LOCK_DURATION = 10;
         var jobs = [
           queueStalled.add({ bar: 'baz' }),
           queueStalled.add({ bar1: 'baz1' }),
@@ -516,7 +516,6 @@ describe('Queue', function () {
             return queueStalled.close(true).then(function () {
               return new Promise(function (resolve, reject) {
                 utils.newQueue('test queue stalled').then(function (queue2) {
-                  queue2.LOCK_RENEW_TIME = 100;
                   var doneAfterFour = _.after(4, function () {
                     try {
                       expect(stalledCallback.calledOnce).to.be(true);
