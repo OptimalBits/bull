@@ -341,8 +341,8 @@ listened by some other service that stores the results in a database.
 ## Reference
 
 <a name="queue"/>
-###Queue(queueName, redisPort, redisHost, [redisOpts])
-###Queue(queueName, redisConnectionString, [redisOpts])
+###Queue(queueName: string, redisPort: number, redisHost: string, redisOpts?: RedisOpts): Queue
+###Queue(queueName: string, redisConnectionString: string, redisOpts? RedisOpts): Queue
 
 This is the Queue constructor. It creates a new Queue that is persisted in
 Redis. Everytime the same queue is instantiated it tries to process all the
@@ -371,7 +371,7 @@ __Arguments__
 
 
 <a name="process"/>
-#### Queue##process([concurrency,] function(job[, done]))
+#### Queue##process(concurrency?: number, processor: (job, done?) => Promise<any>)
 
 Defines a processing function for the jobs placed into a given Queue.
 
@@ -425,75 +425,66 @@ __Arguments__
 ---------------------------------------
 
 <a name="add"/>
-#### Queue##add(data, opts)
+#### Queue##add(data: any, opts?: JobOpt): Promise<Job>
 
 Creates a new job and adds it to the queue. If the queue is empty the job
 will be executed directly, otherwise it will be placed in the queue and
 executed as soon as possible.
 
-__Arguments__
+```typescript
+interface JobOpts{
+  priority: number; // Optional priority value. ranges from 1 (highest priority) to MAX_INT  (lowest priority). Note that
+                    // using priorities has a slight impact on performance, so do not use it if not required.
 
-```javascript
-  data {PlainObject} A plain object with arguments that will be passed to
-                     the job processing function in job.data.
-  opts  A plain object with arguments that will be passed to the job
-        processing function in job.opts.
-  {
-    priority {Number} Optional priority value, ranges from 1 (highest priority) to MAX_INT  (lowest priority). Note that
-    using priorities has a slight impact on performance, so do not use if not required.
+  delay: number; // An amount of miliseconds to wait until this job can be processed. Note that for accurate delays, both 
+                 // server and clients should have their clocks synchronized. [optional].
 
-    delay {Number} An amount of miliseconds to wait until this job can be processed. Note that for accurate delays, both                   server and clients should have their clocks synchronized. [optional]
+  attempts: number; // The total number of attempts to try the job until it completes.
 
-    attempts {Number} The total number of attempts to try the job until it completes.
+  backoff: number | BackoffOpts; // Backoff setting for automatic retries if the job fails
 
-    backoff {Number|Object} Backoff setting for automatic retries if the job fails
-    backoff.type {String} Backoff type, which can be either `fixed` or `exponential`
-    backoff.delay {Number} Backoff delay, in milliseconds.
+  lifo: boolean; // if true, adds the job to the right of the queue instead of the left (default false)
+  timeout: number; // The number of milliseconds after which the job should be fail with a timeout error [optional]
 
-    lifo {Boolean} A boolean which, if true, adds the job to the right of the queue
-                   instead of the left (default false)
-    
-    timeout {Number} The number of milliseconds after which the job should be fail
-                     with a timeout error [optional]
-    
-    jobId {Number|String} Override the job ID - by default, the job ID is a unique
-                          integer, but you can use this setting to override it.
-                          If you use this option, it is up to you to ensure the
-                          jobId is unique. If you attempt to add a job with an id that
-                          already exists, it will not be added.
-    
-    removeOnComplete {Boolean} A boolean which, if true, removes the job when it successfully
-                               completes. Default behavior is to keep the job in the completed queue.
-  }
-  returns {Promise} A promise that resolves when the job has been succesfully
-    added to the queue (or rejects if some error occured). On success, the promise
-    resolves to the new Job.
+  jobId: number | string; // Override the job ID - by default, the job ID is a unique
+                          // integer, but you can use this setting to override it.
+                          // If you use this option, it is up to you to ensure the
+                          // jobId is unique. If you attempt to add a job with an id that
+                          // already exists, it will not be added.
+
+  removeOnComplete: boolean; // If true, removes the job when it successfully
+                            // completes. Default behavior is to keep the job in the completed queue.
+}
+```
+
+```typescript
+interface BackoffOpts{
+  type: string; // Backoff type, which can be either `fixed` or `exponential`
+  delay: number; // Backoff delay, in milliseconds.
+}
 ```
 
 ---------------------------------------
 
 
 <a name="pause"/>
-#### Queue##pause([isLocal])
+#### Queue##pause(isLocal?: boolean): Promise
 
 Returns a promise that resolves when the queue is paused. A paused queue will not
 process new jobs until resumed, but current jobs being processed will continue until
-they are finalized. The pause can be either global or local. If global, all workers in all queue instances for a given queue will be paused. If local, just this worker will stop processing new jobs after the current lock expires. This can be useful to stop a worker from taking new jobs prior to shutting down.
+they are finalized. The pause can be either global or local. If global, all workers
+in all queue instances for a given queue will be paused. If local, just this worker will
+stop processing new jobs after the current lock expires. This can be useful to stop a 
+worker from taking new jobs prior to shutting down.
 
 Pausing a queue that is already paused does nothing.
 
-__Arguments__
-
-```javascript
-  isLocal {Boolean} True to only pause the local worker. Defaults to false.
-  returns {Promise} A promise that resolves when the queue is paused.
-```
 
 ---------------------------------------
 
 
 <a name="resume"/>
-#### Queue##resume([isLocal])
+#### Queue##resume(isLocal?: boolean): Promise
 
 Returns a promise that resolves when the queue is resumed after being paused.
 The resume can be either local or global. If global, all workers in all queue
@@ -503,46 +494,29 @@ paused locally; for those, `resume(true)` must be called directly on their insta
 
 Resuming a queue that is not paused does nothing.
 
-__Arguments__
-
-```javascript
-  isLocal {Boolean} True to resume only the local worker. Defaults to false.
-  returns {Promise} A promise that resolves when the queue is resumed.
-```
-
 ---------------------------------------
 
 
 <a name="count"/>
-#### Queue##count()
+#### Queue##count(): Promise<number>
 
 Returns a promise that returns the number of jobs in the queue, waiting or
-paused. Since there may be other processes adding or processing jobs, this
+delayed. Since there may be other processes adding or processing jobs, this
 value may be true only for a very small amount of time.
 
-__Arguments__
-
-```javascript
-  returns {Promise} A promise that resolves with the current jobs count.
-```
 
 ---------------------------------------
 
 <a name="empty"/>
-#### Queue##empty()
+#### Queue##empty(): Promise
 
 Empties a queue deleting all the input lists and associated jobs.
 
-__Arguments__
-
-```javascript
-  returns {Promise} A promise that resolves with the queue is emptied.
-```
 
 ---------------------------------------
 
 <a name="close"/>
-#### Queue##close()
+#### Queue##close(): Promise
 Closes the underlying redis client. Use this to perform a graceful
 shutdown.
 
@@ -587,28 +561,15 @@ queue.process(function (job) {
 });
 ```
 
-__Arguments__
-
-```javascript
-  returns {Promise} A promise that resolves when the redis client closes.
-```
 
 ---------------------------------------
 
 <a name="getJob"/>
-#### Queue##getJob(jobId)
+#### Queue##getJob(jobId: string): Promise<Job>
 
 Returns a promise that will return the job instance associated with the `jobId`
-parameter. If the specified job cannot be located, the promise callback parameter
-will be set to `null`.
+parameter. If the specified job cannot be located, the promise will be resolved to `null`.
 
-__Arguments__
-
-```javascript
-  jobId {String} A string identifying the ID of the to look up.
-  returns {Promise} A promise that resolves with the job instance when the job
-  has been retrieved to the queue, or null otherwise.
-```
 
 ---------------------------------------
 
@@ -617,18 +578,20 @@ __Arguments__
 
 Returns a promise that will return the job counts for the given queue.
 
-interface JobCounts {
-  wait: number,
-  active: number,
-  completed: number,
-  failed: number,
-  delayed: number 
+```typescript{
+  interface JobCounts {
+    wait: number,
+    active: number,
+    completed: number,
+    failed: number,
+    delayed: number 
+  }
 }
 
 ---------------------------------------
 
 <a name="clean"/>
-#### Queue##clean(grace, [type], [limit])
+#### Queue##clean(grace: number, status?: string, limit?: number): Promise<number[]>
 
 Tells the queue remove jobs of a specific type created outside of a grace period.
 
@@ -647,23 +610,20 @@ queue.on('cleaned', function (job, type) {
 __Arguments__
 
 ```javascript
-  grace {int} Grace period in milliseconds.
-  type {string} type of job to clean. Values are completed, wait, active,
+  grace: number; Grace period in milliseconds.
+  status: string; Status of the job to clean. Values are completed, wait, active,
   delayed, and failed. Defaults to completed.
-  limit {int} maximum amount of jobs to clean per call. If not provided will clean all matching jobs.
-  returns {Promise} A promise that resolves with an array of removed jobs.
+  limit: number; maximum amount of jobs to clean per call. If not provided will clean all matching jobs.
+  
+  returns Promise; A promise that resolves with an array of removed jobs.
 ```
 
 __Events__
 
 The cleaner emits the `cleaned` event anytime the queue is cleaned.
 
-```javascript
-  queue.on('cleaned', function (jobs, type) {});
-
-  jobs {Array} An array of jobs that have been cleaned.
-  type {String} The type of job cleaned. Options are completed, wait, active,
-  delayed, or failed.
+```typescript
+  queue.on('cleaned', listener: (jobs: number[], status: string) => void);
 ```
 
 ---------------------------------------
@@ -697,7 +657,7 @@ The priority queue will process more often higher priority jobs than lower.
   });
 ```
 
-Warning: Priority queue use 5 times more redis connections than a normal queue.
+Warning!!: Priority queue use 5 times more redis connections than a normal queue.
 
 <a name="job"/>
 ### Job
@@ -712,41 +672,26 @@ perform the job.
 ---------------------------------------
 
 <a name="remove"/>
-#### Job##remove()
+#### Job##remove(): Promise
 
 Removes a Job from the queue from all the lists where it may be included.
 
-__Arguments__
-
-```javascript
-  returns {Promise} A promise that resolves when the job is removed.
-```
 
 ---------------------------------------
 
 <a name="retry"/>
-#### Job##retry()
+#### Job##retry(): Promise
 
-Rerun a Job that has failed.
+Re-run a Job that has failed. Returns a promise that resolves when the job is scheduled for retry.
 
-__Arguments__
-
-```javascript
-  returns {Promise} A promise that resolves when the job is scheduled for retry.
-```
 
 ---------------------------------------
 
 <a name="discard"/>
-#### Job##discard()
+#### Job##discard(): Promise
 
 Ensure this job is never ran again even if attemptsMade is less than `job.attempts`
 
-__Arguments__
-
-```javascript
-  returns {Promise} A promise that resolves when the job is scheduled for retry.
-```
 
 ---------------------------------------
 
