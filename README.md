@@ -706,6 +706,16 @@ discard(): Promise
 
 Ensure this job is never ran again even if attemptsMade is less than `job.attempts`
 
+---------------------------------------
+
+<a name="promote"/>
+#### Job##promote
+```ts
+promote(): Promise
+```
+
+Promotes a job that is delayed to be placed on the wait state and executed as soon as
+possible.
 
 ---------------------------------------
 
