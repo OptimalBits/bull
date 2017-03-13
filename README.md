@@ -333,6 +333,7 @@ listened by some other service that stores the results in a database.
 * [Queue##clean](#clean)
 * [Queue##close](#close)
 * [Queue##getJob](#getJob)
+* [Queue##getJobCounts](#getJobCounts)
 * [Job](#job)
 * [Job##remove](#remove)
 
@@ -608,6 +609,21 @@ __Arguments__
   returns {Promise} A promise that resolves with the job instance when the job
   has been retrieved to the queue, or null otherwise.
 ```
+
+---------------------------------------
+
+<a name="getJobCounts"/>
+#### Queue##getJobCounts() : Promise<JobCounts>
+
+Returns a promise that will return the job counts for the given queue.
+
+interface JobCounts {
+  wait: number,
+  active: number,
+  completed: number,
+  failed: number,
+  delayed: number 
+}
 
 ---------------------------------------
 
