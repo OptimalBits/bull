@@ -1,3 +1,11 @@
+v.2.2.3
+=======
+
+- Added getJobCounts.
+- Fixed global events #394.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.2...v2.2.3)
+
 v.2.2.2
 =======
 - Fixed redis script cache gets bloated after update to bull 2.0 #426
