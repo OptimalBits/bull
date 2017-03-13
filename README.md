@@ -341,8 +341,13 @@ listened by some other service that stores the results in a database.
 ## Reference
 
 <a name="queue"/>
-###Queue(queueName: string, redisPort: number, redisHost: string, redisOpts?: RedisOpts): Queue
-###Queue(queueName: string, redisConnectionString: string, redisOpts? RedisOpts): Queue
+###Queue
+```ts
+Queue(queueName: string, redisPort: number, redisHost: string, redisOpts?: RedisOpts): Queue
+```
+```ts
+Queue(queueName: string, redisConnectionString: string, redisOpts? RedisOpts): Queue
+```
 
 This is the Queue constructor. It creates a new Queue that is persisted in
 Redis. Everytime the same queue is instantiated it tries to process all the
@@ -371,7 +376,10 @@ __Arguments__
 
 
 <a name="process"/>
-#### Queue##process(concurrency?: number, processor: (job, done?) => Promise<any>)
+####Queue##Process
+```ts
+process(concurrency?: number, processor: (job, done?) => Promise<any>)
+```
 
 Defines a processing function for the jobs placed into a given Queue.
 
@@ -425,7 +433,10 @@ __Arguments__
 ---------------------------------------
 
 <a name="add"/>
-#### Queue##add(data: any, opts?: JobOpt): Promise<Job>
+#### Queue##add
+```ts
+add(data: any, opts?: JobOpt): Promise<Job>
+```
 
 Creates a new job and adds it to the queue. If the queue is empty the job
 will be executed directly, otherwise it will be placed in the queue and
@@ -468,7 +479,10 @@ interface BackoffOpts{
 
 
 <a name="pause"/>
-#### Queue##pause(isLocal?: boolean): Promise
+#### Queue##pause
+```ts
+pause(isLocal?: boolean): Promise
+```
 
 Returns a promise that resolves when the queue is paused. A paused queue will not
 process new jobs until resumed, but current jobs being processed will continue until
@@ -484,7 +498,10 @@ Pausing a queue that is already paused does nothing.
 
 
 <a name="resume"/>
-#### Queue##resume(isLocal?: boolean): Promise
+#### Queue##resume
+```ts
+resume(isLocal?: boolean): Promise
+```
 
 Returns a promise that resolves when the queue is resumed after being paused.
 The resume can be either local or global. If global, all workers in all queue
@@ -498,7 +515,10 @@ Resuming a queue that is not paused does nothing.
 
 
 <a name="count"/>
-#### Queue##count(): Promise<number>
+#### Queue##count
+```ts
+count(): Promise<number>
+```
 
 Returns a promise that returns the number of jobs in the queue, waiting or
 delayed. Since there may be other processes adding or processing jobs, this
@@ -508,7 +528,10 @@ value may be true only for a very small amount of time.
 ---------------------------------------
 
 <a name="empty"/>
-#### Queue##empty(): Promise
+#### Queue##empty
+```ts
+empty(): Promise
+```
 
 Empties a queue deleting all the input lists and associated jobs.
 
@@ -516,7 +539,10 @@ Empties a queue deleting all the input lists and associated jobs.
 ---------------------------------------
 
 <a name="close"/>
-#### Queue##close(): Promise
+#### Queue##close
+```ts
+close(): Promise
+```
 Closes the underlying redis client. Use this to perform a graceful
 shutdown.
 
@@ -565,7 +591,10 @@ queue.process(function (job) {
 ---------------------------------------
 
 <a name="getJob"/>
-#### Queue##getJob(jobId: string): Promise<Job>
+#### Queue##getJob
+```ts
+getJob(jobId: string): Promise<Job>
+```
 
 Returns a promise that will return the job instance associated with the `jobId`
 parameter. If the specified job cannot be located, the promise will be resolved to `null`.
@@ -574,7 +603,10 @@ parameter. If the specified job cannot be located, the promise will be resolved 
 ---------------------------------------
 
 <a name="getJobCounts"/>
-#### Queue##getJobCounts() : Promise<JobCounts>
+#### Queue##getJobCounts
+```ts
+getJobCounts() : Promise<JobCounts>
+```
 
 Returns a promise that will return the job counts for the given queue.
 
@@ -587,11 +619,15 @@ Returns a promise that will return the job counts for the given queue.
     delayed: number 
   }
 }
+```
 
 ---------------------------------------
 
 <a name="clean"/>
-#### Queue##clean(grace: number, status?: string, limit?: number): Promise<number[]>
+#### Queue##clean
+```ts
+clean(grace: number, status?: string, limit?: number): Promise<number[]>
+```
 
 Tells the queue remove jobs of a specific type created outside of a grace period.
 
@@ -628,6 +664,51 @@ The cleaner emits the `cleaned` event anytime the queue is cleaned.
 
 ---------------------------------------
 
+<a name="job"/>
+### Job
+
+A job includes all data needed to perform its execution, as well as the progress
+method needed to update its progress.
+
+The most important property for the user is Job##data that includes the
+object that was passed to [Queue##add](#add), and that is normally used to
+perform the job.
+
+---------------------------------------
+
+<a name="remove"/>
+#### Job##remove
+```ts
+remove(): Promise
+```
+
+Removes a Job from the queue from all the lists where it may be included.
+
+
+---------------------------------------
+
+<a name="retry"/>
+#### Job##retry
+```ts
+retry(): Promise
+```
+
+Re-run a Job that has failed. Returns a promise that resolves when the job is scheduled for retry.
+
+
+---------------------------------------
+
+<a name="discard"/>
+#### Job##discard
+```ts
+discard(): Promise
+```
+
+Ensure this job is never ran again even if attemptsMade is less than `job.attempts`
+
+
+---------------------------------------
+
 <a name="priorityQueue"/>
 ###PriorityQueue(queueName, redisPort, redisHost, [redisOpts])
 
@@ -659,41 +740,6 @@ The priority queue will process more often higher priority jobs than lower.
 
 Warning!!: Priority queue use 5 times more redis connections than a normal queue.
 
-<a name="job"/>
-### Job
-
-A job includes all data needed to perform its execution, as well as the progress
-method needed to update its progress.
-
-The most important property for the user is Job##data that includes the
-object that was passed to [Queue##add](#add), and that is normally used to
-perform the job.
-
----------------------------------------
-
-<a name="remove"/>
-#### Job##remove(): Promise
-
-Removes a Job from the queue from all the lists where it may be included.
-
-
----------------------------------------
-
-<a name="retry"/>
-#### Job##retry(): Promise
-
-Re-run a Job that has failed. Returns a promise that resolves when the job is scheduled for retry.
-
-
----------------------------------------
-
-<a name="discard"/>
-#### Job##discard(): Promise
-
-Ensure this job is never ran again even if attemptsMade is less than `job.attempts`
-
-
----------------------------------------
 
 ####Debugging
 
