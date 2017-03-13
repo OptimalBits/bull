@@ -205,9 +205,13 @@ A queue emits also some useful events:
 ```
 
 Events are by default local, i.e., they only fire on the listeners that are registered on the given worker,
-if you need to listen to events globally, just set to true the last argument:
+if you need to listen to events globally, just prefix the event with ```global:```:
 ```
-queue.on('completed', listener, true):
+// Local Event listener
+queue.on('completed', listener):
+
+// Global Event listener
+queue.on('global:completed', listener);
 ```
 
 Queues are cheap, so if you need many of them just create new ones with different

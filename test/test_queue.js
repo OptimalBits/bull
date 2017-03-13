@@ -1127,6 +1127,24 @@ describe('Queue', function () {
     });
   });
 
+  it('should listen to global events', function(done){
+    var queue1 = utils.buildQueue();
+    var queue2 = utils.buildQueue();
+    queue1.process(function (job, jobDone) {
+      jobDone();
+    });
+    queue1.add({});
+    queue2.once('global:waiting', function () {
+      queue2.once('global:active', function () {
+        queue2.once('global:completed', function () {
+          queue1.close().then(function(){
+            queue2.close().then(done);
+          });
+        });
+      });
+    });
+  })
+
   describe('Delayed jobs', function () {
     var queue;
 
