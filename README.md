@@ -464,7 +464,10 @@ interface JobOpts{
                           // already exists, it will not be added.
 
   removeOnComplete: boolean; // If true, removes the job when it successfully
-                            // completes. Default behavior is to keep the job in the completed queue.
+                            // completes. Default behavior is to keep the job in the completed set.
+
+  removeOnFail: boolean; // If true, removes the job when it fails after all attempts.
+                         // Default behavior is to keep the job in the failed set.
 }
 ```
 
