@@ -260,6 +260,69 @@ describe('Queue', function () {
       });
     });
 
+    it('should allow reuse redis connections', function(done){
+      var client, subscriber;
+      client = new redis();
+      subscriber = new redis();
+
+      var opts = {
+        redis: {
+          opts: {
+            createClient: function(type){
+              switch(type){
+                case 'client':
+                  return client;
+                case 'subscriber':
+                  return subscriber;
+                default:
+                  return new redis();
+              }
+            }
+          }
+        }
+      }
+      var queueFoo = new Queue('foobar', opts);
+      var queueQux = new Queue('quxbaz', opts);
+
+      expect(queueFoo.client).to.be.equal(client);
+      expect(queueFoo.eclient).to.be.equal(subscriber);
+      
+      expect(queueQux.client).to.be.equal(client);
+      expect(queueQux.eclient).to.be.equal(subscriber);
+
+      queueFoo.add({ foo: 'bar' }).then(function (job) {
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+      }).then(function(){
+        return queueQux.add({ qux: 'baz' }).then(function(job){
+          expect(job.jobId).to.be.ok();
+          expect(job.data.qux).to.be('baz');
+          var completed = 0;
+
+          queueFoo.process(function(job, jobDone){
+            jobDone();
+          });
+
+          queueQux.process(function(job, jobDone){
+            jobDone();
+          });
+
+          queueFoo.on('completed', function(){
+            completed++;
+            if(completed == 2){
+              done();
+            }
+          })
+
+          queueQux.on('completed', function(){
+            completed++;
+            if(completed == 2){
+              done();
+            }
+          })
+        });
+      }, done);
+    });
   });
 
   describe(' a worker', function () {
