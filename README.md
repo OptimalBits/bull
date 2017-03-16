@@ -270,6 +270,38 @@ Important Notes
 
 The queue aims for "at most once" working strategy. When a worker is processing a job, it will keep the job locked until the work is done. However, it is important that the worker does not lock the event loop too long, otherwise other workers could pick the job believing that the worker processing it has been stalled.
 
+Reusing Redis connections
+-------------------------
+
+A standard queue requires 3 connections to a redis server. In some situations when having many queues, and using
+services such as Heroku where number of connections is limited, it is desirable to reuse some connections.
+This can be achieved using the "createClient" option in the queue constructor:
+
+```js
+  var client, subscriber;
+  client = new redis();
+  subscriber = new redis();
+
+  var opts = {
+    redis: {
+      opts: {
+        createClient: function(type){
+          switch(type){
+            case 'client':
+              return client;
+            case 'subscriber':
+              return subscriber;
+            default:
+              return new redis();
+          }
+        }
+      }
+    }
+  }
+  var queueFoo = new Queue('foobar', opts);
+  var queueQux = new Queue('quxbaz', opts);
+```
+
 
 Useful patterns
 ---------------
