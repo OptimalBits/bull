@@ -1,3 +1,10 @@
+v.2.2.4
+=======
+
+- Allow reusing certain redis connections.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.3...v2.2.4)
+
 v.2.2.3
 =======
 
