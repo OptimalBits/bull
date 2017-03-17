@@ -1,3 +1,11 @@
+v.2.2.5
+=======
+
+- Fixed so that redis key prefix works properly.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.4...v2.2.5)
+
+
 v.2.2.4
 =======
 
