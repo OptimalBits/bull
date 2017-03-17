@@ -255,6 +255,10 @@ describe('Queue', function () {
       return queue.add({ foo: 'bar' }).then(function (job) {
         expect(job.jobId).to.be.ok();
         expect(job.data.foo).to.be('bar');
+        var client = new redis();
+        return client.hgetall('myQ:q:' + job.jobId).then(function(result){
+          expect(result).to.not.be.null;
+        });
       }).then(function () {
         return queue.close();
       });
