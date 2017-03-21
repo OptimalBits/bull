@@ -466,12 +466,6 @@ queue.process(function(job) { // No done callback here :)
 
 You can specify a concurrency. Bull will then call you handler in parallel respecting this max number.
 
-__Arguments__
-
-```javascript
-    job {String} The job to process.
-    done {Function} The done callback to be called after the job has been completed.
-```
 
 ---------------------------------------
 
