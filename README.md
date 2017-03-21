@@ -380,6 +380,7 @@ listened by some other service that stores the results in a database.
 ## Reference
 
 <a name="queue"/>
+
 ### Queue
 
 ```ts
@@ -416,6 +417,7 @@ __Arguments__
 
 
 <a name="process"/>
+
 #### Queue##Process
 
 ```ts
@@ -474,6 +476,7 @@ __Arguments__
 ---------------------------------------
 
 <a name="add"/>
+
 #### Queue##add
 
 ```ts
@@ -524,6 +527,7 @@ interface BackoffOpts{
 
 
 <a name="pause"/>
+
 #### Queue##pause
 
 ```ts
@@ -544,6 +548,7 @@ Pausing a queue that is already paused does nothing.
 
 
 <a name="resume"/>
+
 #### Queue##resume
 
 ```ts
@@ -562,6 +567,7 @@ Resuming a queue that is not paused does nothing.
 
 
 <a name="count"/>
+
 #### Queue##count
 
 ```ts
@@ -576,6 +582,7 @@ value may be true only for a very small amount of time.
 ---------------------------------------
 
 <a name="empty"/>
+
 #### Queue##empty
 
 ```ts
@@ -588,6 +595,7 @@ Empties a queue deleting all the input lists and associated jobs.
 ---------------------------------------
 
 <a name="close"/>
+
 #### Queue##close
 
 ```ts
@@ -641,6 +649,7 @@ queue.process(function (job) {
 ---------------------------------------
 
 <a name="getJob"/>
+
 #### Queue##getJob
 
 ```ts
@@ -654,6 +663,7 @@ parameter. If the specified job cannot be located, the promise will be resolved 
 ---------------------------------------
 
 <a name="getJobCounts"/>
+
 #### Queue##getJobCounts
 
 ```ts
@@ -676,6 +686,7 @@ Returns a promise that will return the job counts for the given queue.
 ---------------------------------------
 
 <a name="clean"/>
+
 #### Queue##clean
 
 ```ts
@@ -718,6 +729,7 @@ The cleaner emits the `cleaned` event anytime the queue is cleaned.
 ---------------------------------------
 
 <a name="job"/>
+
 ### Job
 
 A job includes all data needed to perform its execution, as well as the progress
@@ -730,6 +742,7 @@ perform the job.
 ---------------------------------------
 
 <a name="remove"/>
+
 #### Job##remove
 
 ```ts
@@ -742,6 +755,7 @@ Removes a Job from the queue from all the lists where it may be included.
 ---------------------------------------
 
 <a name="retry"/>
+
 #### Job##retry
 
 ```ts
@@ -754,6 +768,7 @@ Re-run a Job that has failed. Returns a promise that resolves when the job is sc
 ---------------------------------------
 
 <a name="discard"/>
+
 #### Job##discard
 
 ```ts
@@ -765,6 +780,7 @@ Ensure this job is never ran again even if attemptsMade is less than `job.attemp
 ---------------------------------------
 
 <a name="promote"/>
+
 #### Job##promote
 
 ```ts
@@ -777,6 +793,7 @@ possible.
 ---------------------------------------
 
 <a name="priorityQueue"/>
+
 ###PriorityQueue(queueName, redisPort, redisHost, [redisOpts])
 
 ### DEPRECATION notice
