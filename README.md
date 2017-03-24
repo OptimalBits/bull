@@ -55,6 +55,8 @@ We also have an official UI which is at the moment bare bones project: [bull-ui]
 Roadmap:
 --------
 
+- Multiple job types per queue.
+- Scheduling jobs as a cron specification.
 - Rate limiter for jobs.
 - Parent-child jobs relationships.
 
