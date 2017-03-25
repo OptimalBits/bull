@@ -527,6 +527,80 @@ describe('Queue', function () {
       });
     });
 
+    it('process a named job that returns a promise', function (done) {
+      queue.process('myname', function (job) {
+        expect(job.data.foo).to.be.equal('bar');
+        return Promise.delay(250).then(function () {
+          return 'my data';
+        });
+      });
+
+      queue.add('myname', { foo: 'bar' }).then(function (job) {
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+      }).catch(done);
+
+      queue.on('completed', function (job, data) {
+        expect(job).to.be.ok();
+        expect(data).to.be.eql('my data');
+        done();
+      });
+    });
+
+    it('process a two named jobs that returns a promise', function (done) {
+      queue.process('myname', function (job) {
+        expect(job.data.foo).to.be.equal('bar');
+        return Promise.delay(250).then(function () {
+          return 'my data';
+        });
+      });
+
+      queue.process('myname2', function (job) {
+        expect(job.data.baz).to.be.equal('qux');
+        return Promise.delay(250).then(function () {
+          return 'my data 2';
+        });
+      });
+
+      queue.add('myname', { foo: 'bar' }).then(function (job) {
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+      }).then(function(){
+        return queue.add('myname2', { baz: 'qux' });
+      }).catch(done);
+
+      var one, two;
+      queue.on('completed', function (job, data) {
+        expect(job).to.be.ok();
+        if(job.data.foo){
+          one = true;
+          expect(data).to.be.eql('my data');
+        }
+        if(job.data.baz){
+          two = true;
+          expect(data).to.be.eql('my data 2');
+        }
+        if(one && two){
+          done();
+        }
+      });
+    });
+
+    it('throws error if missing named process', function (done) {
+      queue.process(function (job) {
+        done(Error('should not process this job'))
+      });
+
+      queue.once('error', function(err){
+        done();
+      });
+
+      queue.add('myname', { foo: 'bar' }).then(function (job) {
+        expect(job.jobId).to.be.ok();
+        expect(job.data.foo).to.be('bar');
+      });
+    });
+
     it.skip('processes several stalled jobs when starting several queues', function (done) {
       this.timeout(50000);
 
