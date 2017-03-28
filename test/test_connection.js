@@ -41,7 +41,10 @@ describe('connection', function () {
     });
   });
 
-  it('should reconnect when the blocking client triggers an "end" event', function (done) {
+  //
+  // This test is not relevant since ioredis keeps reconnects for us transparently.
+  //
+  it.skip('should reconnect when the blocking client triggers an "end" event', function (done) {
     var runSpy = sandbox.spy(queue, 'run');
     queue.process(function (job, jobDone) {
       expect(runSpy.callCount).to.be(2);
@@ -57,7 +60,7 @@ describe('connection', function () {
     queue.bclient.emit('end');
   });
 
-  it('should not try to reconnect when the blocking client triggers an "end" event and no process have been called', function (done) {
+  it.skip('should not try to reconnect when the blocking client triggers an "end" event and no process have been called', function (done) {
     var runSpy = sandbox.spy(queue, 'run');
 
     queue.bclient.emit('end');
@@ -94,7 +97,7 @@ describe('connection', function () {
       queue.add({ 'foo': 'bar' });
     });
 
-    queue.on('error', function () {
+    queue.on('error', function (err) {
       if(count === 1) {
         queue.add({ 'foo': 'bar' });
       }
