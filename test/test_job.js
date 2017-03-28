@@ -109,7 +109,7 @@ describe('Job', function(){
         }).then(function() {
           throw new Error('Should not be able to remove a locked job');
         }).catch(function(err) {
-          expect(err.message).to.equal('Could not get lock for job: ' + job.jobId + '. Cannot remove job.');
+          expect(err.message).to.equal('Exceeded 0 attempts to lock the resource "bull:'+queue.name+':1:lock".');
         });
       });
     });

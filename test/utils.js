@@ -8,9 +8,9 @@ var STD_QUEUE_NAME = 'test queue';
 var queues = [];
 
 function simulateDisconnect(queue){
-  queue.client.stream.end();
-  queue.bclient.stream.end();
-  queue.eclient.stream.end();
+  queue.client.disconnect();
+  queue.bclient.disconnect();
+  queue.eclient.disconnect();
 }
 
 function buildQueue(name) {

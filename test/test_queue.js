@@ -10,12 +10,6 @@ var _ = require('lodash');
 var uuid = require('uuid');
 var utils = require('./utils');
 
-
-/*
-console.error = function(){
-};
-*/
-
 Promise.config({
   // Enable warnings.
   // warnings: true,
@@ -52,8 +46,8 @@ describe('Queue', function () {
       testQueue.close();
     });
 
-    it('should call end on the blocking client', function () {
-      var endSpy = sandbox.spy(testQueue.bclient, 'end');
+    it('should call disconnect on the blocking client', function () {
+      var endSpy = sandbox.spy(testQueue.bclient, 'disconnect');
       return testQueue.close().then(function () {
         expect(endSpy.calledOnce).to.be(true);
       });
@@ -136,85 +130,73 @@ describe('Queue', function () {
     it('should create a queue with standard redis opts', function (done) {
       var queue = new Queue('standard');
 
-      queue.once('ready', function () {
-        expect(queue.client.options.host).to.be('127.0.0.1');
-        expect(queue.bclient.options.host).to.be('127.0.0.1');
+      expect(queue.client.options.host).to.be('127.0.0.1');
+      expect(queue.bclient.options.host).to.be('127.0.0.1');
 
-        expect(queue.client.options.port).to.be(6379);
-        expect(queue.bclient.options.port).to.be(6379);
+      expect(queue.client.options.port).to.be(6379);
+      expect(queue.bclient.options.port).to.be(6379);
 
-        expect(queue.client.options.db).to.be(0);
-        expect(queue.bclient.options.db).to.be(0);
+      expect(queue.client.options.db).to.be(0);
+      expect(queue.bclient.options.db).to.be(0);
 
-        queue.close().then(done);
-      });
+      queue.close().then(done);
     });
 
     it('should create a queue with a redis connection string', function (done) {
       var queue = new Queue('connstring', 'redis://127.0.0.1:6379');
 
-      queue.once('ready', function () {
-        expect(queue.client.options.host).to.be('127.0.0.1');
-        expect(queue.bclient.options.host).to.be('127.0.0.1');
+      expect(queue.client.options.host).to.be('127.0.0.1');
+      expect(queue.bclient.options.host).to.be('127.0.0.1');
 
-        expect(queue.client.options.port).to.be(6379);
-        expect(queue.bclient.options.port).to.be(6379);
+      expect(queue.client.options.port).to.be(6379);
+      expect(queue.bclient.options.port).to.be(6379);
 
-        expect(queue.client.options.db).to.be(0);
-        expect(queue.bclient.options.db).to.be(0);
+      expect(queue.client.options.db).to.be(0);
+      expect(queue.bclient.options.db).to.be(0);
 
-        queue.close().then(done);
-
-      });
+      queue.close().then(done);
     });
 
     it('should create a queue with a port number and a hostname', function (done) {
       var queue = new Queue('connstring', '6379', '127.0.0.1');
 
-      queue.once('ready', function () {
-        expect(queue.client.options.host).to.be('127.0.0.1');
-        expect(queue.bclient.options.host).to.be('127.0.0.1');
+      expect(queue.client.options.host).to.be('127.0.0.1');
+      expect(queue.bclient.options.host).to.be('127.0.0.1');
 
-        expect(queue.client.options.port).to.be(6379);
-        expect(queue.bclient.options.port).to.be(6379);
+      expect(queue.client.options.port).to.be(6379);
+      expect(queue.bclient.options.port).to.be(6379);
 
-        expect(queue.client.condition.select).to.be(0);
-        expect(queue.bclient.condition.select).to.be(0);
+      expect(queue.client.condition.select).to.be(0);
+      expect(queue.bclient.condition.select).to.be(0);
 
-        queue.close().then(done);
-
-      });
+      queue.close().then(done);
     });
 
     it('creates a queue using the supplied redis DB', function (done) {
       var queue = new Queue('custom', { redis: { DB: 1 } });
 
-      queue.once('ready', function () {
-        expect(queue.client.options.host).to.be('127.0.0.1');
-        expect(queue.bclient.options.host).to.be('127.0.0.1');
+      expect(queue.client.options.host).to.be('127.0.0.1');
+      expect(queue.bclient.options.host).to.be('127.0.0.1');
 
-        expect(queue.client.options.port).to.be(6379);
-        expect(queue.bclient.options.port).to.be(6379);
+      expect(queue.client.options.port).to.be(6379);
+      expect(queue.bclient.options.port).to.be(6379);
 
-        expect(queue.client.options.db).to.be(1);
-        expect(queue.bclient.options.db).to.be(1);
+      expect(queue.client.options.db).to.be(1);
+      expect(queue.bclient.options.db).to.be(1);
 
-        queue.close().then(done);
-      });
+      queue.close().then(done);
     });
 
     it('creates a queue using custom the supplied redis host', function (done) {
       var queue = new Queue('custom', { redis: { host: 'localhost' } });
 
-      queue.once('ready', function () {
-        expect(queue.client.options.host).to.be('localhost');
-        expect(queue.bclient.options.host).to.be('localhost');
+      expect(queue.client.options.host).to.be('localhost');
+      expect(queue.bclient.options.host).to.be('localhost');
 
-        expect(queue.client.options.db).to.be(0);
-        expect(queue.bclient.options.db).to.be(0);
+      expect(queue.client.options.db).to.be(0);
+      expect(queue.bclient.options.db).to.be(0);
 
-        queue.close().then(done);
-      });
+      queue.close().then(done);
     });
 
     it('creates a queue with dots in its name', function () {
@@ -452,7 +434,10 @@ describe('Queue', function () {
       });
     });
 
-    it('process stalled jobs when starting a queue', function (done) {
+    it.skip('process stalled jobs when starting a queue', function (done) {
+      //
+      // TODO: Investigate why this test is so slow.
+      //
       this.timeout(12000);
       utils.newQueue('test queue stalled').then(function (queueStalled) {
         queueStalled.LOCK_RENEW_TIME = 10;
@@ -462,7 +447,6 @@ describe('Queue', function () {
           queueStalled.add({ bar2: 'baz2' }),
           queueStalled.add({ bar3: 'baz3' })
         ];
-
         Promise.all(jobs).then(function () {
           var afterJobsRunning = function () {
             var stalledCallback = sandbox.spy();
@@ -474,10 +458,12 @@ describe('Queue', function () {
                   var doneAfterFour = _.after(4, function () {
                     try {
                       expect(stalledCallback.calledOnce).to.be(true);
+                      queue.close().then(resolve);
                     } catch (e) {
-                      reject(e);
+                      queue.close().then(function(){
+                        reject(e);
+                      });
                     }
-                    resolve();
                   });
                   queue2.on('completed', doneAfterFour);
                   queue2.on('stalled', stalledCallback);
@@ -501,7 +487,7 @@ describe('Queue', function () {
     });
 
     it('processes jobs that were added before the queue backend started', function () {
-      utils.newQueue('test queue added before').then(function (queueStalled) {
+      return utils.newQueue('test queue added before').then(function (queueStalled) {
         queueStalled.LOCK_RENEW_TIME = 10;
         var jobs = [
           queueStalled.add({ bar: 'baz' }),
@@ -513,7 +499,7 @@ describe('Queue', function () {
         return Promise.all(jobs)
           .then(queueStalled.close.bind(queueStalled))
           .then(function () {
-            utils.newQueue('test queue added before').then(function (queue2) {
+            return utils.newQueue('test queue added before').then(function (queue2) {
               queue2.process(function (job, jobDone) {
                 jobDone();
               });
@@ -586,12 +572,12 @@ describe('Queue', function () {
       });
     });
 
-    it('throws error if missing named process', function (done) {
+    it('fails job if missing named process', function (done) {
       queue.process(function (job) {
         done(Error('should not process this job'))
       });
 
-      queue.once('error', function(err){
+      queue.once('failed', function(err){
         done();
       });
 
@@ -601,7 +587,7 @@ describe('Queue', function () {
       });
     });
 
-    it.skip('processes several stalled jobs when starting several queues', function (done) {
+    it('processes several stalled jobs when starting several queues', function (done) {
       this.timeout(50000);
 
       var NUM_QUEUES = 10;
@@ -776,7 +762,7 @@ describe('Queue', function () {
         return Promise.resolve(circular);
       });
 
-      queue.add('foobar');
+      queue.add({ foo: 'bar' });
     });
 
     it('process a job that returns a rejected promise', function (done) {
@@ -915,10 +901,10 @@ describe('Queue', function () {
       return client.flushdb();
     });
 
-    it.skip('should pause a queue until resumed', function () {
+    it('should pause a queue until resumed', function () {
       var ispaused = false, counter = 2;
 
-      utils.newQueue().then(function (queue) {
+      return utils.newQueue().then(function (queue) {
         var resultPromise = new Promise(function (resolve) {
           queue.process(function (job, jobDone) {
             expect(ispaused).to.be(false);
@@ -958,7 +944,7 @@ describe('Queue', function () {
             queue.pause();
           } else {
             expect(isresumed).to.be(true);
-            queue.close().then(done);
+            queue.close().then(done, done);
           }
         });
 
@@ -1103,12 +1089,10 @@ describe('Queue', function () {
       return new Promise(function(resolve) {
         queue.on('ready', resolve);
       }).then(function() {
-        //start the pause process
-        var queueIsPaused = queue.pause(true);
-        //add some jobs
-        return Promise.all([ queue.add(1), queue.add(2) ]).then(function() {
-          //wait for the queue to finish pausing
-          return queueIsPaused;
+        return queue.add(1).then(function(){
+          return queue.pause(true);
+        }).then(function(){
+          queue.add(2);
         });
       }).then(function() {
         var active = queue.getJobCountByTypes(['active']).then(function(count) {
@@ -1672,12 +1656,10 @@ describe('Queue', function () {
         }).then(done, done);
       });
 
-      queue.on('ready', function () {
-        queue.process(function (job, jobDone) {
-          return Promise.delay(200).then(jobDone);
-        });
-        queue.add({ foo: 'bar' }).then(addedHandler);
+      queue.process(function (job, jobDone) {
+        return Promise.delay(200).then(jobDone);
       });
+      queue.add({ foo: 'bar' }).then(addedHandler);
     });
   });
 
