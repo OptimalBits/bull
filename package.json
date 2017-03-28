@@ -1,6 +1,6 @@
 {
   "name": "bull",
-  "version": "2.1.2",
+  "version": "2.2.5",
   "description": "Job manager",
   "main": "index.js",
   "repository": {
@@ -17,12 +17,12 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
-    "bluebird": "^3.4.7",
+    "bluebird": "^3.5.0",
+    "bull-redlock": "^2.2.1",
     "debuglog": "^1.0.0",
     "disturbed": "^1.0.6",
     "ioredis": "^2.5.0",
     "lodash": "^4.17.4",
-    "redlock": "^2.1.0",
     "semver": "^5.3.0",
     "uuid": "^3.0.1"
   },

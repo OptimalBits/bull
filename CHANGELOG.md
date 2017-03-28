@@ -1,3 +1,51 @@
+v.2.2.5
+=======
+
+- Fixed so that redis key prefix works properly.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.4...v2.2.5)
+
+
+v.2.2.4
+=======
+
+- Allow reusing certain redis connections.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.3...v2.2.4)
+
+v.2.2.3
+=======
+
+- Added getJobCounts.
+- Fixed global events #394.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.2...v2.2.3)
+
+v.2.2.2
+=======
+- Fixed redis script cache gets bloated after update to bull 2.0 #426
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.1...v2.2.2)
+
+v.2.2.1
+=======
+
+- Re-added createClient option that was removed by mistake.
+- Corrected getJobCountByTypes, fixes #419 and #401
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.0...v2.2.1)
+
+v.2.2.0
+=======
+
+- Much improved priority queues, simpler, faster and more reliable.
+- Fixed issue where lua scripts where leaking memory.
+- Improvements in local pause, fixing #446 and #447.
+- Fix to increase delay time over 24 days #244
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.1.2...v2.2.0)
+
+
 v.2.1.2
 =======
 
