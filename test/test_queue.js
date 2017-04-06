@@ -862,7 +862,7 @@ describe('Queue', function () {
         expect(job.data.foo).to.be.equal('bar');
         jobDone();
         var client = new redis();
-        client.srem(queue2.toKey('completed'), 1);
+        client.zrem(queue2.toKey('completed'), 1);
         client.lpush(queue2.toKey('active'), 1);
       });
 
@@ -2003,7 +2003,7 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'SET').then(function (jobs) {
+        queue.getJobs('completed', 'ZSET').then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(3);
           done();
@@ -2021,7 +2021,7 @@ describe('Queue', function () {
       });
 
       queue.on('failed', _.after(3, function () {
-        queue.getJobs('failed', 'SET').then(function (jobs) {
+        queue.getJobs('failed', 'ZSET').then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(3);
           done();
@@ -2039,7 +2039,7 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'SET', 1, 2).then(function (jobs) {
+        queue.getJobs('completed', 'ZSET', 1, 2).then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(2);
           expect(jobs[0].data.foo).to.be.equal(2);
@@ -2059,7 +2059,7 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'SET', -3, -1).then(function (jobs) {
+        queue.getJobs('completed', 'ZSET', -3, -1).then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(3);
           expect(jobs[0].data.foo).to.be.equal(1);
@@ -2080,7 +2080,7 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'SET', -300, 99999).then(function (jobs) {
+        queue.getJobs('completed', 'ZSET', -300, 99999).then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(3);
           expect(jobs[0].data.foo).to.be.equal(1);
@@ -2145,14 +2145,13 @@ describe('Queue', function () {
       queue.process(function (job, jobDone) {
         jobDone();
       });
-      Promise.delay(100).then(function () {
-        return queue.clean(0);
-      }).then(function (jobs) {
-        expect(jobs.length).to.be(2);
-        done();
-      }, function (err) {
-        done(err);
-      });
+
+      queue.on('completed', _.after(2, function(){
+        queue.clean(0).then(function (jobs) {
+          expect(jobs.length).to.be(2);
+          done();
+        }, done);
+      }));
     });
 
     it('should only remove a job outside of the grace period', function (done) {
