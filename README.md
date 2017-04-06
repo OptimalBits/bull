@@ -423,7 +423,7 @@ __Arguments__
 #### Queue##Process
 
 ```ts
-process(concurrency?: number, processor: (job, done?) => Promise<any>)
+process(name?: string, concurrency?: number, processor: (job, done?) => Promise<any>)
 ```
 
 Defines a processing function for the jobs placed into a given Queue.
@@ -445,6 +445,10 @@ a promise must be returned to signal job completion.
 If the promise is rejected, the error will be passed as
 a second argument to the "failed" event.
 If it is resolved, its value will be the "completed" event's second argument.
+
+A name argument can be provided so that multiple process functions can be
+defined per queue. A named process will only process jobs that matches
+the given name.
 
 **Note:** in order to determine whether job completion is signaled by
 returning a promise or calling the `done` callback, Bull looks at
@@ -476,12 +480,15 @@ You can specify a concurrency. Bull will then call you handler in parallel respe
 #### Queue##add
 
 ```ts
-add(data: any, opts?: JobOpt): Promise<Job>
+add(name?: string, data: any, opts?: JobOpt): Promise<Job>
 ```
 
 Creates a new job and adds it to the queue. If the queue is empty the job
 will be executed directly, otherwise it will be placed in the queue and
 executed as soon as possible.
+
+An optional name can be added, so that only process functions defined
+for that name will process the job.
 
 ```typescript
 interface JobOpts{

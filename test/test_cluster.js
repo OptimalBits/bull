@@ -43,7 +43,7 @@ function workerMessageHandlerWrapper(message) {
   }
 }
 
-describe('Cluster', function () {
+describe.skip('Cluster', function () {
 
   var workers = [];
 

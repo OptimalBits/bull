@@ -109,7 +109,7 @@ describe('Job', function(){
         }).then(function() {
           throw new Error('Should not be able to remove a locked job');
         }).catch(function(err) {
-          expect(err.message).to.equal('Could not get lock for job: ' + job.jobId + '. Cannot remove job.');
+          expect(err.message).to.equal('Exceeded 0 attempts to lock the resource "bull:'+queue.name+':1:lock".');
         });
       });
     });
@@ -275,7 +275,7 @@ describe('Job', function(){
         return job.isFailed().then(function(isFailed){
           expect(isFailed).to.be(false);
         }).then(function(){
-          return job.moveToFailed(new Error('test error'));
+          return job.moveToFailed(new Error('test error'), true);
         }).then(function(){
           return job.isFailed().then(function(isFailed){
             expect(isFailed).to.be(true);
@@ -291,7 +291,7 @@ describe('Job', function(){
         return job.isFailed().then(function(isFailed){
           expect(isFailed).to.be(false);
         }).then(function(){
-          return job.moveToFailed(new Error('test error'));
+          return job.moveToFailed(new Error('test error'), true);
         }).then(function(){
           return job.isFailed().then(function(isFailed){
             expect(isFailed).to.be(false);
@@ -310,7 +310,7 @@ describe('Job', function(){
         return job.isFailed().then(function(isFailed){
           expect(isFailed).to.be(false);
         }).then(function(){
-          return job.moveToFailed(new Error('test error'));
+          return job.moveToFailed(new Error('test error'), true);
         }).then(function(){
           return job.isFailed().then(function(isFailed){
             expect(isFailed).to.be(true);
@@ -326,7 +326,7 @@ describe('Job', function(){
         return job.isFailed().then(function(isFailed){
           expect(isFailed).to.be(false);
         }).then(function(){
-          return job.moveToFailed(new Error('test error'));
+          return job.moveToFailed(new Error('test error'), true);
         }).then(function(){
           return job.isFailed().then(function(isFailed){
             expect(isFailed).to.be(false);
@@ -411,7 +411,7 @@ describe('Job', function(){
         expect(state).to.be('delayed');
         return client.zrem(queue.toKey('delayed'), job.jobId);
       }).then(function() {
-        return job.moveToFailed(new Error('test'));
+        return job.moveToFailed(new Error('test'), true);
       }).then(function (){
         return job.isFailed();
       }).then(function (isFailed) {
