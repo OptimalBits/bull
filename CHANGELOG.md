@@ -1,3 +1,12 @@
+v.2.2.6
+=======
+
+- Persisted failedReason when storing job data.
+- added queue##isReady()
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.5...v2.2.6)
+
+
 v.2.2.5
 =======
 

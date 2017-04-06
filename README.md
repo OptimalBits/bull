@@ -11,7 +11,7 @@ Bull Job Manager
 
 <img src="https://image.freepik.com/free-icon/strong-bull-side-view_318-52710.jpg" width="200" />
 
-The fastest, more reliable redis based queue for nodejs.
+The fastest, most reliable redis based queue for nodejs.
 Carefully written for rock solid stability and atomicity.
 
 
@@ -32,7 +32,7 @@ Are you developing bull sponsored by a company? Please, let us now!
 Features:
 ---------
 
-- Minimal CPU usage by poll free design.
+- Minimal CPU usage by poll-free design.
 - Robust design based on Redis.
 - Delayed jobs.
 - Retries.
@@ -323,8 +323,8 @@ var Queue = require('bull');
 var sendQueue = Queue("Server B");
 var receiveQueue = Queue("Server A");
 
-receiveQueue.process(function(msg, done){
-  console.log("Received message", msg);
+receiveQueue.process(function(job, done){
+  console.log("Received message", job.data.msg);
   done();
 });
 
@@ -338,8 +338,8 @@ var Queue = require('bull');
 var sendQueue = Queue("Server A");
 var receiveQueue = Queue("Server B");
 
-receiveQueue.process(function(msg, done){
-  console.log("Received message", msg);
+receiveQueue.process(function(job, done){
+  console.log("Received message", job.data.msg);
   done();
 });
 

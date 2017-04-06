@@ -1,6 +1,6 @@
 {
   "name": "bull",
-  "version": "2.2.5",
+  "version": "2.2.6",
   "description": "Job manager",
   "main": "index.js",
   "repository": {
