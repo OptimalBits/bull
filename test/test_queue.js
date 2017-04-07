@@ -1637,11 +1637,12 @@ describe('Queue', function () {
 
         var tries = 0;
         queue.process(function (job, jobDone) {
+          expect(job.attemptsMade).to.be(tries);
           tries++;
           if (job.attemptsMade < 2) {
             throw new Error('Not yet!');
           }
-          expect(job.attemptsMade).to.be(tries - 1);
+          
           jobDone();
         });
 
