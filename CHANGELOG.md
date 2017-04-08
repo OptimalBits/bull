@@ -1,3 +1,127 @@
+v.2.2.6
+=======
+
+- Persisted failedReason when storing job data.
+- added queue##isReady()
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.5...v2.2.6)
+
+
+v.2.2.5
+=======
+
+- Fixed so that redis key prefix works properly.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.4...v2.2.5)
+
+
+v.2.2.4
+=======
+
+- Allow reusing certain redis connections.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.3...v2.2.4)
+
+v.2.2.3
+=======
+
+- Added getJobCounts.
+- Fixed global events #394.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.2...v2.2.3)
+
+v.2.2.2
+=======
+- Fixed redis script cache gets bloated after update to bull 2.0 #426
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.1...v2.2.2)
+
+v.2.2.1
+=======
+
+- Re-added createClient option that was removed by mistake.
+- Corrected getJobCountByTypes, fixes #419 and #401
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.0...v2.2.1)
+
+v.2.2.0
+=======
+
+- Much improved priority queues, simpler, faster and more reliable.
+- Fixed issue where lua scripts where leaking memory.
+- Improvements in local pause, fixing #446 and #447.
+- Fix to increase delay time over 24 days #244
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.1.2...v2.2.0)
+
+
+v.2.1.2
+=======
+
+- Fixed Error renewing lock LockError: Exceeded 0 attempts to lock the resource #437
+- Fixed Unable to renew nonexisting lock on job fail #441
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.1.1...v2.1.2)
+
+v.2.1.1
+=======
+
+- Catch errors produced in timers. Related to #441
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.1.0...v2.1.1)
+
+v.2.1.0
+=======
+
+- Fixed #397, Error: Unable to renew nonexisting lock
+- Fixed #402, Job.prototype.finished contains error in promise 
+- Fixed #371, "Unexpected token u in JSON at position 0" while processing job
+- New feature #363, "method to permanently fail a job"
+- Fix job.progress() to return the correct progress  
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.0.0...v2.1.0)
+
+v.2.0.0
+=======
+
+- Changed redis module to ioredis fixing many issues along the way, see changes.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v1.1.3...v2.0.0)
+
+v.1.1.3
+=======
+
+- fixed "Broken constructor pattern from recent commit" #384
+- fixed "Queue.prototype.getWaiting() returns empty list if Queue is paused" #342
+
+[Changes](https://github.com/OptimalBits/bull/compare/v1.1.2...v1.1.3)
+
+v1.1.2
+======
+
+- regained backwards compatibility in events by using disturbed 1.0.6
+
+[Changes](https://github.com/OptimalBits/bull/compare/v1.1.1...v1.1.2)
+
+v1.1.1
+======
+
+- Returned this in queue##on and queue##once for backwards compatibility.
+- [Fixes PriorityQueue Events and Local Worker Pause/Resume](https://github.com/OptimalBits/bull/pull/341)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v1.1.0...v1.1.1)
+
+v1.1.0
+======
+
+- Fixed [job corruption issue](https://github.com/OptimalBits/bull/pull/359)
+- The job id can be [overridden](https://github.com/OptimalBits/bull/pull/335) to implement job throttling behavior
+- Added [`removeOnComplete` job option](https://github.com/OptimalBits/bull/pull/361)
+- [More robust job retry](https://github.com/OptimalBits/bull/pull/318)
+- Events are [now broadcast to all workers](https://github.com/OptimalBits/bull/commit/d55ad1c8f44f86be9b4e9f4fa9a3fc8a16c6e02d)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v1.0.0...v1.1.0)
+
 v1.0.0
 ======
 

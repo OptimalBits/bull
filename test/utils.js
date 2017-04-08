@@ -8,9 +8,9 @@ var STD_QUEUE_NAME = 'test queue';
 var queues = [];
 
 function simulateDisconnect(queue){
-  queue.client.stream.end();
-  queue.bclient.stream.end();
-  queue.eclient.stream.end();
+  queue.client.disconnect();
+  queue.bclient.disconnect();
+  queue.eclient.disconnect();
 }
 
 function buildQueue(name) {
@@ -34,7 +34,9 @@ function cleanupQueue(queue) {
 
 function cleanupQueues() {
   return Promise.map(queues, function(queue){
-    return queue.close();
+    var errHandler = function() {};
+    queue.on('error', errHandler);
+    return queue.close().catch(errHandler);
   }).then(function(){
     queues = [];
   });

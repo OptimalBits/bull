@@ -1,6 +1,6 @@
 {
   "name": "bull",
-  "version": "1.0.0",
+  "version": "2.2.6",
   "description": "Job manager",
   "main": "./lib/queue",
   "repository": {
@@ -17,18 +17,20 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
-    "bluebird": "^3.4.1",
+    "bluebird": "^3.5.0",
+    "bull-redlock": "^2.2.1",
     "debuglog": "^1.0.0",
-    "lodash": "^4.13.1",
-    "node-uuid": "^1.4.7",
-    "redis": "^2.6.2",
-    "semver": "^5.1.0"
+    "disturbed": "^1.0.6",
+    "ioredis": "^2.5.0",
+    "lodash": "^4.17.4",
+    "semver": "^5.3.0",
+    "uuid": "^3.0.1"
   },
   "devDependencies": {
     "eslint": "^2.13.1",
     "expect.js": "^0.3.1",
     "mocha": "^2.5.3",
-    "sinon": "^1.17.4"
+    "sinon": "^1.17.7"
   },
   "scripts": {
     "lint": "eslint lib test",

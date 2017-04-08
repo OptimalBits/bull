@@ -4,18 +4,16 @@
 var expect = require('expect.js');
 var utils = require('./utils');
 var sinon = require('sinon');
-var redis = require('redis');
-var Promise = require('bluebird');
+var redis = require('ioredis');
 
-Promise.promisifyAll(redis.RedisClient.prototype);
 
 describe('connection', function () {
   var sandbox = sinon.sandbox.create();
   var queue;
 
   beforeEach(function(){
-    var client = redis.createClient();
-    return client.flushdbAsync().then(function(){
+    var client = new redis();
+    return client.flushdb().then(function(){
       queue = utils.buildQueue();
     });
   });
@@ -26,8 +24,8 @@ describe('connection', function () {
     }).process(function (job, jobDone) {
       expect(job.data.foo).to.be.equal('bar');
       jobDone();
-      // We do not wait since this close is expected to fail...
       queue.close();
+    }).then(function() {
       done();
     }).catch(function(err){
       console.log(err);
@@ -43,7 +41,10 @@ describe('connection', function () {
     });
   });
 
-  it('should reconnect when the blocking client triggers an "end" event', function (done) {
+  //
+  // This test is not relevant since ioredis keeps reconnects for us transparently.
+  //
+  it.skip('should reconnect when the blocking client triggers an "end" event', function (done) {
     var runSpy = sandbox.spy(queue, 'run');
     queue.process(function (job, jobDone) {
       expect(runSpy.callCount).to.be(2);
@@ -59,7 +60,7 @@ describe('connection', function () {
     queue.bclient.emit('end');
   });
 
-  it('should not try to reconnect when the blocking client triggers an "end" event and no process have been called', function (done) {
+  it.skip('should not try to reconnect when the blocking client triggers an "end" event and no process have been called', function (done) {
     var runSpy = sandbox.spy(queue, 'run');
 
     queue.bclient.emit('end');
