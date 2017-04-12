@@ -46,13 +46,6 @@ describe('Queue', function () {
       testQueue.close();
     });
 
-    it('should call disconnect on the blocking client', function () {
-      var endSpy = sandbox.spy(testQueue.bclient, 'disconnect');
-      return testQueue.close().then(function () {
-        expect(endSpy.calledOnce).to.be(true);
-      });
-    });
-
     it('should call end on the event subscriber client', function (done) {
       testQueue.eclient.once('end', function () {
         done();
@@ -62,12 +55,10 @@ describe('Queue', function () {
 
     it('should resolve the promise when each client has disconnected', function () {
       expect(testQueue.client.status).to.be('ready');
-      expect(testQueue.bclient.status).to.be('ready');
       expect(testQueue.eclient.status).to.be('ready');
 
       return testQueue.close().then(function () {
         expect(testQueue.client.status).to.be('end');
-        expect(testQueue.bclient.status).to.be('end');
         expect(testQueue.eclient.status).to.be('end');
       });
     });
@@ -104,7 +95,7 @@ describe('Queue', function () {
         });
 
         testQueue.add({ foo: 'bar' }).then(function (job) {
-          expect(job.jobId).to.be.ok();
+          expect(job.id).to.be.ok();
           expect(job.data.foo).to.be('bar');
         });
       });
@@ -120,7 +111,7 @@ describe('Queue', function () {
         });
 
         testQueue.add({ foo: 'bar' }).then(function (job) {
-          expect(job.jobId).to.be.ok();
+          expect(job.id).to.be.ok();
           expect(job.data.foo).to.be('bar');
         });
       });
@@ -132,13 +123,13 @@ describe('Queue', function () {
       var queue = new Queue('standard');
 
       expect(queue.client.options.host).to.be('127.0.0.1');
-      expect(queue.bclient.options.host).to.be('127.0.0.1');
+      expect(queue.eclient.options.host).to.be('127.0.0.1');
 
       expect(queue.client.options.port).to.be(6379);
-      expect(queue.bclient.options.port).to.be(6379);
+      expect(queue.eclient.options.port).to.be(6379);
 
       expect(queue.client.options.db).to.be(0);
-      expect(queue.bclient.options.db).to.be(0);
+      expect(queue.eclient.options.db).to.be(0);
 
       queue.close().then(done);
     });
@@ -147,13 +138,13 @@ describe('Queue', function () {
       var queue = new Queue('connstring', 'redis://127.0.0.1:6379');
 
       expect(queue.client.options.host).to.be('127.0.0.1');
-      expect(queue.bclient.options.host).to.be('127.0.0.1');
+      expect(queue.eclient.options.host).to.be('127.0.0.1');
 
       expect(queue.client.options.port).to.be(6379);
-      expect(queue.bclient.options.port).to.be(6379);
+      expect(queue.eclient.options.port).to.be(6379);
 
       expect(queue.client.options.db).to.be(0);
-      expect(queue.bclient.options.db).to.be(0);
+      expect(queue.eclient.options.db).to.be(0);
 
       queue.close().then(done);
     });
@@ -162,13 +153,13 @@ describe('Queue', function () {
       var queue = new Queue('connstring', '6379', '127.0.0.1');
 
       expect(queue.client.options.host).to.be('127.0.0.1');
-      expect(queue.bclient.options.host).to.be('127.0.0.1');
+      expect(queue.eclient.options.host).to.be('127.0.0.1');
 
       expect(queue.client.options.port).to.be(6379);
-      expect(queue.bclient.options.port).to.be(6379);
+      expect(queue.eclient.options.port).to.be(6379);
 
       expect(queue.client.condition.select).to.be(0);
-      expect(queue.bclient.condition.select).to.be(0);
+      expect(queue.eclient.condition.select).to.be(0);
 
       queue.close().then(done);
     });
@@ -177,13 +168,13 @@ describe('Queue', function () {
       var queue = new Queue('custom', { redis: { DB: 1 } });
 
       expect(queue.client.options.host).to.be('127.0.0.1');
-      expect(queue.bclient.options.host).to.be('127.0.0.1');
+      expect(queue.eclient.options.host).to.be('127.0.0.1');
 
       expect(queue.client.options.port).to.be(6379);
-      expect(queue.bclient.options.port).to.be(6379);
+      expect(queue.eclient.options.port).to.be(6379);
 
       expect(queue.client.options.db).to.be(1);
-      expect(queue.bclient.options.db).to.be(1);
+      expect(queue.eclient.options.db).to.be(1);
 
       queue.close().then(done);
     });
@@ -192,10 +183,10 @@ describe('Queue', function () {
       var queue = new Queue('custom', { redis: { host: 'localhost' } });
 
       expect(queue.client.options.host).to.be('localhost');
-      expect(queue.bclient.options.host).to.be('localhost');
+      expect(queue.eclient.options.host).to.be('localhost');
 
       expect(queue.client.options.db).to.be(0);
-      expect(queue.bclient.options.db).to.be(0);
+      expect(queue.eclient.options.db).to.be(0);
 
       queue.close().then(done);
     });
@@ -204,7 +195,7 @@ describe('Queue', function () {
       var queue = new Queue('using. dots. in.name.');
 
       return queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }).then(function () {
         queue.process(function (job, jobDone) {
@@ -220,7 +211,7 @@ describe('Queue', function () {
       var queue = new Queue('foobar', '6379', 'localhost');
 
       return queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }).then(function () {
         queue.process(function (job, jobDone) {
@@ -236,10 +227,10 @@ describe('Queue', function () {
       var queue = new Queue('q', 'redis://127.0.0.1', { keyPrefix: 'myQ' });
 
       return queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
         var client = new redis();
-        return client.hgetall('myQ:q:' + job.jobId).then(function(result){
+        return client.hgetall('myQ:q:' + job.id).then(function(result){
           expect(result).to.not.be.null;
         });
       }).then(function () {
@@ -278,11 +269,11 @@ describe('Queue', function () {
       expect(queueQux.eclient).to.be.equal(subscriber);
 
       queueFoo.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }).then(function(){
         return queueQux.add({ qux: 'baz' }).then(function(job){
-          expect(job.jobId).to.be.ok();
+          expect(job.id).to.be.ok();
           expect(job.data.qux).to.be('baz');
           var completed = 0;
 
@@ -337,7 +328,7 @@ describe('Queue', function () {
       }).catch(done);
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }, done);
     });
@@ -349,12 +340,12 @@ describe('Queue', function () {
       }).catch(done);
       
       queue.add({ foo: 'bar' }, {removeOnComplete: true}).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }, done);
 
       queue.on('completed', function(job){
-        queue.getJob(job.jobId).then(function(job){
+        queue.getJob(job.id).then(function(job){
           expect(job).to.be.equal(null);
         }).then(function(){
           queue.getJobCounts().then(function(counts){
@@ -372,12 +363,12 @@ describe('Queue', function () {
       }).catch(done);
       
       queue.add({ foo: 'bar' }, {removeOnFail: true}).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }, done);
 
       queue.on('failed', function(job){
-        queue.getJob(job.jobId).then(function(job){
+        queue.getJob(job.id).then(function(job){
           expect(job).to.be.equal(null);
         }).then(function(){
           queue.getJobCounts().then(function(counts){
@@ -439,7 +430,7 @@ describe('Queue', function () {
           var total = 0;
           
           queue.process(function(job, jobDone){
-            expect(job.jobId).to.be.ok();
+            expect(job.id).to.be.ok();
             expect(job.data.p).to.be(currentPriority);
 
             jobDone();
@@ -486,7 +477,7 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }).catch(done);
 
@@ -504,7 +495,7 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }).catch(done);
 
@@ -523,7 +514,7 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }).catch(done);
 
@@ -531,7 +522,7 @@ describe('Queue', function () {
         expect(job).to.be.ok();
         expect(data).to.be.eql(37);
         expect(job.returnvalue).to.be.eql(37);
-        queue.client.hget(queue.toKey(job.jobId), 'returnvalue').then(function (retval) {
+        queue.client.hget(queue.toKey(job.id), 'returnvalue').then(function (retval) {
           expect(JSON.parse(retval)).to.be.eql(37);
           done();
         });
@@ -547,7 +538,7 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }).catch(done);
 
@@ -565,7 +556,7 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }).catch(done);
 
@@ -582,7 +573,7 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }).catch(done);
 
@@ -593,10 +584,8 @@ describe('Queue', function () {
     });
 
     it('process stalled jobs when starting a queue', function (done) {
-      //
-      // TODO: Investigate why this test is so slow.
-      //
-      this.timeout(12000);
+
+      this.timeout(2000);
       utils.newQueue('test queue stalled').then(function (queueStalled) {
         queueStalled.LOCK_DURATION = 15;
         queueStalled.LOCK_RENEW_TIME = 5
@@ -609,7 +598,6 @@ describe('Queue', function () {
         Promise.all(jobs).then(function () {
           var afterJobsRunning = function () {
             var stalledCallback = sandbox.spy();
-
             return queueStalled.close(true).then(function () {
               return new Promise(function (resolve, reject) {
                 utils.newQueue('test queue stalled').then(function (queue2) {
@@ -635,7 +623,6 @@ describe('Queue', function () {
           };
 
           var onceRunning = _.once(afterJobsRunning);
-
           queueStalled.process(function () {
             onceRunning();
             return Promise.delay(150);
@@ -680,7 +667,7 @@ describe('Queue', function () {
       });
 
       queue.add('myname', { foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }).catch(done);
 
@@ -707,7 +694,7 @@ describe('Queue', function () {
       });
 
       queue.add('myname', { foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }).then(function(){
         return queue.add('myname2', { baz: 'qux' });
@@ -731,16 +718,16 @@ describe('Queue', function () {
     });
 
     it('fails job if missing named process', function (done) {
-      queue.process(function (job) {
+      queue.process(function (/*job*/) {
         done(Error('should not process this job'))
       });
 
-      queue.once('failed', function(err){
+      queue.once('failed', function(/*err*/){
         done();
       });
 
       queue.add('myname', { foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       });
     });
@@ -801,7 +788,7 @@ describe('Queue', function () {
 
         var processes = [];
         stalledQueues.forEach(function(queue){
-          queue.on('error', function(err){
+          queue.on('error', function(/*err*/){
             //
             // Swallow errors produced by the disconnect
             //
@@ -825,7 +812,7 @@ describe('Queue', function () {
         queue.process(function (job, jobDone) {
           expect(job.data.foo).to.be.equal('bar');
 
-          if (addedJob.jobId !== job.jobId) {
+          if (addedJob.id !== job.id) {
             err = new Error('Processed job id does not match that of added job');
           }
           setTimeout(jobDone, 500);
@@ -852,22 +839,27 @@ describe('Queue', function () {
         queue2.close().then(done);
       });
 
-      queue2.LOCK_RENEW_TIME = 500;
+      queue2.LOCK_RENEW_TIME = 5000;
+      queue2.LOCK_DURATION = 500;
+      queue2.STALLED_JOB_CHECK_INTERVAL = 1000;
 
       queue2.on('completed', function () {
+        var client = new redis();
+        client.multi()
+          .zrem(queue2.toKey('completed'), 1)
+          .lpush(queue2.toKey('active'), 1)
+          .exec();
+        client.quit();
         collect();
       });
 
       queue2.process(function (job, jobDone) {
         expect(job.data.foo).to.be.equal('bar');
         jobDone();
-        var client = new redis();
-        client.zrem(queue2.toKey('completed'), 1);
-        client.lpush(queue2.toKey('active'), 1);
       });
 
       queue2.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }).catch(done);
     });
@@ -881,14 +873,14 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }, function (err) {
         done(err);
       });
 
       queue.once('failed', function (job, err) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
         expect(err).to.be.eql(jobError);
         done();
@@ -904,14 +896,14 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }, function (err) {
         done(err);
       });
 
       queue.once('failed', function (job, err) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
         expect(err).to.be.eql(jobError);
         done();
@@ -946,14 +938,14 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }, function (err) {
         done(err);
       });
 
       queue.once('failed', function (job, err) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
         expect(err).to.be.eql(jobError);
         done();
@@ -977,7 +969,7 @@ describe('Queue', function () {
       };
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
       }, function (err) {
         done(err);
@@ -998,14 +990,14 @@ describe('Queue', function () {
 
       client.on('ready', function () {
         client.on('message', function (channel, message) {
-          expect(channel).to.be.equal(retryQueue.toKey('jobs'));
+          expect(channel).to.be.equal(retryQueue.toKey('added'));
           expect(parseInt(message, 10)).to.be.a('number');
           messages++;
         });
-        client.subscribe(retryQueue.toKey('jobs'));
+        client.subscribe(retryQueue.toKey('added'));
 
         retryQueue.add({ foo: 'bar' }).then(function (job) {
-          expect(job.jobId).to.be.ok();
+          expect(job.id).to.be.ok();
           expect(job.data.foo).to.be('bar');
         });
       });
@@ -1019,7 +1011,7 @@ describe('Queue', function () {
       });
 
       retryQueue.once('failed', function (job, err) {
-        expect(job.jobId).to.be.ok();
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
         expect(err.message).to.be.eql('Not even!');
         failedOnce = true;
@@ -1048,7 +1040,7 @@ describe('Queue', function () {
     return Promise.all(added)
       .then(queue.count.bind(queue))
       .then(function (count) {
-        expect(count).to.be(100);
+        expect(count).to.be(maxJobs);
       })
       .then(queue.empty.bind(queue))
       .then(queue.count.bind(queue))
@@ -1164,15 +1156,22 @@ describe('Queue', function () {
 
     it('should wait until active jobs are finished before resolving pause', function (done) {
       var queue = utils.buildQueue();
-      queue.process(function (job, completed) {
-        setTimeout(completed, 200);
-      });
+      var startProcessing = new Promise(function(resolve){
+        queue.process(function (/*job*/) {
+          resolve();
+          return Promise.delay(200);
+        });
+      })
 
       queue.on('ready', function () {
         var jobs = [];
         for (var i = 0; i < 10; i++) {
           jobs.push(queue.add(i));
         }
+        //
+        // Add start processing so that we can test that pause waits for this job to be completed.
+        //
+        jobs.push(startProcessing);
         Promise.all(jobs).then(function () {
           return queue.pause(true).then(function () {
             var active = queue.getJobCountByTypes(['active']).then(function (count) {
@@ -1186,9 +1185,7 @@ describe('Queue', function () {
               expect(count).to.be(9);
               return null;
             });
-
             return Promise.all([active, paused]);
-
           }).then(function () {
             return queue.add({});
           }).then(function () {
@@ -1254,18 +1251,20 @@ describe('Queue', function () {
 
     it('should wait for blocking job retrieval to complete before pausing locally', function() {
       var queue = utils.buildQueue();
-      queue.process(function(job, jobDone) {
-        setTimeout(jobDone, 200);
+
+      var startsProcessing = new Promise(function(resolve){
+        queue.process(function(/*job*/) {
+          resolve();
+          return Promise.delay(200)
+        });
       });
 
-      return new Promise(function(resolve) {
-        queue.on('ready', resolve);
-      }).then(function() {
-        return queue.add(1).then(function(){
-          return queue.pause(true);
-        }).then(function(){
-          queue.add(2);
-        });
+      return queue.add(1).then(function(){
+        return startsProcessing;
+      }).then(function(){
+        return queue.pause(true);
+      }).then(function(){
+        return queue.add(2);
       }).then(function() {
         var active = queue.getJobCountByTypes(['active']).then(function(count) {
           expect(count).to.be(0);
@@ -1290,11 +1289,11 @@ describe('Queue', function () {
     var queue = new Queue('test pub sub');
     client.on('ready', function () {
       client.on('message', function (channel, message) {
-        expect(channel).to.be.equal(queue.toKey('jobs'));
+        expect(channel).to.be.equal(queue.toKey('added'));
         expect(parseInt(message, 10)).to.be.a('number');
         queue.close().then(done, done);
       });
-      client.subscribe(queue.toKey('jobs'));
+      client.subscribe(queue.toKey('added'));
       queue.add({ test: 'stuff' });
     });
   });
@@ -1349,7 +1348,7 @@ describe('Queue', function () {
           expect(parseInt(message, 10)).to.be.a('number');
           publishHappened = true;
         });
-        client.subscribe(queue.toKey('jobs'));
+        client.subscribe(queue.toKey('added'));
       });
 
       queue.process(function (job, jobDone) {
@@ -1372,7 +1371,7 @@ describe('Queue', function () {
 
       queue.on('ready', function () {
         queue.add({ delayed: 'foobar' }, { delay: delay }).then(function (job) {
-          expect(job.jobId).to.be.ok();
+          expect(job.id).to.be.ok();
           expect(job.data.delayed).to.be('foobar');
           expect(job.delay).to.be(delay);
         });
@@ -1388,29 +1387,25 @@ describe('Queue', function () {
         done(err);
       });
 
-      queue.on('ready', function () {
-
-        queue.process(function (job, jobDone) {
-          order++;
-          expect(order).to.be.equal(job.data.order);
-          jobDone();
-          if (order === 10) {
-            queue.close().then(done, done);
-          }
-        });
-
-        queue.add({ order: 1 }, { delay: 100 });
-        queue.add({ order: 6 }, { delay: 600 });
-        queue.add({ order: 10 }, { delay: 1000 });
-        queue.add({ order: 2 }, { delay: 200 });
-        queue.add({ order: 9 }, { delay: 900 });
-        queue.add({ order: 5 }, { delay: 500 });
-        queue.add({ order: 3 }, { delay: 300 });
-        queue.add({ order: 7 }, { delay: 700 });
-        queue.add({ order: 4 }, { delay: 400 });
-        queue.add({ order: 8 }, { delay: 800 });
-
+      queue.process(function (job, jobDone) {
+        order++;
+        expect(order).to.be.equal(job.data.order);
+        jobDone();
+        if (order === 10) {
+          queue.close().then(done, done);
+        }
       });
+
+      queue.add({ order: 1 }, { delay: 100 });
+      queue.add({ order: 6 }, { delay: 600 });
+      queue.add({ order: 10 }, { delay: 1000 });
+      queue.add({ order: 2 }, { delay: 200 });
+      queue.add({ order: 9 }, { delay: 900 });
+      queue.add({ order: 5 }, { delay: 500 });
+      queue.add({ order: 3 }, { delay: 300 });
+      queue.add({ order: 7 }, { delay: 700 });
+      queue.add({ order: 4 }, { delay: 400 });
+      queue.add({ order: 8 }, { delay: 800 });
     });
 
     it('should process delayed jobs in correct order even in case of restart', function (done) {
@@ -1765,7 +1760,7 @@ describe('Queue', function () {
           .then(function () {
             return queue.clean(0).then(function () {
               return job.retry().catch(function (err) {
-                expect(err.message).to.equal('Couldn\'t retry job: The job doesn\'t exist');
+                expect(err.message).to.equal(Queue.ErrorMessages.RETRY_JOB_NOT_EXIST);
               });
             });
           })
@@ -1815,7 +1810,7 @@ describe('Queue', function () {
           })
           .then(function () {
             return job.retry().catch(function (err) {
-              expect(err.message).to.equal('Couldn\'t retry job: The job has been already retried or has not failed');
+              expect(err.message).to.equal(Queue.ErrorMessages.RETRY_JOB_NOT_FAILED);
             });
           })
           .then(function () {
@@ -1841,14 +1836,16 @@ describe('Queue', function () {
       var addedHandler = _.once(function (job) {
         expect(job.data.foo).to.equal('bar');
 
-        job.retry().catch(function (err) {
-          expect(err.message).to.equal('Couldn\'t retry job: The job has been already retried or has not failed');
-          return null;
-        }).then(done, done);
+        Promise.delay(100).then(function(){
+          job.retry().catch(function (err) {
+            expect(err.message).to.equal(Queue.ErrorMessages.RETRY_JOB_IS_LOCKED);
+            return null;
+          }).then(done, done);
+        });
       });
 
       queue.process(function (job, jobDone) {
-        return Promise.delay(200).then(jobDone);
+        return Promise.delay(300).then(jobDone);
       });
       queue.add({ foo: 'bar' }).then(addedHandler);
     });
@@ -1908,9 +1905,9 @@ describe('Queue', function () {
     it('should get a specific job', function (done) {
       var data = { foo: 'sup!' };
       queue.add(data).then(function (job) {
-        queue.getJob(job.jobId).then(function (returnedJob) {
+        queue.getJob(job.id).then(function (returnedJob) {
           expect(returnedJob.data).to.eql(data);
-          expect(returnedJob.jobId).to.be(job.jobId);
+          expect(returnedJob.id).to.be(job.id);
           done();
         });
       });
@@ -2049,9 +2046,11 @@ describe('Queue', function () {
         }).catch(done);
       }));
 
-      queue.add({ foo: 1 });
-      queue.add({ foo: 2 });
-      queue.add({ foo: 3 });
+      queue.add({ foo: 1 }).then(function(){
+        return queue.add({ foo: 2 });
+      }).then(function(){
+        return queue.add({ foo: 3 });
+      });
     });
 
     it('should return subset of jobs when setting a negative range', function (done) {

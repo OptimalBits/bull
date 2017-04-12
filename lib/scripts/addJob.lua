@@ -18,7 +18,7 @@
       KEYS[1] 'wait',
       KEYS[2] 'paused'
       KEYS[3] 'meta-paused'
-      KEYS[4] 'jobs'
+      KEYS[4] 'added'
       KEYS[5] 'id'
       KEYS[6] 'delayed'
       KEYS[7] 'priority'
@@ -51,7 +51,7 @@ if redis.call("EXISTS", jobIdKey) == 1 then
 end
 
 -- Store the job.
-redis.call("HMSET", jobIdKey, "name", ARGV[3], "data", ARGV[4], "opts", ARGV[5], "timestamp", ARGV[6], "delay", ARGV[7])
+redis.call("HMSET", jobIdKey,"id", jobId, "name", ARGV[3], "data", ARGV[4], "opts", ARGV[5], "timestamp", ARGV[6], "delay", ARGV[7])
 
 -- Check if job is delayed
 if(ARGV[8] ~= "0") then

@@ -7,6 +7,7 @@
        back to wait to be re-processed. To prevent jobs from cycling endlessly between active and wait,
        (e.g. if the job handler keeps crashing), we limit the number stalled job recoveries to MAX_STALLED_JOB_COUNT.
 
+    DEPRECATED CASE:
      Case B) The job was just moved to 'active' from 'wait' and the worker that moved it hasn't gotten
        a lock yet, or died immediately before getting the lock (note that due to Redis limitations, the
        worker can't move the job and get the lock atomically - https://github.com/OptimalBits/bull/issues/258).
@@ -17,7 +18,8 @@
     Input:
       KEYS[1] 'active',
       KEYS[2] 'wait',
-      KEYS[3] 'failed',
+      KEYS[3] 'failed'
+      KEYS[4] 'added',
 
       ARGV[1]  Max stalled job count
       ARGV[2]  queue.toKey('')
@@ -33,23 +35,19 @@ for _, job in ipairs(activeJobs) do
   if(redis.call("EXISTS", jobKey .. ":lock") == 0) then
       --  Remove from the active queue.
     redis.call("LREM", KEYS[1], 1, job)
-    local lockAcquired = redis.call("HGET", jobKey, "lockAcquired")
-    if(lockAcquired) then
-      --    If it was previously locked then we consider it 'stalled' (Case A above). If this job
-      --    has been stalled too many times, such as if it crashes the worker, then fail it.
-      local stalledCount = redis.call("HINCRBY", jobKey, "stalledCounter", 1)
-      if(stalledCount > MAX_STALLED_JOB_COUNT) then
-        redis.call("ZADD", KEYS[3], ARGV[3], job)
-        redis.call("HSET", jobKey, "failedReason", "job stalled more than allowable limit")
-        table.insert(failed, job)
-      else
-      --      Move the job back to the wait queue, to immediately be picked up by a waiting worker.
-        redis.call("RPUSH", KEYS[2], job)
-        table.insert(stalled, job)
-      end
+    
+    --    If it was previously locked then we consider it 'stalled' (Case A above). If this job
+    --    has been stalled too many times, such as if it crashes the worker, then fail it.
+    local stalledCount = redis.call("HINCRBY", jobKey, "stalledCounter", 1)
+    if(stalledCount > MAX_STALLED_JOB_COUNT) then
+      redis.call("ZADD", KEYS[3], ARGV[3], job)
+      redis.call("HSET", jobKey, "failedReason", "job stalled more than allowable limit")
+      table.insert(failed, job)
     else
-    --    Move the job back to the wait queue, to immediately be picked up by a waiting worker.
-    redis.call("RPUSH", KEYS[2], job)
+      --      Move the job back to the wait queue, to immediately be picked up by a waiting worker.
+      redis.call("RPUSH", KEYS[2], job)
+      table.insert(stalled, job)
+      redis.call("PUBLISH", KEYS[4], job)
     end
   end
 end
