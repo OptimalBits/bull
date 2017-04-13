@@ -37,7 +37,7 @@
     Events:
       'waiting'
 ]]
-local jobCounter = redis.call("INCR", KEYS[5]) -- Why doing this allways ?
+local jobCounter = redis.call("INCR", KEYS[5])
 local jobId
 if ARGV[2] == "" then 
   jobId = jobCounter 
