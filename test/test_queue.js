@@ -585,7 +585,7 @@ describe('Queue', function () {
 
     it('process stalled jobs when starting a queue', function (done) {
 
-      this.timeout(2000);
+      this.timeout(6000);
       utils.newQueue('test queue stalled').then(function (queueStalled) {
         queueStalled.LOCK_DURATION = 15;
         queueStalled.LOCK_RENEW_TIME = 5
