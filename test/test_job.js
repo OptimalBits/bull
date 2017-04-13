@@ -451,18 +451,18 @@ describe('Job', function(){
   describe('.finished', function() {
     it('should resolve when the job has been completed', function(done){
       queue.process(function () {
-        return Promise.resolve();
+        return Promise.delay(500);
       });
       queue.add({ foo: 'bar' }).then(function(job){
         return job.finished();
-      }).then(function(){
-        done();
-      }, done);
+      }).then(done, done);
     });
 
     it('should reject when the job has been completed', function(done){
       queue.process(function () {
-        return Promise.reject(Error('test error'));
+        return Promise.delay(500).then(function(){
+          return Promise.reject(Error('test error'));
+        });
       });
       queue.add({ foo: 'bar' }).then(function(job){
         return job.finished();
