@@ -20,7 +20,7 @@
 
      Output:
       0 OK
-      1 Missing key.
+      -1 Missing key.
 
      Events:
       'completed'

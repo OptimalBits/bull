@@ -380,6 +380,7 @@ describe('Job', function(){
   // TODO:
   // Divide into several tests
   //
+  var scripts = require('../lib/scripts');
   it('get job status', function() {
     this.timeout(12000);
 
@@ -390,7 +391,9 @@ describe('Job', function(){
         return job.getState();
       }).then(function(state) {
         expect(state).to.be('waiting');
-        return job.move('wait', 'completed');
+        return scripts.moveToActive(queue).then(function(){
+          return job.moveToCompleted();
+        });
       }).then(function (){
         return job.isCompleted();
       }).then(function (isCompleted) {
