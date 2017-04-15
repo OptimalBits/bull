@@ -1,7 +1,9 @@
 v.3.0.0-alpha
 =============
 
-
+- job.jobId changed to job.id.
+- refactored error messages into separate error module.
+- completed and failed job states are now represented in ZSETs.
 
 v.2.2.6
 =======
