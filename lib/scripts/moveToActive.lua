@@ -29,14 +29,7 @@ if jobId then
   redis.call("LREM", KEYS[1], 1, jobId) -- remove from wait
   redis.call("ZREM", KEYS[3], jobId) -- remove from priority
   redis.call("LPUSH", KEYS[2], jobId) -- push in active
-  return redis.call("HGETALL", jobKey) -- get job data
+  
+  return {redis.call("HGETALL", jobKey), jobId} -- get job data
 end
 
---[[
-  Release lock:
-  if redis.call("GET", KEYS[1]) == ARGV[1] then
-    return redis.call("del", KEYS[1])
-  else
-    return 0
-  end
-]]
