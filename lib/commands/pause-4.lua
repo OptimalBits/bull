@@ -4,7 +4,6 @@
   Note: This code is unnecessary complex, since it was used when we used BRPOPLPUSH. Currently
   only a meta-paused key is necessary.
 
-
 ]]
 if redis.call("EXISTS", KEYS[1]) == 1 then
   redis.call("RENAME", KEYS[1], KEYS[2])
