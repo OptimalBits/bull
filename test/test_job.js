@@ -7,7 +7,6 @@ var expect = require('expect.js');
 var redis = require('ioredis');
 var Promise = require('bluebird');
 var uuid = require('uuid');
-var Redlock = require('bull-redlock');
 
 
 describe('Job', function(){
@@ -42,7 +41,7 @@ describe('Job', function(){
     });
 
     it('returns a promise for the job', function () {
-      expect(job).to.have.property('jobId');
+      expect(job).to.have.property('id');
       expect(job).to.have.property('data');
     });
 
@@ -51,8 +50,8 @@ describe('Job', function(){
     });
 
     it('saves the job in redis', function () {
-      return Job.fromId(queue, job.jobId).then(function(storedJob){
-        expect(storedJob).to.have.property('jobId');
+      return Job.fromId(queue, job.id).then(function(storedJob){
+        expect(storedJob).to.have.property('id');
         expect(storedJob).to.have.property('data');
 
         expect(storedJob.data.foo).to.be.equal('bar');
@@ -64,7 +63,7 @@ describe('Job', function(){
     it('should use the custom jobId if one is provided', function() {
       var customJobId = 'customjob';
       return Job.create(queue, data, { jobId: customJobId }).then(function(createdJob){
-        expect(createdJob.jobId).to.be.equal(customJobId);
+        expect(createdJob.id).to.be.equal(customJobId);
       });
     });
 
@@ -77,7 +76,7 @@ describe('Job', function(){
       queue.add({ foo: 'bar' }, { jobId: customJobId });
 
       queue.on('completed', function(job) {
-        if (job.opts.jobId == customJobId) {
+        if (job.id == customJobId) {
           done();
         }
       });
@@ -91,25 +90,25 @@ describe('Job', function(){
           return job.remove();
         })
         .then(function(job){
-          return Job.fromId(queue, job.jobId);
+          return Job.fromId(queue, job.id);
         })
         .then(function(storedJob){
           expect(storedJob).to.be(null);
         });
     });
 
-    it('fails to remove a locked job', function() {
+    it('fails to remove a locked job', function(done) {
       return Job.create(queue, 1, {foo: 'bar'}).then(function(job) {
         return job.takeLock().then(function(lock) {
-          expect(lock).to.be.a(Redlock.Lock);
+          expect(lock).to.be.truthy;
         }).then(function() {
-          return Job.fromId(queue, job.jobId).then(function(job){
+          return Job.fromId(queue, job.id).then(function(job){
             return job.remove();
           });
         }).then(function() {
           throw new Error('Should not be able to remove a locked job');
-        }).catch(function(err) {
-          expect(err.message).to.equal('Exceeded 0 attempts to lock the resource "bull:'+queue.name+':1:lock".');
+        }).catch(function(/*err*/) {
+          done();
         });
       });
     });
@@ -117,13 +116,15 @@ describe('Job', function(){
     it('removes any job from active set', function() {
       return queue.add({ foo: 'bar' }).then(function(job) {
         // Simulate a job in active state but not locked
-        return queue.moveJob('wait', 'active').then(function() {
+        return queue.getNextJob().then(function() {
           return job.isActive().then(function(isActive) {
             expect(isActive).to.be(true);
+            return job.releaseLock()
+          }).then(function(){
             return job.remove();
           });
         }).then(function() {
-          return Job.fromId(queue, job.jobId);
+          return Job.fromId(queue, job.id);
         }).then(function(stored) {
           expect(stored).to.be(null);
           return job.getState();
@@ -199,7 +200,7 @@ describe('Job', function(){
 
     it('can take a lock', function(){
       return job.takeLock().then(function(lockTaken){
-        expect(lockTaken).to.be.a(Redlock.Lock);
+        expect(lockTaken).to.be.truthy;
       }).then(function(){
         return job.releaseLock().then(function(lockReleased){
           expect(lockReleased).to.not.exist;
@@ -208,30 +209,28 @@ describe('Job', function(){
     });
 
     it('take an already taken lock', function(){
-      var lock;
       return job.takeLock().then(function(lockTaken){
-        lock = lockTaken;
-        expect(lockTaken).to.be.a(Redlock.Lock);
+        expect(lockTaken).to.be.truthy;
       }).then(function(){
         return job.takeLock().then(function(lockTaken){
-          expect(lockTaken).to.be(lock);
+          expect(lockTaken).to.be.truthy;
         });
       });
     });
 
     it('can renew a previously taken lock', function(){
       return job.takeLock().then(function(lockTaken){
-        expect(lockTaken).to.be.a(Redlock.Lock);
+        expect(lockTaken).to.be.truthy;
       }).then(function(){
         return job.renewLock().then(function(lockRenewed){
-          expect(lockRenewed).to.be.a(Redlock.Lock);
+          expect(lockRenewed).to.be.truthy;;
         });
       });
     });
 
     it('can release a lock', function(){
       return job.takeLock().then(function(lockTaken){
-        expect(lockTaken).to.be.a(Redlock.Lock);
+        expect(lockTaken).to.be.truthy;
       }).then(function(){
         return job.releaseLock().then(function(lockReleased){
           expect(lockReleased).to.not.exist;
@@ -244,7 +243,7 @@ describe('Job', function(){
     it('can set and get progress', function () {
       return Job.create(queue, {foo: 'bar'}).then(function(job){
         return job.progress(42).then(function(){
-          return Job.fromId(queue, job.jobId).then(function(storedJob){
+          return Job.fromId(queue, job.id).then(function(storedJob){
             expect(storedJob.progress()).to.be(42);
           });
         });
@@ -258,8 +257,8 @@ describe('Job', function(){
         return job.isCompleted().then(function(isCompleted){
           expect(isCompleted).to.be(false);
         }).then(function(){
-          return job.moveToCompleted('succeeded');
-        }).then(function(){
+          return job.moveToCompleted('succeeded', true);
+        }).then(function(/*moved*/){
           return job.isCompleted().then(function(isCompleted){
             expect(isCompleted).to.be(true);
             expect(job.returnvalue).to.be('succeeded');
@@ -381,6 +380,7 @@ describe('Job', function(){
   // TODO:
   // Divide into several tests
   //
+  var scripts = require('../lib/scripts');
   it('get job status', function() {
     this.timeout(12000);
 
@@ -391,7 +391,9 @@ describe('Job', function(){
         return job.getState();
       }).then(function(state) {
         expect(state).to.be('waiting');
-        return job.move('wait', 'completed');
+        return scripts.moveToActive(queue).then(function(){
+          return job.moveToCompleted();
+        });
       }).then(function (){
         return job.isCompleted();
       }).then(function (isCompleted) {
@@ -399,7 +401,7 @@ describe('Job', function(){
         return job.getState();
       }).then(function(state) {
         expect(state).to.be('completed');
-        return client.srem(queue.toKey('completed'), job.jobId);
+        return client.zrem(queue.toKey('completed'), job.id);
       }).then(function(){
         return job.moveToDelayed(Date.now() + 10000);
       }).then(function (){
@@ -409,7 +411,7 @@ describe('Job', function(){
         return job.getState();
       }).then(function(state) {
         expect(state).to.be('delayed');
-        return client.zrem(queue.toKey('delayed'), job.jobId);
+        return client.zrem(queue.toKey('delayed'), job.id);
       }).then(function() {
         return job.moveToFailed(new Error('test'), true);
       }).then(function (){
@@ -419,7 +421,7 @@ describe('Job', function(){
         return job.getState();
       }).then(function(state) {
         expect(state).to.be('failed');
-        return client.srem(queue.toKey('failed'), job.jobId);
+        return client.zrem(queue.toKey('failed'), job.id);
       }).then(function(res) {
         expect(res).to.be(1);
         return job.getState();
@@ -427,7 +429,7 @@ describe('Job', function(){
         expect(state).to.be('stuck');
         return client.rpop(queue.toKey('wait'));
       }).then(function(){
-        return client.lpush(queue.toKey('paused'), job.jobId);
+        return client.lpush(queue.toKey('paused'), job.id);
       }).then(function() {
         return job.isPaused();
       }).then(function (isPaused) {
@@ -437,7 +439,7 @@ describe('Job', function(){
         expect(state).to.be('paused');
         return client.rpop(queue.toKey('paused'));
       }).then(function() {
-        return client.lpush(queue.toKey('wait'), job.jobId);
+        return client.lpush(queue.toKey('wait'), job.id);
       }).then(function() {
         return job.isWaiting();
       }).then(function (isWaiting) {
@@ -452,18 +454,18 @@ describe('Job', function(){
   describe('.finished', function() {
     it('should resolve when the job has been completed', function(done){
       queue.process(function () {
-        return Promise.resolve();
+        return Promise.delay(500);
       });
       queue.add({ foo: 'bar' }).then(function(job){
         return job.finished();
-      }).then(function(){
-        done();
-      }, done);
+      }).then(done, done);
     });
 
     it('should reject when the job has been completed', function(done){
       queue.process(function () {
-        return Promise.reject(Error('test error'));
+        return Promise.delay(500).then(function(){
+          return Promise.reject(Error('test error'));
+        });
       });
       queue.add({ foo: 'bar' }).then(function(job){
         return job.finished();
@@ -480,7 +482,7 @@ describe('Job', function(){
         return Promise.resolve();
       });
       queue.add({ foo: 'bar' }).then(function(job){
-        return Promise.delay(1500).then(function(){
+        return Promise.delay(500).then(function(){
           return job.finished();
         })
       }).then(function(){
@@ -493,7 +495,7 @@ describe('Job', function(){
         return Promise.reject(Error('test error'));
       });
       queue.add({ foo: 'bar' }).then(function(job){
-        return Promise.delay(1500).then(function(){
+        return Promise.delay(500).then(function(){
           return job.finished();
         });
       }).then(function(){

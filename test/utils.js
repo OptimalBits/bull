@@ -9,7 +9,6 @@ var queues = [];
 
 function simulateDisconnect(queue){
   queue.client.disconnect();
-  queue.bclient.disconnect();
   queue.eclient.disconnect();
 }
 

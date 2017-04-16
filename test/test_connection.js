@@ -27,14 +27,12 @@ describe('connection', function () {
       queue.close();
     }).then(function() {
       done();
-    }).catch(function(err){
-      console.log(err);
-    });
+    }).catch(done);
 
     // Simulate disconnect
     queue.on('ready', function(){
-      queue.bclient.stream.end();
-      queue.bclient.emit('error', new Error('ECONNRESET'));
+      queue.client.stream.end();
+      queue.client.emit('error', new Error('ECONNRESET'));
 
       // add something to the queue
       queue.add({ 'foo': 'bar' });
@@ -57,13 +55,13 @@ describe('connection', function () {
     expect(runSpy.callCount).to.be(1);
 
     queue.add({ 'foo': 'bar' });
-    queue.bclient.emit('end');
+    queue.client.emit('end');
   });
 
   it.skip('should not try to reconnect when the blocking client triggers an "end" event and no process have been called', function (done) {
     var runSpy = sandbox.spy(queue, 'run');
 
-    queue.bclient.emit('end');
+    queue.client.emit('end');
 
     setTimeout(function () {
       expect(runSpy.callCount).to.be(0);
@@ -82,14 +80,12 @@ describe('connection', function () {
         queue.close().then(done, done);
       }
       count ++;
-    }).catch(function(err){
-      console.log(err);
-    });
+    }).catch(done);
 
     queue.on('completed', function(){
       if(count === 1){
-        queue.bclient.stream.end();
-        queue.bclient.emit('error', new Error('ECONNRESET'));
+        queue.client.stream.end();
+        queue.client.emit('error', new Error('ECONNRESET'));
       }
     });
 
@@ -97,7 +93,7 @@ describe('connection', function () {
       queue.add({ 'foo': 'bar' });
     });
 
-    queue.on('error', function (err) {
+    queue.on('error', function (/*err*/) {
       if(count === 1) {
         queue.add({ 'foo': 'bar' });
       }
