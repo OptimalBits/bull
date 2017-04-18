@@ -1,19 +1,9 @@
 --[[ 
-  Looks for unlocked jobs in the active queue. There are two circumstances in which a job
-   would be in 'active' but NOT have a job lock:
-   
-     Case A) The job was being worked on, but the worker process died and it failed to renew the lock.
-       We call these jobs 'stalled'. This is the most common case. We resolve these by moving them
-       back to wait to be re-processed. To prevent jobs from cycling endlessly between active and wait,
-       (e.g. if the job handler keeps crashing), we limit the number stalled job recoveries to MAX_STALLED_JOB_COUNT.
-
-    DEPRECATED CASE:
-     Case B) The job was just moved to 'active' from 'wait' and the worker that moved it hasn't gotten
-       a lock yet, or died immediately before getting the lock (note that due to Redis limitations, the
-       worker can't move the job and get the lock atomically - https://github.com/OptimalBits/bull/issues/258).
-       For this case we also move the job back to 'wait' for reprocessing, but don't consider it 'stalled'
-       since the job had never been started. This case is much rarer than Case A due to the very small
-       timing window in which it must occur.
+    Looks for unlocked jobs in the active queue. This happens when if the job was being worked on,
+    but the worker process died and it failed to renew the lock.
+    We call these jobs 'stalled'. We resolve these by moving them back to wait to be re-processed.
+    To prevent jobs from cycling endlessly between active and wait,
+    (e.g. if the job handler keeps crashing), we limit the number stalled job recoveries to MAX_STALLED_JOB_COUNT.
 
     Input:
       KEYS[1] 'active',

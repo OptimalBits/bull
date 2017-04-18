@@ -21,6 +21,7 @@
      Output:
       0 OK
       -1 Missing key.
+      -2 Missing lock.
 
      Events:
       'completed'
@@ -32,7 +33,7 @@ if redis.call("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
     if redis.call("GET", lockKey) == ARGV[5] then
       redis.call("DEL", lockKey)
     else
-      return -1
+      return -2
     end
   end
 

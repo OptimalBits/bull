@@ -12,7 +12,7 @@
          - LIFO
          - FIFO
          - prioritized.
-         - Emits a global event 'waiting' if not paused.
+         - Emits a global event 'added' if not paused.
 
     Input:
       KEYS[1] 'wait',
@@ -71,10 +71,13 @@ else
 
   -- Whe check for the meta-paused key to decide if we are paused or not
   -- (since an empty list and !EXISTS are not really the same)
+  local paused
   if redis.call("EXISTS", KEYS[3]) ~= 1 then
     target = KEYS[1]
+    paused = false
   else
     target = KEYS[2]
+    paused = true
   end
 
   if ARGV[9] == "0" then
@@ -94,6 +97,9 @@ else
     end
   end
 
-  redis.call("PUBLISH", KEYS[4], jobId)
+  if(not paused) then
+    redis.call("PUBLISH", KEYS[4], jobId)
+  end
+  
   return jobId .. "" -- convert to string
 end
