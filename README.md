@@ -64,7 +64,7 @@ Roadmap:
 Install:
 --------
 
-    npm install bull
+    npm install bull@2.x --save
 
 Note that you need a redis version higher or equal than 2.8.11 for bull to work properly.
 
