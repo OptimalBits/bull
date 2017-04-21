@@ -1,3 +1,8 @@
+v.3.0.0-alpha.2
+===============
+
+- Eliminated possible memory leak #503
+
 v.3.0.0-alpha.1
 ===============
 
