@@ -70,10 +70,14 @@ describe('Queue', function () {
       return closePromise;
     });
 
-    it('should close if the job expires after the LOCK_RENEW_TIME', function (done) {
-      this.timeout(testQueue.STALLED_JOB_CHECK_INTERVAL * 2);
-      testQueue.LOCK_DURATION = 15;
-      testQueue.LOCK_RENEW_TIME = 5;
+    it('should close if the job expires after the lockRenewTime', function (done) {
+      this.timeout(testQueue.settings.stalledInterval * 2, {
+        settings: {
+          lockDuration: 15,
+          lockRenewTime: 5
+        }
+      });
+
       testQueue.process(function () {
         return Promise.delay(100);
       });
@@ -244,18 +248,14 @@ describe('Queue', function () {
       subscriber = new redis();
 
       var opts = {
-        redis: {
-          opts: {
-            createClient: function(type){
-              switch(type){
-                case 'client':
-                  return client;
-                case 'subscriber':
-                  return subscriber;
-                default:
-                  return new redis();
-              }
-            }
+        createClient: function(type, opts){
+          switch(type){
+            case 'client':
+              return client;
+            case 'subscriber':
+              return subscriber;
+            default:
+              return new redis(opts);
           }
         }
       }
@@ -316,7 +316,7 @@ describe('Queue', function () {
     });
 
     afterEach(function () {
-      this.timeout(queue.STALLED_JOB_CHECK_INTERVAL * (1 + queue.MAX_STALLED_JOB_COUNT));
+      this.timeout(queue.settings.stalledInterval * (1 + queue.settings.maxStalledCount));
       return utils.cleanupQueues();
     });
 
@@ -586,9 +586,12 @@ describe('Queue', function () {
     it('process stalled jobs when starting a queue', function (done) {
 
       this.timeout(6000);
-      utils.newQueue('test queue stalled').then(function (queueStalled) {
-        queueStalled.LOCK_DURATION = 15;
-        queueStalled.LOCK_RENEW_TIME = 5
+      utils.newQueue('test queue stalled', {
+        settings: {
+          lockDuration: 15,
+          lockRenewTime: 5
+        }
+      }).then(function (queueStalled) {
         var jobs = [
           queueStalled.add({ bar: 'baz' }),
           queueStalled.add({ bar1: 'baz1' }),
@@ -632,8 +635,11 @@ describe('Queue', function () {
     });
 
     it('processes jobs that were added before the queue backend started', function () {
-      return utils.newQueue('test queue added before').then(function (queueStalled) {
-        queueStalled.LOCK_RENEW_TIME = 10;
+      return utils.newQueue('test queue added before', {
+        settings: {
+          lockRenewTime: 10
+        }
+      }).then(function (queueStalled) {
         var jobs = [
           queueStalled.add({ bar: 'baz' }),
           queueStalled.add({ bar1: 'baz1' }),
@@ -739,12 +745,17 @@ describe('Queue', function () {
       var NUM_JOBS_PER_QUEUE = 10;
       var stalledQueues = [];
       var jobs = [];
+      var redisOpts = {port: 6379, host: '127.0.0.1'};
 
       for (var i = 0; i < NUM_QUEUES; i++) {
-        var queueStalled2 = new Queue('test queue stalled 2', 6379, '127.0.0.1');
-        queueStalled2.LOCK_DURATION = 30;
-        queueStalled2.LOCK_RENEW_TIME = 10;
-
+        var queueStalled2 = new Queue('test queue stalled 2', {
+          redis: redisOpts,
+          settings: {
+            lockDuration: 30,
+            lockRenewTime: 10
+          }
+        });
+        
         for (var j = 0; j < NUM_JOBS_PER_QUEUE; j++) {
           jobs.push(queueStalled2.add({ job: j }));
         }
@@ -766,7 +777,7 @@ describe('Queue', function () {
           processed++;
           if (processed === stalledQueues.length) {
             setTimeout(function () {
-              var queue2 = new Queue('test queue stalled 2', 6379, '127.0.0.1');
+              var queue2 = new Queue('test queue stalled 2', redisOpts);
               queue2.on('error', function(){
 
               })
@@ -836,15 +847,17 @@ describe('Queue', function () {
     it('process stalled jobs without requiring a queue restart', function (done) {
       this.timeout(12000);
 
-      var queue2 = utils.buildQueue('running-stalled-job-' + uuid());
+      var queue2 = utils.buildQueue('running-stalled-job-' + uuid(), {
+        settings: {
+          lockRenewTime: 5000,
+          lockDuration: 500,
+          stalledInterval: 1000
+        }
+      });
 
       var collect = _.after(2, function () {
         queue2.close().then(done);
       });
-
-      queue2.LOCK_RENEW_TIME = 5000;
-      queue2.LOCK_DURATION = 500;
-      queue2.STALLED_JOB_CHECK_INTERVAL = 1000;
 
       queue2.on('completed', function () {
         var client = new redis();
@@ -1332,7 +1345,7 @@ describe('Queue', function () {
     });
   })
 
-  describe.only('Delayed jobs', function () {
+  describe('Delayed jobs', function () {
     var queue;
 
     beforeEach(function () {
@@ -1497,7 +1510,7 @@ describe('Queue', function () {
     });
 
     afterEach(function () {
-      this.timeout(queue.STALLED_JOB_CHECK_INTERVAL * (1 + queue.MAX_STALLED_JOB_COUNT));
+      this.timeout(queue.settings.stalledInterval * (1 + queue.settings.maxStalledCount));
       return queue.close();
     });
 
@@ -1603,7 +1616,7 @@ describe('Queue', function () {
     var queue;
 
     afterEach(function () {
-      this.timeout(queue.STALLED_JOB_CHECK_INTERVAL * (1 + queue.MAX_STALLED_JOB_COUNT));
+      this.timeout(queue.settings.stalledInterval * (1 + queue.settings.maxStalledCount));
       return queue.close();
     });
 
@@ -1861,7 +1874,7 @@ describe('Queue', function () {
     });
 
     afterEach(function () {
-      this.timeout(queue.STALLED_JOB_CHECK_INTERVAL * (1 + queue.MAX_STALLED_JOB_COUNT));
+      this.timeout(queue.settings.stalledInterval * (1 + queue.settings.maxStalledCount));
       return queue.close();
     });
 
@@ -1992,7 +2005,7 @@ describe('Queue', function () {
     });
 
     afterEach(function () {
-      this.timeout(queue.STALLED_JOB_CHECK_INTERVAL * (1 + queue.MAX_STALLED_JOB_COUNT));
+      this.timeout(queue.settings.stalledInterval * (1 + queue.settings.maxStalledCount));
       return queue.close();
     });
 
@@ -2106,7 +2119,7 @@ describe('Queue', function () {
     });
 
     afterEach(function () {
-      this.timeout(queue.STALLED_JOB_CHECK_INTERVAL * (1 + queue.MAX_STALLED_JOB_COUNT));
+      this.timeout(queue.settings.stalledInterval * (1 + queue.settings.maxStalledCount));
       return queue.close();
     });
 

@@ -78,10 +78,10 @@ Quick Guide
 ```javascript
 var Queue = require('bull');
 
-var videoQueue = Queue('video transcoding', 6379, '127.0.0.1');
-var audioQueue = Queue('audio transcoding', 6379, '127.0.0.1');
-var imageQueue = Queue('image transcoding', 6379, '127.0.0.1');
-var pdfQueue = Queue('pdf transcoding', 6379, '127.0.0.1');
+var videoQueue = Queue('video transcoding', {redis: {port: 6379, host: '127.0.0.1'}});
+var audioQueue = Queue('audio transcoding');
+var imageQueue = Queue('image transcoding');
+var pdfQueue = Queue('pdf transcoding');
 
 videoQueue.process(function(job, done){
 
@@ -247,7 +247,7 @@ var
   cluster = require('cluster');
 
 var numWorkers = 8;
-var queue = Queue("test concurrent queue", 6379, '127.0.0.1');
+var queue = Queue("test concurrent queue");
 
 if(cluster.isMaster){
   for (var i = 0; i < numWorkers; i++) {
@@ -290,19 +290,15 @@ This can be achieved using the "createClient" option in the queue constructor:
   subscriber = new redis();
 
   var opts = {
-    redis: {
-      opts: {
-        createClient: function(type){
-          switch(type){
-            case 'client':
-              return client;
-            case 'subscriber':
-              return subscriber;
-            default:
-              return new redis();
-          }
+    createClient: function(type, opts){
+      switch(type){
+        case 'client':
+          return client;
+        case 'subscriber':
+          return subscriber;
+        default:
+          return new redis(opts);
         }
-      }
     }
   }
   var queueFoo = new Queue('foobar', opts);
@@ -390,34 +386,40 @@ listened by some other service that stores the results in a database.
 
 ### Queue
 
-```ts
-Queue(queueName: string, redisPort: number, redisHost: string, redisOpts?: RedisOpts): Queue
-```
-```ts
-Queue(queueName: string, redisConnectionString: string, redisOpts? RedisOpts): Queue
+```typescript
+Queue(queueName: string, redisConnectionString?: string, opts: QueueOptions): Queue
 ```
 
 This is the Queue constructor. It creates a new Queue that is persisted in
 Redis. Everytime the same queue is instantiated it tries to process all the
 old jobs that may exist from a previous unfinished session.
 
+If no connection string or options passed, the queue will use ioredis default connection
+settings.
+
 __Arguments__
 
-```javascript
-    queueName {String} A unique name for this Queue.
-    redisPort {Number} A port where redis server is running.
-    redisHost {String} A host specified as IP or domain where redis is running.
-    redisOptions {Object} Options to pass to the redis client. https://github.com/luin/ioredis/blob/master/API.md#new-redisport-host-options 
+```typescript
+    queueName: string, // A unique name for this Queue.
+    redisConnectionString?: string, // string A connection string containing the redis server host, port and (optional) authentication.
+    opts?: QueueOptions, // Options to pass to the redis client. https://github.com/luin/ioredis/blob/master/API.md#new-redisport-host-options
 ```
 
-Alternatively, it's possible to pass a connection string to create a new queue.
+```typescript
+  interface QueueOptions {
+    prefix?: string = 'bull',
+    redis : RedisOpts, // ioredis defaults
+    createClient?: (type: enum('client', 'subscriber'), redisOpts?: RedisOpts) => redisClient,
 
-__Arguments__
-
-```javascript
-    queueName {String} A unique name for this Queue.
-    redisConnectionString {String} A connection string containing the redis server host, port and (optional) authentication.
-    redisOptions {Object} Options to pass to the redis client. https://github.com/luin/ioredis/blob/master/API.md#new-redisport-host-options
+    // Advanced settings
+    settings?: QueueSettings {
+      lockDuration?: number = 5000,
+      stalledInterval?: number = 5000,
+      maxStalledCount?: number = 1, // The maximum number of times a job can be recovered from the 'stalled' state
+      guardInterval?: number = 5000,
+      retryProcessDelay?: number = 5000
+    }
+  }
 ```
 
 ---------------------------------------

@@ -18,11 +18,11 @@ describe('Job', function(){
   });
 
   beforeEach(function(){
-    queue = new Queue('test-' + uuid(), 6379, '127.0.0.1');
+    queue = new Queue('test-' + uuid(), {redis: {port: 6379, host: '127.0.0.1'}});
   });
 
   afterEach(function(){
-    this.timeout(queue.STALLED_JOB_CHECK_INTERVAL * (1 + queue.MAX_STALLED_JOB_COUNT));
+    this.timeout(queue.settings.stalledInterval * (1 + queue.settings.maxStalledCount));
     return queue.close();
   });
 
