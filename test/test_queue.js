@@ -735,7 +735,7 @@ describe('Queue', function () {
     it('processes several stalled jobs when starting several queues', function (done) {
       this.timeout(50000);
 
-      var NUM_QUEUES = 5;
+      var NUM_QUEUES = 10;
       var NUM_JOBS_PER_QUEUE = 10;
       var stalledQueues = [];
       var jobs = [];
@@ -767,6 +767,9 @@ describe('Queue', function () {
           if (processed === stalledQueues.length) {
             setTimeout(function () {
               var queue2 = new Queue('test queue stalled 2', 6379, '127.0.0.1');
+              queue2.on('error', function(){
+
+              })
               queue2.process(function (job2, jobDone) {
                 jobDone();
               });
@@ -1329,7 +1332,7 @@ describe('Queue', function () {
     });
   })
 
-  describe('Delayed jobs', function () {
+  describe.only('Delayed jobs', function () {
     var queue;
 
     beforeEach(function () {
@@ -1369,12 +1372,10 @@ describe('Queue', function () {
         });
       });
 
-      queue.on('ready', function () {
-        queue.add({ delayed: 'foobar' }, { delay: delay }).then(function (job) {
-          expect(job.id).to.be.ok();
-          expect(job.data.delayed).to.be('foobar');
-          expect(job.delay).to.be(delay);
-        });
+      queue.add({ delayed: 'foobar' }, { delay: delay }).then(function (job) {
+        expect(job.id).to.be.ok();
+        expect(job.data.delayed).to.be('foobar');
+        expect(job.delay).to.be(delay);
       });
     });
 
