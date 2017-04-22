@@ -1,5 +1,6 @@
 
 <div align="center">
+  <br/>
   <img src="./support/logo@2x.png" width="300" />
   <br/>
   <br/>
@@ -51,12 +52,14 @@
 
 ### Sponsors
 
-<a href="http://mixmax.com">
-<img src="https://mixmax.com/images/logo_confirmation.png" alt="Mixmax, Inc" width="100" />
-</a>
-<a href="http://optimalbits.com">
-  <img src="http://optimalbits.com/images/logo.png" />
-</a>
+<div align="center">
+  <a href="http://mixmax.com">
+    <img src="https://mixmax.com/images/logo_confirmation.png" alt="Mixmax, Inc" width="100" />
+  </a>
+  <a href="http://optimalbits.com">
+    <img src="http://optimalbits.com/images/logo.png" />
+  </a>
+</div>
 
 Are you developing bull sponsored by a company? Please, let us now!
 
@@ -101,13 +104,16 @@ There are a few third-party UIs that you can use for monitoring:
 
 ### Install
 
-```shell
+```bash
 npm install bull@2.x --save
+```
+```bash
+yarn add bull@2.x
 ```
 
 _**Requirements:** Bull requires a Redis version greater than or equal to `2.8.11`._
 
-_**Important:** We are currently developing Bull `3.x`, which means that the latest *unstable* version would be something like `3.0.0-alpha.1`. We recommend you stick to version `2.x` until `3.x` is stable. Check out [the milestone](https://github.com/OptimalBits/bull/milestone/4) for some things to expect in the next version!_
+_We are currently developing Bull `3.x`, which means that the latest *unstable* version would be something like `3.0.0-alpha.1`. We recommend you stick to version `2.x` until `3.x` is stable. Check out [the milestone](https://github.com/OptimalBits/bull/milestone/4) for some things to expect in the next version!_
 
 
 ---
@@ -138,7 +144,7 @@ videoQueue.process(function(job, done){
   done(Error('error transcoding'));
 
   // or pass it a result
-  done(null, { framerate: 29.5 /* etc... */ });
+  done(null, {framerate: 29.5 /* etc... */});
 
   // If the job throws an unhandled exception it is also handled correctly
   throw (Error('some unexpected error'));
@@ -155,7 +161,7 @@ audioQueue.process(function(job, done){
   done(Error('error transcoding'));
 
   // or pass it a result
-  done(null, { samplerate: 48000 /* etc... */ });
+  done(null, {samplerate: 48000 /* etc... */});
 
   // If the job throws an unhandled exception it is also handled correctly
   throw (Error('some unexpected error'));
@@ -172,7 +178,7 @@ imageQueue.process(function(job, done){
   done(Error('error transcoding'));
 
   // or pass it a result
-  done(null, { width: 1280, height: 720 /* etc... */ });
+  done(null, {width: 1280, height: 720 /* etc... */});
 
   // If the job throws an unhandled exception it is also handled correctly
   throw (Error('some unexpected error'));
@@ -199,7 +205,7 @@ videoQueue.process(function(job){ // don't forget to remove the done callback!
   return Promise.reject(new Error('error transcoding'));
 
   // Passes the value the promise is resolved with to the "completed" event
-  return Promise.resolve({ framerate: 29.5 /* etc... */ });
+  return Promise.resolve({framerate: 29.5 /* etc... */});
 
   // If the job throws an unhandled exception it is also handled correctly
   throw new Error('some unexpected error');
@@ -272,15 +278,6 @@ if(cluster.isMaster){
 ```
 
 
-
----
-
-
-### Important Notes
-
-Bull aims for an "at most once" working strategy. When a worker is processing a job, it will keep the job locked until the work is done. However, it is important that the worker does not lock the event loop for too long, otherwise other workers might pick up the job believing that the original worker has stalled out.
-
-
 ---
 
 
@@ -293,3 +290,12 @@ For the full documentation, check out the reference and common patterns:
 - [License](./LICENSE.md) — the Bull license—it's MIT.
 
 If you see anything that could use more docs, please submit a pull request!
+
+
+
+---
+
+
+### Important Notes
+
+Bull aims for an "at most once" working strategy. When a worker is processing a job, it will keep the job locked until the work is done. However, it is important that the worker does not lock the event loop for too long, otherwise other workers might pick up the job believing that the original worker has stalled out.
