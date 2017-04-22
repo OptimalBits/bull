@@ -41,7 +41,7 @@
     </a>
   </p>
   <p>
-    <em>Follow <a href="http://twitter.com/manast">@manast</a> for news and updates regarding this library!</em>
+    <em>Follow <a href="http://twitter.com/manast">@manast</a> for Bull news and updates!</em>
   </p>
 </div>
 
