@@ -1,5 +1,7 @@
-Bull Job Manager
-================
+
+<img src="https://image.freepik.com/free-icon/strong-bull-side-view_318-52710.jpg" width="200" />
+
+# Bull Job Manager
 
 [![Join the chat at https://gitter.im/OptimalBits/bull](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/OptimalBits/bull?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![npm](https://img.shields.io/npm/dm/bull.svg?maxAge=2592000)]()
@@ -8,18 +10,16 @@ Bull Job Manager
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/OptimalBits/bull.svg)](http://isitmaintained.com/project/OptimalBits/bull "Percentage of issues still open")
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/OptimalBits/bull.svg)](http://isitmaintained.com/project/OptimalBits/bull "Average time to resolve an issue")
 
+The fastest, most reliable, Redis-based queue for Node. Carefully written for rock solid stability and atomicity.
 
-<img src="https://image.freepik.com/free-icon/strong-bull-side-view_318-52710.jpg" width="200" />
+_Follow [@manast](http://twitter.com/manast) for news and updates regarding this library._
 
-The fastest, most reliable redis based queue for nodejs.
-Carefully written for rock solid stability and atomicity.
+<br/>
+---
+<br/>
 
+### Sponsors
 
-Follow [manast](http://twitter.com/manast) for news and updates regarding this library.
-
-
-Sponsors:
----------
 <a href="http://mixmax.com">
 <img src="https://mixmax.com/images/logo_confirmation.png" alt="Mixmax, Inc" width="100" />
 </a>
@@ -29,20 +29,26 @@ Sponsors:
 
 Are you developing bull sponsored by a company? Please, let us now!
 
-Features:
----------
+<br/>
+---
+</br>
 
-- Minimal CPU usage by poll-free design.
+### Features
+
+- Minimal CPU usage due to a polling-free design.
 - Robust design based on Redis.
 - Delayed jobs.
 - Retries.
 - Priority.
 - Concurrency.
-- Pause/resume (globally or locally).
+- Pause/resume—globally or locally.
 - Automatic recovery from process crashes.
 
-UIs:
-----
+<br/>
+---
+<br/>
+
+### UIs
 
 There are a few third party UIs that can be used for easier administration of the queues (not in any particular order):
 
@@ -52,30 +58,38 @@ There are a few third party UIs that can be used for easier administration of th
 
 We also have an official UI which is at the moment bare bones project: [bull-ui](https://github.com/OptimalBits/bull-ui)
 
-Roadmap:
---------
+<br/>
+---
+<br/>
 
-- Multiple job types per queue.
-- Scheduling jobs as a cron specification.
-- Rate limiter for jobs.
-- Parent-child jobs relationships.
+### Roadmap
 
+- [ ] Multiple job types per queue.
+- [ ] Scheduling jobs as a cron specification.
+- [ ] Rate limiter for jobs.
+- [ ] Parent-child jobs relationships.
 
-Install:
---------
+<br/>
+---
+</br>
 
-    npm install bull@2.x --save
+### Install
 
-Note that you need a redis version higher or equal than 2.8.11 for bull to work properly.
+```shell
+npm install bull@2.x --save
+```
 
-**IMPORTANT**
+_**Requirements:** Bull requires a Redis version greater than or equal to `2.8.11`._
 
-We are in the progress of developing ```bull 3.0.0```, which means that the latest *unstable* version would be something like
-bull-3.0.0-alpha.1. It is recommended that you stick to version 2.x until 3.0.0 stable is released. Some things to expect in  3.x: https://github.com/OptimalBits/bull/milestone/4
+_**Important:** We are currently developing Bull `3.x`, which means that the latest *unstable* version would be something like `3.0.0-alpha.1`. We recommend you stick to version `2.x` until `3.x` is stable. Check out [the milestone](https://github.com/OptimalBits/bull/milestone/4) for some things to expect in the next version!_
 
-Quick Guide
------------
-```javascript
+<br/>
+---
+<br/>
+
+### Quickstart
+
+```js
 var Queue = require('bull');
 
 var videoQueue = Queue('video transcoding', 6379, '127.0.0.1');
@@ -150,7 +164,7 @@ imageQueue.add({image: 'http://example.com/image1.tiff'});
 
 Alternatively, you can use return promises instead of using the `done` callback:
 
-```javascript
+```js
 videoQueue.process(function(job){ // don't forget to remove the done callback!
   // Simply return a promise
   return fetchVideo(job.data.url).then(transcodeVideo);
@@ -170,7 +184,8 @@ videoQueue.process(function(job){ // don't forget to remove the done callback!
 
 A queue can be paused and resumed globally (pass `true` to pause processing for
 just this worker):
-```javascript
+
+```js
 queue.pause().then(function(){
   // queue is paused now
 });
@@ -181,7 +196,8 @@ queue.resume().then(function(){
 ```
 
 A queue emits also some useful events:
-```javascript
+
+```js
 .on('ready', function() {
   // Queue ready for job
   // All Redis connections are done
@@ -218,9 +234,9 @@ A queue emits also some useful events:
 });
 ```
 
-Events are by default local, i.e., they only fire on the listeners that are registered on the given worker,
-if you need to listen to events globally, just prefix the event with ```global:```:
-```
+Events are by default local, i.e., they only fire on the listeners that are registered on the given worker, if you need to listen to events globally, just prefix the event with `'global:'`:
+
+```js
 // Local Event listener
 queue.on('completed', listener):
 
@@ -230,21 +246,20 @@ queue.on('global:completed', listener);
 
 Queues are cheap, so if you need many of them just create new ones with different
 names:
-```javascript
+
+```js
 var userJohn = Queue('john');
 var userLisa = Queue('lisa');
-.
-.
-.
+...
 ```
 
 Queues are robust and can be run in parallel in several threads or processes
 without any risk of hazards or queue corruption. Check this simple example
 using cluster to parallelize jobs across processes:
-```javascript
-var
-  Queue = require('bull'),
-  cluster = require('cluster');
+
+```js
+var Queue = require('bull');
+var cluster = require('cluster');
 
 var numWorkers = 8;
 var queue = Queue("test concurrent queue", 6379, '127.0.0.1');
@@ -272,57 +287,62 @@ if(cluster.isMaster){
 }
 ```
 
-Important Notes
----------------
+<br/>
+---
+<br/>
 
-The queue aims for "at most once" working strategy. When a worker is processing a job, it will keep the job locked until the work is done. However, it is important that the worker does not lock the event loop too long, otherwise other workers could pick the job believing that the worker processing it has been stalled.
+### Important Notes
 
-Reusing Redis connections
--------------------------
+Bull aims for an "at most once" working strategy. When a worker is processing a job, it will keep the job locked until the work is done. However, it is important that the worker does not lock the event loop for too long, otherwise other workers might pick up the job believing that the original worker has stalled out.
 
-A standard queue requires 3 connections to a redis server. In some situations when having many queues, and using
-services such as Heroku where number of connections is limited, it is desirable to reuse some connections.
-This can be achieved using the "createClient" option in the queue constructor:
+<br/>
+---
+<br/>
+
+### Reusing Redis connections
+
+A standard queue requires **3 connections** to the Redis server. In some situations you might want to re-use connections—for example on Heroku where the connection count is restricted. You can do this with the `createClient` option in the `Queue` constructor:
 
 ```js
-  var client, subscriber;
-  client = new redis();
-  subscriber = new redis();
+var client = new redis();
+var subscriber = new redis();
 
-  var opts = {
-    redis: {
-      opts: {
-        createClient: function(type){
-          switch(type){
-            case 'client':
-              return client;
-            case 'subscriber':
-              return subscriber;
-            default:
-              return new redis();
-          }
+var opts = {
+  redis: {
+    opts: {
+      createClient: function(type){
+        switch(type){
+          case 'client':
+            return client;
+          case 'subscriber':
+            return subscriber;
+          default:
+            return new redis();
         }
       }
     }
   }
-  var queueFoo = new Queue('foobar', opts);
-  var queueQux = new Queue('quxbaz', opts);
+}
+var queueFoo = new Queue('foobar', opts);
+var queueQux = new Queue('quxbaz', opts);
 ```
 
 
-Useful patterns
----------------
+<br/>
+---
+<br/>
+
+### Useful Patterns
 
 #### Message Queue
 
 Bull can also be used for persistent message queues. This is a quite useful
 feature in some usecases. For example, you can have two servers that need to
-communicate with each other. By using a queue the servers do not need to be online
-at the same time, this create a very robust communication channel. You can treat
-*add* as *send* and *process* as *receive*:
+communicate with each other. By using a queue the servers do not need to be online at the same time, this create a very robust communication channel. You can treat `add` as *send* and `process` as *receive*:
 
 Server A:
-```javascript
+
+```js
 var Queue = require('bull');
 
 var sendQueue = Queue("Server B");
@@ -337,7 +357,8 @@ sendQueue.add({msg:"Hello"});
 ```
 
 Server B:
-```javascript
+
+```js
 var Queue = require('bull');
 
 var sendQueue = Queue("Server A");
@@ -351,20 +372,11 @@ receiveQueue.process(function(job, done){
 sendQueue.add({msg:"World"});
 ```
 
-
 #### Returning job completions
 
-A common pattern is where you have a cluster of queue processors that just
-process jobs as fast as they can, and some other services that need to take the
-result of this processors and do something with it, maybe storing results in a
-database.
+A common pattern is where you have a cluster of queue processors that just process jobs as fast as they can, and some other services that need to take the result of this processors and do something with it, maybe storing results in a database.
 
-The most robust and scalable way to accomplish this is by combining the standard
-job queue with the message queue pattern: a service sends jobs to the cluster
-just by opening a job queue and adding jobs to it, the cluster will start
-processing as fast as it can. Everytime a job gets completed in the cluster a
-message is send to a results message queue with the result data, this queue is
-listened by some other service that stores the results in a database.
+The most robust and scalable way to accomplish this is by combining the standard job queue with the message queue pattern: a service sends jobs to the cluster just by opening a job queue and adding jobs to it, the cluster will start processing as fast as it can. Everytime a job gets completed in the cluster a message is send to a results message queue with the result data, this queue is listened by some other service that stores the results in a database.
 
 
 ## Documentation
@@ -403,7 +415,7 @@ old jobs that may exist from a previous unfinished session.
 
 __Arguments__
 
-```javascript
+```js
     queueName {String} A unique name for this Queue.
     redisPort {Number} A port where redis server is running.
     redisHost {String} A host specified as IP or domain where redis is running.
@@ -414,7 +426,7 @@ Alternatively, it's possible to pass a connection string to create a new queue.
 
 __Arguments__
 
-```javascript
+```js
     queueName {String} A unique name for this Queue.
     redisConnectionString {String} A connection string containing the redis server host, port and (optional) authentication.
     redisOptions {Object} Options to pass to the redis client. https://github.com/luin/ioredis/blob/master/API.md#new-redisport-host-options
@@ -460,7 +472,7 @@ returning a promise or calling the `done` callback, Bull looks at
 the length property of the callback you pass to it.
 So watch out, as the following won't work:
 
-```javascript
+```js
 // THIS WON'T WORK!!
 queue.process(function(job, done) { // Oops! done callback here!
     return Promise.resolve();
@@ -469,7 +481,7 @@ queue.process(function(job, done) { // Oops! done callback here!
 
 This, however, will:
 
-```javascript
+```js
 queue.process(function(job) { // No done callback here :)
     return Promise.resolve();
 });
@@ -612,7 +624,7 @@ close(): Promise
 Closes the underlying redis client. Use this to perform a graceful
 shutdown.
 
-```javascript
+```js
 var Queue = require('bull');
 var queue = Queue('example');
 
@@ -627,7 +639,7 @@ queue.on('completed', after100);
 from within a job handler the queue won't close until *after*
 the job has been processed, so the following won't work:
 
-```javascript
+```js
 queue.process(function (job, jobDone) {
   handle(job);
   queue.close().then(jobDone);
@@ -636,7 +648,7 @@ queue.process(function (job, jobDone) {
 
 Instead, do this:
 
-```javascript
+```js
 queue.process(function (job, jobDone) {
   handle(job);
   queue.close();
@@ -646,7 +658,7 @@ queue.process(function (job, jobDone) {
 
 Or this:
 
-```javascript
+```js
 queue.process(function (job) {
   queue.close();
   return handle(job).then(...);
@@ -705,7 +717,7 @@ Tells the queue remove jobs of a specific type created outside of a grace period
 
 __Example__
 
-```javascript
+```js
 //cleans all jobs that completed over 5 seconds ago.
 queue.clean(5000);
 //clean all jobs that failed over 10 seconds ago.
@@ -717,7 +729,7 @@ queue.on('cleaned', function (job, type) {
 
 __Arguments__
 
-```javascript
+```js
   grace: number; Grace period in milliseconds.
   status: string; Status of the job to clean. Values are completed, wait, active,
   delayed, and failed. Defaults to completed.
@@ -815,7 +827,7 @@ The only difference is that the Queue#add() allow an options opts.priority that 
 
 The priority queue will process more often higher priority jobs than lower.
 
-```javascript
+```js
   var PriorityQueue = require("bull/lib/priority-queue");
 
   var queue = new PriorityQueue("myPriorityQueues");
@@ -840,28 +852,3 @@ To see debug statements set or add `bull` to the NODE_DEBUG environment variable
 ```bash
 export NODE_DEBUG=bull
 ```
-
-##License
-
-(The MIT License)
-
-Copyright (c) 2013 Manuel Astudillo <manuel@optimalbits.com>
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
