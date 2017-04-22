@@ -399,7 +399,7 @@ describe('Job', function(){
         return job.getState();
       }).then(function(state) {
         expect(state).to.be('completed');
-        return client.srem(queue.toKey('completed'), job.jobId);
+        return client.zrem(queue.toKey('completed'), job.jobId);
       }).then(function(){
         return job.moveToDelayed(Date.now() + 10000);
       }).then(function (){
@@ -419,7 +419,7 @@ describe('Job', function(){
         return job.getState();
       }).then(function(state) {
         expect(state).to.be('failed');
-        return client.srem(queue.toKey('failed'), job.jobId);
+        return client.zrem(queue.toKey('failed'), job.jobId);
       }).then(function(res) {
         expect(res).to.be(1);
         return job.getState();
