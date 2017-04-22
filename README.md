@@ -1,7 +1,6 @@
 
 <div align="center">
   <img src="./support/logo.png" width="150" />
-  <h3>Bull</h3>
   <br/>
   <p>
     The fastest, most reliable, Redis-based queue for Node. <br/>
