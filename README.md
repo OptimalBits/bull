@@ -79,9 +79,9 @@ Quick Guide
 var Queue = require('bull');
 
 var videoQueue = Queue('video transcoding', {redis: {port: 6379, host: '127.0.0.1'}});
-var audioQueue = Queue('audio transcoding');
+var audioQueue = Queue('audio transcoding', 'redis://127.0.0.1:6379');
 var imageQueue = Queue('image transcoding');
-var pdfQueue = Queue('pdf transcoding');
+var pdfQueue = new Queue('pdf transcoding');
 
 videoQueue.process(function(job, done){
 
