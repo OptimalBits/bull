@@ -391,20 +391,21 @@ Documentation
 -------------
 
 - [Queue](#queue)
-- [Queue##process](#process)
-- [Queue##add](#add)
-- [Queue##pause](#pause)
-- [Queue##resume](#resume)
-- [Queue##count](#count)
-- [Queue##empty](#empty)
-- [Queue##clean](#clean)
-- [Queue##close](#close)
-- [Queue##getJob](#getJob)
-- [Queue##getJobCounts](#getJobCounts)
+  - [Queue#process](#queueprocess)
+  - [Queue#add](#queueadd)
+  - [Queue#pause](#queuepause)
+  - [Queue#resume](#queueresume)
+  - [Queue#count](#queuecount)
+  - [Queue#empty](#queueempty)
+  - [Queue#clean](#queueclean)
+  - [Queue#close](#queueclose)
+  - [Queue#getJob](#queuegetjob)
+  - [Queue#getJobCounts](#queuegetjobcounts)
 - [Job](#job)
-- [Job##remove](#remove)
-
-<a name="queue"/>
+  - [Job#remove](#jobremove)
+  - [Job#retry](#jobretry)
+  - [Job#discard](#jobdiscard)
+  - [Job#promote](#jobpromote)
 
 ### Queue
 
@@ -440,9 +441,7 @@ __Arguments__
 
 ---
 
-<a name="process"/>
-
-#### Queue##Process
+#### Queue#Process
 
 ```ts
 process(name?: string, concurrency?: number, processor: (job, done?) => Promise<any>)
@@ -496,9 +495,7 @@ You can specify a concurrency. Bull will then call you handler in parallel respe
 
 ---
 
-<a name="add"/>
-
-#### Queue##add
+#### Queue#add
 
 ```ts
 add(name?: string, data: any, opts?: JobOpt): Promise<Job>
@@ -550,9 +547,7 @@ interface BackoffOpts{
 ---
 
 
-<a name="pause"/>
-
-#### Queue##pause
+#### Queue#pause
 
 ```ts
 pause(isLocal?: boolean): Promise
@@ -571,9 +566,7 @@ Pausing a queue that is already paused does nothing.
 ---
 
 
-<a name="resume"/>
-
-#### Queue##resume
+#### Queue#resume
 
 ```ts
 resume(isLocal?: boolean): Promise
@@ -590,9 +583,7 @@ Resuming a queue that is not paused does nothing.
 ---
 
 
-<a name="count"/>
-
-#### Queue##count
+#### Queue#count
 
 ```ts
 count(): Promise<number>
@@ -605,9 +596,7 @@ value may be true only for a very small amount of time.
 
 ---
 
-<a name="empty"/>
-
-#### Queue##empty
+#### Queue#empty
 
 ```ts
 empty(): Promise
@@ -618,9 +607,7 @@ Empties a queue deleting all the input lists and associated jobs.
 
 ---
 
-<a name="close"/>
-
-#### Queue##close
+#### Queue#close
 
 ```ts
 close(): Promise
@@ -672,9 +659,7 @@ queue.process(function (job) {
 
 ---
 
-<a name="getJob"/>
-
-#### Queue##getJob
+#### Queue#getJob
 
 ```ts
 getJob(jobId: string): Promise<Job>
@@ -686,9 +671,7 @@ parameter. If the specified job cannot be located, the promise will be resolved 
 
 ---
 
-<a name="getJobCounts"/>
-
-#### Queue##getJobCounts
+#### Queue#getJobCounts
 
 ```ts
 getJobCounts() : Promise<JobCounts>
@@ -709,9 +692,7 @@ Returns a promise that will return the job counts for the given queue.
 
 ---
 
-<a name="clean"/>
-
-#### Queue##clean
+#### Queue#clean
 
 ```ts
 clean(grace: number, status?: string, limit?: number): Promise<number[]>
@@ -752,22 +733,18 @@ The cleaner emits the `cleaned` event anytime the queue is cleaned.
 
 ---
 
-<a name="job"/>
-
 ### Job
 
 A job includes all data needed to perform its execution, as well as the progress
 method needed to update its progress.
 
-The most important property for the user is Job##data that includes the
-object that was passed to [Queue##add](#add), and that is normally used to
+The most important property for the user is Job#data that includes the
+object that was passed to [Queue#add](#add), and that is normally used to
 perform the job.
 
 ---
 
-<a name="remove"/>
-
-#### Job##remove
+#### Job#remove
 
 ```ts
 remove(): Promise
@@ -778,9 +755,7 @@ Removes a Job from the queue from all the lists where it may be included.
 
 ---
 
-<a name="retry"/>
-
-#### Job##retry
+#### Job#retry
 
 ```ts
 retry(): Promise
@@ -791,9 +766,7 @@ Re-run a Job that has failed. Returns a promise that resolves when the job is sc
 
 ---
 
-<a name="discard"/>
-
-#### Job##discard
+#### Job#discard
 
 ```ts
 discard(): Promise
@@ -803,9 +776,7 @@ Ensure this job is never ran again even if attemptsMade is less than `job.attemp
 
 ---
 
-<a name="promote"/>
-
-#### Job##promote
+#### Job#promote
 
 ```ts
 promote(): Promise
@@ -816,12 +787,10 @@ possible.
 
 ---
 
-<a name="priorityQueue"/>
-
 ###PriorityQueue(queueName, redisPort, redisHost, [redisOpts])
 
 ### DEPRECATION notice
-The priority queue has been deprecated since version 2.2.0 in favor of a new option, *priority* in [Queue##add](#add).
+The priority queue has been deprecated since version 2.2.0 in favor of a new option, *priority* in [Queue#add](#add).
 The priorityQueue will be removed from the code base in version 3.0.0.
 --
 
