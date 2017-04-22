@@ -209,54 +209,15 @@ queue.resume().then(function(){
 })
 ```
 
-A queue emits also some useful events:
+A queue also emits some useful events, for example...
 
 ```js
-.on('ready', function() {
-  // Queue ready for job
-  // All Redis connections are done
+queue.on('completed', function(job, result){
+  console.log('Job completed with result!', result)
 })
-.on('error', function(error) {
-  // Error
-})
-.on('active', function(job, jobPromise){
-  // Job started
-  // You can use jobPromise.cancel() to abort this job.
-})
-.on('stalled', function(job){
-  // Job that was considered stalled. Useful for debugging job workers that crash or pause the event loop.
-})
-.on('progress', function(job, progress){
-  // Job progress updated!
-})
-.on('completed', function(job, result){
-  // Job completed with output result!
-})
-.on('failed', function(job, err){
-  // Job failed with reason err!
-})
-.on('paused', function(){
-  // The queue has been paused
-})
-.on('resumed', function(job){
-  // The queue has been resumed
-})
-.on('cleaned', function(jobs, type) {
-  //jobs is an array of cleaned jobs
-  //type is the type of job cleaned
-  //see clean for details
-});
 ```
 
-Events are by default local, i.e., they only fire on the listeners that are registered on the given worker, if you need to listen to events globally, just prefix the event with `'global:'`:
-
-```js
-// Will listen locally, just to this queue...
-queue.on('completed', listener):
-
-// Will listen globally, to all queues...
-queue.on('global:completed', listener);
-```
+For more information on events, including the full list of events that are fired, check out the [Events reference](./REFERENCE.md#events)
 
 Queues are cheap, so if you need many of them just create new ones with different names:
 

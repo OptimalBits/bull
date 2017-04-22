@@ -18,8 +18,11 @@ Reference
   - [Job#retry](#jobretry)
   - [Job#discard](#jobdiscard)
   - [Job#promote](#jobpromote)
+- [Events](#events)
 
-## Queue
+
+Queue
+-----
 
 ```ts
 Queue(queueName: string, redisPort: number, redisHost: string, redisOpts?: RedisOpts): Queue
@@ -53,7 +56,7 @@ Instead of a `redisPort` and `redisHost`, you can pass a `redisConnectionString`
 
 ---
 
-### Queue#Process
+### Queue#process
 
 ```ts
 process(name?: string, concurrency?: number, processor: (job, done?) => Promise<any>)
@@ -311,7 +314,9 @@ The cleaner emits the `cleaned` event anytime the queue is cleaned.
 
 ---
 
-## Job
+
+Job
+---
 
 A job includes all data needed to perform its execution, as well as the progress method needed to update its progress.
 
@@ -359,7 +364,71 @@ Promotes a job that is currently "delayed" to the "waiting" state and executed a
 
 ---
 
-## Priorty Queue
+
+Events
+------
+
+A queue emits also some useful events:
+
+```js
+.on('ready', function() {
+  // Redis is connected and the queue is ready to accept jobs.
+})
+
+.on('error', function(error) {
+  // An error occured.
+})
+
+.on('active', function(job, jobPromise){
+  // A job has started. You can use `jobPromise.cancel()`` to abort it.
+})
+
+.on('stalled', function(job){
+  // A job has been marked as stalled. This is useful for debugging job
+  // workers that crash or pause the event loop.
+})
+
+.on('progress', function(job, progress){
+  // A job's progress was updated!
+})
+
+.on('completed', function(job, result){
+  // A job successfully completed with a `result`.
+})
+
+.on('failed', function(job, err){
+  // A job failed with reason `err`!
+})
+
+.on('paused', function(){
+  // The queue has been paused.
+})
+
+.on('resumed', function(job){
+  // The queue has been resumed.
+})
+
+.on('cleaned', function(jobs, type) {
+  // Old jobs have been cleaned from the queue. `jobs` is an array of cleaned
+  // jobs, and `type` is the type of jobs cleaned.
+});
+```
+
+Events are local by default—in other words they only fire on the listeners that are registered on the given worker, if you need to listen to events globally, just prefix the event with `'global:'`:
+
+```js
+// Will listen locally, just to this queue...
+queue.on('completed', listener):
+
+// Will listen globally, to instances of this queue...
+queue.on('global:completed', listener);
+```
+
+---
+
+
+Priorty Queue
+-------------
 
 ```ts
 PriorityQueue(queueName: string, redisPort: number, redisHost: string, [redisOpts: RedisOpts])
