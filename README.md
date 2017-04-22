@@ -44,8 +44,10 @@
 </div>
 
 
-Sponsors
---------
+---
+
+
+### Sponsors
 
 <a href="http://mixmax.com">
 <img src="https://mixmax.com/images/logo_confirmation.png" alt="Mixmax, Inc" width="100" />
@@ -57,8 +59,10 @@ Sponsors
 Are you developing bull sponsored by a company? Please, let us now!
 
 
-Features
---------
+---
+
+
+### Features
 
 - [x] Minimal CPU usage due to a polling-free design.
 - [x] Robust design based on Redis.
@@ -77,8 +81,10 @@ And coming up on the roadmap...
 - [ ] Parent-child jobs relationships.
 
 
-UIs
 ---
+
+
+### UIs
 
 There are a few third-party UIs that you can use for monitoring:
 
@@ -88,8 +94,10 @@ There are a few third-party UIs that you can use for monitoring:
 - [toureiro](https://github.com/Epharmix/Toureiro)
 
 
-Install
--------
+---
+
+
+### Install
 
 ```shell
 npm install bull@2.x --save
@@ -100,8 +108,10 @@ _**Requirements:** Bull requires a Redis version greater than or equal to `2.8.1
 _**Important:** We are currently developing Bull `3.x`, which means that the latest *unstable* version would be something like `3.0.0-alpha.1`. We recommend you stick to version `2.x` until `3.x` is stable. Check out [the milestone](https://github.com/OptimalBits/bull/milestone/4) for some things to expect in the next version!_
 
 
-Quickstart
-----------
+---
+
+
+### Quickstart
 
 ```js
 var Queue = require('bull');
@@ -260,15 +270,24 @@ if(cluster.isMaster){
 ```
 
 
-Important Notes
----------------
+
+---
+
+
+### Important Notes
 
 Bull aims for an "at most once" working strategy. When a worker is processing a job, it will keep the job locked until the work is done. However, it is important that the worker does not lock the event loop for too long, otherwise other workers might pick up the job believing that the original worker has stalled out.
 
 
-Documentation
--------------
+---
 
-- [Reference] — the full reference material for Bull.
-- [Patterns] — a set of examples for common patterns.
-- [License] — the Bull license.
+
+### Documentation
+
+For the full documentation, check out the reference and common patterns:
+
+- [Reference](./REFERENCE.md) — the full reference material for Bull.
+- [Patterns](./PATTERNS.md) — a set of examples for common patterns.
+- [License](./LICENSE.md) — the Bull license—it's MIT.
+
+If you see anything that could use more docs, please submit a pull request!
