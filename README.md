@@ -15,8 +15,7 @@
     <a href="#uis"><strong>UIs</strong></a> · 
     <a href="#install"><strong>Install</strong></a> · 
     <a href="#quickstart"><strong>Quickstart</strong></a> · 
-    <a href="#documentation"><strong>Documentation</strong></a> · 
-    <a href="./CONTRIBUTING.md"><strong>Contributing!</strong></a>
+    <a href="#documentation"><strong>Documentation</strong></a>
   </p>
   <br/>
   <br/>

@@ -1,6 +1,6 @@
 
-Contributing!
--------------
+Release Process
+---------------
 
 First, update `CHANGELOG.md` with the release number about to be released.
 
