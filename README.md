@@ -15,8 +15,6 @@ The fastest, most reliable, Redis-based queue for Node. Carefully written for ro
 _Follow [@manast](http://twitter.com/manast) for news and updates regarding this library._
 
 <br/>
-<hr/>
-<br/>
 
 ### Sponsors
 
@@ -30,8 +28,6 @@ _Follow [@manast](http://twitter.com/manast) for news and updates regarding this
 Are you developing bull sponsored by a company? Please, let us now!
 
 <br/>
----
-</br>
 
 ### Features
 
@@ -45,8 +41,6 @@ Are you developing bull sponsored by a company? Please, let us now!
 - Automatic recovery from process crashes.
 
 <br/>
-<hr/>
-<br/>
 
 ### UIs
 
@@ -59,8 +53,6 @@ There are a few third party UIs that can be used for easier administration of th
 We also have an official UI which is at the moment bare bones project: [bull-ui](https://github.com/OptimalBits/bull-ui)
 
 <br/>
-<hr/>
-<br/>
 
 ### Roadmap
 
@@ -70,8 +62,6 @@ We also have an official UI which is at the moment bare bones project: [bull-ui]
 - [ ] Parent-child jobs relationships.
 
 <br/>
----
-</br>
 
 ### Install
 
@@ -83,8 +73,6 @@ _**Requirements:** Bull requires a Redis version greater than or equal to `2.8.1
 
 _**Important:** We are currently developing Bull `3.x`, which means that the latest *unstable* version would be something like `3.0.0-alpha.1`. We recommend you stick to version `2.x` until `3.x` is stable. Check out [the milestone](https://github.com/OptimalBits/bull/milestone/4) for some things to expect in the next version!_
 
-<br/>
-<hr/>
 <br/>
 
 ### Quickstart
@@ -288,15 +276,11 @@ if(cluster.isMaster){
 ```
 
 <br/>
-<hr/>
-<br/>
 
 ### Important Notes
 
 Bull aims for an "at most once" working strategy. When a worker is processing a job, it will keep the job locked until the work is done. However, it is important that the worker does not lock the event loop for too long, otherwise other workers might pick up the job believing that the original worker has stalled out.
 
-<br/>
-<hr/>
 <br/>
 
 ### Reusing Redis connections
@@ -328,8 +312,6 @@ var queueQux = new Queue('quxbaz', opts);
 ```
 
 
-<br/>
-<hr/>
 <br/>
 
 ### Useful Patterns
@@ -432,7 +414,7 @@ __Arguments__
     redisOptions {Object} Options to pass to the redis client. https://github.com/luin/ioredis/blob/master/API.md#new-redisport-host-options
 ```
 
----------------------------------------
+---
 
 
 <a name="process"/>
@@ -490,7 +472,7 @@ queue.process(function(job) { // No done callback here :)
 You can specify a concurrency. Bull will then call you handler in parallel respecting this max number.
 
 
----------------------------------------
+---
 
 <a name="add"/>
 
@@ -543,7 +525,7 @@ interface BackoffOpts{
 }
 ```
 
----------------------------------------
+---
 
 
 <a name="pause"/>
@@ -564,7 +546,7 @@ worker from taking new jobs prior to shutting down.
 Pausing a queue that is already paused does nothing.
 
 
----------------------------------------
+---
 
 
 <a name="resume"/>
@@ -583,7 +565,7 @@ paused locally; for those, `resume(true)` must be called directly on their insta
 
 Resuming a queue that is not paused does nothing.
 
----------------------------------------
+---
 
 
 <a name="count"/>
@@ -599,7 +581,7 @@ delayed. Since there may be other processes adding or processing jobs, this
 value may be true only for a very small amount of time.
 
 
----------------------------------------
+---
 
 <a name="empty"/>
 
@@ -612,7 +594,7 @@ empty(): Promise
 Empties a queue deleting all the input lists and associated jobs.
 
 
----------------------------------------
+---
 
 <a name="close"/>
 
@@ -666,7 +648,7 @@ queue.process(function (job) {
 ```
 
 
----------------------------------------
+---
 
 <a name="getJob"/>
 
@@ -680,7 +662,7 @@ Returns a promise that will return the job instance associated with the `jobId`
 parameter. If the specified job cannot be located, the promise will be resolved to `null`.
 
 
----------------------------------------
+---
 
 <a name="getJobCounts"/>
 
@@ -703,7 +685,7 @@ Returns a promise that will return the job counts for the given queue.
 }
 ```
 
----------------------------------------
+---
 
 <a name="clean"/>
 
@@ -746,7 +728,7 @@ The cleaner emits the `cleaned` event anytime the queue is cleaned.
   queue.on('cleaned', listener: (jobs: number[], status: string) => void);
 ```
 
----------------------------------------
+---
 
 <a name="job"/>
 
@@ -759,7 +741,7 @@ The most important property for the user is Job##data that includes the
 object that was passed to [Queue##add](#add), and that is normally used to
 perform the job.
 
----------------------------------------
+---
 
 <a name="remove"/>
 
@@ -772,7 +754,7 @@ remove(): Promise
 Removes a Job from the queue from all the lists where it may be included.
 
 
----------------------------------------
+---
 
 <a name="retry"/>
 
@@ -785,7 +767,7 @@ retry(): Promise
 Re-run a Job that has failed. Returns a promise that resolves when the job is scheduled for retry.
 
 
----------------------------------------
+---
 
 <a name="discard"/>
 
@@ -797,7 +779,7 @@ discard(): Promise
 
 Ensure this job is never ran again even if attemptsMade is less than `job.attempts`
 
----------------------------------------
+---
 
 <a name="promote"/>
 
@@ -810,7 +792,7 @@ promote(): Promise
 Promotes a job that is delayed to be placed on the wait state and executed as soon as
 possible.
 
----------------------------------------
+---
 
 <a name="priorityQueue"/>
 
