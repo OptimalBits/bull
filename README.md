@@ -8,24 +8,35 @@
     <br/>
     Carefully written for rock solid stability and atomicity.
   </p>
+
+  <br/>
+
+  <a href="https://gitter.im/OptimalBits/bull">
+    <img src="https://badges.gitter.im/Join%20Chat.svg"/>
+  </a>
+  <a href="https://gitter.im/OptimalBits/bull">
+    <img src="https://img.shields.io/npm/dm/bull.svg?maxAge=2592000"/>
+  </a>
+  <a href="http://travis-ci.org/OptimalBits/bull">
+    <img src="https://secure.travis-ci.org/OptimalBits/bull.png?branch=master"/>
+  </a>
+  <a href="http://badge.fury.io/js/bull">
+    <img src="https://badge.fury.io/js/bull.svg"/>
+  </a>
+  <a href="http://isitmaintained.com/project/OptimalBits/bull">
+    <img src="http://isitmaintained.com/badge/open/OptimalBits/bull.svg"/>
+  </a>
+  <a href="http://isitmaintained.com/project/OptimalBits/bull">
+    <img src="http://isitmaintained.com/badge/resolution/OptimalBits/bull.svg"/>
+  </a>
+
+  <br/>
+
+  <p><em>Follow <a href="http://twitter.com/manast">@manast</a> for news and updates regarding this library!</em></p>
 </div>
 
----
 
-[![Join the chat at https://gitter.im/OptimalBits/bull](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/OptimalBits/bull?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![npm](https://img.shields.io/npm/dm/bull.svg?maxAge=2592000)]()
-[![BuildStatus](https://secure.travis-ci.org/OptimalBits/bull.png?branch=master)](http://travis-ci.org/OptimalBits/bull)
-[![NPM version](https://badge.fury.io/js/bull.svg)](http://badge.fury.io/js/bull)
-[![Percentage of issues still open](http://isitmaintained.com/badge/open/OptimalBits/bull.svg)](http://isitmaintained.com/project/OptimalBits/bull "Percentage of issues still open")
-[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/OptimalBits/bull.svg)](http://isitmaintained.com/project/OptimalBits/bull "Average time to resolve an issue")
-
-<p><em>Follow [@manast](http://twitter.com/manast) for news and updates regarding this library.</em></p>
-
----
-
----
-
-### Sponsors
+## Sponsors
 
 <a href="http://mixmax.com">
 <img src="https://mixmax.com/images/logo_confirmation.png" alt="Mixmax, Inc" width="100" />
@@ -36,9 +47,8 @@
 
 Are you developing bull sponsored by a company? Please, let us now!
 
----
 
-### Features
+## Features
 
 - Minimal CPU usage due to a polling-free design.
 - Robust design based on Redis.
@@ -49,9 +59,8 @@ Are you developing bull sponsored by a company? Please, let us now!
 - Pause/resume—globally or locally.
 - Automatic recovery from process crashes.
 
----
 
-### UIs
+## UIs
 
 There are a few third party UIs that can be used for easier administration of the queues (not in any particular order):
 
@@ -61,18 +70,16 @@ There are a few third party UIs that can be used for easier administration of th
 
 We also have an official UI which is at the moment bare bones project: [bull-ui](https://github.com/OptimalBits/bull-ui)
 
----
 
-### Roadmap
+## Roadmap
 
 - [ ] Multiple job types per queue.
 - [ ] Scheduling jobs as a cron specification.
 - [ ] Rate limiter for jobs.
 - [ ] Parent-child jobs relationships.
 
----
 
-### Install
+## Install
 
 ```shell
 npm install bull@2.x --save
@@ -82,9 +89,8 @@ _**Requirements:** Bull requires a Redis version greater than or equal to `2.8.1
 
 _**Important:** We are currently developing Bull `3.x`, which means that the latest *unstable* version would be something like `3.0.0-alpha.1`. We recommend you stick to version `2.x` until `3.x` is stable. Check out [the milestone](https://github.com/OptimalBits/bull/milestone/4) for some things to expect in the next version!_
 
----
 
-### Quickstart
+## Quickstart
 
 ```js
 var Queue = require('bull');
@@ -284,15 +290,13 @@ if(cluster.isMaster){
 }
 ```
 
----
 
-### Important Notes
+## Important Notes
 
 Bull aims for an "at most once" working strategy. When a worker is processing a job, it will keep the job locked until the work is done. However, it is important that the worker does not lock the event loop for too long, otherwise other workers might pick up the job believing that the original worker has stalled out.
 
----
 
-### Reusing Redis connections
+## Reusing Redis connections
 
 A standard queue requires **3 connections** to the Redis server. In some situations you might want to re-use connections—for example on Heroku where the connection count is restricted. You can do this with the `createClient` option in the `Queue` constructor:
 
@@ -321,9 +325,8 @@ var queueQux = new Queue('quxbaz', opts);
 ```
 
 
----
 
-### Useful Patterns
+## Useful Patterns
 
 #### Message Queue
 
@@ -370,6 +373,7 @@ A common pattern is where you have a cluster of queue processors that just proce
 The most robust and scalable way to accomplish this is by combining the standard job queue with the message queue pattern: a service sends jobs to the cluster just by opening a job queue and adding jobs to it, the cluster will start processing as fast as it can. Everytime a job gets completed in the cluster a message is send to a results message queue with the result data, this queue is listened by some other service that stores the results in a database.
 
 
+
 ## Documentation
 
 * [Queue](#queue)
@@ -385,6 +389,7 @@ The most robust and scalable way to accomplish this is by combining the standard
 * [Queue##getJobCounts](#getJobCounts)
 * [Job](#job)
 * [Job##remove](#remove)
+
 
 
 ## Reference
