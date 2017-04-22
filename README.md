@@ -52,9 +52,9 @@
 
 ### Sponsors
 
-<div align="center">
+<div valign="middle">
   <a href="http://mixmax.com">
-    <img src="https://mixmax.com/images/logo_confirmation.png" alt="Mixmax, Inc" width="100" />
+    <img src="https://mixmax.com/images/logo_confirmation.png" alt="Mixmax, Inc" width="85" />
   </a>
   <a href="http://optimalbits.com">
     <img src="http://optimalbits.com/images/logo.png" />
