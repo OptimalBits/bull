@@ -1,6 +1,6 @@
 
 <div align="center">
-  <img src="./support/logo.png" width="300" />
+  <img src="./support/logo@2x.png" width="300" />
   <br/>
   <p>
     The fastest, most reliable, Redis-based queue for Node. <br/>
