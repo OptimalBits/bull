@@ -2,6 +2,7 @@
 <div align="center">
   <img src="./support/logo@2x.png" width="300" />
   <br/>
+  <br/>
   <p>
     The fastest, most reliable, Redis-based queue for Node. <br/>
     Carefully written for rock solid stability and atomicity.
@@ -16,6 +17,9 @@
     <a href="#documentation"><strong>Documentation</strong></a> · 
     <a href="./CONTRIBUTING.md"><strong>Contributing!</strong></a>
   </p>
+  <br/>
+  <br/>
+  <br/>
   <p>
     <a href="https://gitter.im/OptimalBits/bull">
       <img src="https://badges.gitter.im/Join%20Chat.svg"/>
@@ -36,7 +40,6 @@
       <img src="http://isitmaintained.com/badge/resolution/OptimalBits/bull.svg"/>
     </a>
   </p>
-  <br/>
   <p>
     <em>Follow <a href="http://twitter.com/manast">@manast</a> for news and updates regarding this library!</em>
   </p>
