@@ -15,7 +15,9 @@ The fastest, most reliable, Redis-based queue for Node. Carefully written for ro
 _Follow [@manast](http://twitter.com/manast) for news and updates regarding this library._
 
 <br/>
+
 ---
+
 <br/>
 
 ### Sponsors
@@ -45,7 +47,9 @@ Are you developing bull sponsored by a company? Please, let us now!
 - Automatic recovery from process crashes.
 
 <br/>
+
 ---
+
 <br/>
 
 ### UIs
@@ -59,7 +63,9 @@ There are a few third party UIs that can be used for easier administration of th
 We also have an official UI which is at the moment bare bones project: [bull-ui](https://github.com/OptimalBits/bull-ui)
 
 <br/>
+
 ---
+
 <br/>
 
 ### Roadmap
@@ -84,7 +90,9 @@ _**Requirements:** Bull requires a Redis version greater than or equal to `2.8.1
 _**Important:** We are currently developing Bull `3.x`, which means that the latest *unstable* version would be something like `3.0.0-alpha.1`. We recommend you stick to version `2.x` until `3.x` is stable. Check out [the milestone](https://github.com/OptimalBits/bull/milestone/4) for some things to expect in the next version!_
 
 <br/>
+
 ---
+
 <br/>
 
 ### Quickstart
@@ -288,7 +296,9 @@ if(cluster.isMaster){
 ```
 
 <br/>
+
 ---
+
 <br/>
 
 ### Important Notes
@@ -296,7 +306,9 @@ if(cluster.isMaster){
 Bull aims for an "at most once" working strategy. When a worker is processing a job, it will keep the job locked until the work is done. However, it is important that the worker does not lock the event loop for too long, otherwise other workers might pick up the job believing that the original worker has stalled out.
 
 <br/>
+
 ---
+
 <br/>
 
 ### Reusing Redis connections
@@ -329,7 +341,9 @@ var queueQux = new Queue('quxbaz', opts);
 
 
 <br/>
+
 ---
+
 <br/>
 
 ### Useful Patterns
