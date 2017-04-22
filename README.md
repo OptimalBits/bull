@@ -1,6 +1,6 @@
 
 <div align="center">
-  <img src="https://image.freepik.com/free-icon/strong-bull-side-view_318-52710.jpg" width="200" />
+  <img src="./support/logo.png" width="150" />
   <h3>Bull</h3>
   <br/>
   <p>
