@@ -8,10 +8,9 @@ gulp.task('lint', function () {
   // Note: To have the process exit with an error code (1) on
   //  lint error, return the stream and pipe to failOnError last.
   return gulp.src([
-    './lib/job.js',
-    './lib/queue.js',
-    './lib/timer-manager.js',
-    './test/**'
+    './lib/**.js',
+    '!./lib/priority-queue.js', // This file is deprecated.
+    './test/**.js'
   ])
     .pipe(eslint({
       rules: {
