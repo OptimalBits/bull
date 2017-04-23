@@ -13,7 +13,7 @@ function simulateDisconnect(queue){
 }
 
 function buildQueue(name) {
-  var queue = new Queue(name || STD_QUEUE_NAME, 6379, '127.0.0.1');
+  var queue = new Queue(name || STD_QUEUE_NAME, {redis: {port: 6379, host: '127.0.0.1'}});
   queues.push(queue);
   return queue;
 }
