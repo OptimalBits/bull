@@ -50,8 +50,6 @@ There are a few third party UIs that can be used for easier administration of th
 * [react-bull](https://github.com/kfatehi/react-bull)
 * [toureiro](https://github.com/Epharmix/Toureiro)
 
-We also have an official UI which is at the moment bare bones project: [bull-ui](https://github.com/OptimalBits/bull-ui)
-
 Roadmap:
 --------
 
