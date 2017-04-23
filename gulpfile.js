@@ -17,6 +17,7 @@ gulp.task('lint', function () {
       rules: {
         indent: [2, 2, {"SwitchCase": 1}],
         'valid-jsdoc': 0,
+        'semi': 2,
         'func-style': 0,
         'no-use-before-define': 0,
         camelcase: 1,
