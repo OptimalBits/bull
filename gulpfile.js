@@ -22,7 +22,7 @@ gulp.task('lint', function () {
         'camelcase': 1,
         'no-unused-vars': 1,
         'no-alert': 1,
-        'no-console': 1,
+        'no-console': [2, { allow: ["warn", "error"] }],
         'quotes': [2, "single"],
         'no-underscore-dangle': 0
       },
