@@ -78,9 +78,9 @@ Quick Guide
 ```javascript
 var Queue = require('bull');
 
-var videoQueue = Queue('video transcoding', {redis: {port: 6379, host: '127.0.0.1'}});
-var audioQueue = Queue('audio transcoding', 'redis://127.0.0.1:6379');
-var imageQueue = Queue('image transcoding');
+var videoQueue = new Queue('video transcoding', 'redis://127.0.0.1:6379');
+var audioQueue = new Queue('audio transcoding', {redis: {port: 6379, host: '127.0.0.1'}}); // Specify Redis connection using object
+var imageQueue = new Queue('image transcoding');
 var pdfQueue = new Queue('pdf transcoding');
 
 videoQueue.process(function(job, done){
@@ -101,7 +101,7 @@ videoQueue.process(function(job, done){
   done(null, { framerate: 29.5 /* etc... */ });
 
   // If the job throws an unhandled exception it is also handled correctly
-  throw (Error('some unexpected error'));
+  throw new Error('some unexpected error');
 });
 
 audioQueue.process(function(job, done){
@@ -118,7 +118,7 @@ audioQueue.process(function(job, done){
   done(null, { samplerate: 48000 /* etc... */ });
 
   // If the job throws an unhandled exception it is also handled correctly
-  throw (Error('some unexpected error'));
+  throw new Error('some unexpected error');
 });
 
 imageQueue.process(function(job, done){
@@ -135,7 +135,7 @@ imageQueue.process(function(job, done){
   done(null, { width: 1280, height: 720 /* etc... */ });
 
   // If the job throws an unhandled exception it is also handled correctly
-  throw (Error('some unexpected error'));
+  throw new Error('some unexpected error');
 });
 
 pdfQueue.process(function(job){
@@ -231,8 +231,8 @@ queue.on('global:completed', listener);
 Queues are cheap, so if you need many of them just create new ones with different
 names:
 ```javascript
-var userJohn = Queue('john');
-var userLisa = Queue('lisa');
+var userJohn = new Queue('john');
+var userLisa = new Queue('lisa');
 .
 .
 .
@@ -247,7 +247,7 @@ var
   cluster = require('cluster');
 
 var numWorkers = 8;
-var queue = Queue("test concurrent queue");
+var queue = new Queue("test concurrent queue");
 
 if(cluster.isMaster){
   for (var i = 0; i < numWorkers; i++) {
@@ -321,8 +321,8 @@ Server A:
 ```javascript
 var Queue = require('bull');
 
-var sendQueue = Queue("Server B");
-var receiveQueue = Queue("Server A");
+var sendQueue = new Queue("Server B");
+var receiveQueue = new Queue("Server A");
 
 receiveQueue.process(function(job, done){
   console.log("Received message", job.data.msg);
@@ -336,8 +336,8 @@ Server B:
 ```javascript
 var Queue = require('bull');
 
-var sendQueue = Queue("Server A");
-var receiveQueue = Queue("Server B");
+var sendQueue = new Queue("Server A");
+var receiveQueue = new Queue("Server B");
 
 receiveQueue.process(function(job, done){
   console.log("Received message", job.data.msg);
@@ -387,7 +387,7 @@ listened by some other service that stores the results in a database.
 ### Queue
 
 ```typescript
-Queue(queueName: string, redisConnectionString?: string, opts: QueueOptions): Queue
+new Queue(queueName: string, redisConnectionString?: string, opts: QueueOptions): Queue
 ```
 
 This is the Queue constructor. It creates a new Queue that is persisted in
@@ -616,7 +616,7 @@ shutdown.
 
 ```javascript
 var Queue = require('bull');
-var queue = Queue('example');
+var queue = new Queue('example');
 
 var after100 = _.after(100, function () {
   queue.close().then(function () { console.log('done') })
