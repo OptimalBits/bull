@@ -15,12 +15,12 @@ gulp.task('lint', function () {
   ])
     .pipe(eslint({
       rules: {
-        indent: [2, 2, {"SwitchCase": 1}],
+        'indent': [2, 2, {"SwitchCase": 1}],
         'valid-jsdoc': 0,
         'semi': 2,
         'func-style': 0,
         'no-use-before-define': 0,
-        camelcase: 1,
+        'camelcase': 1,
         'no-unused-vars': 1,
         'no-alert': 1,
         'no-console': 1,
