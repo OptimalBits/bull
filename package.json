@@ -18,7 +18,6 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "bluebird": "^3.5.0",
-    "bull-redlock": "^2.2.1",
     "debuglog": "^1.0.0",
     "disturbed": "^1.0.6",
     "ioredis": "^3.0.0-1",
