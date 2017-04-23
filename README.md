@@ -11,7 +11,7 @@ Bull Job Manager
 
 <img src="https://image.freepik.com/free-icon/strong-bull-side-view_318-52710.jpg" width="200" />
 
-The fastest, most reliable redis based queue for nodejs.
+The fastest, most reliable Redis based queue for nodejs.
 Carefully written for rock solid stability and atomicity.
 
 
@@ -66,7 +66,7 @@ Install:
 
     npm install bull@2.x --save
 
-Note that you need a redis version higher or equal than 2.8.11 for bull to work properly.
+Note that you need a Redis version higher or equal than 2.8.11 for bull to work properly.
 
 **IMPORTANT**
 
@@ -832,7 +832,7 @@ The priority queue will process more often higher priority jobs than lower.
   });
 ```
 
-Warning!!: Priority queue use 5 times more redis connections than a normal queue.
+Warning!!: Priority queue use 5 times more Redis connections than a normal queue.
 
 
 #### Debugging
