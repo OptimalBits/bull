@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 var redis = require('redis');
 var when = require('when');
 
@@ -110,7 +110,7 @@ Job.prototype._done = function(list){
     .exec(function(err){
       !err && deferred.resolve();
       err && deferred.reject(err);
-  });
+    });
   return deferred.promise;
 }
 
