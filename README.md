@@ -419,9 +419,9 @@ __Arguments__
 
     // Advanced settings (see below)
     settings?: QueueSettings {
-      lockDuration?: number = 5000,
+      lockDuration?: number = 30000,
       lockRenewTime?: number = lockDuration / 2,
-      stalledInterval?: number = 5000,
+      stalledInterval?: number = 30000,
       maxStalledCount?: number = 1,
       guardInterval?: number = 5000,
       retryProcessDelay?: number = 5000,
