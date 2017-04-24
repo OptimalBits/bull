@@ -267,7 +267,7 @@ describe('Queue', function () {
             }
           }
         }
-      }
+      };
       var queueFoo = new Queue('foobar', opts);
       var queueQux = new Queue('quxbaz', opts);
 
@@ -299,14 +299,14 @@ describe('Queue', function () {
             if(completed == 2){
               done();
             }
-          })
+          });
 
           queueQux.on('completed', function(){
             completed++;
             if(completed == 2){
               done();
             }
-          })
+          });
         });
       }, done);
     });
@@ -599,7 +599,7 @@ describe('Queue', function () {
       this.timeout(12000);
       utils.newQueue('test queue stalled').then(function (queueStalled) {
         queueStalled.LOCK_DURATION = 15;
-        queueStalled.LOCK_RENEW_TIME = 5
+        queueStalled.LOCK_RENEW_TIME = 5;
         var jobs = [
           queueStalled.add({ bar: 'baz' }),
           queueStalled.add({ bar1: 'baz1' }),
@@ -732,7 +732,7 @@ describe('Queue', function () {
 
     it('fails job if missing named process', function (done) {
       queue.process(function (job) {
-        done(Error('should not process this job'))
+        done(Error('should not process this job'));
       });
 
       queue.once('failed', function(err){
@@ -769,7 +769,7 @@ describe('Queue', function () {
         return Promise.all(stalledQueues.map(function(queue){
           return queue.close(true);
         }));
-      }
+      };
 
       Promise.all(jobs).then(function () {
         var processed = 0;
@@ -1328,7 +1328,7 @@ describe('Queue', function () {
         });
       });
     });
-  })
+  });
 
   describe('Delayed jobs', function () {
     var queue;
@@ -1627,7 +1627,7 @@ describe('Queue', function () {
         });
       });
       queue.on('failed', function () {
-        done()
+        done();
       });
     });
 

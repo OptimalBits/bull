@@ -2,7 +2,7 @@
   "name": "bull",
   "version": "2.2.6",
   "description": "Job manager",
-  "main": "index.js",
+  "main": "./lib/queue",
   "repository": {
     "type": "git",
     "url": "git://github.com/OptimalBits/bull.git"
@@ -27,14 +27,39 @@
     "uuid": "^3.0.1"
   },
   "devDependencies": {
+    "eslint": "^2.13.1",
     "expect.js": "^0.3.1",
-    "gulp": "^3.9.1",
-    "gulp-eslint": "^2.1.0",
     "mocha": "^2.5.3",
     "sinon": "^1.17.7"
   },
   "scripts": {
-    "test": "gulp && mocha test/test_* --reporter spec --timeout 5000",
+    "lint": "eslint lib test",
+    "pretest": "npm run lint",
+    "test": "mocha",
     "postpublish": "git push && git push --tags"
+  },
+  "eslintConfig": {
+    "rules": {
+      "indent": [
+        2,
+        2,
+        {
+          "SwitchCase": 1
+        }
+      ],
+      "semi": 2,
+      "valid-jsdoc": 0,
+      "func-style": 0,
+      "no-use-before-define": 0,
+      "camelcase": 1,
+      "no-unused-vars": 1,
+      "no-alert": 1,
+      "no-console": [2, {"allow": ["warn", "error"]}],
+      "quotes": [
+        2,
+        "single"
+      ],
+      "no-underscore-dangle": 0
+    }
   }
 }

@@ -482,7 +482,7 @@ describe('Job', function(){
       queue.add({ foo: 'bar' }).then(function(job){
         return Promise.delay(1500).then(function(){
           return job.finished();
-        })
+        });
       }).then(function(){
         done();
       }, done);
