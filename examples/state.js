@@ -15,7 +15,7 @@ machine.state('wait confirmation'); // // In this state we do nothing we just wa
 
 machine.state('confirm user', function(task){
   return data;
-})
+});
 
 machine.next('wait confirmation', data);
 

@@ -47,13 +47,14 @@
           "SwitchCase": 1
         }
       ],
+      "semi": 2,
       "valid-jsdoc": 0,
       "func-style": 0,
       "no-use-before-define": 0,
       "camelcase": 1,
       "no-unused-vars": 1,
       "no-alert": 1,
-      "no-console": 1,
+      "no-console": [2, {"allow": ["warn", "error"]}],
       "quotes": [
         2,
         "single"

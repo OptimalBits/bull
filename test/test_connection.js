@@ -28,7 +28,7 @@ describe('connection', function () {
     }).then(function() {
       done();
     }).catch(function(err){
-      console.log(err);
+      console.error(err);
     });
 
     // Simulate disconnect
@@ -83,7 +83,7 @@ describe('connection', function () {
       }
       count ++;
     }).catch(function(err){
-      console.log(err);
+      console.error(err);
     });
 
     queue.on('completed', function(){
