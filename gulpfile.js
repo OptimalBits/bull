@@ -8,22 +8,21 @@ gulp.task('lint', function () {
   // Note: To have the process exit with an error code (1) on
   //  lint error, return the stream and pipe to failOnError last.
   return gulp.src([
-    './lib/job.js',
-    './lib/queue.js',
-    './lib/timer-manager.js',
-    './test/**'
+    './lib/**.js',
+    '!./lib/priority-queue.js', // This file is deprecated.
+    './test/**.js'
   ])
     .pipe(eslint({
       rules: {
-      //  'keyword-spacing': [2, 'never'],
-        indent: [2, 2, {"SwitchCase": 1}],
+        'indent': [2, 2, {"SwitchCase": 1}],
         'valid-jsdoc': 0,
+        'semi': 2,
         'func-style': 0,
         'no-use-before-define': 0,
-        camelcase: 1,
+        'camelcase': 1,
         'no-unused-vars': 1,
         'no-alert': 1,
-        'no-console': 1,
+        'no-console': [2, { allow: ["warn", "error"] }],
         'quotes': [2, "single"],
         'no-underscore-dangle': 0
       },

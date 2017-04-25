@@ -54,7 +54,7 @@ describe.skip('Cluster', function () {
       worker = cluster.fork();
       worker.on('message', workerMessageHandlerWrapper);
       workers.push(worker);
-      console.log('Worker spawned: #', worker.id);
+      // console.log('Worker spawned: #', worker.id);
     }
   });
 
