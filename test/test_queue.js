@@ -603,7 +603,11 @@ describe('Queue', function () {
             var stalledCallback = sandbox.spy();
             return queueStalled.close(true).then(function () {
               return new Promise(function (resolve, reject) {
-                utils.newQueue('test queue stalled').then(function (queue2) {
+                utils.newQueue('test queue stalled', {
+                  settings: {
+                    stalledInterval: 100
+                  }
+                }).then(function (queue2) {
                   var doneAfterFour = _.after(4, function () {
                     try {
                       expect(stalledCallback.calledOnce).to.be(true);
