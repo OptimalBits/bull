@@ -258,7 +258,7 @@ describe('Queue', function () {
               return new redis(opts);
           }
         }
-      }
+      };
       var queueFoo = new Queue('foobar', opts);
       var queueQux = new Queue('quxbaz', opts);
 
@@ -290,14 +290,14 @@ describe('Queue', function () {
             if(completed == 2){
               done();
             }
-          })
+          });
 
           queueQux.on('completed', function(){
             completed++;
             if(completed == 2){
               done();
             }
-          })
+          });
         });
       }, done);
     });
@@ -603,11 +603,7 @@ describe('Queue', function () {
             var stalledCallback = sandbox.spy();
             return queueStalled.close(true).then(function () {
               return new Promise(function (resolve, reject) {
-                utils.newQueue('test queue stalled',{
-                  settings: {
-                    stalledInterval: 100
-                  }
-                }).then(function (queue2) {
+                utils.newQueue('test queue stalled').then(function (queue2) {
                   var doneAfterFour = _.after(4, function () {
                     try {
                       expect(stalledCallback.calledOnce).to.be(true);
@@ -729,7 +725,7 @@ describe('Queue', function () {
 
     it('fails job if missing named process', function (done) {
       queue.process(function (/*job*/) {
-        done(Error('should not process this job'))
+        done(Error('should not process this job'));
       });
 
       queue.once('failed', function(/*err*/){
@@ -771,7 +767,7 @@ describe('Queue', function () {
         return Promise.all(stalledQueues.map(function(queue){
           return queue.close(true);
         }));
-      }
+      };
 
       Promise.all(jobs).then(function () {
         var processed = 0;
@@ -784,7 +780,7 @@ describe('Queue', function () {
               var queue2 = new Queue('test queue stalled 2', redisOpts);
               queue2.on('error', function(){
 
-              })
+              });
               queue2.process(function (job2, jobDone) {
                 jobDone();
               });
@@ -1181,7 +1177,7 @@ describe('Queue', function () {
           resolve();
           return Promise.delay(200);
         });
-      })
+      });
 
       queue.on('ready', function () {
         var jobs = [];
@@ -1275,7 +1271,7 @@ describe('Queue', function () {
       var startsProcessing = new Promise(function(resolve){
         queue.process(function(/*job*/) {
           resolve();
-          return Promise.delay(200)
+          return Promise.delay(200);
         });
       });
 
@@ -1347,7 +1343,7 @@ describe('Queue', function () {
         });
       });
     });
-  })
+  });
 
   describe('Delayed jobs', function () {
     var queue;
@@ -1640,7 +1636,7 @@ describe('Queue', function () {
         });
       });
       queue.on('failed', function () {
-        done()
+        done();
       });
     });
 
