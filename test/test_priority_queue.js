@@ -253,7 +253,7 @@ describe.skip('Priority queue', function(){
 
               var doneAfterFour = _.after(4, function(){
                 queue2.close().then(function(){
-                  done()
+                  done();
                 }, done);
               });
               queue2.on('completed', function(){
