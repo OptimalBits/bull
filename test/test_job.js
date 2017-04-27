@@ -119,7 +119,7 @@ describe('Job', function(){
         return queue.getNextJob().then(function() {
           return job.isActive().then(function(isActive) {
             expect(isActive).to.be(true);
-            return job.releaseLock()
+            return job.releaseLock();
           }).then(function(){
             return job.remove();
           });
@@ -486,7 +486,7 @@ describe('Job', function(){
       queue.add({ foo: 'bar' }).then(function(job){
         return Promise.delay(500).then(function(){
           return job.finished();
-        })
+        });
       }).then(function(){
         done();
       }, done);
