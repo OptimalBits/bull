@@ -30,7 +30,7 @@ reduces chances for hazards.
 
 'ready' event has been removed, you can use ```Queue##isReady()``` instead if you want to know when the queue
 has been initialized. Normally you will never need to wait for readyness since this is taken care internally
-by the queue methods that require the queue to be ready.
+by the queue methods that require the queue to be <ready class=""></ready>
 
 Events arguments are now the same for local and global events. This affects events such as completed and failed,
 where in 2.x the first argument was a job instance for local jobs. Now both local and global events pass
