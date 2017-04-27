@@ -178,9 +178,11 @@ describe('Job', function(){
         done(new Error('the job failed'));
       });
       queue.once('failed', function (job) {
-        queue.once('waiting', function (job2) {
-          expect(job2.data.foo).to.be.equal('bar');
-          cb();
+        queue.once('waiting', function (jobId2) {
+          Job.fromId(queue, jobId2).then(function(job2){
+            expect(job2.data.foo).to.be.equal('bar');
+            cb();
+          });
         });
         job.retry();
       });
@@ -461,7 +463,7 @@ describe('Job', function(){
       }).then(done, done);
     });
 
-    it('should reject when the job has been completed', function(done){
+    it('should reject when the job has been failed', function(done){
       queue.process(function () {
         return Promise.delay(500).then(function(){
           return Promise.reject(Error('test error'));

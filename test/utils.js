@@ -20,11 +20,7 @@ function buildQueue(name) {
 
 function newQueue(name){
   var queue = buildQueue(name);
-  return new Promise(function(resolve){
-    queue.on('ready', function(){
-      resolve(queue);
-    });
-  });
+  return queue.isReady();
 }
 
 function cleanupQueue(queue) {
