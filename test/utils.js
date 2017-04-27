@@ -20,8 +20,8 @@ function buildQueue(name, options) {
   return queue;
 }
 
-function newQueue(name){
-  var queue = buildQueue(name);
+function newQueue(name, opts){
+  var queue = buildQueue(name, opts);
   return queue.isReady();
 }
 
