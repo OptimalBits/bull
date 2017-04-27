@@ -1,5 +1,5 @@
 --[[
-  Takes a lock
+  Update job progress
 
      Input:
         KEYS[1] Job id key
