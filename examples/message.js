@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 var redis = require('redis');
 var when = require('when');
 
@@ -16,7 +16,7 @@ var Message = function Message(queue, msgId, data, opts){
   this.data = data;
   this.opts = opts;
   this._progress = 0;
-}
+};
 
 Message.create = function(queue, msgId, data, opts){
   var deferred = when.defer();
@@ -29,7 +29,7 @@ Message.create = function(queue, msgId, data, opts){
     }
   });
   return deferred.promise;
-}
+};
 
 Message.fromId = function(queue, msgId){
   var deferred = when.defer();
@@ -41,7 +41,7 @@ Message.fromId = function(queue, msgId){
     }
   });
   return deferred.promise;
-}
+};
 
 Message.prototype.toData = function(){
   return {
@@ -49,8 +49,8 @@ Message.prototype.toData = function(){
     data: JSON.stringify(this.data || {}),
     opts: JSON.stringify(this.opts || {}),
     progress: this._progress
-  }
-}
+  };
+};
 
 Message.prototype.progress = function(progress){
   if(progress){
@@ -68,23 +68,23 @@ Message.prototype.progress = function(progress){
   }else{
     return this._progress;
   }
-}
+};
 
 Job.prototype.completed = function(){
   return this._done('completed');
-}
+};
 
 Job.prototype.failed = function(err){
   return this._done('failed');
-}
+};
 
 Job.prototype.isCompleted = function(){
   return this._isDone('completed');
-}
+};
 
 Job.prototype.isFailed = function(){
   return this._isDone('failed');
-}
+};
 
 Job.prototype._isDone = function(list){
   var deferred = when.defer();
@@ -96,7 +96,7 @@ Job.prototype._isDone = function(list){
     }
   });
   return deferred.promise;
-}
+};
 
 Job.prototype._done = function(list){
   var deferred = when.defer();
@@ -110,9 +110,9 @@ Job.prototype._done = function(list){
     .exec(function(err){
       !err && deferred.resolve();
       err && deferred.reject(err);
-  });
+    });
   return deferred.promise;
-}
+};
 
 /**
 */
@@ -120,6 +120,6 @@ Job.fromData = function(queue, jobId, data){
   var job = new Job(queue, jobId, data.name, JSON.parse(data.data), data.opts);
   job._progress = parseInt(data.progress);
   return job;
-}
+};
 
 module.exports = Job;
