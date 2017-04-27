@@ -344,8 +344,8 @@ describe('Queue', function () {
         expect(job.data.foo).to.be('bar');
       }, done);
 
-      queue.on('completed', function(job){
-        queue.getJob(job.id).then(function(job){
+      queue.on('completed', function(jobId){
+        queue.getJob(jobId).then(function(job){
           expect(job).to.be.equal(null);
         }).then(function(){
           queue.getJobCounts().then(function(counts){
@@ -367,8 +367,8 @@ describe('Queue', function () {
         expect(job.data.foo).to.be('bar');
       }, done);
 
-      queue.on('failed', function(job){
-        queue.getJob(job.id).then(function(job){
+      queue.on('failed', function(jobId){
+        queue.getJob(jobId).then(function(job){
           expect(job).to.be.equal(null);
         }).then(function(){
           queue.getJobCounts().then(function(counts){
@@ -499,11 +499,13 @@ describe('Queue', function () {
         expect(job.data.foo).to.be('bar');
       }).catch(done);
 
-      queue.on('completed', function (job, data) {
-        expect(job).to.be.ok();
+      queue.on('completed', function (jobId, data) {
+        expect(jobId).to.be.ok();
         expect(data).to.be.eql(37);
-        expect(job.returnvalue).to.be.eql(37);
-        done();
+        queue.getJob(jobId).then(function(job){
+          expect(job.returnvalue).to.be.eql(37);
+          done();
+        });
       });
     });
 
@@ -518,13 +520,15 @@ describe('Queue', function () {
         expect(job.data.foo).to.be('bar');
       }).catch(done);
 
-      queue.on('completed', function (job, data) {
-        expect(job).to.be.ok();
+      queue.on('completed', function (jobId, data) {
+        expect(jobId).to.be.ok();
         expect(data).to.be.eql(37);
-        expect(job.returnvalue).to.be.eql(37);
-        queue.client.hget(queue.toKey(job.id), 'returnvalue').then(function (retval) {
-          expect(JSON.parse(retval)).to.be.eql(37);
-          done();
+        queue.getJob(jobId).then(function(job){
+          expect(job.returnvalue).to.be.eql(37);
+          queue.client.hget(queue.toKey(job.id), 'returnvalue').then(function (retval) {
+            expect(JSON.parse(retval)).to.be.eql(37);
+            done();
+          });
         });
       });
     });
@@ -560,8 +564,8 @@ describe('Queue', function () {
         expect(job.data.foo).to.be('bar');
       }).catch(done);
 
-      queue.on('completed', function (job, data) {
-        expect(job).to.be.ok();
+      queue.on('completed', function (jobId, data) {
+        expect(jobId).to.be.ok();
         expect(data).to.be.eql(42);
         done();
       });
