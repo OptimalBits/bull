@@ -220,16 +220,6 @@ describe('Job', function(){
       });
     });
 
-    it('can renew a previously taken lock', function(){
-      return job.takeLock().then(function(lockTaken){
-        expect(lockTaken).to.be.truthy;
-      }).then(function(){
-        return job.renewLock().then(function(lockRenewed){
-          expect(lockRenewed).to.be.truthy;;
-        });
-      });
-    });
-
     it('can release a lock', function(){
       return job.takeLock().then(function(lockTaken){
         expect(lockTaken).to.be.truthy;
