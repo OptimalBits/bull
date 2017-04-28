@@ -1,11 +1,11 @@
-"use strict"
+'use strict';
 
 var
-  Queue = require('./queue'),
+  Queue = require('..'),
   cluster = require('cluster');
 
 var numWorkers = 8;
-var queue = Queue("test concurrent queue", 6379, '127.0.0.1');
+var queue = Queue('test concurrent queue', 6379, '127.0.0.1');
 
 if(cluster.isMaster){
   for (var i = 0; i < numWorkers; i++) {
@@ -24,7 +24,7 @@ if(cluster.isMaster){
   });
 }else{
   queue.process(function(job, jobDone){
-    console.log("Job done by worker", cluster.worker.id, job.jobId);
+    console.log('Job done by worker', cluster.worker.id, job.jobId);
     jobDone();
   });
 }
