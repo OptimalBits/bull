@@ -6,8 +6,8 @@ to be taking in consideration before upgrading to 3.0.
 # Complete and failed sets.
 
 In 3.x, the jobs that are completed and failed end in two ZSETS, instead of a standard SET.
-This gives the posibility of retrieving a subset of the jobs in a high performant way, which
-is useful for grafical tools and scripts. However an old queue will not be compatible with 3.x.
+This gives the possibility of retrieving a subset of the jobs in a high performant way, which
+is useful for graphical tools and scripts. However an old queue will not be compatible with 3.x.
 You will need to either delete the complete and failed keys, or create a new queue.
 
 # Data structure changes
@@ -30,7 +30,7 @@ reduces chances for hazards.
 
 'ready' event has been removed, you can use ```Queue##isReady()``` instead if you want to know when the queue
 has been initialized. Normally you will never need to wait for readyness since this is taken care internally
-by the queue methods that require the queue to be <ready class=""></ready>
+by the queue methods that require the queue to be ready.
 
 Events arguments are now the same for local and global events. This affects events such as completed and failed,
 where in 2.x the first argument was a job instance for local jobs. Now both local and global events pass
