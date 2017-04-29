@@ -15,8 +15,7 @@
       ARGV[4]  return value / failed reason
       ARGV[5]  token
       ARGV[6]  shouldRemove
-      ARGV[7]  event channel
-      ARGV[8]  event data (? maybe just send jobid).
+      ARGV[7]  event data (? maybe just send jobid).
 
      Output:
       0 OK
@@ -24,7 +23,7 @@
       -2 Missing lock.
 
      Events:
-      'completed'
+      'completed/failed'
 ]]
 
 if redis.call("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists  
@@ -49,8 +48,7 @@ if redis.call("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
     redis.call("HSET", KEYS[3], ARGV[3], ARGV[4]) -- "returnvalue" / "failedReason"
   end
 
-  -- TODO PUBLISH EVENT, this is the most optimal way.
-  --redis.call("PUBLISH", ...)
+  redis.call("PUBLISH", KEYS[2], ARGV[7])
   return 0
 else
   return -1

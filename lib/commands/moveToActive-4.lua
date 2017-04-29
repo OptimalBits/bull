@@ -12,6 +12,7 @@
       KEYS[1] wait key
       KEYS[2] active key
       KEYS[3] priority key
+      KEYS[4] active event key
       
       ARGV[1] key prefix
       ARGV[2] lock token
@@ -29,7 +30,9 @@ if jobId then
   redis.call("LREM", KEYS[1], 1, jobId) -- remove from wait
   redis.call("ZREM", KEYS[3], jobId) -- remove from priority
   redis.call("LPUSH", KEYS[2], jobId) -- push in active
-  
+
+  redis.call("PUBLISH", KEYS[4], jobId)
+
   return {redis.call("HGETALL", jobKey), jobId} -- get job data
 end
 

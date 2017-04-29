@@ -2,6 +2,7 @@
 'use strict';
 
 var Queue = require('../');
+var Job = require('../lib/job');
 var expect = require('expect.js');
 var Promise = require('bluebird');
 var redis = require('ioredis');
@@ -367,8 +368,8 @@ describe('Queue', function () {
         expect(job.data.foo).to.be('bar');
       }, done);
 
-      queue.on('failed', function(job){
-        queue.getJob(job.id).then(function(job){
+      queue.on('failed', function(jobId){
+        queue.getJob(jobId).then(function(job){
           expect(job).to.be.equal(null);
         }).then(function(){
           queue.getJobCounts().then(function(counts){
@@ -502,8 +503,10 @@ describe('Queue', function () {
       queue.on('completed', function (job, data) {
         expect(job).to.be.ok();
         expect(data).to.be.eql(37);
-        expect(job.returnvalue).to.be.eql(37);
-        done();
+        queue.getJob(job.id).then(function(job){
+          expect(job.returnvalue).to.be.eql(37);
+          done();
+        });
       });
     });
 
@@ -521,10 +524,12 @@ describe('Queue', function () {
       queue.on('completed', function (job, data) {
         expect(job).to.be.ok();
         expect(data).to.be.eql(37);
-        expect(job.returnvalue).to.be.eql(37);
-        queue.client.hget(queue.toKey(job.id), 'returnvalue').then(function (retval) {
-          expect(JSON.parse(retval)).to.be.eql(37);
-          done();
+        queue.getJob(job.id).then(function(job){
+          expect(job.returnvalue).to.be.eql(37);
+          queue.client.hget(queue.toKey(job.id), 'returnvalue').then(function (retval) {
+            expect(JSON.parse(retval)).to.be.eql(37);
+            done();
+          });
         });
       });
     });
@@ -923,7 +928,7 @@ describe('Queue', function () {
       });
 
       queue.once('failed', function (job, err) {
-        expect(job.id).to.be.ok();
+        expect(job).to.be.ok();
         expect(job.data.foo).to.be('bar');
         expect(err).to.be.eql(jobError);
         done();
@@ -980,11 +985,11 @@ describe('Queue', function () {
         return Promise.resolve();
       }).then(function() { done(); }, done);
 
-      var distEmit = queue.distEmit.bind(queue);
-      queue.distEmit = function() {
+      var emit = queue.emit.bind(queue);
+      queue.emit = function() {
         var args = arguments;
         return Promise.delay(queue.LOCK_RENEW_TIME * 2).then(function() {
-          return distEmit.apply(null, args);
+          return emit.apply(null, args);
         });
       };
 
@@ -1000,47 +1005,34 @@ describe('Queue', function () {
 
     it('retry a job that fails', function (done) {
       var called = 0;
-      var messages = 0;
       var failedOnce = false;
+      var notEvenErr = new Error('Not even!');
 
       var retryQueue = utils.buildQueue('retry-test-queue');
-      var client = new redis(6379, '127.0.0.1', {});
 
-      client.select(0);
-
-      client.on('ready', function () {
-        client.on('message', function (channel, message) {
-          expect(channel).to.be.equal(retryQueue.toKey('added'));
-          expect(parseInt(message, 10)).to.be.a('number');
-          messages++;
-        });
-        client.subscribe(retryQueue.toKey('added'));
-
-        retryQueue.add({ foo: 'bar' }).then(function (job) {
-          expect(job.id).to.be.ok();
-          expect(job.data.foo).to.be('bar');
-        });
+      retryQueue.add({ foo: 'bar' }).then(function (job) {
+        expect(job.id).to.be.ok();
+        expect(job.data.foo).to.be('bar');
       });
 
       retryQueue.process(function (job, jobDone) {
         called++;
         if (called % 2 !== 0) {
-          throw new Error('Not even!');
+          throw notEvenErr;
         }
         jobDone();
       });
 
       retryQueue.once('failed', function (job, err) {
-        expect(job.id).to.be.ok();
+        expect(job).to.be.ok();
         expect(job.data.foo).to.be('bar');
-        expect(err.message).to.be.eql('Not even!');
+        expect(err).to.be.eql(notEvenErr);
         failedOnce = true;
         retryQueue.retryJob(job);
       });
 
       retryQueue.once('completed', function () {
         expect(failedOnce).to.be(true);
-        expect(messages).to.eql(2);
         retryQueue.close().then(done);
       });
     });
@@ -1073,9 +1065,11 @@ describe('Queue', function () {
   it('emits waiting event when a job is added', function (done) {
     var queue = utils.buildQueue();
     queue.add({ foo: 'bar' });
-    queue.once('waiting', function (job) {
-      expect(job.data.foo).to.be.equal('bar');
-      queue.close().then(done);
+    queue.once('waiting', function (jobId) {
+      Job.fromId(queue, jobId).then(function(job){
+        expect(job.data.foo).to.be.equal('bar');
+        queue.close().then(done);
+      });
     });
   });
 
@@ -1183,7 +1177,7 @@ describe('Queue', function () {
         });
       });
 
-      queue.on('ready', function () {
+      queue.isReady().then(function () {
         var jobs = [];
         for (var i = 0; i < 10; i++) {
           jobs.push(queue.add(i));
@@ -1303,19 +1297,15 @@ describe('Queue', function () {
     });
   });
 
-  it('should publish a message when a new message is added to the queue', function (done) {
+  it('should emit an event when a new message is added to the queue', function (done) {
     var client = new redis(6379, '127.0.0.1', {});
     client.select(0);
     var queue = new Queue('test pub sub');
-    client.on('ready', function () {
-      client.on('message', function (channel, message) {
-        expect(channel).to.be.equal(queue.toKey('added'));
-        expect(parseInt(message, 10)).to.be.a('number');
-        queue.close().then(done, done);
-      });
-      client.subscribe(queue.toKey('added'));
-      queue.add({ test: 'stuff' });
+    queue.on('waiting', function(jobId){
+      expect(parseInt(jobId, 10)).to.be(1);
+      done();
     });
+    queue.add({ test: 'stuff' });
   });
 
   it('should emit an event when a job becomes active', function (done) {
@@ -1487,7 +1477,7 @@ describe('Queue', function () {
         order++;
       };
 
-      queue.on('ready', function () {
+      queue.isReady().then(function () {
         var now = Date.now();
         var _promises = [];
         var _i = 1;
@@ -1627,7 +1617,7 @@ describe('Queue', function () {
     it('should not retry a job if it has been marked as unrecoverable', function (done) {
       var tries = 0;
       queue = utils.buildQueue('test retries and backoffs');
-      queue.on('ready', function () {
+      queue.isReady().then(function () {
         queue.process(function (job, jobDone) {
           tries++;
           expect(tries).to.equal(1);
@@ -1646,7 +1636,7 @@ describe('Queue', function () {
 
     it('should automatically retry a failed job if attempts is bigger than 1', function (done) {
       queue = utils.buildQueue('test retries and backoffs');
-      queue.on('ready', function () {
+      queue.isReady().then(function () {
 
         var tries = 0;
         queue.process(function (job, jobDone) {
@@ -1671,7 +1661,7 @@ describe('Queue', function () {
     it('should not retry a failed job more than the number of given attempts times', function (done) {
       queue = utils.buildQueue('test retries and backoffs');
       var tries = 0;
-      queue.on('ready', function () {
+      queue.isReady().then(function () {
         queue.process(function (job, jobDone) {
           tries++;
           if (job.attemptsMade < 3) {
@@ -1699,7 +1689,7 @@ describe('Queue', function () {
       this.timeout(12000);
       queue = utils.buildQueue('test retries and backoffs');
       var start;
-      queue.on('ready', function () {
+      queue.isReady().then(function () {
         queue.process(function (job, jobDone) {
           if (job.attemptsMade < 2) {
             throw new Error('Not yet!');
@@ -1724,7 +1714,7 @@ describe('Queue', function () {
       this.timeout(12000);
       queue = utils.buildQueue('test retries and backoffs');
       var start;
-      queue.on('ready', function () {
+      queue.isReady().then(function () {
         queue.process(function (job, jobDone) {
           if (job.attemptsMade < 2) {
             throw new Error('Not yet!');
@@ -1751,23 +1741,22 @@ describe('Queue', function () {
 
     it('should not retry a job that has been removed', function (done) {
       queue = utils.buildQueue('retry a removed job');
-      queue.on('ready', function () {
-        var attempts = 0;
-        queue.process(function (job, jobDone) {
-          if (attempts === 0) {
-            attempts++;
-            throw new Error('failed');
-          } else {
-            jobDone();
-          }
-        });
-
-        queue.add({ foo: 'bar' });
+      var attempts = 0;
+      var failedError = new Error('failed');
+      queue.process(function (job, jobDone) {
+        if (attempts === 0) {
+          attempts++;
+          throw failedError;
+        } else {
+          jobDone();
+        }
       });
+      queue.add({ foo: 'bar' });
 
-      var failedHandler = _.once(function (job, err) {
+      var failedHandler = _.once(function (job, err ) {
         expect(job.data.foo).to.equal('bar');
-        expect(err.message).to.equal('failed');
+        expect(err).to.equal(failedError);
+        expect(job.failedReason).to.equal(failedError.message);
 
         job.retry().delay(100)
           .then(function () {
@@ -1802,12 +1791,13 @@ describe('Queue', function () {
 
     it('should not retry a job that has been retried already', function (done) {
       queue = utils.buildQueue('retry already retried job');
-      queue.on('ready', function () {
+      var failedError = new Error('failed');
+      queue.isReady().then(function () {
         var attempts = 0;
         queue.process(function (job, jobDone) {
           if (attempts === 0) {
             attempts++;
-            throw new Error('failed');
+            throw failedError;
           } else {
             jobDone();
           }
@@ -1818,7 +1808,7 @@ describe('Queue', function () {
 
       var failedHandler = _.once(function (job, err) {
         expect(job.data.foo).to.equal('bar');
-        expect(err.message).to.equal('failed');
+        expect(err).to.equal(failedError);
 
         job.retry().delay(100)
           .then(function () {
@@ -1984,7 +1974,7 @@ describe('Queue', function () {
       });
 
       queue.on('failed', function (job, error) {
-        expect(error).to.be.a(Promise.TimeoutError);
+        expect(error.message).to.be.eql('operation timed out');
         done();
       });
 
