@@ -29,6 +29,7 @@ describe('repeat', function () {
 
   afterEach(function(){
     this.clock.restore();
+    return queue.close();
   });
 
   it('should repeat every 2 seconds', function (done) {
@@ -37,7 +38,7 @@ describe('repeat', function () {
     this.clock.tick(date.getTime());
     var nextTick = 2 * ONE_SECOND + 500;
 
-    queue.repeat('repeat', {foo: 'bar'}, '*/2 * * * * *').then(function(){
+    queue.add('repeat', {foo: 'bar'}, { repeat: {cron: '*/2 * * * * *'}}).then(function(){
       _this.clock.tick(nextTick);
     });
 
@@ -63,12 +64,15 @@ describe('repeat', function () {
 
   it('should repeat once a day for 5 days', function (done) {
     var _this = this;
-    this.timeout(50000);
+    //this.timeout(50000);
     var date = new Date('2017-05-05 13:12:00');
     this.clock.tick(date.getTime());
     var nextTick = ONE_DAY;
 
-    queue.repeat('repeat', {foo: 'bar'}, '0 1 * * *', {endDate: new Date('2017-05-10 13:12:00')}).then(function(){
+    queue.add('repeat', {foo: 'bar'}, {repeat: {
+      cron: '0 1 * * *', 
+      endDate: new Date('2017-05-10 13:12:00')}
+    }).then(function(){
       _this.clock.tick(nextTick);
     });
 
@@ -104,7 +108,7 @@ describe('repeat', function () {
     var date = new Date('2017-02-02 7:21:42');
     this.clock.tick(date.getTime());
 
-    queue.repeat('repeat', {foo: 'bar'}, '* 25 9 7 * *').then(function(){
+    queue.add('repeat', {foo: 'bar'}, { repeat: {cron: '* 25 9 7 * *'}}).then(function(){
       _this.clock.tick(ONE_MONTH);
     });
 
