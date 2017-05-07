@@ -1,5 +1,6 @@
 --[[
-  Updates the delay set
+  Updates the delay set, by picking a delayed job that should
+  be processed now.
   
      Input:
       KEYS[1] 'delayed'
@@ -18,7 +19,7 @@ local jobId = RESULT[1]
 local score = RESULT[2]
 if (score ~= nil) then
   score = score / 0x1000 
-  if (score <= tonumber(ARGV[2])) then
+  if (math.floor(score) <= tonumber(ARGV[2])) then
     redis.call("ZREM", KEYS[1], jobId)
     redis.call("LREM", KEYS[2], 0, jobId)
     redis.call("LPUSH", KEYS[3], jobId) -- not sure if it is better to move the job at the begining of the queue with LPUSH
