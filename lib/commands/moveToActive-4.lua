@@ -6,8 +6,6 @@
   expiration time. The worker is responsible of keeping the lock fresh
   so that no other worker picks this job again.
 
-  Note: This command only works in non-distributed redis deployments.
-
   Input:
       KEYS[1] wait key
       KEYS[2] active key
@@ -35,4 +33,3 @@ if jobId then
 
   return {redis.call("HGETALL", jobKey), jobId} -- get job data
 end
-

@@ -35,9 +35,11 @@ Features:
 - Minimal CPU usage by poll-free design.
 - Robust design based on Redis.
 - Delayed jobs.
+- Schedule and repeat jobs according to a cron specification.
 - Retries.
 - Priority.
 - Concurrency.
+- Multiple job types per queue.
 - Pause/resume (globally or locally).
 - Automatic recovery from process crashes.
 
@@ -53,11 +55,8 @@ There are a few third party UIs that can be used for easier administration of th
 Roadmap:
 --------
 
-- Multiple job types per queue.
-- Scheduling jobs as a cron specification.
 - Rate limiter for jobs.
 - Parent-child jobs relationships.
-
 
 Install:
 --------
@@ -528,6 +527,8 @@ interface JobOpts{
   delay: number; // An amount of miliseconds to wait until this job can be processed. Note that for accurate delays, both 
                  // server and clients should have their clocks synchronized. [optional].
 
+  repeat: RepeatOpts; // Define repeat options for adding jobs according to a Cron specification.
+
   attempts: number; // The total number of attempts to try the job until it completes.
 
   backoff: number | BackoffOpts; // Backoff setting for automatic retries if the job fails
@@ -546,6 +547,14 @@ interface JobOpts{
 
   removeOnFail: boolean; // If true, removes the job when it fails after all attempts.
                          // Default behavior is to keep the job in the failed set.
+}
+```
+
+```typescript
+interface RepeatOpts{
+  cron: string; // Cron expression. See https://github.com/harrisiirak/cron-parser for details.
+  endDate?: number | Date; // Stop repeating jobs after this date.
+  tz?: string; // Timezone. For example: 'Europe/Athens'
 }
 ```
 
