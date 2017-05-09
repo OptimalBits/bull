@@ -97,7 +97,7 @@ describe('Job', function(){
         });
     });
 
-    it('fails to remove a locked job', function(done) {
+    it('fails to remove a locked job', function() {
       return Job.create(queue, 1, {foo: 'bar'}).then(function(job) {
         return job.takeLock().then(function(lock) {
           expect(lock).to.be.truthy;
@@ -108,7 +108,7 @@ describe('Job', function(){
         }).then(function() {
           throw new Error('Should not be able to remove a locked job');
         }).catch(function(/*err*/) {
-          done();
+          // Good!
         });
       });
     });

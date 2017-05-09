@@ -1,6 +1,10 @@
 {
   "name": "bull",
+<<<<<<< HEAD
   "version": "3.0.0-alpha.3",
+=======
+  "version": "3.0.0-alpha.4",
+>>>>>>> 9fa6d0445c5c3cf5d09d049ea45d0923871adb58
   "description": "Job manager",
   "main": "./lib/queue",
   "repository": {
@@ -18,16 +22,18 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "bluebird": "^3.5.0",
+    "cron-parser": "^2.4.0",
     "debuglog": "^1.0.0",
-    "ioredis": "^3.0.0-1",
+    "ioredis": "^3.0.0-2",
     "lodash": "^4.17.4",
     "semver": "^5.3.0",
     "uuid": "^3.0.1"
   },
   "devDependencies": {
+    "chai": "^3.5.0",
     "eslint": "^2.13.1",
     "expect.js": "^0.3.1",
-    "mocha": "^2.5.3",
+    "mocha": "^3.3.0",
     "sinon": "^1.17.7"
   },
   "scripts": {
@@ -52,7 +58,15 @@
       "camelcase": 1,
       "no-unused-vars": 1,
       "no-alert": 1,
-      "no-console": [2, {"allow": ["warn", "error"]}],
+      "no-console": [
+        2,
+        {
+          "allow": [
+            "warn",
+            "error"
+          ]
+        }
+      ],
       "quotes": [
         2,
         "single"
