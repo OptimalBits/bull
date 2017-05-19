@@ -116,15 +116,13 @@ better suits your needs.
 ### Install
 
 ```bash
-npm install bull@2.x --save
+npm install bull --save
 ```
 ```bash
-yarn add bull@2.x
+yarn add bull
 ```
 
 _**Requirements:** Bull requires a Redis version greater than or equal to `2.8.11`._
-
-_We are currently developing Bull `3.x`, which means that the latest *unstable* version would be something like `3.0.0-alpha.3`. We recommend you stick to version `2.x` until `3.x` is stable. Check out [the milestone](https://github.com/OptimalBits/bull/milestone/4) for some things to expect in the next version!_
 
 ---
 
