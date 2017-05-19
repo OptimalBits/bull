@@ -20,7 +20,7 @@ toJSON ->
 
 # Queue instantiation options
 
-Sanitized and cleaned all the options. Check the README to see the new structure.
+Sanitized and cleaned all the options. Check the [Reference](./REFERENCE.md) to see the new structure.
 
 
 # Events
