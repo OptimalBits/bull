@@ -25,10 +25,38 @@ Queue
 -----
 
 ```ts
-Queue(queueName: string, redisPort: number, redisHost: string, redisOpts?: RedisOpts): Queue
+Queue(queueName: string, opts?: QueueOptions): Queue
 ```
-```ts
-Queue(queueName: string, redisConnectionString: string, redisOpts? RedisOpts): Queue
+
+```typescript
+interface QueueOpts{
+  redis?: RedisOpts;
+  prefix?: string = 'bull'; // prefix for all queue keys.
+  settings?: AdvancedSettings;
+}
+```
+
+```RedisOpts``` are passed directly to ioredis constructor, check [https://github.com/luin/ioredis/blob/master/API.md](ioredis) 
+for details. We document here just the most important ones.
+
+```typescript
+interface RedisOpts {
+  port?: number = 6379;
+  host?: string = localhost;
+  db?: number = 0;
+  password?: string;
+}
+```
+
+
+```typescript
+interface AdvancedSettings {
+  lockDuration: number = 30000; // Key expiration time for job locks.
+  stalledInterval: number = 30000; // How often check for stalled jobs (use 0 for never checking).
+  maxStalledCount: number = 1; // Max amount of times a stalled job will be re-processed.
+  guardInterval: number = 5000; // Poll interval for delayed jobs and added jobs.s
+  retryProcessDelay: number = 5000; // delay before processing next job in case of internal error.
+}
 ```
 
 This is the Queue constructor. It creates a new Queue that is persisted in
@@ -118,6 +146,8 @@ interface JobOpts{
 
   attempts: number; // The total number of attempts to try the job until it completes.
 
+  repeat: RepeatOpts; // Repeat job according to a cron specification.
+
   backoff: number | BackoffOpts; // Backoff setting for automatic retries if the job fails
 
   lifo: boolean; // if true, adds the job to the right of the queue instead of the left (default false)
@@ -136,6 +166,17 @@ interface JobOpts{
                          // Default behavior is to keep the job in the failed set.
 }
 ```
+
+```typescript
+interface RepeatOpts{
+  cron: string; // Cron string
+  tz?: string, // Timezone
+  endDate?: Date | string | number; // End data when the repeat job should stop repeating.
+}
+```
+
+More information regarding the [cron expression](https://github.com/harrisiirak/cron-parser)
+
 
 ```typescript
 interface BackoffOpts{
