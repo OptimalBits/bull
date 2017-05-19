@@ -79,6 +79,7 @@ Are you developing bull sponsored by a company? Please, let us now!
 
 And coming up on the roadmap...
 
+- [ ] Job completion acknowledgement.
 - [ ] Rate limiter for jobs.
 - [ ] Parent-child jobs relationships.
 
@@ -93,6 +94,24 @@ There are a few third-party UIs that you can use for monitoring:
 - [toureiro](https://github.com/Epharmix/Toureiro)
 
 ---
+
+### Feature Comparison
+
+Since there are a few job queue solutions, here a table comparing them to help you use the one that
+better suits your needs.
+
+| Feature         | Bull          | Kue   | Bee | Agenda | 
+| :-------------  |:-------------:|:-----:|:---:|:------:|
+| Backend         | redis         | redis |redis| mongo  |
+| Priorities      | ✓             |  ✓    |     |   ✓    |
+| Concurrency     | ✓             |  ✓    |  ✓  |   ✓    | 
+| Delayed jobs    | ✓             |  ✓    |     |   ✓    |
+| Pause/Resume    | ✓             |  ✓    |     |        |
+| Repeatable jobs | ✓             |       |     |   ✓    |
+| Atomic ops      | ✓             |       |  ✓  |        |
+| Persistence     | ✓             |   ✓   |  ✓  |   ✓    |
+| Optimized for   | Jobs / Messages | Jobs | Messages | Jobs |
+
 
 ### Install
 
