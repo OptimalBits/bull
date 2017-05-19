@@ -95,8 +95,8 @@ Redis cluster
 Bull internals requires atomic operations that spans different keys. This fact breaks redis
 rules for cluster configurations, however it is still possible to use a cluster environment
 by using the proper bull prefix option as a cluster "hash tag". Hash tags are used to guarantee
-that certain keys are placed in the same hash slot, read more about hash tags in the (redis cluster
-tutorial)[https://redis.io/topics/cluster-tutorial]. 
+that certain keys are placed in the same hash slot, read more about hash tags in the [redis cluster
+tutorial](https://redis.io/topics/cluster-tutorial). 
 
 A hash tag is defined with brakets. I.e. a key that has a substring inside brackets will use that 
 substring to determine in which hash slot the key will be placed. So to make bull compatible with
