@@ -140,25 +140,25 @@ describe('Queue', function () {
     });
 
     it('should create a queue with a redis connection string', function (done) {
-      var queue = new Queue('connstring', 'redis://127.0.0.1:6379');
+      var queue = new Queue('connstring', 'redis://123.4.5.67:1234');
 
-      expect(queue.client.options.host).to.be('127.0.0.1');
-      expect(queue.eclient.options.host).to.be('127.0.0.1');
+      expect(queue.client.options.host).to.be('123.4.5.67');
+      expect(queue.eclient.options.host).to.be('123.4.5.67');
 
-      expect(queue.client.options.port).to.be(6379);
-      expect(queue.eclient.options.port).to.be(6379);
+      expect(queue.client.options.port).to.be(1234);
+      expect(queue.eclient.options.port).to.be(1234);
 
       expect(queue.client.options.db).to.be(0);
       expect(queue.eclient.options.db).to.be(0);
 
-      queue.close().then(done);
+      queue._clearTimers().then(done, done);
     });
 
-    it('should create a queue with a port number and a hostname', function (done) {
-      var queue = new Queue('connstring', '6379', '127.0.0.1');
+    it('should create a queue with a hostname', function (done) {
+      var queue = new Queue('connstring', 'redis://127.2.3.4');
 
-      expect(queue.client.options.host).to.be('127.0.0.1');
-      expect(queue.eclient.options.host).to.be('127.0.0.1');
+      expect(queue.client.options.host).to.be('127.2.3.4');
+      expect(queue.eclient.options.host).to.be('127.2.3.4');
 
       expect(queue.client.options.port).to.be(6379);
       expect(queue.eclient.options.port).to.be(6379);
@@ -166,7 +166,7 @@ describe('Queue', function () {
       expect(queue.client.condition.select).to.be(0);
       expect(queue.eclient.condition.select).to.be(0);
 
-      queue.close().then(done);
+      queue._clearTimers().then(done, done);
     });
 
     it('creates a queue using the supplied redis DB', function (done) {
