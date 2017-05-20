@@ -97,7 +97,7 @@ describe('Job', function(){
         });
     });
 
-    it('fails to remove a locked job', function(done) {
+    it('fails to remove a locked job', function() {
       return Job.create(queue, 1, {foo: 'bar'}).then(function(job) {
         return job.takeLock().then(function(lock) {
           expect(lock).to.be.truthy;
@@ -108,7 +108,7 @@ describe('Job', function(){
         }).then(function() {
           throw new Error('Should not be able to remove a locked job');
         }).catch(function(/*err*/) {
-          done();
+          // Good!
         });
       });
     });
@@ -178,9 +178,11 @@ describe('Job', function(){
         done(new Error('the job failed'));
       });
       queue.once('failed', function (job) {
-        queue.once('waiting', function (job2) {
-          expect(job2.data.foo).to.be.equal('bar');
-          cb();
+        queue.once('waiting', function (jobId2) {
+          Job.fromId(queue, jobId2).then(function(job2){
+            expect(job2.data.foo).to.be.equal('bar');
+            cb();
+          });
         });
         job.retry();
       });
@@ -214,16 +216,6 @@ describe('Job', function(){
       }).then(function(){
         return job.takeLock().then(function(lockTaken){
           expect(lockTaken).to.be.truthy;
-        });
-      });
-    });
-
-    it('can renew a previously taken lock', function(){
-      return job.takeLock().then(function(lockTaken){
-        expect(lockTaken).to.be.truthy;
-      }).then(function(){
-        return job.renewLock().then(function(lockRenewed){
-          expect(lockRenewed).to.be.truthy;;
         });
       });
     });
@@ -461,7 +453,7 @@ describe('Job', function(){
       }).then(done, done);
     });
 
-    it('should reject when the job has been completed', function(done){
+    it('should reject when the job has been failed', function(done){
       queue.process(function () {
         return Promise.delay(500).then(function(){
           return Promise.reject(Error('test error'));

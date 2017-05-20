@@ -30,7 +30,7 @@ describe('connection', function () {
     }).catch(done);
 
     // Simulate disconnect
-    queue.on('ready', function(){
+    queue.isReady().then(function(){
       queue.client.stream.end();
       queue.client.emit('error', new Error('ECONNRESET'));
 
@@ -89,7 +89,7 @@ describe('connection', function () {
       }
     });
 
-    queue.on('ready', function(){
+    queue.isReady().then(function(){
       queue.add({ 'foo': 'bar' });
     });
 

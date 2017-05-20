@@ -8,13 +8,8 @@
     KEYS[4] wait key
     KEYS[5] added key
 
-    var keys = [
-      queue.toKey(job.id),
-      queue.toKey(job.id) + ':lock',
-      queue.toKey(options.state),
-      queue.toKey('wait'),
-      queue.toKey('added')
-    ];
+    ARGV[1] job.id,
+    ARGV[2] (job.opts.lifo ? 'R' : 'L') + 'PUSH'
 
   Output:
     1 means the operation was a success

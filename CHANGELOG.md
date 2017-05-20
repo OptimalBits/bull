@@ -1,3 +1,13 @@
+v.3.0.0-alpha.4
+===============
+
+- Implemented repeatable jobs. #252.
+
+v.3.0.0-alpha.3
+===============
+
+- Simplified global events #501.
+
 v.3.0.0-alpha.2
 ===============
 

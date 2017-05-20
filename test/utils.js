@@ -20,13 +20,9 @@ function buildQueue(name, options) {
   return queue;
 }
 
-function newQueue(name, options){
-  var queue = buildQueue(name, options);
-  return new Promise(function(resolve){
-    queue.on('ready', function(){
-      resolve(queue);
-    });
-  });
+function newQueue(name, opts){
+  var queue = buildQueue(name, opts);
+  return queue.isReady();
 }
 
 function cleanupQueue(queue) {
