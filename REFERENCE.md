@@ -25,8 +25,11 @@ Queue
 -----
 
 ```ts
-Queue(queueName: string, opts?: QueueOptions): Queue
+Queue(queueName: string, url?: string, opts?: QueueOptions): Queue
 ```
+
+The optional ``url``` argument, allows to specify a redis connection string such as for example:
+```redis://mypassword@myredis.server.com:1234```
 
 ```typescript
 interface QueueOpts{
@@ -47,7 +50,6 @@ interface RedisOpts {
   password?: string;
 }
 ```
-
 
 ```typescript
 interface AdvancedSettings {
