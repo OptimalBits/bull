@@ -222,6 +222,19 @@ videoQueue.process(function(job){ // don't forget to remove the done callback!
 });
 ```
 
+A job can be added to a queue and processed repeatedly according to a cron specification:
+
+```
+  paymentsQueue.process(function(job){
+    // Check payments
+  });
+
+  // Repeat payment job once every day at 3:15 (am)
+  paymentsQueue.add(paymentsData, {repeat: '15 3 * * *'});
+
+```
+
+
 A queue can be paused and resumed globally (pass `true` to pause processing for
 just this worker):
 ```js
