@@ -140,10 +140,10 @@ describe('Queue', function () {
     });
 
     it('should create a queue with a redis connection string', function (done) {
-      var queue = new Queue('connstring', 'redis://127.0.0.1:6379');
+      var queue = new Queue('connstring', 'redis://localhost:6379');
 
-      expect(queue.client.options.host).to.be('127.0.0.1');
-      expect(queue.eclient.options.host).to.be('127.0.0.1');
+      expect(queue.client.options.host).to.be('localhost');
+      expect(queue.eclient.options.host).to.be('localhost');
 
       expect(queue.client.options.port).to.be(6379);
       expect(queue.eclient.options.port).to.be(6379);
@@ -198,7 +198,7 @@ describe('Queue', function () {
     });
 
     it('should create a queue with a prefix option', function () {
-      var queue = new Queue('q', 'redis://127.0.0.1', { keyPrefix: 'myQ' });
+      var queue = new Queue('q', 'redis://127.0.0.1:6379', { keyPrefix: 'myQ' });
 
       return queue.add({ foo: 'bar' }).then(function (job) {
         expect(job.id).to.be.ok();
