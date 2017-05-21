@@ -28,7 +28,7 @@ Queue
 Queue(queueName: string, url?: string, opts?: QueueOptions): Queue
 ```
 
-The optional ``url``` argument, allows to specify a redis connection string such as for example:
+The optional ```url``` argument, allows to specify a redis connection string such as for example:
 ```redis://mypassword@myredis.server.com:1234```
 
 ```typescript

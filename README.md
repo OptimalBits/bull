@@ -149,7 +149,7 @@ videoQueue.process(function(job, done){
   done();
 
   // or give a error if error
-  done(Error('error transcoding'));
+  done(new Error('error transcoding'));
 
   // or pass it a result
   done(null, { framerate: 29.5 /* etc... */ });
@@ -166,7 +166,7 @@ audioQueue.process(function(job, done){
   done();
 
   // or give a error if error
-  done(Error('error transcoding'));
+  done(new Error('error transcoding'));
 
   // or pass it a result
   done(null, { samplerate: 48000 /* etc... */ });
@@ -183,7 +183,7 @@ imageQueue.process(function(job, done){
   done();
 
   // or give a error if error
-  done(Error('error transcoding'));
+  done(new Error('error transcoding'));
 
   // or pass it a result
   done(null, { width: 1280, height: 720 /* etc... */ });
