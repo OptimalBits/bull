@@ -140,31 +140,16 @@ describe('Queue', function () {
     });
 
     it('should create a queue with a redis connection string', function (done) {
-      var queue = new Queue('connstring', 'redis://127.0.0.1:6379');
+      var queue = new Queue('connstring', 'redis://localhost:6379');
 
-      expect(queue.client.options.host).to.be('127.0.0.1');
-      expect(queue.eclient.options.host).to.be('127.0.0.1');
+      expect(queue.client.options.host).to.be('localhost');
+      expect(queue.eclient.options.host).to.be('localhost');
 
       expect(queue.client.options.port).to.be(6379);
       expect(queue.eclient.options.port).to.be(6379);
 
       expect(queue.client.options.db).to.be(0);
       expect(queue.eclient.options.db).to.be(0);
-
-      queue.close().then(done);
-    });
-
-    it('should create a queue with a port number and a hostname', function (done) {
-      var queue = new Queue('connstring', '6379', '127.0.0.1');
-
-      expect(queue.client.options.host).to.be('127.0.0.1');
-      expect(queue.eclient.options.host).to.be('127.0.0.1');
-
-      expect(queue.client.options.port).to.be(6379);
-      expect(queue.eclient.options.port).to.be(6379);
-
-      expect(queue.client.condition.select).to.be(0);
-      expect(queue.eclient.condition.select).to.be(0);
 
       queue.close().then(done);
     });
@@ -212,24 +197,8 @@ describe('Queue', function () {
       });
     });
 
-    it('creates a queue accepting port as a string', function () {
-      var queue = new Queue('foobar', '6379', 'localhost');
-
-      return queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
-      }).then(function () {
-        queue.process(function (job, jobDone) {
-          expect(job.data.foo).to.be.equal('bar');
-          jobDone();
-        });
-      }).then(function () {
-        return queue.close();
-      });
-    });
-
     it('should create a queue with a prefix option', function () {
-      var queue = new Queue('q', 'redis://127.0.0.1', { keyPrefix: 'myQ' });
+      var queue = new Queue('q', 'redis://127.0.0.1:6379', { keyPrefix: 'myQ' });
 
       return queue.add({ foo: 'bar' }).then(function (job) {
         expect(job.id).to.be.ok();
