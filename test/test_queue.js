@@ -154,21 +154,6 @@ describe('Queue', function () {
       queue.close().then(done);
     });
 
-    it('should create a queue with a port number and a hostname', function (done) {
-      var queue = new Queue('connstring', '6379', '127.0.0.1');
-
-      expect(queue.client.options.host).to.be('127.0.0.1');
-      expect(queue.eclient.options.host).to.be('127.0.0.1');
-
-      expect(queue.client.options.port).to.be(6379);
-      expect(queue.eclient.options.port).to.be(6379);
-
-      expect(queue.client.condition.select).to.be(0);
-      expect(queue.eclient.condition.select).to.be(0);
-
-      queue.close().then(done);
-    });
-
     it('creates a queue using the supplied redis DB', function (done) {
       var queue = new Queue('custom', { redis: { DB: 1 } });
 
@@ -198,22 +183,6 @@ describe('Queue', function () {
 
     it('creates a queue with dots in its name', function () {
       var queue = new Queue('using. dots. in.name.');
-
-      return queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
-      }).then(function () {
-        queue.process(function (job, jobDone) {
-          expect(job.data.foo).to.be.equal('bar');
-          jobDone();
-        });
-      }).then(function () {
-        return queue.close();
-      });
-    });
-
-    it('creates a queue accepting port as a string', function () {
-      var queue = new Queue('foobar', '6379', 'localhost');
 
       return queue.add({ foo: 'bar' }).then(function (job) {
         expect(job.id).to.be.ok();
