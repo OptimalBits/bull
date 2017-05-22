@@ -19,17 +19,22 @@
     - delayed key.
 ]]
 if redis.call("EXISTS", KEYS[3]) == 1 then
-  local lockKey = KEYS[3] .. ':lock'
-  local lock = redis.call("GET", lockKey)
-  if (not lock) or (lock == ARGV[3]) then 
-    local score = tonumber(ARGV[1])
-    redis.call("ZADD", KEYS[2], score, ARGV[2])
-    redis.call("PUBLISH", KEYS[2], (score / 0x1000))
-    redis.call("LREM", KEYS[1], 0, ARGV[2])
-    return 0;
-  else
-    return -2
+
+  -- Check for job lock
+  if ARGV[3] ~= "0" then
+    local lockKey = KEYS[3] .. ':lock'
+    local lock = redis.call("GET", lockKey)
+    if redis.call("GET", lockKey) ~= ARGV[3] then
+      return -2
+    end
   end
+  
+  local score = tonumber(ARGV[1])
+  redis.call("ZADD", KEYS[2], score, ARGV[2])
+  redis.call("PUBLISH", KEYS[2], (score / 0x1000))
+  redis.call("LREM", KEYS[1], 0, ARGV[2])
+
+  return 0
 else
   return -1
 end

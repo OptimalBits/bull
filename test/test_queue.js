@@ -1492,6 +1492,50 @@ describe('Queue', function () {
         });
       });
     });
+
+    it.skip('an unlocked job should not be moved to delayed', function(done) {
+      var jobCallback;
+      var queue = new Queue('delayed queue');
+
+      queue.process(function(job, callback) {
+        jobCallback = callback;
+      });
+
+      queue.on('failed', function(job) {
+        job.isDelayed().then(function(isDelayed) {
+          expect(isDelayed).to.be.equal(false);
+          queue.close().then(done, done);
+        });
+      });
+
+      queue.add({ foo: 'bar' }, { backoff: 1000, attempts: 2 }).then(function(job) {
+        return job.releaseLock().then(function() {
+          jobCallback(new Error('retry this job'));
+        });
+      });
+    });
+
+    it.skip('an unlocked job should not be moved to waiting', function(done) {
+      var jobCallback;
+      var queue = new Queue('delayed queue');
+
+      queue.process(function(job, callback) {
+        jobCallback = callback;
+      });
+
+      queue.on('failed', function(job) {
+        job.isWaiting().then(function(isWaiting) {
+          expect(isWaiting).to.be.equal(false);
+          queue.close().then(done, done);
+        });
+      });
+
+      queue.add({ foo: 'bar' }, { backoff: 0, attempts: 2 }).then(function(job) {
+        return job.releaseLock().then(function() {
+          jobCallback(new Error('test'));
+        });
+      });
+    });
   });
 
   describe('Concurrency process', function () {

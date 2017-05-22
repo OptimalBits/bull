@@ -395,7 +395,7 @@ describe('Job', function(){
         expect(state).to.be('completed');
         return client.zrem(queue.toKey('completed'), job.id);
       }).then(function(){
-        return job.moveToDelayed(Date.now() + 10000);
+        return job.moveToDelayed(Date.now() + 10000, true);
       }).then(function (){
         return job.isDelayed();
       }).then(function (yes) {
