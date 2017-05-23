@@ -1857,6 +1857,31 @@ describe('Queue', function () {
       });
       queue.add({ foo: 'bar' }).then(addedHandler);
     });
+
+    it('an unlocked job should not be moved to failed', function(done) {
+      queue = utils.buildQueue('test unlocked failed');
+
+      queue.process(function(job, callback) {
+        // Release the lock to simulate the event loop stalling (so failure to renew the lock).
+        job.releaseLock().then(function() {
+          // Once it's failed, it should NOT be moved to failed since this worker lost the lock.
+          callback(new Error('retry this job'));
+        });
+      });
+
+      queue.on('failed', function(job) {
+        job.isFailed().then(function(isFailed) {
+          expect(isFailed).to.be.equal(false);
+        });
+      });
+
+      queue.on('error', function(err){
+        queue.close().then(done, done);
+      });
+
+      // Note that backoff:0 should immediately retry the job upon failure (ie put it in 'waiting')
+      queue.add({ foo: 'bar' }, { backoff: 0, attempts: 2 });
+    });
   });
 
   describe('Jobs getters', function () {
