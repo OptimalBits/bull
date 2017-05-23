@@ -1493,12 +1493,15 @@ describe('Queue', function () {
       });
     });
 
-    it.skip('an unlocked job should not be moved to delayed', function(done) {
-      var jobCallback;
+    it('an unlocked job should not be moved to delayed', function(done) {
       var queue = new Queue('delayed queue');
 
       queue.process(function(job, callback) {
-        jobCallback = callback;
+        // Release the lock to simulate the event loop stalling (so failure to renew the lock).
+        job.releaseLock().then(function() {
+          // Once it's failed, it should NOT be moved to delayed since this worker lost the lock.
+          callback(new Error('retry this job'));
+        });
       });
 
       queue.on('failed', function(job) {
@@ -1508,19 +1511,18 @@ describe('Queue', function () {
         });
       });
 
-      queue.add({ foo: 'bar' }, { backoff: 1000, attempts: 2 }).then(function(job) {
-        return job.releaseLock().then(function() {
-          jobCallback(new Error('retry this job'));
-        });
-      });
+      queue.add({ foo: 'bar' }, { backoff: 1000, attempts: 2 });
     });
 
-    it.skip('an unlocked job should not be moved to waiting', function(done) {
-      var jobCallback;
+    it('an unlocked job should not be moved to waiting', function(done) {
       var queue = new Queue('delayed queue');
 
       queue.process(function(job, callback) {
-        jobCallback = callback;
+        // Release the lock to simulate the event loop stalling (so failure to renew the lock).
+        job.releaseLock().then(function() {
+          // Once it's failed, it should NOT be moved to waiting since this worker lost the lock.
+          callback(new Error('retry this job'));
+        });
       });
 
       queue.on('failed', function(job) {
@@ -1530,11 +1532,8 @@ describe('Queue', function () {
         });
       });
 
-      queue.add({ foo: 'bar' }, { backoff: 0, attempts: 2 }).then(function(job) {
-        return job.releaseLock().then(function() {
-          jobCallback(new Error('test'));
-        });
-      });
+      // Note that backoff:0 should immediately retry the job upon failure (ie put it in 'waiting')
+      queue.add({ foo: 'bar' }, { backoff: 0, attempts: 2 });
     });
   });
 
