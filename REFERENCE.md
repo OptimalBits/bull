@@ -28,6 +28,10 @@ Queue
 Queue(queueName: string, url?: string, opts?: QueueOptions): Queue
 ```
 
+This is the Queue constructor. It creates a new Queue that is persisted in
+Redis. Everytime the same queue is instantiated it tries to process all the
+old jobs that may exist from a previous unfinished session.
+
 The optional ```url``` argument, allows to specify a redis connection string such as for example:
 ```redis://mypassword@myredis.server.com:1234```
 
@@ -61,28 +65,21 @@ interface AdvancedSettings {
 }
 ```
 
-This is the Queue constructor. It creates a new Queue that is persisted in
-Redis. Everytime the same queue is instantiated it tries to process all the
-old jobs that may exist from a previous unfinished session.
+__Advanced Settings__
 
-**Arguments**
+__Warning:__ Do not override these advanced settings unless you understand the internals of the queue.
 
-```js
-    queueName {String} A unique name for this Queue.
-    redisPort {Number} A port where redis server is running.
-    redisHost {String} A host specified as IP or domain where redis is running.
-    redisOptions {Object} Options to pass to the redis client. https://github.com/luin/ioredis/blob/master/API.md#new-redisport-host-options 
-```
+`lockDuration`: Time in milliseconds to acquire the job lock. Set this to a higher value if you find that your jobs are being stalled because your job processor is CPU-intensive and blocking the event loop (see note below about stalled jobs). Set this to a lower value if your jobs are extremely time-sensitive and it might be OK if they get double-processed (due to them be falsly considered stalled).
 
-Instead of a `redisPort` and `redisHost`, you can pass a `redisConnectionString`:
+`lockRenewTime`: Interval in milliseconds on which to acquire the job lock. It is set to `lockDuration / 2` by default to give enough buffer to renew the lock each time before the job lock expires. It should never be set to a value larger than `lockDuration`. Set this to a lower value if you're finding that jobs are becoming stalled due to a CPU-intensive job processor function. Generally you shouldn't change this though.
 
-**Arguments**
+`stalledInterval`: Interval in milliseconds on which each worker will check for stalled jobs (i.e. unlocked jobs in the `active` state). See note below about stalled jobs. Set this to a lower value if your jobs are extremely time-sensitive. Set this to a higher value if your Redis CPU usage is high as this check can be expensive. Note that because each worker runs this on its own interval and checks the entire queue, the stalled job actually run much more frequently than this value would imply.
 
-```js
-    queueName {String} A unique name for this Queue.
-    redisConnectionString {String} A connection string containing the redis server host, port and (optional) authentication.
-    redisOptions {Object} Options to pass to the redis client. https://github.com/luin/ioredis/blob/master/API.md#new-redisport-host-options
-```
+`maxStalledCount`: The maximum number of times a job can be restarted before it will be permamently failed with the error `job stalled more than allowable limit`. This is set to a default of `1` with the assumption that stalled jobs should be very rare (only due to process crashes) and you want to be on the safer side of not restarting jobs. Set this higher if stalled jobs are common (e.g. processes crash a lot) and it's generally OK to double process jobs.
+
+`guardInterval`: Interval in milliseconds on which the delayed job watchdog will run. This watchdog is only in place for unstable Redis connections which can caused delayed jobs to not be processed. Set to a lower value if your Redis connection is unstable and delayed jobs aren't being processed in time.
+
+`retryProcessDelay`: Time in milliseconds in which to wait before trying to process jobs, in case of a Redis error. Set to a lower value on an unstable Redis connection.
 
 ---
 
