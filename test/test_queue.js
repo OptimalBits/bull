@@ -140,25 +140,25 @@ describe('Queue', function () {
     });
 
     it('should create a queue with a redis connection string', function (done) {
-      var queue = new Queue('connstring', 'redis://127.0.0.1:6379');
+      var queue = new Queue('connstring', 'redis://123.4.5.67:1234');
 
-      expect(queue.client.options.host).to.be('127.0.0.1');
-      expect(queue.eclient.options.host).to.be('127.0.0.1');
+      expect(queue.client.options.host).to.be('123.4.5.67');
+      expect(queue.eclient.options.host).to.be('123.4.5.67');
 
-      expect(queue.client.options.port).to.be(6379);
-      expect(queue.eclient.options.port).to.be(6379);
+      expect(queue.client.options.port).to.be(1234);
+      expect(queue.eclient.options.port).to.be(1234);
 
       expect(queue.client.options.db).to.be(0);
       expect(queue.eclient.options.db).to.be(0);
 
-      queue.close().then(done);
+      queue._clearTimers().then(done, done);
     });
 
-    it('should create a queue with a port number and a hostname', function (done) {
-      var queue = new Queue('connstring', '6379', '127.0.0.1');
+    it('should create a queue with a hostname', function (done) {
+      var queue = new Queue('connstring', 'redis://127.2.3.4');
 
-      expect(queue.client.options.host).to.be('127.0.0.1');
-      expect(queue.eclient.options.host).to.be('127.0.0.1');
+      expect(queue.client.options.host).to.be('127.2.3.4');
+      expect(queue.eclient.options.host).to.be('127.2.3.4');
 
       expect(queue.client.options.port).to.be(6379);
       expect(queue.eclient.options.port).to.be(6379);
@@ -166,7 +166,7 @@ describe('Queue', function () {
       expect(queue.client.condition.select).to.be(0);
       expect(queue.eclient.condition.select).to.be(0);
 
-      queue.close().then(done);
+      queue._clearTimers().then(done, done);
     });
 
     it('creates a queue using the supplied redis DB', function (done) {
@@ -1902,8 +1902,8 @@ describe('Queue', function () {
         return queue.getWaiting().then(function (jobs) {
           expect(jobs).to.be.a('array');
           expect(jobs.length).to.be.equal(2);
-          expect(jobs[1].data.foo).to.be.equal('bar');
-          expect(jobs[0].data.baz).to.be.equal('qux');
+          expect(jobs[0].data.foo).to.be.equal('bar');
+          expect(jobs[1].data.baz).to.be.equal('qux');
         });
       });
     });
@@ -1914,8 +1914,8 @@ describe('Queue', function () {
           return queue.getWaiting().then(function (jobs) {
             expect(jobs).to.be.a('array');
             expect(jobs.length).to.be.equal(2);
-            expect(jobs[1].data.foo).to.be.equal('bar');
-            expect(jobs[0].data.baz).to.be.equal('qux');
+            expect(jobs[0].data.foo).to.be.equal('bar');
+            expect(jobs[1].data.baz).to.be.equal('qux');
           });
         });
       });
@@ -2070,10 +2070,10 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'ZSET', 1, 2).then(function (jobs) {
+        queue.getJobs('completed', 'ZSET', true, 1, 2).then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(2);
-          expect(jobs[0].data.foo).to.be.equal(2);
+          expect(jobs[0].data.foo).to.be.eql(2);
           expect(jobs[1].data.foo).to.be.eql(3);
           done();
         }).catch(done);
@@ -2092,7 +2092,7 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'ZSET', -3, -1).then(function (jobs) {
+        queue.getJobs('completed', 'ZSET', true, -3, -1).then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(3);
           expect(jobs[0].data.foo).to.be.equal(1);
@@ -2113,7 +2113,7 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'ZSET', -300, 99999).then(function (jobs) {
+        queue.getJobs('completed', 'ZSET', true, -300, 99999).then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(3);
           expect(jobs[0].data.foo).to.be.equal(1);

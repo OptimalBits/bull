@@ -149,7 +149,7 @@ videoQueue.process(function(job, done){
   done();
 
   // or give a error if error
-  done(Error('error transcoding'));
+  done(new Error('error transcoding'));
 
   // or pass it a result
   done(null, { framerate: 29.5 /* etc... */ });
@@ -166,7 +166,7 @@ audioQueue.process(function(job, done){
   done();
 
   // or give a error if error
-  done(Error('error transcoding'));
+  done(new Error('error transcoding'));
 
   // or pass it a result
   done(null, { samplerate: 48000 /* etc... */ });
@@ -183,7 +183,7 @@ imageQueue.process(function(job, done){
   done();
 
   // or give a error if error
-  done(Error('error transcoding'));
+  done(new Error('error transcoding'));
 
   // or pass it a result
   done(null, { width: 1280, height: 720 /* etc... */ });
@@ -221,6 +221,19 @@ videoQueue.process(function(job){ // don't forget to remove the done callback!
   return Promise.reject(new Error('some unexpected error'));
 });
 ```
+
+A job can be added to a queue and processed repeatedly according to a cron specification:
+
+```
+  paymentsQueue.process(function(job){
+    // Check payments
+  });
+
+  // Repeat payment job once every day at 3:15 (am)
+  paymentsQueue.add(paymentsData, {repeat: '15 3 * * *'});
+
+```
+
 
 A queue can be paused and resumed globally (pass `true` to pause processing for
 just this worker):

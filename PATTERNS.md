@@ -24,8 +24,8 @@ Server A:
 ```js
 var Queue = require('bull');
 
-var sendQueue = Queue("Server B");
-var receiveQueue = Queue("Server A");
+var sendQueue = new Queue("Server B");
+var receiveQueue = new Queue("Server A");
 
 receiveQueue.process(function(job, done){
   console.log("Received message", job.data.msg);
@@ -40,8 +40,8 @@ Server B:
 ```js
 var Queue = require('bull');
 
-var sendQueue = Queue("Server A");
-var receiveQueue = Queue("Server B");
+var sendQueue = new Queue("Server A");
+var receiveQueue = new Queue("Server B");
 
 receiveQueue.process(function(job, done){
   console.log("Received message", job.data.msg);
@@ -104,7 +104,7 @@ cluster, just use a queue prefix inside brackes, for example:
 
 ```js
   var queue = new Queue('cluster', {
-    prefis: '{myprefix}'
+    prefix: '{myprefix}'
   })
 ```
 
