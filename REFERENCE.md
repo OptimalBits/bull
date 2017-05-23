@@ -28,6 +28,10 @@ Queue
 Queue(queueName: string, url?: string, opts?: QueueOptions): Queue
 ```
 
+This is the Queue constructor. It creates a new Queue that is persisted in
+Redis. Everytime the same queue is instantiated it tries to process all the
+old jobs that may exist from a previous unfinished session.
+
 The optional ```url``` argument, allows to specify a redis connection string such as for example:
 ```redis://mypassword@myredis.server.com:1234```
 
@@ -60,10 +64,6 @@ interface AdvancedSettings {
   retryProcessDelay: number = 5000; // delay before processing next job in case of internal error.
 }
 ```
-
-This is the Queue constructor. It creates a new Queue that is persisted in
-Redis. Everytime the same queue is instantiated it tries to process all the
-old jobs that may exist from a previous unfinished session.
 
 __Advanced Settings__
 
