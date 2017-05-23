@@ -1495,16 +1495,18 @@ describe('Queue', function () {
 
     it('an unlocked job should not be moved to delayed', function(done) {
       var queue = new Queue('delayed queue');
+      var job;
 
-      queue.process(function(job, callback) {
+      queue.process(function(_job, callback) {
         // Release the lock to simulate the event loop stalling (so failure to renew the lock).
+        job = _job;
         job.releaseLock().then(function() {
           // Once it's failed, it should NOT be moved to delayed since this worker lost the lock.
           callback(new Error('retry this job'));
         });
       });
 
-      queue.on('failed', function(job) {
+      queue.on('error', function(err){
         job.isDelayed().then(function(isDelayed) {
           expect(isDelayed).to.be.equal(false);
           queue.close().then(done, done);
@@ -1516,8 +1518,10 @@ describe('Queue', function () {
 
     it('an unlocked job should not be moved to waiting', function(done) {
       var queue = new Queue('delayed queue');
+      var job;
 
-      queue.process(function(job, callback) {
+      queue.process(function(_job, callback) {
+        job = _job;
         // Release the lock to simulate the event loop stalling (so failure to renew the lock).
         job.releaseLock().then(function() {
           // Once it's failed, it should NOT be moved to waiting since this worker lost the lock.
@@ -1525,7 +1529,7 @@ describe('Queue', function () {
         });
       });
 
-      queue.on('failed', function(job) {
+      queue.on('error', function(err){
         job.isWaiting().then(function(isWaiting) {
           expect(isWaiting).to.be.equal(false);
           queue.close().then(done, done);
