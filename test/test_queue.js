@@ -1492,6 +1492,49 @@ describe('Queue', function () {
         });
       });
     });
+
+    it('an unlocked job should not be moved to delayed', function(done) {
+      var queue = new Queue('delayed queue');
+
+      queue.process(function(job, callback) {
+        // Release the lock to simulate the event loop stalling (so failure to renew the lock).
+        job.releaseLock().then(function() {
+          // Once it's failed, it should NOT be moved to delayed since this worker lost the lock.
+          callback(new Error('retry this job'));
+        });
+      });
+
+      queue.on('failed', function(job) {
+        job.isDelayed().then(function(isDelayed) {
+          expect(isDelayed).to.be.equal(false);
+          queue.close().then(done, done);
+        });
+      });
+
+      queue.add({ foo: 'bar' }, { backoff: 1000, attempts: 2 });
+    });
+
+    it('an unlocked job should not be moved to waiting', function(done) {
+      var queue = new Queue('delayed queue');
+
+      queue.process(function(job, callback) {
+        // Release the lock to simulate the event loop stalling (so failure to renew the lock).
+        job.releaseLock().then(function() {
+          // Once it's failed, it should NOT be moved to waiting since this worker lost the lock.
+          callback(new Error('retry this job'));
+        });
+      });
+
+      queue.on('failed', function(job) {
+        job.isWaiting().then(function(isWaiting) {
+          expect(isWaiting).to.be.equal(false);
+          queue.close().then(done, done);
+        });
+      });
+
+      // Note that backoff:0 should immediately retry the job upon failure (ie put it in 'waiting')
+      queue.add({ foo: 'bar' }, { backoff: 0, attempts: 2 });
+    });
   });
 
   describe('Concurrency process', function () {
