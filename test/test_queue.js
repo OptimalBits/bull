@@ -1877,8 +1877,8 @@ describe('Queue', function () {
         return queue.getWaiting().then(function (jobs) {
           expect(jobs).to.be.a('array');
           expect(jobs.length).to.be.equal(2);
-          expect(jobs[1].data.foo).to.be.equal('bar');
-          expect(jobs[0].data.baz).to.be.equal('qux');
+          expect(jobs[0].data.foo).to.be.equal('bar');
+          expect(jobs[1].data.baz).to.be.equal('qux');
         });
       });
     });
@@ -1889,8 +1889,8 @@ describe('Queue', function () {
           return queue.getWaiting().then(function (jobs) {
             expect(jobs).to.be.a('array');
             expect(jobs.length).to.be.equal(2);
-            expect(jobs[1].data.foo).to.be.equal('bar');
-            expect(jobs[0].data.baz).to.be.equal('qux');
+            expect(jobs[0].data.foo).to.be.equal('bar');
+            expect(jobs[1].data.baz).to.be.equal('qux');
           });
         });
       });
@@ -2045,10 +2045,10 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'ZSET', 1, 2).then(function (jobs) {
+        queue.getJobs('completed', 'ZSET', true, 1, 2).then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(2);
-          expect(jobs[0].data.foo).to.be.equal(2);
+          expect(jobs[0].data.foo).to.be.eql(2);
           expect(jobs[1].data.foo).to.be.eql(3);
           done();
         }).catch(done);
@@ -2067,7 +2067,7 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'ZSET', -3, -1).then(function (jobs) {
+        queue.getJobs('completed', 'ZSET', true, -3, -1).then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(3);
           expect(jobs[0].data.foo).to.be.equal(1);
@@ -2088,7 +2088,7 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'ZSET', -300, 99999).then(function (jobs) {
+        queue.getJobs('completed', 'ZSET', true, -300, 99999).then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(3);
           expect(jobs[0].data.foo).to.be.equal(1);
