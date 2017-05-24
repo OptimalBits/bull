@@ -7,8 +7,6 @@
       KEYS[3] jobId
       KEYS[4] 'added'
     
-    pushCmd,
-    jobId
       ARGV[1]  pushCmd
       ARGV[2]  jobId
       ARGV[3]  token
