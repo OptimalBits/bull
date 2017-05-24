@@ -1,8 +1,8 @@
 {
   "name": "bull",
-  "version": "2.2.6",
+  "version": "3.0.0-alpha.4",
   "description": "Job manager",
-  "main": "index.js",
+  "main": "./lib/queue",
   "repository": {
     "type": "git",
     "url": "git://github.com/OptimalBits/bull.git"
@@ -18,23 +18,56 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "bluebird": "^3.5.0",
-    "bull-redlock": "^2.2.1",
+    "cron-parser": "^2.4.0",
     "debuglog": "^1.0.0",
-    "disturbed": "^1.0.6",
-    "ioredis": "^2.5.0",
+    "ioredis": "^3.0.0-2",
     "lodash": "^4.17.4",
     "semver": "^5.3.0",
     "uuid": "^3.0.1"
   },
   "devDependencies": {
+    "chai": "^3.5.0",
+    "eslint": "^2.13.1",
     "expect.js": "^0.3.1",
-    "gulp": "^3.9.1",
-    "gulp-eslint": "^2.1.0",
-    "mocha": "^2.5.3",
+    "mocha": "^3.3.0",
     "sinon": "^1.17.7"
   },
   "scripts": {
-    "test": "gulp && mocha test/test_* --reporter spec --timeout 5000",
+    "lint": "eslint lib test",
+    "pretest": "npm run lint",
+    "test": "mocha",
     "postpublish": "git push && git push --tags"
+  },
+  "eslintConfig": {
+    "rules": {
+      "indent": [
+        2,
+        2,
+        {
+          "SwitchCase": 1
+        }
+      ],
+      "semi": 2,
+      "valid-jsdoc": 0,
+      "func-style": 0,
+      "no-use-before-define": 0,
+      "camelcase": 1,
+      "no-unused-vars": 1,
+      "no-alert": 1,
+      "no-console": [
+        2,
+        {
+          "allow": [
+            "warn",
+            "error"
+          ]
+        }
+      ],
+      "quotes": [
+        2,
+        "single"
+      ],
+      "no-underscore-dangle": 0
+    }
   }
 }

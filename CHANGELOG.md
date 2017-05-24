@@ -1,3 +1,30 @@
+v.3.0.0-alpha.4
+===============
+
+- Implemented repeatable jobs. #252.
+
+v.3.0.0-alpha.3
+===============
+
+- Simplified global events #501.
+
+v.3.0.0-alpha.2
+===============
+
+- Eliminated possible memory leak #503
+
+v.3.0.0-alpha.1
+===============
+
+- improved job fetch mechanism. #480.
+- job.jobId changed to job.id.
+- refactored error messages into separate error module.
+- refactored lua scripts into separate files, and preloaded.
+- many atomizations and clean ups.
+- completed and failed job states are now represented in ZSETs. #190.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v2.2.6...v3.0.0-alpha.1)
+
 v.2.2.6
 =======
 

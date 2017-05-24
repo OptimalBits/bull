@@ -48,7 +48,6 @@
 
 ---
 
-
 ### Sponsors
 
 <div valign="middle">
@@ -65,68 +64,78 @@ Are you developing bull sponsored by a company? Please, let us now!
 
 ---
 
-
 ### Features
 
 - [x] Minimal CPU usage due to a polling-free design.
 - [x] Robust design based on Redis.
 - [x] Delayed jobs.
+- [x] Schedule and repeat jobs according to a cron specification.
 - [x] Retries.
 - [x] Priority.
 - [x] Concurrency.
 - [x] Pause/resume—globally or locally.
+- [x] Multiple job types per queue.
 - [x] Automatic recovery from process crashes.
 
 And coming up on the roadmap...
 
-- [ ] Multiple job types per queue.
-- [ ] Scheduling jobs as a cron specification.
+- [ ] Job completion acknowledgement.
 - [ ] Rate limiter for jobs.
 - [ ] Parent-child jobs relationships.
 
-
 ---
-
 
 ### UIs
 
 There are a few third-party UIs that you can use for monitoring:
 
-- [bull-ui](https://github.com/OptimalBits/bull-ui)
 - [matador](https://github.com/ShaneK/Matador)
 - [react-bull](https://github.com/kfatehi/react-bull)
 - [toureiro](https://github.com/Epharmix/Toureiro)
 
-
 ---
+
+### Feature Comparison
+
+Since there are a few job queue solutions, here a table comparing them to help you use the one that
+better suits your needs.
+
+| Feature         | Bull          | Kue   | Bee | Agenda | 
+| :-------------  |:-------------:|:-----:|:---:|:------:|
+| Backend         | redis         | redis |redis| mongo  |
+| Priorities      | ✓             |  ✓    |     |   ✓    |
+| Concurrency     | ✓             |  ✓    |  ✓  |   ✓    | 
+| Delayed jobs    | ✓             |  ✓    |     |   ✓    |
+| Pause/Resume    | ✓             |  ✓    |     |        |
+| Repeatable jobs | ✓             |       |     |   ✓    |
+| Atomic ops      | ✓             |       |  ✓  |        |
+| Persistence     | ✓             |   ✓   |  ✓  |   ✓    |
+| Optimized for   | Jobs / Messages | Jobs | Messages | Jobs |
 
 
 ### Install
 
 ```bash
-npm install bull@2.x --save
+npm install bull --save
 ```
 ```bash
-yarn add bull@2.x
+yarn add bull
 ```
 
 _**Requirements:** Bull requires a Redis version greater than or equal to `2.8.11`._
 
-_We are currently developing Bull `3.x`, which means that the latest *unstable* version would be something like `3.0.0-alpha.1`. We recommend you stick to version `2.x` until `3.x` is stable. Check out [the milestone](https://github.com/OptimalBits/bull/milestone/4) for some things to expect in the next version!_
-
-
 ---
 
 
-### Quickstart
+### Quick Guide
 
 ```js
 var Queue = require('bull');
 
-var videoQueue = Queue('video transcoding', 6379, '127.0.0.1');
-var audioQueue = Queue('audio transcoding', 6379, '127.0.0.1');
-var imageQueue = Queue('image transcoding', 6379, '127.0.0.1');
-var pdfQueue = Queue('pdf transcoding', 6379, '127.0.0.1');
+var videoQueue = new Queue('video transcoding', 'redis://127.0.0.1:6379');
+var audioQueue = new Queue('audio transcoding', {redis: {port: 6379, host: '127.0.0.1'}}); // Specify Redis connection using object
+var imageQueue = new Queue('image transcoding');
+var pdfQueue = new Queue('pdf transcoding');
 
 videoQueue.process(function(job, done){
 
@@ -140,13 +149,13 @@ videoQueue.process(function(job, done){
   done();
 
   // or give a error if error
-  done(Error('error transcoding'));
+  done(new Error('error transcoding'));
 
   // or pass it a result
-  done(null, {framerate: 29.5 /* etc... */});
+  done(null, { framerate: 29.5 /* etc... */ });
 
   // If the job throws an unhandled exception it is also handled correctly
-  throw (Error('some unexpected error'));
+  throw new Error('some unexpected error');
 });
 
 audioQueue.process(function(job, done){
@@ -157,13 +166,13 @@ audioQueue.process(function(job, done){
   done();
 
   // or give a error if error
-  done(Error('error transcoding'));
+  done(new Error('error transcoding'));
 
   // or pass it a result
-  done(null, {samplerate: 48000 /* etc... */});
+  done(null, { samplerate: 48000 /* etc... */ });
 
   // If the job throws an unhandled exception it is also handled correctly
-  throw (Error('some unexpected error'));
+  throw new Error('some unexpected error');
 });
 
 imageQueue.process(function(job, done){
@@ -174,13 +183,13 @@ imageQueue.process(function(job, done){
   done();
 
   // or give a error if error
-  done(Error('error transcoding'));
+  done(new Error('error transcoding'));
 
   // or pass it a result
-  done(null, {width: 1280, height: 720 /* etc... */});
+  done(null, { width: 1280, height: 720 /* etc... */ });
 
   // If the job throws an unhandled exception it is also handled correctly
-  throw (Error('some unexpected error'));
+  throw new Error('some unexpected error');
 });
 
 pdfQueue.process(function(job){
@@ -195,7 +204,7 @@ imageQueue.add({image: 'http://example.com/image1.tiff'});
 
 Alternatively, you can use return promises instead of using the `done` callback:
 
-```js
+```javascript
 videoQueue.process(function(job){ // don't forget to remove the done callback!
   // Simply return a promise
   return fetchVideo(job.data.url).then(transcodeVideo);
@@ -204,7 +213,7 @@ videoQueue.process(function(job){ // don't forget to remove the done callback!
   return Promise.reject(new Error('error transcoding'));
 
   // Passes the value the promise is resolved with to the "completed" event
-  return Promise.resolve({framerate: 29.5 /* etc... */});
+  return Promise.resolve({ framerate: 29.5 /* etc... */ });
 
   // If the job throws an unhandled exception it is also handled correctly
   throw new Error('some unexpected error');
@@ -213,9 +222,21 @@ videoQueue.process(function(job){ // don't forget to remove the done callback!
 });
 ```
 
+A job can be added to a queue and processed repeatedly according to a cron specification:
+
+```
+  paymentsQueue.process(function(job){
+    // Check payments
+  });
+
+  // Repeat payment job once every day at 3:15 (am)
+  paymentsQueue.add(paymentsData, {repeat: '15 3 * * *'});
+
+```
+
+
 A queue can be paused and resumed globally (pass `true` to pause processing for
 just this worker):
-
 ```js
 queue.pause().then(function(){
   // queue is paused now
@@ -226,32 +247,35 @@ queue.resume().then(function(){
 })
 ```
 
-A queue also emits some useful events, for example...
-
+A queue emits also some useful events, for example...
 ```js
-queue.on('completed', function(job, result){
-  console.log('Job completed with result!', result)
+.on('completed', function(job, result){
+  // Job completed with output result!
 })
 ```
 
 For more information on events, including the full list of events that are fired, check out the [Events reference](./REFERENCE.md#events)
 
-Queues are cheap, so if you need many of them just create new ones with different names:
-
-```js
-var userJohn = Queue('john');
-var userLisa = Queue('lisa');
-...
+Queues are cheap, so if you need many of them just create new ones with different
+names:
+```javascript
+var userJohn = new Queue('john');
+var userLisa = new Queue('lisa');
+.
+.
+.
 ```
 
-Queues are robust and can be run in parallel in several threads or processes without any risk of hazards or queue corruption. Check this simple example using cluster to parallelize jobs across processes:
-
+Queues are robust and can be run in parallel in several threads or processes
+without any risk of hazards or queue corruption. Check this simple example
+using cluster to parallelize jobs across processes:
 ```js
-var Queue = require('bull');
-var cluster = require('cluster');
+var
+  Queue = require('bull'),
+  cluster = require('cluster');
 
 var numWorkers = 8;
-var queue = Queue("test concurrent queue", 6379, '127.0.0.1');
+var queue = new Queue("test concurrent queue");
 
 if(cluster.isMaster){
   for (var i = 0; i < numWorkers; i++) {
@@ -276,7 +300,6 @@ if(cluster.isMaster){
 }
 ```
 
-
 ---
 
 
@@ -294,7 +317,14 @@ If you see anything that could use more docs, please submit a pull request!
 
 ---
 
-
 ### Important Notes
 
-Bull aims for an "at most once" working strategy. When a worker is processing a job, it will keep the job locked until the work is done. However, it is important that the worker does not lock the event loop for too long, otherwise other workers might pick up the job believing that the original worker has stalled out.
+The queue aims for "at most once" working strategy. When a worker is processing a job it will keep the job "locked" so other workers can't process it.
+
+It's important to understand how locking works to prevent your jobs from losing their lock - becoming _stalled_ - and being restarted as a result. Locking is implemented internally by creating a lock for `lockDuration` on interval `lockRenewTime` (which is usually half `lockDuration`). If `lockDuration` elapses before the lock can be renewed, the job will be considered stalled and is automatically restarted; it will be __double processed__. This can happen when:
+1. The Node process running your job processor unexpectedly terminates.
+2. Your job processor was too CPU-intensive and stalled the Node event loop, and as a result, Bull couldn't renew the job lock (see #488 for how we might better detect this). You can fix this by breaking your job processor into smaller parts so that no single part can block the Node event loop. Alternatively, you can pass a larger value for the `lockDuration` setting (with the tradeoff being that it will take longer to recognize a real stalled job).
+
+As such, you should always listen for the `stalled` event and log this to your error monitoring system, as this means your jobs are likely getting double-processed.
+
+As a safeguard so problematic jobs won't get restarted indefinitely (e.g. if the job processor aways crashes its Node process), jobs will be recovered from a stalled state a maximum of `maxStalledCount` times (default: `1`).

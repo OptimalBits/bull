@@ -25,34 +25,61 @@ Queue
 -----
 
 ```ts
-Queue(queueName: string, redisPort: number, redisHost: string, redisOpts?: RedisOpts): Queue
-```
-```ts
-Queue(queueName: string, redisConnectionString: string, redisOpts? RedisOpts): Queue
+Queue(queueName: string, url?: string, opts?: QueueOptions): Queue
 ```
 
 This is the Queue constructor. It creates a new Queue that is persisted in
 Redis. Everytime the same queue is instantiated it tries to process all the
 old jobs that may exist from a previous unfinished session.
 
-**Arguments**
+The optional ```url``` argument, allows to specify a redis connection string such as for example:
+```redis://mypassword@myredis.server.com:1234```
 
-```js
-    queueName {String} A unique name for this Queue.
-    redisPort {Number} A port where redis server is running.
-    redisHost {String} A host specified as IP or domain where redis is running.
-    redisOptions {Object} Options to pass to the redis client. https://github.com/luin/ioredis/blob/master/API.md#new-redisport-host-options 
+```typescript
+interface QueueOpts{
+  redis?: RedisOpts;
+  prefix?: string = 'bull'; // prefix for all queue keys.
+  settings?: AdvancedSettings;
+}
 ```
 
-Instead of a `redisPort` and `redisHost`, you can pass a `redisConnectionString`:
+```RedisOpts``` are passed directly to ioredis constructor, check [https://github.com/luin/ioredis/blob/master/API.md](ioredis) 
+for details. We document here just the most important ones.
 
-**Arguments**
-
-```js
-    queueName {String} A unique name for this Queue.
-    redisConnectionString {String} A connection string containing the redis server host, port and (optional) authentication.
-    redisOptions {Object} Options to pass to the redis client. https://github.com/luin/ioredis/blob/master/API.md#new-redisport-host-options
+```typescript
+interface RedisOpts {
+  port?: number = 6379;
+  host?: string = localhost;
+  db?: number = 0;
+  password?: string;
+}
 ```
+
+```typescript
+interface AdvancedSettings {
+  lockDuration: number = 30000; // Key expiration time for job locks.
+  stalledInterval: number = 30000; // How often check for stalled jobs (use 0 for never checking).
+  maxStalledCount: number = 1; // Max amount of times a stalled job will be re-processed.
+  guardInterval: number = 5000; // Poll interval for delayed jobs and added jobs.s
+  retryProcessDelay: number = 5000; // delay before processing next job in case of internal error.
+}
+```
+
+__Advanced Settings__
+
+__Warning:__ Do not override these advanced settings unless you understand the internals of the queue.
+
+`lockDuration`: Time in milliseconds to acquire the job lock. Set this to a higher value if you find that your jobs are being stalled because your job processor is CPU-intensive and blocking the event loop (see note below about stalled jobs). Set this to a lower value if your jobs are extremely time-sensitive and it might be OK if they get double-processed (due to them be falsly considered stalled).
+
+`lockRenewTime`: Interval in milliseconds on which to acquire the job lock. It is set to `lockDuration / 2` by default to give enough buffer to renew the lock each time before the job lock expires. It should never be set to a value larger than `lockDuration`. Set this to a lower value if you're finding that jobs are becoming stalled due to a CPU-intensive job processor function. Generally you shouldn't change this though.
+
+`stalledInterval`: Interval in milliseconds on which each worker will check for stalled jobs (i.e. unlocked jobs in the `active` state). See note below about stalled jobs. Set this to a lower value if your jobs are extremely time-sensitive. Set this to a higher value if your Redis CPU usage is high as this check can be expensive. Note that because each worker runs this on its own interval and checks the entire queue, the stalled job actually run much more frequently than this value would imply.
+
+`maxStalledCount`: The maximum number of times a job can be restarted before it will be permamently failed with the error `job stalled more than allowable limit`. This is set to a default of `1` with the assumption that stalled jobs should be very rare (only due to process crashes) and you want to be on the safer side of not restarting jobs. Set this higher if stalled jobs are common (e.g. processes crash a lot) and it's generally OK to double process jobs.
+
+`guardInterval`: Interval in milliseconds on which the delayed job watchdog will run. This watchdog is only in place for unstable Redis connections which can caused delayed jobs to not be processed. Set to a lower value if your Redis connection is unstable and delayed jobs aren't being processed in time.
+
+`retryProcessDelay`: Time in milliseconds in which to wait before trying to process jobs, in case of a Redis error. Set to a lower value on an unstable Redis connection.
 
 ---
 
@@ -118,12 +145,14 @@ interface JobOpts{
 
   attempts: number; // The total number of attempts to try the job until it completes.
 
+  repeat: RepeatOpts; // Repeat job according to a cron specification.
+
   backoff: number | BackoffOpts; // Backoff setting for automatic retries if the job fails
 
   lifo: boolean; // if true, adds the job to the right of the queue instead of the left (default false)
   timeout: number; // The number of milliseconds after which the job should be fail with a timeout error [optional]
 
-  jobId: number | string; // Override the job ID - by default, the job ID is a unique
+  jobId: number | string; // Override the job ID - by default, the job ID is a unique
                           // integer, but you can use this setting to override it.
                           // If you use this option, it is up to you to ensure the
                           // jobId is unique. If you attempt to add a job with an id that
@@ -136,6 +165,17 @@ interface JobOpts{
                          // Default behavior is to keep the job in the failed set.
 }
 ```
+
+```typescript
+interface RepeatOpts{
+  cron: string; // Cron string
+  tz?: string, // Timezone
+  endDate?: Date | string | number; // End data when the repeat job should stop repeating.
+}
+```
+
+More information regarding the [cron expression](https://github.com/harrisiirak/cron-parser)
+
 
 ```typescript
 interface BackoffOpts{
@@ -423,37 +463,3 @@ queue.on('completed', listener):
 // Will listen globally, to instances of this queue...
 queue.on('global:completed', listener);
 ```
-
----
-
-
-Priorty Queue
--------------
-
-```ts
-PriorityQueue(queueName: string, redisPort: number, redisHost: string, [redisOpts: RedisOpts])
-```
-
-> **Deprecated!** The priority queue has been deprecated since version `2.2.0` in favor of a new option: passing `priority` to [Queue#add](#queueadd). The `PriorityQueue` will be removed from Bull in version `3.0.0`.
-
-A "priority queue" works just like a normal queue, with same function and parameters. The only difference is that `Queue#add` allows an options `opts.priority` that could take `'low'`, `'normal'`, `'medium'`, `'high'`, or `'critical'`. If no priority is provided, it defaults to `'normal'`.
-
-A priority queue will process more often higher priority jobs than lower.
-
-```js
-var PriorityQueue = require("bull/lib/priority-queue");
-
-var queue = new PriorityQueue("myPriorityQueues");
-
-queue.add({todo: "Improve feature"}, {priority: "normal"});
-queue.add({todo: "Read 9gags"}, {priority: "low"});
-queue.add({todo: "Fix my test unit"}, {priority: "critical"});
-
-queue.process(function(job, done) {
-  console.log("I have to: " + job.data.todo);
-  done();
-});
-```
-
-_**Warning:** Priority queues use 5 times as many Redis connections as normal queues!_
-

@@ -24,8 +24,8 @@ Server A:
 ```js
 var Queue = require('bull');
 
-var sendQueue = Queue("Server B");
-var receiveQueue = Queue("Server A");
+var sendQueue = new Queue("Server B");
+var receiveQueue = new Queue("Server A");
 
 receiveQueue.process(function(job, done){
   console.log("Received message", job.data.msg);
@@ -40,8 +40,8 @@ Server B:
 ```js
 var Queue = require('bull');
 
-var sendQueue = Queue("Server A");
-var receiveQueue = Queue("Server B");
+var sendQueue = new Queue("Server A");
+var receiveQueue = new Queue("Server B");
 
 receiveQueue.process(function(job, done){
   console.log("Received message", job.data.msg);
@@ -89,6 +89,27 @@ var queueFoo = new Queue('foobar', opts);
 var queueQux = new Queue('quxbaz', opts);
 ```
 
+Redis cluster
+-------------
+
+Bull internals requires atomic operations that spans different keys. This fact breaks redis
+rules for cluster configurations, however it is still possible to use a cluster environment
+by using the proper bull prefix option as a cluster "hash tag". Hash tags are used to guarantee
+that certain keys are placed in the same hash slot, read more about hash tags in the [redis cluster
+tutorial](https://redis.io/topics/cluster-tutorial). 
+
+A hash tag is defined with brakets. I.e. a key that has a substring inside brackets will use that 
+substring to determine in which hash slot the key will be placed. So to make bull compatible with
+cluster, just use a queue prefix inside brackes, for example:
+
+```js
+  var queue = new Queue('cluster', {
+    prefix: '{myprefix}'
+  })
+```
+
+If you use several queues in the same cluster, you should use different prefixes so that the 
+queues are evenly placed in the cluster nodes.
 
 Debugging
 ---------

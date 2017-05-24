@@ -4,28 +4,25 @@
 var Queue = require('../');
 var Promise = require('bluebird');
 var STD_QUEUE_NAME = 'test queue';
+var _ = require('lodash');
 
 var queues = [];
 
 function simulateDisconnect(queue){
   queue.client.disconnect();
-  queue.bclient.disconnect();
   queue.eclient.disconnect();
 }
 
-function buildQueue(name) {
-  var queue = new Queue(name || STD_QUEUE_NAME, 6379, '127.0.0.1');
+function buildQueue(name, options) {
+  options = _.extend({redis: {port: 6379, host: '127.0.0.1'}}, options);
+  var queue = new Queue(name || STD_QUEUE_NAME, options);
   queues.push(queue);
   return queue;
 }
 
-function newQueue(name){
-  var queue = buildQueue(name);
-  return new Promise(function(resolve){
-    queue.on('ready', function(){
-      resolve(queue);
-    });
-  });
+function newQueue(name, opts){
+  var queue = buildQueue(name, opts);
+  return queue.isReady();
 }
 
 function cleanupQueue(queue) {
