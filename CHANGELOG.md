@@ -1,3 +1,10 @@
+v.3.0.0-rc.1
+============
+
+- Improved error and lock handling for failed jobs #499, #539.
+- Corrected instantiation from urls #538.
+- Return jobs in proper order in jobs getters.
+
 v.3.0.0-alpha.4
 ===============
 
