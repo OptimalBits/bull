@@ -5,20 +5,29 @@ v.3.0.0-rc.1
 - Corrected instantiation from urls #538.
 - Return jobs in proper order in jobs getters.
 
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-alpha.4...v3.0.0-rc.1)
+
 v.3.0.0-alpha.4
 ===============
 
 - Implemented repeatable jobs. #252.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-alpha.3...v3.0.0-alpha.4)
 
 v.3.0.0-alpha.3
 ===============
 
 - Simplified global events #501.
 
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-alpha.2...v3.0.0-alpha.3)
+
 v.3.0.0-alpha.2
 ===============
 
 - Eliminated possible memory leak #503
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-alpha.1...v3.0.0-alpha.2)
+
 
 v.3.0.0-alpha.1
 ===============
