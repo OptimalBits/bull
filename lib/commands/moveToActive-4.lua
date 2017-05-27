@@ -17,7 +17,7 @@
       ARGV[3] lock duration in milliseconds
 ]]
 
-local jobId = redis.call("LINDEX", KEYS[1], -1)
+local jobId = redis.call("RPOP", KEYS[1])
 
 if jobId then
   local jobKey = ARGV[1] .. jobId
@@ -25,7 +25,6 @@ if jobId then
   
   -- get a the lock
   redis.call("SET", lockKey, ARGV[2], "PX", ARGV[3])
-  redis.call("LREM", KEYS[1], -1, jobId) -- remove from wait
   redis.call("ZREM", KEYS[3], jobId) -- remove from priority
   redis.call("LPUSH", KEYS[2], jobId) -- push in active
 
