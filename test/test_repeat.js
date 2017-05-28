@@ -13,7 +13,6 @@ var ONE_DAY = 24 * ONE_HOUR;
 var ONE_MONTH = 31 * ONE_DAY;
 
 describe('repeat', function () {
-  var sandbox = sinon.sandbox.create();
   var queue;
 
   beforeEach(function(){
