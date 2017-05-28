@@ -1,3 +1,9 @@
+v.3.0.0-rc.2
+============
+
+- Improved performance of moveToActive #550.
+- Fixed issue with cancelable promise #546.
+
 v.3.0.0-rc.1
 ============
 
