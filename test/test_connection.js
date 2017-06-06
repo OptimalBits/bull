@@ -21,7 +21,9 @@ describe('connection', function () {
   it('should recover from a connection loss', function (done) {
     queue.on('error', function () {
       // error event has to be observed or the exception will bubble up
-    }).process(function (job, jobDone) {
+    });
+    
+    queue.process(function (job, jobDone) {
       expect(job.data.foo).to.be.equal('bar');
       jobDone();
       queue.close();

@@ -1327,15 +1327,25 @@ describe('Queue', function () {
     queue1.process(function (job, jobDone) {
       jobDone();
     });
-    queue1.add({});
-    queue2.once('global:waiting', function () {
-      queue2.once('global:active', function () {
-        queue2.once('global:completed', function () {
-          queue1.close().then(function(){
-            queue2.close().then(done);
-          });
+
+    var state;
+    queue2.on('global:waiting', function () {
+      expect(state).to.be.undefined;
+      state = 'waiting';
+    }).then(function(){
+      return queue2.once('global:active', function () {
+        expect(state).to.be.equal('waiting');
+        state = 'active';
+      });
+    }).then(function(){
+      return queue2.once('global:completed', function () {
+        expect(state).to.be.equal('active');
+        queue1.close().then(function(){
+          queue2.close().then(done);
         });
       });
+    }).then(function(){
+      queue1.add({});
     });
   });
 
