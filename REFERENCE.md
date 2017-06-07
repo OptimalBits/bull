@@ -411,10 +411,6 @@ Events
 A queue emits also some useful events:
 
 ```js
-.on('ready', function() {
-  // Redis is connected and the queue is ready to accept jobs.
-})
-
 .on('error', function(error) {
   // An error occured.
 })
