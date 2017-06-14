@@ -154,7 +154,7 @@ describe('Queue', function () {
       queue._clearTimers().then(done, done);
     });
 
-    it('should create a queue with a hostname', function (done) {
+    it('should create a queue with only a hostname', function (done) {
       var queue = new Queue('connstring', 'redis://127.2.3.4');
 
       expect(queue.client.options.host).to.be('127.2.3.4');
@@ -165,6 +165,24 @@ describe('Queue', function () {
 
       expect(queue.client.condition.select).to.be(0);
       expect(queue.eclient.condition.select).to.be(0);
+
+      queue._clearTimers().then(done, done);
+    });
+
+    it('should create a queue with connection string and password', function (done) {
+      var queue = new Queue('connstring', 'redis://:123@127.2.3.4:6379');
+
+      expect(queue.client.options.host).to.be('127.2.3.4');
+      expect(queue.eclient.options.host).to.be('127.2.3.4');
+
+      expect(queue.client.options.port).to.be(6379);
+      expect(queue.eclient.options.port).to.be(6379);
+
+      expect(queue.client.condition.select).to.be(0);
+      expect(queue.eclient.condition.select).to.be(0);
+
+      expect(queue.client.options.password).to.be('123');
+      expect(queue.eclient.options.password).to.be('123');
 
       queue._clearTimers().then(done, done);
     });
