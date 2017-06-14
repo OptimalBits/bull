@@ -122,7 +122,7 @@ npm install bull --save
 yarn add bull
 ```
 
-_**Requirements:** Bull requires a Redis version greater than or equal to `2.8.11`._
+_**Requirements:** Bull requires a Redis version greater than or equal to `2.8.18`._
 
 ---
 
