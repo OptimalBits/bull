@@ -140,7 +140,7 @@ var pdfQueue = new Queue('pdf transcoding');
 videoQueue.process(function(job, done){
 
   // job.data contains the custom data passed when the job was created
-  // job.jobId contains id of this job.
+  // job.id contains id of this job.
 
   // transcode video asynchronously and report progress
   job.progress(42);
@@ -294,7 +294,7 @@ if(cluster.isMaster){
   });
 }else{
   queue.process(function(job, jobDone){
-    console.log("Job done by worker", cluster.worker.id, job.jobId);
+    console.log("Job done by worker", cluster.worker.id, job.id);
     jobDone();
   });
 }
