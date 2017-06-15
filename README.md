@@ -292,7 +292,6 @@ if(cluster.isMaster){
   cluster.on('exit', function(worker, code, signal) {
     console.log('worker ' + worker.process.pid + ' died');
   });
-  
 }else{
   queue.process(function(job, jobDone){
     console.log("Job done by worker", cluster.worker.id, job.id);
