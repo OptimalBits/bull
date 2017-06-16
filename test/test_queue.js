@@ -202,7 +202,7 @@ describe('Queue', function () {
       queue.close().then(done);
     });
 
-    it('creates a queue using custom the supplied redis host', function (done) {
+    it('creates a queue using the supplied redis host', function (done) {
       var queue = new Queue('custom', { redis: { host: 'localhost' } });
 
       expect(queue.client.options.host).to.be('localhost');

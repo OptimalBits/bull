@@ -22,7 +22,7 @@ if (score ~= nil) then
   if (math.floor(score) <= tonumber(ARGV[2])) then
     redis.call("ZREM", KEYS[1], jobId)
     redis.call("LREM", KEYS[2], 0, jobId)
-    redis.call("LPUSH", KEYS[3], jobId) -- not sure if it is better to move the job at the begining of the queue with LPUSH
+    redis.call("LPUSH", KEYS[3], jobId)
     redis.call("PUBLISH", KEYS[4], jobId)
     redis.call("HSET", ARGV[1] .. jobId, "delay", 0)
     local nextTimestamp = redis.call("ZRANGE", KEYS[1], 0, 0, "WITHSCORES")[2]
