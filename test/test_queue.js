@@ -1082,12 +1082,14 @@ describe('Queue', function () {
 
   it('emits waiting event when a job is added', function (done) {
     var queue = utils.buildQueue();
-    queue.add({ foo: 'bar' });
+
     queue.once('waiting', function (jobId) {
       Job.fromId(queue, jobId).then(function(job){
         expect(job.data.foo).to.be.equal('bar');
         queue.close().then(done);
       });
+    }).then(function(){
+      queue.add({ foo: 'bar' });
     });
   });
 
