@@ -89,9 +89,15 @@ And coming up on the roadmap...
 
 There are a few third-party UIs that you can use for monitoring:
 
-- [matador](https://github.com/ShaneK/Matador)
+**Bull v3**
+
+- [Arena](https://github.com/mixmaxhq/arena)
+
+**Bull <= v2**
+
+- [Matador](https://github.com/ShaneK/Matador)
 - [react-bull](https://github.com/kfatehi/react-bull)
-- [toureiro](https://github.com/Epharmix/Toureiro)
+- [Toureiro](https://github.com/Epharmix/Toureiro)
 
 ---
 
