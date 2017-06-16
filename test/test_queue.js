@@ -1324,8 +1324,9 @@ describe('Queue', function () {
     queue.on('waiting', function(jobId){
       expect(parseInt(jobId, 10)).to.be(1);
       done();
+    }).then(function(){
+      queue.add({ test: 'stuff' });
     });
-    queue.add({ test: 'stuff' });
   });
 
   it('should emit an event when a job becomes active', function (done) {
