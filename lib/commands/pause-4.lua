@@ -9,7 +9,7 @@
       KEYS[1] 'wait' or 'paused''
       KEYS[2] 'paused' or 'wait'
       KEYS[3] 'meta-paused'
-      KEYS[4] 'resumed'
+      KEYS[4] 'paused' o 'resumed' event.
 
       ARGV[1] 'paused' or 'resumed'
 ]]
