@@ -528,6 +528,27 @@ describe('Queue', function () {
       });
     });
 
+    it('process a job that returns a string in the process handler', function(done) {
+      var testString = 'a very dignified string';
+      queue.on('completed', function(job, data) {
+        expect(job).to.be.ok();
+        expect(job.returnvalue).to.be.equal(testString);
+        setTimeout(function() {
+          queue.getJob(job.id).then(function(job) {
+            expect(job).to.be.ok();
+            expect(job.returnvalue).to.be.equal(testString);
+            done();
+          }).catch(done);
+        }, 100);
+      });
+
+      queue.process(function(job){
+        return Promise.resolve(testString);
+      });
+
+      queue.add({ testing: true });
+    });
+
     it('process a job that returns data in the process handler and the returnvalue gets stored in the database', function (done) {
       queue.process(function (job, jobDone) {
         expect(job.data.foo).to.be.equal('bar');
@@ -1084,11 +1105,15 @@ describe('Queue', function () {
     var queue = utils.buildQueue();
 
     queue.once('waiting', function (jobId) {
+      console.error('waiting...');
       Job.fromId(queue, jobId).then(function(job){
+        console.error('2');
         expect(job.data.foo).to.be.equal('bar');
         queue.close().then(done);
+        console.error('3');
       });
     }).then(function(){
+      console.error('added...');
       queue.add({ foo: 'bar' });
     });
   });
