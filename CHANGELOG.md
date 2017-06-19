@@ -1,8 +1,19 @@
+v.3.0.0-rc.3
+============
+
+- Fixed #579.
+- Lazy subscription to events for better performance.
+- Corrected calculation of next repeat job. #563.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.2...v3.0.0-rc.3)
+
 v.3.0.0-rc.2
 ============
 
 - Improved performance of moveToActive #550.
 - Fixed issue with cancelable promise #546.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.1...v3.0.0-rc.2)
 
 v.3.0.0-rc.1
 ============
