@@ -89,9 +89,15 @@ And coming up on the roadmap...
 
 There are a few third-party UIs that you can use for monitoring:
 
-- [matador](https://github.com/ShaneK/Matador)
+**Bull v3**
+
+- [Arena](https://github.com/mixmaxhq/arena)
+
+**Bull <= v2**
+
+- [Matador](https://github.com/ShaneK/Matador)
 - [react-bull](https://github.com/kfatehi/react-bull)
-- [toureiro](https://github.com/Epharmix/Toureiro)
+- [Toureiro](https://github.com/Epharmix/Toureiro)
 
 ---
 
@@ -122,7 +128,7 @@ npm install bull --save
 yarn add bull
 ```
 
-_**Requirements:** Bull requires a Redis version greater than or equal to `2.8.11`._
+_**Requirements:** Bull requires a Redis version greater than or equal to `2.8.18`._
 
 ---
 
@@ -140,7 +146,7 @@ var pdfQueue = new Queue('pdf transcoding');
 videoQueue.process(function(job, done){
 
   // job.data contains the custom data passed when the job was created
-  // job.jobId contains id of this job.
+  // job.id contains id of this job.
 
   // transcode video asynchronously and report progress
   job.progress(42);
@@ -294,7 +300,7 @@ if(cluster.isMaster){
   });
 }else{
   queue.process(function(job, jobDone){
-    console.log("Job done by worker", cluster.worker.id, job.jobId);
+    console.log("Job done by worker", cluster.worker.id, job.id);
     jobDone();
   });
 }

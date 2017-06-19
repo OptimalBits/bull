@@ -154,7 +154,7 @@ describe('Queue', function () {
       queue._clearTimers().then(done, done);
     });
 
-    it('should create a queue with a hostname', function (done) {
+    it('should create a queue with only a hostname', function (done) {
       var queue = new Queue('connstring', 'redis://127.2.3.4');
 
       expect(queue.client.options.host).to.be('127.2.3.4');
@@ -165,6 +165,24 @@ describe('Queue', function () {
 
       expect(queue.client.condition.select).to.be(0);
       expect(queue.eclient.condition.select).to.be(0);
+
+      queue._clearTimers().then(done, done);
+    });
+
+    it('should create a queue with connection string and password', function (done) {
+      var queue = new Queue('connstring', 'redis://:123@127.2.3.4:6379');
+
+      expect(queue.client.options.host).to.be('127.2.3.4');
+      expect(queue.eclient.options.host).to.be('127.2.3.4');
+
+      expect(queue.client.options.port).to.be(6379);
+      expect(queue.eclient.options.port).to.be(6379);
+
+      expect(queue.client.condition.select).to.be(0);
+      expect(queue.eclient.condition.select).to.be(0);
+
+      expect(queue.client.options.password).to.be('123');
+      expect(queue.eclient.options.password).to.be('123');
 
       queue._clearTimers().then(done, done);
     });
@@ -184,7 +202,7 @@ describe('Queue', function () {
       queue.close().then(done);
     });
 
-    it('creates a queue using custom the supplied redis host', function (done) {
+    it('creates a queue using the supplied redis host', function (done) {
       var queue = new Queue('custom', { redis: { host: 'localhost' } });
 
       expect(queue.client.options.host).to.be('localhost');
@@ -508,6 +526,27 @@ describe('Queue', function () {
           done();
         });
       });
+    });
+
+    it('process a job that returns a string in the process handler', function(done) {
+      var testString = 'a very dignified string';
+      queue.on('completed', function(job, data) {
+        expect(job).to.be.ok();
+        expect(job.returnvalue).to.be.equal(testString);
+        setTimeout(function() {
+          queue.getJob(job.id).then(function(job) {
+            expect(job).to.be.ok();
+            expect(job.returnvalue).to.be.equal(testString);
+            done();
+          }).catch(done);
+        }, 100);
+      });
+
+      queue.process(function(job){
+        return Promise.resolve(testString);
+      });
+
+      queue.add({ testing: true });
     });
 
     it('process a job that returns data in the process handler and the returnvalue gets stored in the database', function (done) {
@@ -1064,12 +1103,18 @@ describe('Queue', function () {
 
   it('emits waiting event when a job is added', function (done) {
     var queue = utils.buildQueue();
-    queue.add({ foo: 'bar' });
+
     queue.once('waiting', function (jobId) {
+      console.error('waiting...');
       Job.fromId(queue, jobId).then(function(job){
+        console.error('2');
         expect(job.data.foo).to.be.equal('bar');
         queue.close().then(done);
+        console.error('3');
       });
+    }).then(function(){
+      console.error('added...');
+      queue.add({ foo: 'bar' });
     });
   });
 
@@ -1304,8 +1349,9 @@ describe('Queue', function () {
     queue.on('waiting', function(jobId){
       expect(parseInt(jobId, 10)).to.be(1);
       done();
+    }).then(function(){
+      queue.add({ test: 'stuff' });
     });
-    queue.add({ test: 'stuff' });
   });
 
   it('should emit an event when a job becomes active', function (done) {
@@ -1327,15 +1373,25 @@ describe('Queue', function () {
     queue1.process(function (job, jobDone) {
       jobDone();
     });
-    queue1.add({});
-    queue2.once('global:waiting', function () {
-      queue2.once('global:active', function () {
-        queue2.once('global:completed', function () {
-          queue1.close().then(function(){
-            queue2.close().then(done);
-          });
+
+    var state;
+    queue2.on('global:waiting', function () {
+      expect(state).to.be.undefined;
+      state = 'waiting';
+    }).then(function(){
+      return queue2.once('global:active', function () {
+        expect(state).to.be.equal('waiting');
+        state = 'active';
+      });
+    }).then(function(){
+      return queue2.once('global:completed', function () {
+        expect(state).to.be.equal('active');
+        queue1.close().then(function(){
+          queue2.close().then(done);
         });
       });
+    }).then(function(){
+      queue1.add({});
     });
   });
 
