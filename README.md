@@ -236,7 +236,7 @@ A job can be added to a queue and processed repeatedly according to a cron speci
   });
 
   // Repeat payment job once every day at 3:15 (am)
-  paymentsQueue.add(paymentsData, {repeat: cron: {'15 3 * * *'}});
+  paymentsQueue.add(paymentsData, {repeat: cron: '15 3 * * *'});
 
 ```
 
