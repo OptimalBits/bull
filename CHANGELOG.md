@@ -1,3 +1,11 @@
+v.3.0.0-rc.3
+============
+
+- Fixed #579.
+- Lazy subscription to events for better performance.
+- Corrected calculation of next repeat job. #563.
+
+
 v.3.0.0-rc.2
 ============
 
