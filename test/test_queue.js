@@ -1105,15 +1105,11 @@ describe('Queue', function () {
     var queue = utils.buildQueue();
 
     queue.once('waiting', function (jobId) {
-      console.error('waiting...');
       Job.fromId(queue, jobId).then(function(job){
-        console.error('2');
         expect(job.data.foo).to.be.equal('bar');
         queue.close().then(done);
-        console.error('3');
       });
     }).then(function(){
-      console.error('added...');
       queue.add({ foo: 'bar' });
     });
   });
