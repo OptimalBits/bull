@@ -34,10 +34,10 @@
       <img src="https://badge.fury.io/js/bull.svg"/>
     </a>
     <a href="http://isitmaintained.com/project/OptimalBits/bull">
-      <img src="http://isitmaintained.com/badge/open/OptimalBits/bull.svg"/>
+      <img src="http://isitmaintained.com/badge/open/optimalbits/bull.svg"/>
     </a>
     <a href="http://isitmaintained.com/project/OptimalBits/bull">
-      <img src="http://isitmaintained.com/badge/resolution/OptimalBits/bull.svg"/>
+      <img src="http://isitmaintained.com/badge/resolution/optimalbits/bull.svg"/>
     </a>
   </p>
   <p>
