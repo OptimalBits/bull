@@ -55,7 +55,7 @@ describe('Queue', function () {
     });
 
     it('should resolve the promise when each client has disconnected', function () {
-      expect(testQueue.client.status).to.be('ready');
+      expect(testQueue.client.status).to.be('connecting');
       expect(testQueue.eclient.status).to.be('connecting');
 
       return testQueue.close().then(function () {
@@ -283,7 +283,7 @@ describe('Queue', function () {
 
       expect(queueFoo.client).to.be.equal(client);
       expect(queueFoo.eclient).to.be.equal(subscriber);
-      
+
       expect(queueQux.client).to.be.equal(client);
       expect(queueQux.eclient).to.be.equal(subscriber);
 
@@ -357,7 +357,7 @@ describe('Queue', function () {
         expect(job.data.foo).to.be.equal('bar');
         jobDone();
       }).catch(done);
-      
+
       queue.add({ foo: 'bar' }, {removeOnComplete: true}).then(function (job) {
         expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
@@ -380,7 +380,7 @@ describe('Queue', function () {
         expect(job.data.foo).to.be.equal('bar');
         throw Error('error');
       }).catch(done);
-      
+
       queue.add({ foo: 'bar' }, {removeOnFail: true}).then(function (job) {
         expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
@@ -447,7 +447,7 @@ describe('Queue', function () {
           var currentPriority = 1;
           var counter = 0;
           var total = 0;
-          
+
           queue.process(function(job, jobDone){
             expect(job.id).to.be.ok();
             expect(job.data.p).to.be(currentPriority);
@@ -803,7 +803,7 @@ describe('Queue', function () {
             lockRenewTime: 10
           }
         });
-        
+
         for (var j = 0; j < NUM_JOBS_PER_QUEUE; j++) {
           jobs.push(queueStalled2.add({ job: j }));
         }
@@ -1744,7 +1744,7 @@ describe('Queue', function () {
           if (job.attemptsMade < 2) {
             throw new Error('Not yet!');
           }
-          
+
           jobDone();
         });
 
