@@ -283,7 +283,7 @@ describe('Queue', function () {
 
       expect(queueFoo.client).to.be.equal(client);
       expect(queueFoo.eclient).to.be.equal(subscriber);
-      
+
       expect(queueQux.client).to.be.equal(client);
       expect(queueQux.eclient).to.be.equal(subscriber);
 
@@ -357,7 +357,7 @@ describe('Queue', function () {
         expect(job.data.foo).to.be.equal('bar');
         jobDone();
       }).catch(done);
-      
+
       queue.add({ foo: 'bar' }, {removeOnComplete: true}).then(function (job) {
         expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
@@ -380,7 +380,7 @@ describe('Queue', function () {
         expect(job.data.foo).to.be.equal('bar');
         throw Error('error');
       }).catch(done);
-      
+
       queue.add({ foo: 'bar' }, {removeOnFail: true}).then(function (job) {
         expect(job.id).to.be.ok();
         expect(job.data.foo).to.be('bar');
@@ -447,7 +447,7 @@ describe('Queue', function () {
           var currentPriority = 1;
           var counter = 0;
           var total = 0;
-          
+
           queue.process(function(job, jobDone){
             expect(job.id).to.be.ok();
             expect(job.data.p).to.be(currentPriority);
@@ -803,7 +803,7 @@ describe('Queue', function () {
             lockRenewTime: 10
           }
         });
-        
+
         for (var j = 0; j < NUM_JOBS_PER_QUEUE; j++) {
           jobs.push(queueStalled2.add({ job: j }));
         }
@@ -1249,7 +1249,7 @@ describe('Queue', function () {
               return null;
             });
 
-            var paused = queue.getJobCountByTypes(['paused','wait', 'delayed']).then(function (count) {
+            var paused = queue.getJobCountByTypes(['paused','wait','delayed']).then(function (count) {
               expect(count).to.be(10);
               return null;
             });
@@ -1744,7 +1744,7 @@ describe('Queue', function () {
           if (job.attemptsMade < 2) {
             throw new Error('Not yet!');
           }
-          
+
           jobDone();
         });
 
@@ -2133,7 +2133,7 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'ZSET').then(function (jobs) {
+        queue.getJobs('completed').then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(3);
           done();
@@ -2151,7 +2151,7 @@ describe('Queue', function () {
       });
 
       queue.on('failed', _.after(3, function () {
-        queue.getJobs('failed', 'ZSET').then(function (jobs) {
+        queue.getJobs('failed').then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(3);
           done();
@@ -2169,7 +2169,7 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'ZSET', true, 1, 2).then(function (jobs) {
+        queue.getJobs('completed', 1, 2, true).then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(2);
           expect(jobs[0].data.foo).to.be.eql(2);
@@ -2191,7 +2191,7 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'ZSET', true, -3, -1).then(function (jobs) {
+        queue.getJobs('completed', -3, -1, true).then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(3);
           expect(jobs[0].data.foo).to.be.equal(1);
@@ -2212,12 +2212,31 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'ZSET', true, -300, 99999).then(function (jobs) {
+        queue.getJobs('completed', -300, 99999, true).then(function (jobs) {
           expect(jobs).to.be.an(Array);
           expect(jobs).to.have.length(3);
           expect(jobs[0].data.foo).to.be.equal(1);
           expect(jobs[1].data.foo).to.be.eql(2);
           expect(jobs[2].data.foo).to.be.eql(3);
+          done();
+        }).catch(done);
+      }));
+
+      queue.add({ foo: 1 });
+      queue.add({ foo: 2 });
+      queue.add({ foo: 3 });
+    });
+
+    it('should return jobs for multiple types', function (done) {
+      queue.process(function (job, completed) {
+        completed();
+      });
+
+      queue.on('completed', _.after(2, function () {
+        queue.pause();
+        queue.getJobs(['completed','wait']).then(function (jobs) {
+          expect(jobs).to.be.an(Array);
+          expect(jobs).to.have.length(3);
           done();
         }).catch(done);
       }));
