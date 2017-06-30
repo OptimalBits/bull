@@ -11,7 +11,7 @@ describe('workers', function () {
   beforeEach(function(){
     var client = new redis();
     return client.flushdb().then(function(){
-      queue = utils.buildQueue('repeat', {settings: { 
+      queue = utils.buildQueue('test workers', {settings: { 
         guardInterval: Number.MAX_VALUE,
         stalledInterval: Number.MAX_VALUE
       }});
@@ -23,11 +23,11 @@ describe('workers', function () {
   });
 
   it('should get all workers for this queue', function (done) {
-    queue.process(function(){
-    });
+    queue.process(function(){});
 
     queue.getWorkers().then(function(workers){
       console.error(workers);
+      expect(workers).to.have.length(1);
       done();
     });
   });
