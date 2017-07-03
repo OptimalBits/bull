@@ -92,9 +92,9 @@ describe('repeat', function () {
       counter ++;
       if(counter == 5){
         queue.getWaiting().then(function(jobs){
-          expect(jobs.length).to.be.zero;
+          expect(jobs.length).to.be.eql(0);
           queue.getDelayed().then(function(jobs){
-            expect(jobs.length).to.be.zero;
+            expect(jobs.length).to.be.eql(0);
             done();
           });
         });
