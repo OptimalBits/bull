@@ -10,11 +10,11 @@
   </p>
   <br/>
   <p>
-    <a href="#sponsors"><strong>Sponsors</strong></a> · 
-    <a href="#features"><strong>Features</strong></a> · 
-    <a href="#uis"><strong>UIs</strong></a> · 
-    <a href="#install"><strong>Install</strong></a> · 
-    <a href="#quick-guide"><strong>Quick Guide</strong></a> · 
+    <a href="#sponsors"><strong>Sponsors</strong></a> ·
+    <a href="#features"><strong>Features</strong></a> ·
+    <a href="#uis"><strong>UIs</strong></a> ·
+    <a href="#install"><strong>Install</strong></a> ·
+    <a href="#quick-guide"><strong>Quick Guide</strong></a> ·
     <a href="#documentation"><strong>Documentation</strong></a>
   </p>
   <br/>
@@ -34,10 +34,10 @@
       <img src="https://badge.fury.io/js/bull.svg"/>
     </a>
     <a href="http://isitmaintained.com/project/OptimalBits/bull">
-      <img src="http://isitmaintained.com/badge/open/OptimalBits/bull.svg"/>
+      <img src="http://isitmaintained.com/badge/open/optimalbits/bull.svg"/>
     </a>
     <a href="http://isitmaintained.com/project/OptimalBits/bull">
-      <img src="http://isitmaintained.com/badge/resolution/OptimalBits/bull.svg"/>
+      <img src="http://isitmaintained.com/badge/resolution/optimalbits/bull.svg"/>
     </a>
   </p>
   <p>
@@ -106,11 +106,11 @@ There are a few third-party UIs that you can use for monitoring:
 Since there are a few job queue solutions, here a table comparing them to help you use the one that
 better suits your needs.
 
-| Feature         | Bull          | Kue   | Bee | Agenda | 
+| Feature         | Bull          | Kue   | Bee | Agenda |
 | :-------------  |:-------------:|:-----:|:---:|:------:|
 | Backend         | redis         | redis |redis| mongo  |
 | Priorities      | ✓             |  ✓    |     |   ✓    |
-| Concurrency     | ✓             |  ✓    |  ✓  |   ✓    | 
+| Concurrency     | ✓             |  ✓    |  ✓  |   ✓    |
 | Delayed jobs    | ✓             |  ✓    |     |   ✓    |
 | Pause/Resume    | ✓             |  ✓    |     |        |
 | Repeatable jobs | ✓             |       |     |   ✓    |
@@ -129,6 +129,18 @@ yarn add bull
 ```
 
 _**Requirements:** Bull requires a Redis version greater than or equal to `2.8.18`._
+
+
+### Typescript Definitions
+
+```bash
+npm install @types/bull --save-dev
+```
+```bash
+yarn add --dev @types/bull
+```
+
+Definitions are currently maintained in the [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bull) repo.
 
 ---
 
@@ -236,7 +248,7 @@ A job can be added to a queue and processed repeatedly according to a cron speci
   });
 
   // Repeat payment job once every day at 3:15 (am)
-  paymentsQueue.add(paymentsData, {repeat: cron: {'15 3 * * *'}});
+  paymentsQueue.add(paymentsData, {repeat: {cron: '15 3 * * *'}});
 
 ```
 
@@ -331,9 +343,9 @@ for a given job during the total duration of the processing.
 
 When a worker is processing a job it will keep the job "locked" so other workers can't process it.
 
-It's important to understand how locking works to prevent your jobs from losing their lock - becoming _stalled_ - 
-and being restarted as a result. Locking is implemented internally by creating a lock for `lockDuration` on interval 
-`lockRenewTime` (which is usually half `lockDuration`). If `lockDuration` elapses before the lock can be renewed, 
+It's important to understand how locking works to prevent your jobs from losing their lock - becoming _stalled_ -
+and being restarted as a result. Locking is implemented internally by creating a lock for `lockDuration` on interval
+`lockRenewTime` (which is usually half `lockDuration`). If `lockDuration` elapses before the lock can be renewed,
 the job will be considered stalled and is automatically restarted; it will be __double processed__. This can happen when:
 1. The Node process running your job processor unexpectedly terminates.
 2. Your job processor was too CPU-intensive and stalled the Node event loop, and as a result, Bull couldn't renew the job lock (see #488 for how we might better detect this). You can fix this by breaking your job processor into smaller parts so that no single part can block the Node event loop. Alternatively, you can pass a larger value for the `lockDuration` setting (with the tradeoff being that it will take longer to recognize a real stalled job).

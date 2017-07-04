@@ -453,6 +453,36 @@ describe('Job', function(){
       }).then(done, done);
     });
 
+    it('should resolve when the job has been completed and return object', function(done){
+      queue.process(function (job) {
+        return Promise.delay(500).then(function() {
+          return { resultFoo: 'bar' };
+        });
+      });
+      queue.add({ foo: 'bar' }).then(function(job){
+        return job.finished();
+      }).then(function(jobResult) {
+        expect(jobResult).to.be.an('object');
+        expect(jobResult.resultFoo).equal('bar');
+        done();
+      });
+    });
+
+    it('should resolve when the job has been completed and return string', function(done){
+      queue.process(function (job) {
+        return Promise.delay(500).then(function() {
+          return 'a string';
+        });
+      });
+      queue.add({ foo: 'bar' }).then(function(job){
+        return job.finished();
+      }).then(function(jobResult) {
+        expect(jobResult).to.be.an('string');
+        expect(jobResult).equal('a string');
+        done();
+      });
+    });
+
     it('should reject when the job has been failed', function(done){
       queue.process(function () {
         return Promise.delay(500).then(function(){
