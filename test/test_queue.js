@@ -3,7 +3,7 @@
 
 var Queue = require('../');
 var Job = require('../lib/job');
-var expect = require('expect.js');
+var expect = require('chai').expect;
 var Promise = require('bluebird');
 var redis = require('ioredis');
 var sinon = require('sinon');
@@ -55,18 +55,21 @@ describe('Queue', function () {
     });
 
     it('should resolve the promise when each client has disconnected', function () {
-      expect(testQueue.client.status).to.be('ready');
-      expect(testQueue.eclient.status).to.be('connecting');
+      function checkStatus(status){
+        return 'ready' || 'connecting';
+      }
+      expect(testQueue.client.status).to.satisfy(checkStatus);
+      expect(testQueue.eclient.status).to.satisfy(checkStatus);
 
       return testQueue.close().then(function () {
-        expect(testQueue.client.status).to.be('end');
-        expect(testQueue.eclient.status).to.be('end');
+        expect(testQueue.client.status).to.be.eql('end');
+        expect(testQueue.eclient.status).to.be.eql('end');
       });
     });
 
     it('should return a promise', function () {
       var closePromise = testQueue.close().then(function () {
-        expect(closePromise).to.be.a(Promise);
+        expect(closePromise).to.be.instanceof(Promise);
       });
       return closePromise;
     });
@@ -94,20 +97,20 @@ describe('Queue', function () {
         this.timeout(12000); // Close can be a slow operation
 
         testQueue.process(function (job, jobDone) {
-          expect(job.data.foo).to.be('bar');
+          expect(job.data.foo).to.be.eql('bar');
           jobDone();
           testQueue.close().then(done);
         });
 
         testQueue.add({ foo: 'bar' }).then(function (job) {
-          expect(job.id).to.be.ok();
-          expect(job.data.foo).to.be('bar');
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
         });
       });
 
       it('a job handler that returns a promise', function (done) {
         testQueue.process(function (job) {
-          expect(job.data.foo).to.be('bar');
+          expect(job.data.foo).to.be.eql('bar');
           return Promise.resolve();
         });
 
@@ -116,8 +119,8 @@ describe('Queue', function () {
         });
 
         testQueue.add({ foo: 'bar' }).then(function (job) {
-          expect(job.id).to.be.ok();
-          expect(job.data.foo).to.be('bar');
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
         });
       });
     });
@@ -127,14 +130,14 @@ describe('Queue', function () {
     it('should create a queue with standard redis opts', function (done) {
       var queue = new Queue('standard');
 
-      expect(queue.client.options.host).to.be('127.0.0.1');
-      expect(queue.eclient.options.host).to.be('127.0.0.1');
+      expect(queue.client.options.host).to.be.eql('127.0.0.1');
+      expect(queue.eclient.options.host).to.be.eql('127.0.0.1');
 
-      expect(queue.client.options.port).to.be(6379);
-      expect(queue.eclient.options.port).to.be(6379);
+      expect(queue.client.options.port).to.be.eql(6379);
+      expect(queue.eclient.options.port).to.be.eql(6379);
 
-      expect(queue.client.options.db).to.be(0);
-      expect(queue.eclient.options.db).to.be(0);
+      expect(queue.client.options.db).to.be.eql(0);
+      expect(queue.eclient.options.db).to.be.eql(0);
 
       queue.close().then(done);
     });
@@ -142,14 +145,14 @@ describe('Queue', function () {
     it('should create a queue with a redis connection string', function (done) {
       var queue = new Queue('connstring', 'redis://123.4.5.67:1234');
 
-      expect(queue.client.options.host).to.be('123.4.5.67');
-      expect(queue.eclient.options.host).to.be('123.4.5.67');
+      expect(queue.client.options.host).to.be.eql('123.4.5.67');
+      expect(queue.eclient.options.host).to.be.eql('123.4.5.67');
 
-      expect(queue.client.options.port).to.be(1234);
-      expect(queue.eclient.options.port).to.be(1234);
+      expect(queue.client.options.port).to.be.eql(1234);
+      expect(queue.eclient.options.port).to.be.eql(1234);
 
-      expect(queue.client.options.db).to.be(0);
-      expect(queue.eclient.options.db).to.be(0);
+      expect(queue.client.options.db).to.be.eql(0);
+      expect(queue.eclient.options.db).to.be.eql(0);
 
       queue._clearTimers().then(done, done);
     });
@@ -157,14 +160,14 @@ describe('Queue', function () {
     it('should create a queue with only a hostname', function (done) {
       var queue = new Queue('connstring', 'redis://127.2.3.4');
 
-      expect(queue.client.options.host).to.be('127.2.3.4');
-      expect(queue.eclient.options.host).to.be('127.2.3.4');
+      expect(queue.client.options.host).to.be.eql('127.2.3.4');
+      expect(queue.eclient.options.host).to.be.eql('127.2.3.4');
 
-      expect(queue.client.options.port).to.be(6379);
-      expect(queue.eclient.options.port).to.be(6379);
+      expect(queue.client.options.port).to.be.eql(6379);
+      expect(queue.eclient.options.port).to.be.eql(6379);
 
-      expect(queue.client.condition.select).to.be(0);
-      expect(queue.eclient.condition.select).to.be(0);
+      expect(queue.client.condition.select).to.be.eql(0);
+      expect(queue.eclient.condition.select).to.be.eql(0);
 
       queue._clearTimers().then(done, done);
     });
@@ -172,17 +175,17 @@ describe('Queue', function () {
     it('should create a queue with connection string and password', function (done) {
       var queue = new Queue('connstring', 'redis://:123@127.2.3.4:6379');
 
-      expect(queue.client.options.host).to.be('127.2.3.4');
-      expect(queue.eclient.options.host).to.be('127.2.3.4');
+      expect(queue.client.options.host).to.be.eql('127.2.3.4');
+      expect(queue.eclient.options.host).to.be.eql('127.2.3.4');
 
-      expect(queue.client.options.port).to.be(6379);
-      expect(queue.eclient.options.port).to.be(6379);
+      expect(queue.client.options.port).to.be.eql(6379);
+      expect(queue.eclient.options.port).to.be.eql(6379);
 
-      expect(queue.client.condition.select).to.be(0);
-      expect(queue.eclient.condition.select).to.be(0);
+      expect(queue.client.condition.select).to.be.eql(0);
+      expect(queue.eclient.condition.select).to.be.eql(0);
 
-      expect(queue.client.options.password).to.be('123');
-      expect(queue.eclient.options.password).to.be('123');
+      expect(queue.client.options.password).to.be.eql('123');
+      expect(queue.eclient.options.password).to.be.eql('123');
 
       queue._clearTimers().then(done, done);
     });
@@ -190,14 +193,14 @@ describe('Queue', function () {
     it('creates a queue using the supplied redis DB', function (done) {
       var queue = new Queue('custom', { redis: { DB: 1 } });
 
-      expect(queue.client.options.host).to.be('127.0.0.1');
-      expect(queue.eclient.options.host).to.be('127.0.0.1');
+      expect(queue.client.options.host).to.be.eql('127.0.0.1');
+      expect(queue.eclient.options.host).to.be.eql('127.0.0.1');
 
-      expect(queue.client.options.port).to.be(6379);
-      expect(queue.eclient.options.port).to.be(6379);
+      expect(queue.client.options.port).to.be.eql(6379);
+      expect(queue.eclient.options.port).to.be.eql(6379);
 
-      expect(queue.client.options.db).to.be(1);
-      expect(queue.eclient.options.db).to.be(1);
+      expect(queue.client.options.db).to.be.eql(1);
+      expect(queue.eclient.options.db).to.be.eql(1);
 
       queue.close().then(done);
     });
@@ -205,11 +208,11 @@ describe('Queue', function () {
     it('creates a queue using the supplied redis host', function (done) {
       var queue = new Queue('custom', { redis: { host: 'localhost' } });
 
-      expect(queue.client.options.host).to.be('localhost');
-      expect(queue.eclient.options.host).to.be('localhost');
+      expect(queue.client.options.host).to.be.eql('localhost');
+      expect(queue.eclient.options.host).to.be.eql('localhost');
 
-      expect(queue.client.options.db).to.be(0);
-      expect(queue.eclient.options.db).to.be(0);
+      expect(queue.client.options.db).to.be.eql(0);
+      expect(queue.eclient.options.db).to.be.eql(0);
 
       queue.close().then(done);
     });
@@ -218,8 +221,8 @@ describe('Queue', function () {
       var queue = new Queue('using. dots. in.name.');
 
       return queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }).then(function () {
         queue.process(function (job, jobDone) {
           expect(job.data.foo).to.be.equal('bar');
@@ -234,8 +237,8 @@ describe('Queue', function () {
       var queue = new Queue('foobar', '6379', 'localhost');
 
       return queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }).then(function () {
         queue.process(function (job, jobDone) {
           expect(job.data.foo).to.be.equal('bar');
@@ -250,8 +253,8 @@ describe('Queue', function () {
       var queue = new Queue('q', 'redis://127.0.0.1', { keyPrefix: 'myQ' });
 
       return queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
         var client = new redis();
         return client.hgetall('myQ:q:' + job.id).then(function(result){
           expect(result).to.not.be.null;
@@ -288,12 +291,12 @@ describe('Queue', function () {
       expect(queueQux.eclient).to.be.equal(subscriber);
 
       queueFoo.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }).then(function(){
         return queueQux.add({ qux: 'baz' }).then(function(job){
-          expect(job.id).to.be.ok();
-          expect(job.data.qux).to.be('baz');
+          expect(job.id).to.be.ok;
+          expect(job.data.qux).to.be.eql('baz');
           var completed = 0;
 
           queueFoo.process(function(job, jobDone){
@@ -347,8 +350,8 @@ describe('Queue', function () {
       }).catch(done);
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }, done);
     });
 
@@ -359,8 +362,8 @@ describe('Queue', function () {
       }).catch(done);
 
       queue.add({ foo: 'bar' }, {removeOnComplete: true}).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }, done);
 
       queue.on('completed', function(job){
@@ -382,8 +385,8 @@ describe('Queue', function () {
       }).catch(done);
 
       queue.add({ foo: 'bar' }, {removeOnFail: true}).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }, done);
 
       queue.on('failed', function(jobId){
@@ -449,8 +452,8 @@ describe('Queue', function () {
           var total = 0;
 
           queue.process(function(job, jobDone){
-            expect(job.id).to.be.ok();
-            expect(job.data.p).to.be(currentPriority);
+            expect(job.id).to.be.ok;
+            expect(job.data.p).to.be.eql(currentPriority);
 
             jobDone();
 
@@ -496,12 +499,12 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }).catch(done);
 
       queue.on('progress', function (job, progress) {
-        expect(job).to.be.ok();
+        expect(job).to.be.ok;
         expect(progress).to.be.eql(42);
         done();
       });
@@ -514,12 +517,12 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }).catch(done);
 
       queue.on('completed', function (job, data) {
-        expect(job).to.be.ok();
+        expect(job).to.be.ok;
         expect(data).to.be.eql(37);
         queue.getJob(job.id).then(function(job){
           expect(job.returnvalue).to.be.eql(37);
@@ -531,11 +534,11 @@ describe('Queue', function () {
     it('process a job that returns a string in the process handler', function(done) {
       var testString = 'a very dignified string';
       queue.on('completed', function(job, data) {
-        expect(job).to.be.ok();
+        expect(job).to.be.ok;
         expect(job.returnvalue).to.be.equal(testString);
         setTimeout(function() {
           queue.getJob(job.id).then(function(job) {
-            expect(job).to.be.ok();
+            expect(job).to.be.ok;
             expect(job.returnvalue).to.be.equal(testString);
             done();
           }).catch(done);
@@ -556,12 +559,12 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }).catch(done);
 
       queue.on('completed', function (job, data) {
-        expect(job).to.be.ok();
+        expect(job).to.be.ok;
         expect(data).to.be.eql(37);
         queue.getJob(job.id).then(function(job){
           expect(job.returnvalue).to.be.eql(37);
@@ -582,12 +585,12 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }).catch(done);
 
       queue.on('completed', function (job, data) {
-        expect(job).to.be.ok();
+        expect(job).to.be.ok;
         expect(data).to.be.eql('my data');
         done();
       });
@@ -600,12 +603,12 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }).catch(done);
 
       queue.on('completed', function (job, data) {
-        expect(job).to.be.ok();
+        expect(job).to.be.ok;
         expect(data).to.be.eql(42);
         done();
       });
@@ -617,12 +620,12 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }).catch(done);
 
       queue.on('completed', function (job) {
-        expect(job).to.be.ok();
+        expect(job).to.be.ok;
         done();
       });
     });
@@ -654,7 +657,7 @@ describe('Queue', function () {
                 }).then(function (queue2) {
                   var doneAfterFour = _.after(4, function () {
                     try {
-                      expect(stalledCallback.calledOnce).to.be(true);
+                      expect(stalledCallback.calledOnce).to.be.eql(true);
                       queue.close().then(resolve);
                     } catch (e) {
                       queue.close().then(function(){
@@ -721,12 +724,12 @@ describe('Queue', function () {
       });
 
       queue.add('myname', { foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }).catch(done);
 
       queue.on('completed', function (job, data) {
-        expect(job).to.be.ok();
+        expect(job).to.be.ok;
         expect(data).to.be.eql('my data');
         done();
       });
@@ -748,15 +751,15 @@ describe('Queue', function () {
       });
 
       queue.add('myname', { foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }).then(function(){
         return queue.add('myname2', { baz: 'qux' });
       }).catch(done);
 
       var one, two;
       queue.on('completed', function (job, data) {
-        expect(job).to.be.ok();
+        expect(job).to.be.ok;
         if(job.data.foo){
           one = true;
           expect(data).to.be.eql('my data');
@@ -781,8 +784,8 @@ describe('Queue', function () {
       });
 
       queue.add('myname', { foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       });
     });
 
@@ -923,8 +926,8 @@ describe('Queue', function () {
       });
 
       queue2.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }).catch(done);
     });
 
@@ -937,15 +940,15 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }, function (err) {
         done(err);
       });
 
       queue.once('failed', function (job, err) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
         expect(err).to.be.eql(jobError);
         done();
       });
@@ -960,15 +963,15 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }, function (err) {
         done(err);
       });
 
       queue.once('failed', function (job, err) {
-        expect(job).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
         expect(err).to.be.eql(jobError);
         done();
       });
@@ -1002,15 +1005,15 @@ describe('Queue', function () {
       });
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }, function (err) {
         done(err);
       });
 
       queue.once('failed', function (job, err) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
         expect(err).to.be.eql(jobError);
         done();
       });
@@ -1033,8 +1036,8 @@ describe('Queue', function () {
       };
 
       queue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       }, function (err) {
         done(err);
       });
@@ -1050,8 +1053,8 @@ describe('Queue', function () {
       var retryQueue = utils.buildQueue('retry-test-queue');
 
       retryQueue.add({ foo: 'bar' }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
       });
 
       retryQueue.process(function (job, jobDone) {
@@ -1063,15 +1066,15 @@ describe('Queue', function () {
       });
 
       retryQueue.once('failed', function (job, err) {
-        expect(job).to.be.ok();
-        expect(job.data.foo).to.be('bar');
+        expect(job).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
         expect(err).to.be.eql(notEvenErr);
         failedOnce = true;
         retryQueue.retryJob(job);
       });
 
       retryQueue.once('completed', function () {
-        expect(failedOnce).to.be(true);
+        expect(failedOnce).to.be.eql(true);
         retryQueue.close().then(done);
       });
     });
@@ -1091,12 +1094,12 @@ describe('Queue', function () {
     return Promise.all(added)
       .then(queue.count.bind(queue))
       .then(function (count) {
-        expect(count).to.be(maxJobs);
+        expect(count).to.be.eql(maxJobs);
       })
       .then(queue.empty.bind(queue))
       .then(queue.count.bind(queue))
       .then(function (count) {
-        expect(count).to.be(0);
+        expect(count).to.be.eql(0);
         return queue.close();
       });
   });
@@ -1144,7 +1147,7 @@ describe('Queue', function () {
       return utils.newQueue().then(function (queue) {
         var resultPromise = new Promise(function (resolve) {
           queue.process(function (job, jobDone) {
-            expect(ispaused).to.be(false);
+            expect(ispaused).to.be.eql(false);
             expect(job.data.foo).to.be.equal('paused');
             jobDone();
             counter--;
@@ -1171,7 +1174,7 @@ describe('Queue', function () {
 
       utils.newQueue().then(function (queue) {
         queue.process(function (job, jobDone) {
-          expect(ispaused).to.be(false);
+          expect(ispaused).to.be.eql(false);
           expect(job.data.foo).to.be.equal('paused');
           jobDone();
 
@@ -1180,7 +1183,7 @@ describe('Queue', function () {
             ispaused = true;
             queue.pause();
           } else {
-            expect(isresumed).to.be(true);
+            expect(isresumed).to.be.eql(true);
             queue.close().then(done, done);
           }
         });
@@ -1209,7 +1212,7 @@ describe('Queue', function () {
         // it after the current lock expires. This way, we can ensure there isn't a lock already
         // to test that pausing behavior works.
         queue.process(function (job, jobDone) {
-          expect(queue.paused).not.to.be.ok();
+          expect(queue.paused).not.to.be.ok;
           jobDone();
           counter--;
           if (counter === 0) {
@@ -1221,8 +1224,8 @@ describe('Queue', function () {
       }).then(function () {
         return queue.add({ foo: 'paused' });
       }).then(function () {
-        expect(counter).to.be(2);
-        expect(queue.paused).to.be.ok(); // Parameter should exist.
+        expect(counter).to.be.eql(2);
+        expect(queue.paused).to.be.ok; // Parameter should exist.
         return queue.resume(true /* Local */);
       }).catch(done);
     });
@@ -1248,14 +1251,14 @@ describe('Queue', function () {
         Promise.all(jobs).then(function () {
           return queue.pause(true).then(function () {
             var active = queue.getJobCountByTypes(['active']).then(function (count) {
-              expect(count).to.be(0);
-              expect(queue.paused).to.be.ok();
+              expect(count).to.be.eql(0);
+              expect(queue.paused).to.be.ok;
               return null;
             });
 
             // One job from the 10 posted above will be processed, so we expect 9 jobs pending
             var paused = queue.getJobCountByTypes(['delayed','wait']).then(function (count) {
-              expect(count).to.be(9);
+              expect(count).to.be.eql(9);
               return null;
             });
             return Promise.all([active, paused]);
@@ -1263,12 +1266,12 @@ describe('Queue', function () {
             return queue.add({});
           }).then(function () {
             var active = queue.getJobCountByTypes(['active']).then(function (count) {
-              expect(count).to.be(0);
+              expect(count).to.be.eql(0);
               return null;
             });
 
             var paused = queue.getJobCountByTypes(['paused','wait', 'delayed']).then(function (count) {
-              expect(count).to.be(10);
+              expect(count).to.be.eql(10);
               return null;
             });
 
@@ -1306,15 +1309,15 @@ describe('Queue', function () {
         return Promise.all([queue1.pause(true /* local */), queue2.pause(true /* local */)]).then(function() {
 
           var active = queue1.getJobCountByTypes(['active']).then(function(count) {
-            expect(count).to.be(0);
+            expect(count).to.be.eql(0);
           });
 
           var pending = queue1.getJobCountByTypes(['wait']).then(function(count) {
-            expect(count).to.be(2);
+            expect(count).to.be.eql(2);
           });
 
           var completed = queue1.getJobCountByTypes(['completed']).then(function(count) {
-            expect(count).to.be(2);
+            expect(count).to.be.eql(2);
           });
 
           return Promise.all([active, pending, completed]);
@@ -1340,15 +1343,15 @@ describe('Queue', function () {
         return queue.add(2);
       }).then(function() {
         var active = queue.getJobCountByTypes(['active']).then(function(count) {
-          expect(count).to.be(0);
+          expect(count).to.be.eql(0);
         });
 
         var pending = queue.getJobCountByTypes(['wait']).then(function(count) {
-          expect(count).to.be(1);
+          expect(count).to.be.eql(1);
         });
 
         var completed = queue.getJobCountByTypes(['completed']).then(function(count) {
-          expect(count).to.be(1);
+          expect(count).to.be.eql(1);
         });
 
         return Promise.all([active, pending, completed]);
@@ -1361,7 +1364,7 @@ describe('Queue', function () {
     client.select(0);
     var queue = new Queue('test pub sub');
     queue.on('waiting', function(jobId){
-      expect(parseInt(jobId, 10)).to.be(1);
+      expect(parseInt(jobId, 10)).to.be.eql(1);
       done();
     }).then(function(){
       queue.add({ test: 'stuff' });
@@ -1444,15 +1447,15 @@ describe('Queue', function () {
             expect(jobs.length).to.be.equal(0);
           });
         }).then(function () {
-          expect(publishHappened).to.be(true);
+          expect(publishHappened).to.be.eql(true);
           queue.close(true).then(done, done);
         });
       });
 
       queue.add({ delayed: 'foobar' }, { delay: delay }).then(function (job) {
-        expect(job.id).to.be.ok();
-        expect(job.data.delayed).to.be('foobar');
-        expect(job.delay).to.be(delay);
+        expect(job.id).to.be.ok;
+        expect(job.data.delayed).to.be.eql('foobar');
+        expect(job.delay).to.be.eql(delay);
       });
     });
 
@@ -1659,7 +1662,7 @@ describe('Queue', function () {
         return Promise.delay(wait).then(function () {
           //We should not have 4 more in parallel.
           //At the end, due to empty list, no new job will process, so nbProcessing will decrease.
-          expect(nbProcessing).to.be(Math.min(pendingMessageToProcess, 4));
+          expect(nbProcessing).to.be.eql(Math.min(pendingMessageToProcess, 4));
           pendingMessageToProcess--;
           nbProcessing--;
         });
@@ -1757,7 +1760,7 @@ describe('Queue', function () {
 
         var tries = 0;
         queue.process(function (job, jobDone) {
-          expect(job.attemptsMade).to.be(tries);
+          expect(job.attemptsMade).to.be.eql(tries);
           tries++;
           if (job.attemptsMade < 2) {
             throw new Error('Not yet!');
@@ -1784,7 +1787,7 @@ describe('Queue', function () {
           if (job.attemptsMade < 3) {
             throw new Error('Not yet!');
           }
-          expect(job.attemptsMade).to.be(tries - 1);
+          expect(job.attemptsMade).to.be.eql(tries - 1);
           jobDone();
         });
 
@@ -2057,7 +2060,7 @@ describe('Queue', function () {
       queue.add(data).then(function (job) {
         queue.getJob(job.id).then(function (returnedJob) {
           expect(returnedJob.data).to.eql(data);
-          expect(returnedJob.id).to.be(job.id);
+          expect(returnedJob.id).to.be.eql(job.id);
           done();
         });
       });
@@ -2152,8 +2155,10 @@ describe('Queue', function () {
 
       queue.on('completed', _.after(3, function () {
         queue.getJobs('completed', 'ZSET').then(function (jobs) {
-          expect(jobs).to.be.an(Array);
-          expect(jobs).to.have.length(3);
+          expect(jobs).to.be.an('array').that.have.length(3);
+          expect(jobs[0]).to.have.property('finishedOn');
+          expect(jobs[1]).to.have.property('finishedOn');
+          expect(jobs[2]).to.have.property('finishedOn');
           done();
         }).catch(done);
       }));
@@ -2170,8 +2175,10 @@ describe('Queue', function () {
 
       queue.on('failed', _.after(3, function () {
         queue.getJobs('failed', 'ZSET').then(function (jobs) {
-          expect(jobs).to.be.an(Array);
-          expect(jobs).to.have.length(3);
+          expect(jobs).to.be.an('array').that.has.length(3);
+          expect(jobs[0]).to.have.property('finishedOn');
+          expect(jobs[1]).to.have.property('finishedOn');
+          expect(jobs[2]).to.have.property('finishedOn');
           done();
         }).catch(done);
       }));
@@ -2188,10 +2195,11 @@ describe('Queue', function () {
 
       queue.on('completed', _.after(3, function () {
         queue.getJobs('completed', 'ZSET', true, 1, 2).then(function (jobs) {
-          expect(jobs).to.be.an(Array);
-          expect(jobs).to.have.length(2);
+          expect(jobs).to.be.an('array').that.has.length(2);
           expect(jobs[0].data.foo).to.be.eql(2);
           expect(jobs[1].data.foo).to.be.eql(3);
+          expect(jobs[0]).to.have.property('finishedOn');
+          expect(jobs[1]).to.have.property('finishedOn');
           done();
         }).catch(done);
       }));
@@ -2210,8 +2218,7 @@ describe('Queue', function () {
 
       queue.on('completed', _.after(3, function () {
         queue.getJobs('completed', 'ZSET', true, -3, -1).then(function (jobs) {
-          expect(jobs).to.be.an(Array);
-          expect(jobs).to.have.length(3);
+          expect(jobs).to.be.an('array').that.has.length(3);
           expect(jobs[0].data.foo).to.be.equal(1);
           expect(jobs[1].data.foo).to.be.eql(2);
           expect(jobs[2].data.foo).to.be.eql(3);
@@ -2231,8 +2238,7 @@ describe('Queue', function () {
 
       queue.on('completed', _.after(3, function () {
         queue.getJobs('completed', 'ZSET', true, -300, 99999).then(function (jobs) {
-          expect(jobs).to.be.an(Array);
-          expect(jobs).to.have.length(3);
+          expect(jobs).to.be.an('array').that.has.length(3);
           expect(jobs[0].data.foo).to.be.equal(1);
           expect(jobs[1].data.foo).to.be.eql(2);
           expect(jobs[2].data.foo).to.be.eql(3);
@@ -2263,7 +2269,7 @@ describe('Queue', function () {
       queue.clean().then(function () {
         done(new Error('Promise should not resolve'));
       }, function (err) {
-        expect(err).to.be.a(Error);
+        expect(err).to.be.instanceof(Error);
         done();
       });
     });
@@ -2272,7 +2278,7 @@ describe('Queue', function () {
       queue.clean(0, 'bad').then(function () {
         done(new Error('Promise should not resolve'));
       }, function (e) {
-        expect(e).to.be.a(Error);
+        expect(e).to.be.instanceof(Error);
         done();
       });
     });
@@ -2283,8 +2289,8 @@ describe('Queue', function () {
         done(err);
       });
       queue.on('cleaned', function (jobs, type) {
-        expect(type).to.be('completed');
-        expect(jobs.length).to.be(0);
+        expect(type).to.be.eql('completed');
+        expect(jobs.length).to.be.eql(0);
         done();
       });
     });
@@ -2298,7 +2304,7 @@ describe('Queue', function () {
 
       queue.on('completed', _.after(2, function(){
         queue.clean(0).then(function (jobs) {
-          expect(jobs.length).to.be(2);
+          expect(jobs.length).to.be.eql(2);
           done();
         }, done);
       }));
@@ -2316,7 +2322,7 @@ describe('Queue', function () {
       }).delay(100).then(function () {
         return queue.getCompleted();
       }).then(function (jobs) {
-        expect(jobs.length).to.be(1);
+        expect(jobs.length).to.be.eql(1);
         return queue.empty();
       }).then(function () {
         done();
@@ -2332,10 +2338,10 @@ describe('Queue', function () {
       Promise.delay(100).then(function () {
         return queue.clean(0, 'failed');
       }).then(function (jobs) {
-        expect(jobs.length).to.be(2);
+        expect(jobs.length).to.be.eql(2);
         return queue.count();
       }).then(function (len) {
-        expect(len).to.be(0);
+        expect(len).to.be.eql(0);
         done();
       });
     });
@@ -2346,10 +2352,10 @@ describe('Queue', function () {
       Promise.delay(100).then(function () {
         return queue.clean(0, 'wait');
       }).then(function (jobs) {
-        expect(jobs.length).to.be(2);
+        expect(jobs.length).to.be.eql(2);
         return queue.count();
       }).then(function (len) {
-        expect(len).to.be(0);
+        expect(len).to.be.eql(0);
         done();
       });
     });
@@ -2360,10 +2366,10 @@ describe('Queue', function () {
       Promise.delay(100).then(function () {
         return queue.clean(0, 'delayed');
       }).then(function (jobs) {
-        expect(jobs.length).to.be(2);
+        expect(jobs.length).to.be.eql(2);
         return queue.count();
       }).then(function (len) {
-        expect(len).to.be(0);
+        expect(len).to.be.eql(0);
         done();
       });
     });
@@ -2375,10 +2381,10 @@ describe('Queue', function () {
       Promise.delay(100).then(function () {
         return queue.clean(0, 'wait', 1);
       }).then(function (jobs) {
-        expect(jobs.length).to.be(1);
+        expect(jobs.length).to.be.eql(1);
         return queue.count();
       }).then(function (len) {
-        expect(len).to.be(2);
+        expect(len).to.be.eql(2);
         done();
       });
     });
@@ -2399,10 +2405,10 @@ describe('Queue', function () {
       }).then(function () {
         return queue.clean(0, 'failed');
       }).then(function (jobs) {
-        expect(jobs.length).to.be(2);
+        expect(jobs.length).to.be.eql(2);
         return queue.getFailed();
       }).then(function (failed) {
-        expect(failed.length).to.be(0);
+        expect(failed.length).to.be.eql(0);
         done();
       });
     });
