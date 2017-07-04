@@ -45,7 +45,7 @@ if redis.call("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
   else
     -- Add to complete/failed set
     redis.call("ZADD", KEYS[2], ARGV[2], ARGV[1])
-    redis.call("HSET", KEYS[3], ARGV[3], ARGV[4]) -- "returnvalue" / "failedReason"
+    redis.call("HMSET", KEYS[3], ARGV[3], ARGV[4], "finishedOn", ARGV[2]) -- "returnvalue" / "failedReason" and "finishedOn"
   end
 
   redis.call("PUBLISH", KEYS[2], ARGV[7])
