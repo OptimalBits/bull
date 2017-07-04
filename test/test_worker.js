@@ -26,7 +26,6 @@ describe('workers', function () {
     queue.process(function(){});
 
     queue.getWorkers().then(function(workers){
-      console.error(workers);
       expect(workers).to.have.length(1);
       done();
     });
