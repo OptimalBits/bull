@@ -2159,6 +2159,10 @@ describe('Queue', function () {
           expect(jobs[0]).to.have.property('finishedOn');
           expect(jobs[1]).to.have.property('finishedOn');
           expect(jobs[2]).to.have.property('finishedOn');
+          
+          expect(jobs[0]).to.have.property('processedOn');
+          expect(jobs[1]).to.have.property('processedOn');
+          expect(jobs[2]).to.have.property('processedOn');
           done();
         }).catch(done);
       }));
@@ -2179,6 +2183,10 @@ describe('Queue', function () {
           expect(jobs[0]).to.have.property('finishedOn');
           expect(jobs[1]).to.have.property('finishedOn');
           expect(jobs[2]).to.have.property('finishedOn');
+
+          expect(jobs[0]).to.have.property('processedOn');
+          expect(jobs[1]).to.have.property('processedOn');
+          expect(jobs[2]).to.have.property('processedOn');
           done();
         }).catch(done);
       }));
@@ -2200,6 +2208,8 @@ describe('Queue', function () {
           expect(jobs[1].data.foo).to.be.eql(3);
           expect(jobs[0]).to.have.property('finishedOn');
           expect(jobs[1]).to.have.property('finishedOn');
+          expect(jobs[0]).to.have.property('processedOn');
+          expect(jobs[1]).to.have.property('processedOn');
           done();
         }).catch(done);
       }));
