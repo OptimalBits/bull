@@ -1,3 +1,15 @@
+v.3.0.0-rc.4
+============
+
+- Added support for naming workers in redis connections #530.
+- Lazy instantiation of redis clients. Fixes #526.
+- job.finished captures result from queue process. #588.
+- Caches LUA scripts to avoid reading files in every queue instantiation. #591.
+- Emit 'drain' event when queue is empty. #596.
+- store finished and processed timestamps. #594, #606.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.3...v3.0.0-rc.4)
+
 v.3.0.0-rc.3
 ============
 
