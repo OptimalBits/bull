@@ -18,7 +18,7 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "bluebird": "^3.5.0",
-    "cron-parser": "^2.4.0",
+    "cron-parser": "^2.4.1",
     "debuglog": "^1.0.0",
     "ioredis": "^3.1.1",
     "lodash": "^4.17.4",
