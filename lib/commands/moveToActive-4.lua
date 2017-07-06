@@ -15,6 +15,7 @@
       ARGV[1] key prefix
       ARGV[2] lock token
       ARGV[3] lock duration in milliseconds
+      ARGV[4] timestamp
 ]]
 
 local jobId = redis.call("RPOP", KEYS[1])
@@ -29,6 +30,7 @@ if jobId then
   redis.call("LPUSH", KEYS[2], jobId) -- push in active
 
   redis.call("PUBLISH", KEYS[4], jobId)
+  redis.call("HSET", jobKey, "processedOn", ARGV[4])
 
   return {redis.call("HGETALL", jobKey), jobId} -- get job data
 end
