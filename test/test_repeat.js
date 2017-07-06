@@ -31,6 +31,21 @@ describe('repeat', function () {
     return queue.close();
   });
 
+  it('should create multiple jobs if they have the same cron pattern', function(done) {
+    var cron = '*/10 * * * * *';
+    var customJobIds = ['customjobone', 'customjobtwo'];
+
+    Promise.all([
+      queue.add(undefined, {}, { jobId: customJobIds[0], repeat: { cron: cron }}),
+      queue.add(undefined, {}, { jobId: customJobIds[1], repeat: { cron: cron }})
+    ]).then(function() {
+      return queue.count();
+    }).then(function(count) {
+      expect(count).to.be.eql(2);
+      done();
+    }).catch(done);
+  });
+
   it('should repeat every 2 seconds', function (done) {
     var _this = this;
     var date = new Date('2017-02-07 9:24:00');

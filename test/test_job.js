@@ -83,23 +83,6 @@ describe('Job', function(){
     });
   });
 
-  describe('repeatable jobs', function() {
-    it('should create multiple jobs if they have the same cron pattern', function(done) {
-      var cron = '*/10 * * * * *';
-      var customJobIds = ['customjobone', 'customjobtwo'];
-
-      Promise.all([
-        queue.add(undefined, {}, { jobId: customJobIds[0], repeat: { cron: cron }}),
-        queue.add(undefined, {}, { jobId: customJobIds[1], repeat: { cron: cron }})
-      ]).then(function() {
-        return queue.count();
-      }).then(function(count) {
-        expect(count).to.be(2);
-        done();
-      }).catch(done);
-    });
-  });
-
   describe('.remove', function () {
     it('removes the job from redis', function(){
       return Job.create(queue, {foo: 'bar'})
