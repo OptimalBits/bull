@@ -2164,7 +2164,7 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'ZSET').then(function (jobs) {
+        queue.getJobs('completed').then(function (jobs) {
           expect(jobs).to.be.an('array').that.have.length(3);
           expect(jobs[0]).to.have.property('finishedOn');
           expect(jobs[1]).to.have.property('finishedOn');
@@ -2188,7 +2188,7 @@ describe('Queue', function () {
       });
 
       queue.on('failed', _.after(3, function () {
-        queue.getJobs('failed', 'ZSET').then(function (jobs) {
+        queue.getJobs('failed').then(function (jobs) {
           expect(jobs).to.be.an('array').that.has.length(3);
           expect(jobs[0]).to.have.property('finishedOn');
           expect(jobs[1]).to.have.property('finishedOn');
@@ -2212,7 +2212,7 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'ZSET', true, 1, 2).then(function (jobs) {
+        queue.getJobs('completed', 1, 2, true).then(function (jobs) {
           expect(jobs).to.be.an('array').that.has.length(2);
           expect(jobs[0].data.foo).to.be.eql(2);
           expect(jobs[1].data.foo).to.be.eql(3);
@@ -2237,7 +2237,7 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'ZSET', true, -3, -1).then(function (jobs) {
+        queue.getJobs('completed', -3, -1, true).then(function (jobs) {
           expect(jobs).to.be.an('array').that.has.length(3);
           expect(jobs[0].data.foo).to.be.equal(1);
           expect(jobs[1].data.foo).to.be.eql(2);
@@ -2257,11 +2257,30 @@ describe('Queue', function () {
       });
 
       queue.on('completed', _.after(3, function () {
-        queue.getJobs('completed', 'ZSET', true, -300, 99999).then(function (jobs) {
+        queue.getJobs('completed', -300, 99999, true).then(function (jobs) {
           expect(jobs).to.be.an('array').that.has.length(3);
           expect(jobs[0].data.foo).to.be.equal(1);
           expect(jobs[1].data.foo).to.be.eql(2);
           expect(jobs[2].data.foo).to.be.eql(3);
+          done();
+        }).catch(done);
+      }));
+
+      queue.add({ foo: 1 });
+      queue.add({ foo: 2 });
+      queue.add({ foo: 3 });
+    });
+
+    it('should return jobs for multiple types', function (done) {
+      queue.process(function (job, completed) {
+        completed();
+      });
+
+      queue.on('completed', _.after(2, function () {
+        queue.pause();
+        queue.getJobs(['completed','wait']).then(function (jobs) {
+          expect(jobs).to.be.an(Array);
+          expect(jobs).to.have.length(3);
           done();
         }).catch(done);
       }));
