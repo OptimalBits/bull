@@ -17,7 +17,7 @@ Message Queue
 
 Bull can also be used for persistent message queues. This is a quite useful
 feature in some usecases. For example, you can have two servers that need to
-communicate with each other. By using a queue the servers do not need to be online at the same time, this create a very robust communication channel. You can treat `add` as *send* and `process` as *receive*:
+communicate with each other. By using a queue the servers do not need to be online at the same time, this creates a very robust communication channel. You can treat `add` as *send* and `process` as *receive*:
 
 Server A:
 
