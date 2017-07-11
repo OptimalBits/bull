@@ -1118,7 +1118,8 @@ describe('Queue', function () {
         expect(job.data.foo).to.be.equal('bar');
         queue.close().then(done);
       });
-    }).then(function(){
+    });
+    queue.once('registered:waiting', function(){
       queue.add({ foo: 'bar' });
     });
   });
@@ -1202,8 +1203,6 @@ describe('Queue', function () {
           queue.resume().catch(function(err){
             // Swallow error.
           });
-        }).catch(function(err){
-          // Swallow error
         });
 
         queue.on('resumed', function () {
@@ -1376,7 +1375,8 @@ describe('Queue', function () {
     queue.on('waiting', function(jobId){
       expect(parseInt(jobId, 10)).to.be.eql(1);
       done();
-    }).then(function(){
+    });
+    queue.once('registered:waiting', function(){
       queue.add({ test: 'stuff' });
     });
   });
@@ -1405,19 +1405,23 @@ describe('Queue', function () {
     queue2.on('global:waiting', function () {
       expect(state).to.be.undefined;
       state = 'waiting';
-    }).then(function(){
-      return queue2.once('global:active', function () {
+    });
+    queue2.once('registered:global:waiting', function(){
+      queue2.once('global:active', function () {
         expect(state).to.be.equal('waiting');
         state = 'active';
       });
-    }).then(function(){
-      return queue2.once('global:completed', function () {
+    });
+    queue2.once('registered:global:active', function(){
+      queue2.once('global:completed', function () {
         expect(state).to.be.equal('active');
         queue1.close().then(function(){
           queue2.close().then(done);
         });
       });
-    }).then(function(){
+    });
+
+    queue2.once('registered:global:completed', function(){
       queue1.add({});
     });
   });
@@ -2279,7 +2283,7 @@ describe('Queue', function () {
       queue.on('completed', _.after(2, function () {
         queue.pause();
         queue.getJobs(['completed','wait']).then(function (jobs) {
-          expect(jobs).to.be.an(Array);
+          expect(jobs).to.be.an('array');
           expect(jobs).to.have.length(3);
           done();
         }).catch(done);
