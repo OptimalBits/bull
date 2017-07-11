@@ -2279,7 +2279,7 @@ describe('Queue', function () {
       queue.on('completed', _.after(2, function () {
         queue.pause();
         queue.getJobs(['completed','wait']).then(function (jobs) {
-          expect(jobs).to.be.an(Array);
+          expect(jobs).to.be.an('array');
           expect(jobs).to.have.length(3);
           done();
         }).catch(done);
