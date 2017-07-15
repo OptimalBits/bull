@@ -2169,7 +2169,7 @@ describe('Queue', function () {
           expect(jobs[0]).to.have.property('finishedOn');
           expect(jobs[1]).to.have.property('finishedOn');
           expect(jobs[2]).to.have.property('finishedOn');
-          
+
           expect(jobs[0]).to.have.property('processedOn');
           expect(jobs[1]).to.have.property('processedOn');
           expect(jobs[2]).to.have.property('processedOn');
@@ -2279,7 +2279,7 @@ describe('Queue', function () {
       queue.on('completed', _.after(2, function () {
         queue.pause();
         queue.getJobs(['completed','wait']).then(function (jobs) {
-          expect(jobs).to.be.an(Array);
+          expect(jobs).to.be.an('array');
           expect(jobs).to.have.length(3);
           done();
         }).catch(done);
