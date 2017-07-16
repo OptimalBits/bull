@@ -36,12 +36,35 @@ describe('repeat', function () {
     var customJobIds = ['customjobone', 'customjobtwo'];
 
     Promise.all([
-      queue.add(undefined, {}, { jobId: customJobIds[0], repeat: { cron: cron }}),
-      queue.add(undefined, {}, { jobId: customJobIds[1], repeat: { cron: cron }})
+      queue.add({}, { jobId: customJobIds[0], repeat: { cron: cron }}),
+      queue.add({}, { jobId: customJobIds[1], repeat: { cron: cron }})
     ]).then(function() {
       return queue.count();
     }).then(function(count) {
       expect(count).to.be.eql(2);
+      done();
+    }).catch(done);
+  });
+
+  it('should get repeatable jobs with different cron pattern', function(done) {
+    var crons = ['10 * * * * *', '2 * * 1 * 2', '1 * * 5 * *', '2 * * 4 * *'];
+
+    Promise.all([
+      queue.add('first', {}, { repeat: { cron: crons[0], endDate: 12345 }}),
+      queue.add('second', {}, { repeat: { cron: crons[1], endDate: 54321 }}),
+      queue.add('third', {}, { repeat: { cron: crons[2], tz: 'Africa/Abidjan' }}),
+      queue.add('fourth', {}, { repeat: { cron: crons[3], tz: 'Africa/Accra' }}),
+    ]).then(function() {
+      return queue.getRepeatableCount();
+    }).then(function(count){
+      expect(count).to.be.eql(4);
+      return queue.getRepeatableJobs(0, -1, true);
+    }).then(function(jobs){
+      expect(jobs).to.be.and.an('array').and.have.length(4);
+      expect(jobs[0]).to.include({cron: '2 * * 1 * 2', next: 2000, endDate: 54321});
+      expect(jobs[1]).to.include({cron: '10 * * * * *', next: 10000, endDate: 12345 });
+      expect(jobs[2]).to.include({cron: '2 * * 4 * *', next: 259202000, tz: 'Africa/Accra'});
+      expect(jobs[3]).to.include({cron: '1 * * 5 * *', next: 345601000, tz: 'Africa/Abidjan'});
       done();
     }).catch(done);
   });
