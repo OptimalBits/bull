@@ -112,10 +112,12 @@ better suits your needs.
 | Priorities      | ✓             |  ✓    |     |   ✓    |
 | Concurrency     | ✓             |  ✓    |  ✓  |   ✓    |
 | Delayed jobs    | ✓             |  ✓    |     |   ✓    |
+| Global events   | ✓             |       |     |        |
 | Pause/Resume    | ✓             |  ✓    |     |        |
 | Repeatable jobs | ✓             |       |     |   ✓    |
 | Atomic ops      | ✓             |       |  ✓  |        |
 | Persistence     | ✓             |   ✓   |  ✓  |   ✓    |
+| UI              | ✓             |   ✓   |     |        |
 | Optimized for   | Jobs / Messages | Jobs | Messages | Jobs |
 
 
