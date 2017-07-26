@@ -117,7 +117,7 @@ better suits your needs.
 | Repeatable jobs | ✓             |       |     |   ✓    |
 | Atomic ops      | ✓             |       |  ✓  |        |
 | Persistence     | ✓             |   ✓   |  ✓  |   ✓    |
-| UI              | ✓             |   ✓   |     |        |
+| UI              | ✓             |   ✓   |     |   ✓    |
 | Optimized for   | Jobs / Messages | Jobs | Messages | Jobs |
 
 
