@@ -26,7 +26,7 @@
       'completed/failed'
 ]]
 
-if redis.call("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists  
+if redis.call("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
   if ARGV[5] ~= "0" then
     local lockKey = KEYS[3] .. ':lock'
     if redis.call("GET", lockKey) == ARGV[5] then
