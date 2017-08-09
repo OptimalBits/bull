@@ -1,4 +1,4 @@
---[[ 
+--[[
     Looks for unlocked jobs in the active queue. This happens when if the job was being worked on,
     but the worker process died and it failed to renew the lock.
     We call these jobs 'stalled'. We resolve these by moving them back to wait to be re-processed.
@@ -9,7 +9,6 @@
       KEYS[1] 'active',
       KEYS[2] 'wait',
       KEYS[3] 'failed'
-      KEYS[4] 'added',
 
       ARGV[1]  Max stalled job count
       ARGV[2]  queue.toKey('')
@@ -25,7 +24,7 @@ for _, job in ipairs(activeJobs) do
   if(redis.call("EXISTS", jobKey .. ":lock") == 0) then
       --  Remove from the active queue.
     redis.call("LREM", KEYS[1], 1, job)
-    
+
     --    If it was previously locked then we consider it 'stalled' (Case A above). If this job
     --    has been stalled too many times, such as if it crashes the worker, then fail it.
     local stalledCount = redis.call("HINCRBY", jobKey, "stalledCounter", 1)
@@ -35,9 +34,11 @@ for _, job in ipairs(activeJobs) do
       table.insert(failed, job)
     else
       --      Move the job back to the wait queue, to immediately be picked up by a waiting worker.
+      --      TODO: Check if queue is paused and move to the paused list instead.
       redis.call("RPUSH", KEYS[2], job)
+      redis.call("RPUSH", KEYS[2] .. ":added", job)
+
       table.insert(stalled, job)
-      redis.call("PUBLISH", KEYS[4], job)
     end
   end
 end

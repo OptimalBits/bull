@@ -15,6 +15,7 @@
 ]]
 if redis.call("EXISTS", KEYS[1]) == 1 then
   redis.call("RENAME", KEYS[1], KEYS[2])
+  redis.call("RENAME", KEYS[1] .. ":added", KEYS[2] .. ":added")
 end
 
 if ARGV[1] == "paused" then
@@ -22,4 +23,5 @@ if ARGV[1] == "paused" then
 else
   redis.call("DEL", KEYS[3])
 end
+
 redis.call("PUBLISH", KEYS[4], ARGV[1])
