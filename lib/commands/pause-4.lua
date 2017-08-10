@@ -1,10 +1,6 @@
 --[[
   Pauses or resumes a queue globably.
 
-  Note: This code is unnecessary complex, since it was used when we used BRPOPLPUSH. Currently
-  only a meta-paused key is necessary.
-
-
    Input:
       KEYS[1] 'wait' or 'paused''
       KEYS[2] 'paused' or 'wait'
@@ -12,6 +8,9 @@
       KEYS[4] 'paused' o 'resumed' event.
 
       ARGV[1] 'paused' or 'resumed'
+
+    Event:
+      publish paused or resumed event.
 ]]
 if redis.call("EXISTS", KEYS[1]) == 1 then
   redis.call("RENAME", KEYS[1], KEYS[2])
