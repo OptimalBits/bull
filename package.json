@@ -1,6 +1,6 @@
 {
   "name": "bull",
-  "version": "3.0.0-rc.4",
+  "version": "3.0.0-rc.5",
   "description": "Job manager",
   "main": "./lib/queue",
   "repository": {
