@@ -1,3 +1,12 @@
+v.3.0.0-rc.5
+============
+
+- Improved performance, specially when having many concurrent workers.
+- Fixed #609 using zsets for storing repeatable jobs.
+- Fixed #608 Event chaining no longer works.
+- Improved getters.
+- Fixed #601 Add multiple repeatable jobs with the same cron pattern
+
 v.3.0.0-rc.4
 ============
 
@@ -146,10 +155,10 @@ v.2.1.0
 =======
 
 - Fixed #397, Error: Unable to renew nonexisting lock
-- Fixed #402, Job.prototype.finished contains error in promise 
+- Fixed #402, Job.prototype.finished contains error in promise
 - Fixed #371, "Unexpected token u in JSON at position 0" while processing job
 - New feature #363, "method to permanently fail a job"
-- Fix job.progress() to return the correct progress  
+- Fix job.progress() to return the correct progress
 
 [Changes](https://github.com/OptimalBits/bull/compare/v2.0.0...v2.1.0)
 
