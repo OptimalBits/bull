@@ -177,14 +177,17 @@ describe('Job', function(){
       queue.process(function (job, done) {
         done(new Error('the job failed'));
       });
+
       queue.once('failed', function (job) {
-        queue.once('waiting', function (jobId2) {
+        queue.once('global:waiting', function (jobId2) {
           Job.fromId(queue, jobId2).then(function(job2){
             expect(job2.data.foo).to.be.equal('bar');
             cb();
           });
         });
-        job.retry();
+        queue.once('registered:global:waiting', function(){
+          job.retry();
+        });
       });
     });
   });

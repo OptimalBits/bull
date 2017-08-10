@@ -153,7 +153,7 @@ Definitions are currently maintained in the [DefinitelyTyped](https://github.com
 var Queue = require('bull');
 
 var videoQueue = new Queue('video transcoding', 'redis://127.0.0.1:6379');
-var audioQueue = new Queue('audio transcoding', {redis: {port: 6379, host: '127.0.0.1'}}); // Specify Redis connection using object
+var audioQueue = new Queue('audio transcoding', {redis: {port: 6379, host: '127.0.0.1', password: 'foobared'}}); // Specify Redis connection using object
 var imageQueue = new Queue('image transcoding');
 var pdfQueue = new Queue('pdf transcoding');
 

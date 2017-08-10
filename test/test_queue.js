@@ -460,11 +460,9 @@ describe('Queue', function () {
           queue.process(function(job, jobDone){
             expect(job.id).to.be.ok;
             expect(job.data.p).to.be.eql(currentPriority);
-
             jobDone();
 
             total ++;
-
             if(++counter === numJobsPerPriority){
               currentPriority++;
               counter = 0;
@@ -642,7 +640,8 @@ describe('Queue', function () {
       utils.newQueue('test queue stalled', {
         settings: {
           lockDuration: 15,
-          lockRenewTime: 5
+          lockRenewTime: 5,
+          stalledInterval: 100
         }
       }).then(function (queueStalled) {
         var jobs = [
@@ -809,7 +808,8 @@ describe('Queue', function () {
           redis: redisOpts,
           settings: {
             lockDuration: 30,
-            lockRenewTime: 10
+            lockRenewTime: 10,
+            stalledInterval: 100
           }
         });
 
@@ -834,7 +834,7 @@ describe('Queue', function () {
           processed++;
           if (processed === stalledQueues.length) {
             setTimeout(function () {
-              var queue2 = new Queue('test queue stalled 2', redisOpts);
+              var queue2 = new Queue('test queue stalled 2', {redis: redisOpts});
               queue2.on('error', function(){
 
               });
@@ -984,9 +984,6 @@ describe('Queue', function () {
     });
 
     it('process a job that returns data with a circular dependency', function (done) {
-      queue.on('error', function (err) {
-        done(err);
-      });
       queue.on('failed', function () {
         done();
       });
@@ -1125,7 +1122,9 @@ describe('Queue', function () {
   });
 
   it('emits drained event when all jobs have been processed', function (done) {
-    var queue = utils.buildQueue();
+    var queue = utils.buildQueue('drained', {
+      settings: {drainDelay: 1}
+    });
 
     queue.process(function (job, done) {
       done();
@@ -1445,7 +1444,7 @@ describe('Queue', function () {
           expect(parseInt(message, 10)).to.be.a('number');
           publishHappened = true;
         });
-        client.subscribe(queue.toKey('added'));
+        client.subscribe(queue.toKey('delayed'));
       });
 
       queue.process(function (job, jobDone) {
@@ -1456,6 +1455,7 @@ describe('Queue', function () {
         expect(Date.now() > timestamp + delay);
         queue.getWaiting().then(function (jobs) {
           expect(jobs.length).to.be.equal(0);
+
         }).then(function () {
           return queue.getDelayed().then(function (jobs) {
             expect(jobs.length).to.be.equal(0);
@@ -1466,10 +1466,12 @@ describe('Queue', function () {
         });
       });
 
-      queue.add({ delayed: 'foobar' }, { delay: delay }).then(function (job) {
-        expect(job.id).to.be.ok;
-        expect(job.data.delayed).to.be.eql('foobar');
-        expect(job.delay).to.be.eql(delay);
+      queue._initializingProcess.then(function(){
+        queue.add({ delayed: 'foobar' }, { delay: delay }).then(function (job) {
+          expect(job.id).to.be.ok;
+          expect(job.data.delayed).to.be.eql('foobar');
+          expect(job.delay).to.be.eql(delay);
+        });
       });
     });
 

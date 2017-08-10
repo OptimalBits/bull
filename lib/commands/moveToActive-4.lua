@@ -11,7 +11,7 @@
       KEYS[2] active key
       KEYS[3] priority key
       KEYS[4] active event key
-      
+
       ARGV[1] key prefix
       ARGV[2] lock token
       ARGV[3] lock duration in milliseconds
@@ -23,7 +23,7 @@ local jobId = redis.call("RPOP", KEYS[1])
 if jobId then
   local jobKey = ARGV[1] .. jobId
   local lockKey = jobKey .. ':lock'
-  
+
   -- get a the lock
   redis.call("SET", lockKey, ARGV[2], "PX", ARGV[3])
   redis.call("ZREM", KEYS[3], jobId) -- remove from priority
