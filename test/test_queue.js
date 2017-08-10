@@ -640,7 +640,8 @@ describe('Queue', function () {
       utils.newQueue('test queue stalled', {
         settings: {
           lockDuration: 15,
-          lockRenewTime: 5
+          lockRenewTime: 5,
+          stalledInterval: 100
         }
       }).then(function (queueStalled) {
         var jobs = [
@@ -807,7 +808,8 @@ describe('Queue', function () {
           redis: redisOpts,
           settings: {
             lockDuration: 30,
-            lockRenewTime: 10
+            lockRenewTime: 10,
+            stalledInterval: 100
           }
         });
 
@@ -832,7 +834,7 @@ describe('Queue', function () {
           processed++;
           if (processed === stalledQueues.length) {
             setTimeout(function () {
-              var queue2 = new Queue('test queue stalled 2', redisOpts);
+              var queue2 = new Queue('test queue stalled 2', {redis: redisOpts});
               queue2.on('error', function(){
 
               });
