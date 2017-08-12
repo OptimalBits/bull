@@ -7,7 +7,7 @@ v.3.0.0-rc.5
 - Improved getters.
 - Fixed #601 Add multiple repeatable jobs with the same cron pattern.
 
-[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.4...v3.0.0-rc.5)
+[Changes](https://github.com/OptimalBits/bull/compare/3.0.0-rc.4...v3.0.0-rc.5)
 
 v.3.0.0-rc.4
 ============
@@ -19,7 +19,7 @@ v.3.0.0-rc.4
 - Emit 'drain' event when queue is empty. #596.
 - store finished and processed timestamps. #594, #606.
 
-[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.3...v3.0.0-rc.4)
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.3...3.0.0-rc.4)
 
 v.3.0.0-rc.3
 ============
