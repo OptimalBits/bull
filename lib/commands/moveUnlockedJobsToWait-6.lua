@@ -21,7 +21,7 @@
 
 -- Check if we need to check for stalled jobs now.
 if redis.call("EXISTS", KEYS[6]) == 1 then
-  return
+  return {{}, {}}
 end
 
 redis.call("SET", KEYS[6], ARGV[3], "PX", ARGV[4])
