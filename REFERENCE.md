@@ -43,7 +43,7 @@ interface QueueOpts{
 }
 ```
 
-```RedisOpts``` are passed directly to ioredis constructor, check [https://github.com/luin/ioredis/blob/master/API.md](ioredis) 
+```RedisOpts``` are passed directly to ioredis constructor, check [ioredis](https://github.com/luin/ioredis/blob/master/API.md)
 for details. We document here just the most important ones.
 
 ```typescript
