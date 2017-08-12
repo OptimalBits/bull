@@ -5,7 +5,9 @@ v.3.0.0-rc.5
 - Fixed #609 using zsets for storing repeatable jobs.
 - Fixed #608 Event chaining no longer works.
 - Improved getters.
-- Fixed #601 Add multiple repeatable jobs with the same cron pattern
+- Fixed #601 Add multiple repeatable jobs with the same cron pattern.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.4...v3.0.0-rc.5)
 
 v.3.0.0-rc.4
 ============
