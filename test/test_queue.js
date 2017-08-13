@@ -1528,7 +1528,8 @@ describe('Queue', function () {
         queue.add({ order: 2 }, { delay: 300 }),
         queue.add({ order: 4 }, { delay: 500 }),
         queue.add({ order: 1 }, { delay: 200 }),
-        queue.add({ order: 3 }, { delay: 400 })).then(function () {
+        queue.add({ order: 3 }, { delay: 400 }))
+        .then(function () {
           //
           // Start processing so that jobs get into the delay set.
           //
