@@ -33,6 +33,9 @@
     <a href="http://badge.fury.io/js/bull">
       <img src="https://badge.fury.io/js/bull.svg"/>
     </a>
+    <a href="https://coveralls.io/github/OptimalBits/bull?branch=master">
+      <img src="https://coveralls.io/repos/github/OptimalBits/bull/badge.svg?branch=master"/>
+    </a>
     <a href="http://isitmaintained.com/project/OptimalBits/bull">
       <img src="http://isitmaintained.com/badge/open/optimalbits/bull.svg"/>
     </a>
