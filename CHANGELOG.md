@@ -1,3 +1,10 @@
+v.3.0.0-rc.6
+============
+
+- Fixed #645.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.5...v3.0.0-rc.6)
+
 v.3.0.0-rc.5
 ============
 
