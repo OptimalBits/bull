@@ -65,10 +65,10 @@ for _, job in ipairs(activeJobs) do
 end
 
 -- Push lost jobs into the :added list (in case a job was popped from the list but did not make it to the active list,
--- very unlikely but possible hazard)
-if redis.call("LLEN", dst) ~= redis.call("LLEN", dstAdded) then
-  local res = redis.call( 'LRANGE', dst, 0, -1 );
-  redis.call("DEL", dstAdded)
+-- very unlikely but a possible hazard)
+local diff = redis.call("LLEN", dst) - redis.call("LLEN", dstAdded)
+if diff > 0 then
+  local res = redis.call( 'LRANGE', dst, 0, diff );
   redis.call("RPUSH", dstAdded, unpack(res) );
 end
 
