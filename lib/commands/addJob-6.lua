@@ -76,7 +76,6 @@ else
   if priority == 0 then
       -- LIFO or FIFO
     redis.call(ARGV[10], target, jobId)
-    redis.call(ARGV[10], target .. ":added", jobId)
 
     -- Emit waiting event (wait..ing@token)
     redis.call("PUBLISH", KEYS[1] .. "ing@" .. ARGV[11], jobId)
@@ -89,10 +88,8 @@ else
     local id = redis.call("LINDEX", target, len - (count-1))
     if id then
       redis.call("LINSERT", target, "BEFORE", id, jobId)
-      redis.call("LINSERT", target .. ":added", "BEFORE", id, jobId)
     else
       redis.call("RPUSH", target, jobId)
-      redis.call("RPUSH", target .. ":added", jobId)
     end
 
   end

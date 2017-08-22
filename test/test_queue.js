@@ -834,9 +834,9 @@ describe('Queue', function () {
           processed++;
           if (processed === stalledQueues.length) {
             setTimeout(function () {
-              var queue2 = new Queue('test queue stalled 2', {redis: redisOpts});
-              queue2.on('error', function(){
-
+              var queue2 = new Queue('test queue stalled 2', {redis: redisOpts, settings: {stalledInterval: 100}});
+              queue2.on('error', function(err){
+                done(err);
               });
               queue2.process(function (job2, jobDone) {
                 jobDone();
@@ -1989,8 +1989,8 @@ describe('Queue', function () {
         });
       });
 
-      queue.process(function (job, jobDone) {
-        return Promise.delay(300).then(jobDone);
+      queue.process(function (job) {
+        return Promise.delay(300);
       });
       queue.add({ foo: 'bar' }).then(addedHandler);
     });

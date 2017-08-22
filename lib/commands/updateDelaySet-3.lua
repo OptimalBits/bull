@@ -22,7 +22,6 @@ if (score ~= nil) then
     redis.call("ZREM", KEYS[1], jobId)
     redis.call("LREM", KEYS[2], 0, jobId)
     redis.call("LPUSH", KEYS[3], jobId)
-    redis.call("LPUSH", KEYS[3] .. ":added", jobId)
     redis.call("HSET", ARGV[1] .. jobId, "delay", 0)
     local nextTimestamp = redis.call("ZRANGE", KEYS[1], 0, 0, "WITHSCORES")[2]
     if(nextTimestamp ~= nil) then
