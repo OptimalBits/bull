@@ -531,8 +531,5 @@ describe('Job', function(){
       });
     });
 
-    it.skip('should resolve using the watchdog if pubsub was lost');
-    it.skip('should reject using the watchdog if pubsub was lost');
-
   });
 });
