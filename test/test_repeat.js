@@ -170,4 +170,20 @@ describe('repeat', function () {
       _this.clock.tick(ONE_MONTH);
     });
   });
+
+  it('should create two jobs with the same ids', function(){
+    var options = {
+      repeat: {
+        cron: '0 1 * * *',
+      },
+    };
+
+    var p1 = queue.add({foo: 'bar'}, options);
+    var p2 = queue.add({foo: 'bar'}, options);
+
+    return Promise.all([p1, p2]).then(function(jobs) {
+      expect(jobs.length).to.be.eql(2);
+      expect(jobs[0].id).to.be.eql(jobs[1].id);
+    });
+  });
 });
