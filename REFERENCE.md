@@ -13,6 +13,18 @@ Reference
   - [Queue#close](#queueclose)
   - [Queue#getJob](#queuegetjob)
   - [Queue#getJobCounts](#queuegetjobcounts)
+  - [Queue#getCompletedCount](#queuegetcompledtedcount)
+  - [Queue#getFailedCount](#queuegetfailedcount)
+  - [Queue#getDelayedCount](#queuegetdelayedcount)
+  - [Queue#getActiveCount](#queuegetactivecount)
+  - [Queue#getWaitingCount](#queuegetwaitingcount)
+  - [Queue#getPausedCount](#queuegetpausedcount)
+  - [Queue#getWaiting](#queuegetwaiting)
+  - [Queue#getActive](#queuegetactive)
+  - [Queue#getDelayed](#queuegetdelayed)
+  - [Queue#getCompleted](#queuegetcompledted)
+  - [Queue#getFailed](#queuegetfailed)
+
 - [Job](#job)
   - [Job#remove](#jobremove)
   - [Job#retry](#jobretry)
@@ -391,6 +403,7 @@ getActive(start?: number, end?: number) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the active jobs between start and end.
+
 ---
 
 ### Queue#getDelayed
@@ -400,6 +413,7 @@ getDelayed(start?: number, end?: number) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the delayed jobs between start and end.
+
 ---
 
 
@@ -410,6 +424,7 @@ getCompleted(start?: number, end?: number) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the completed jobs between start and end.
+
 ---
 
 ### Queue#getFailed
@@ -420,6 +435,7 @@ getFailed(start?: number, end?: number) : Promise<Array<Job>>
 
 Returns a promise that will return an array with the failed jobs between start and end.
 
+---
 
 ### Queue#clean
 
