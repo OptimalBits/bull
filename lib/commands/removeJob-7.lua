@@ -13,7 +13,7 @@
 
       ARGV[1]  jobId
       ARGV[2]  lock token
-    
+
      Events:
       'removed'
 ]]

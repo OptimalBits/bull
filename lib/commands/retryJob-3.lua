@@ -18,7 +18,6 @@
      -1 - Missing key
      -2 - Job Not locked
 ]]
-
 if redis.call("EXISTS", KEYS[3]) == 1 then
 
   -- Check for job lock
@@ -32,7 +31,6 @@ if redis.call("EXISTS", KEYS[3]) == 1 then
 
   redis.call("LREM", KEYS[1], 0, ARGV[2])
   redis.call(ARGV[1], KEYS[2], ARGV[2])
-  redis.call(ARGV[1], KEYS[2] .. ":added", ARGV[2])
 
   return 0
 else
