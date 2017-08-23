@@ -1,3 +1,10 @@
+v.3.0.0-rc.8
+============
+
+- Enhanced job fetching #651 (faster and more reliable).
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.7...v3.0.0-rc.8)
+
 v.3.0.0-rc.7
 ============
 
