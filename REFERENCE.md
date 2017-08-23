@@ -140,7 +140,7 @@ interface JobOpts{
   priority: number; // Optional priority value. ranges from 1 (highest priority) to MAX_INT  (lowest priority). Note that
                     // using priorities has a slight impact on performance, so do not use it if not required.
 
-  delay: number; // An amount of miliseconds to wait until this job can be processed. Note that for accurate delays, both 
+  delay: number; // An amount of miliseconds to wait until this job can be processed. Note that for accurate delays, both
                  // server and clients should have their clocks synchronized. [optional].
 
   attempts: number; // The total number of attempts to try the job until it completes.
@@ -306,12 +306,120 @@ Returns a promise that will return the job counts for the given queue.
     active: number,
     completed: number,
     failed: number,
-    delayed: number 
+    delayed: number
   }
 }
 ```
 
 ---
+
+### Queue#getCompletedCount
+
+```ts
+getCompletedCount() : Promise<number>
+```
+
+Returns a promise that will return the completed job counts for the given queue.
+
+---
+
+### Queue#getFailedCount
+
+```ts
+getFailedCount() : Promise<number>
+```
+
+Returns a promise that will return the failed job counts for the given queue.
+
+---
+
+### Queue#getDelayedCount
+
+```ts
+getDelayedCount() : Promise<number>
+```
+
+Returns a promise that will return the delayed job counts for the given queue.
+
+---
+
+### Queue#getActiveCount
+
+```ts
+getActiveCount() : Promise<number>
+```
+
+Returns a promise that will return the active job counts for the given queue.
+
+---
+
+
+### Queue#getWaitingCount
+
+```ts
+getWaitingCount() : Promise<number>
+```
+
+Returns a promise that will return the waiting job counts for the given queue.
+
+---
+
+### Queue#getPausedCount
+
+```ts
+getPausedCount() : Promise<number>
+```
+
+Returns a promise that will return the paused job counts for the given queue.
+
+---
+
+### Queue#getWaiting
+
+```ts
+getWaiting(start?: number, end?: number) : Promise<Array<Job>>
+```
+
+Returns a promise that will return an array with the waiting jobs between start and end.
+
+---
+
+### Queue#getActive
+
+```ts
+getActive(start?: number, end?: number) : Promise<Array<Job>>
+```
+
+Returns a promise that will return an array with the active jobs between start and end.
+---
+
+### Queue#getDelayed
+
+```ts
+getDelayed(start?: number, end?: number) : Promise<Array<Job>>
+```
+
+Returns a promise that will return an array with the delayed jobs between start and end.
+---
+
+
+### Queue#getCompleted
+
+```ts
+getCompleted(start?: number, end?: number) : Promise<Array<Job>>
+```
+
+Returns a promise that will return an array with the completed jobs between start and end.
+---
+
+### Queue#getFailed
+
+```ts
+getFailed(start?: number, end?: number) : Promise<Array<Job>>
+```
+
+Returns a promise that will return an array with the failed jobs between start and end.
+
 
 ### Queue#clean
 
@@ -340,7 +448,7 @@ queue.on('cleaned', function (job, type) {
   status: string; Status of the job to clean. Values are completed, wait, active,
   delayed, and failed. Defaults to completed.
   limit: number; maximum amount of jobs to clean per call. If not provided will clean all matching jobs.
-  
+
   returns Promise; A promise that resolves with an array of removed jobs.
 ```
 
