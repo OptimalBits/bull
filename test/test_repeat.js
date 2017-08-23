@@ -19,9 +19,10 @@ describe('repeat', function () {
     this.clock = sinon.useFakeTimers();
     var client = new redis();
     return client.flushdb().then(function(){
-      queue = utils.buildQueue('repeat', {settings: { 
+      queue = utils.buildQueue('repeat', {settings: {
         guardInterval: Number.MAX_VALUE,
-        stalledInterval: Number.MAX_VALUE
+        stalledInterval: Number.MAX_VALUE,
+        drainDelay: 1 // Small delay so that .close is faster.
       }});
     });
   });
@@ -107,7 +108,7 @@ describe('repeat', function () {
     var nextTick = ONE_DAY;
 
     queue.add('repeat', {foo: 'bar'}, {repeat: {
-      cron: '0 1 * * *', 
+      cron: '0 1 * * *',
       endDate: new Date('2017-05-10 13:12:00')}
     }).then(function(){
       _this.clock.tick(nextTick);
