@@ -54,19 +54,21 @@ if(#stalling > 0) then
       --  Remove from the active queue.
       local removed = redis.call("LREM", KEYS[3], 1, jobId)
 
-      -- If this job has been stalled too many times, such as if it crashes the worker, then fail it.
-      local stalledCount = redis.call("HINCRBY", jobKey, "stalledCounter", 1)
-      if(stalledCount > MAX_STALLED_JOB_COUNT) then
-        redis.call("ZADD", KEYS[4], ARGV[3], job)
-        redis.call("HSET", jobKey, "failedReason", "job stalled more than allowable limit")
-        table.insert(failed, jobId)
-      else
-        -- Move the job back to the wait queue, to immediately be picked up by a waiting worker.
-        redis.call("RPUSH", dst, jobId)
+      if(removed > 0) then
+        -- If this job has been stalled too many times, such as if it crashes the worker, then fail it.
+        local stalledCount = redis.call("HINCRBY", jobKey, "stalledCounter", 1)
+        if(stalledCount > MAX_STALLED_JOB_COUNT) then
+          redis.call("ZADD", KEYS[4], ARGV[3], jobId)
+          redis.call("HSET", jobKey, "failedReason", "job stalled more than allowable limit")
+          table.insert(failed, jobId)
+        else
+          -- Move the job back to the wait queue, to immediately be picked up by a waiting worker.
+          redis.call("RPUSH", dst, jobId)
 
-        -- TODO: Publish a global stalled event.
-        -- redis.call('PUBLISH', KEYS[1], stalled);
-        table.insert(stalled, jobId)
+          -- TODO: Publish a global stalled event.
+          -- redis.call('PUBLISH', KEYS[1], stalled);
+          table.insert(stalled, jobId)
+        end
       end
     end
   end

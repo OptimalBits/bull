@@ -937,6 +937,43 @@ describe('Queue', function () {
       }).catch(done);
     });
 
+    it('failed stalled jobs that stall more than allowable stalled limit', function(done){
+      var FAILED_MESSAGE = 'job stalled more than allowable limit';
+      this.timeout(10000);
+
+      var queue2 = utils.buildQueue('running-stalled-job-' + uuid(), {
+        settings: {
+          lockRenewTime: 2500,
+          lockDuration: 250,
+          stalledInterval: 500,
+          maxStalledCount: 1
+        }
+      });
+
+      var processedCount = 0;
+      queue2.process(function (job) {
+        processedCount ++;
+        expect(job.data.foo).to.be.equal('bar');
+        return Promise.delay(1500);
+      });
+
+      queue2.on('completed', function(){
+        done(new Error('should not complete'));
+      });
+
+      queue2.on('failed', function(job, err){
+        expect(processedCount).to.be.eql(2);
+        expect(job.failedReason).to.be.eql(FAILED_MESSAGE);
+        expect(err.message).to.be.eql(FAILED_MESSAGE);
+        done();
+      });
+
+      queue2.add({ foo: 'bar' }).then(function (job) {
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
+      }).catch(done);
+    });
+
     it('process a job that fails', function (done) {
       var jobError = new Error('Job Failed');
 
