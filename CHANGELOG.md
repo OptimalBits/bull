@@ -1,3 +1,12 @@
+v.3.0.0-rc.10
+============
+
+- Fixed #666.
+- Small improvements in the repeat code.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.9...v3.0.0-rc.10)
+
+
 v.3.0.0-rc.9
 ============
 
