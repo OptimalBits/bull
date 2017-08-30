@@ -258,6 +258,9 @@ A job can be added to a queue and processed repeatedly according to a cron speci
 
 ```
 
+As a tip, check your expressions here to verify they are as you expect them:
+[cron expression descriptor](http://cronexpressiondescriptor.azurewebsites.net/)
+
 
 A queue can be paused and resumed globally (pass `true` to pause processing for
 just this worker):
