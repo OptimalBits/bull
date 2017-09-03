@@ -26,10 +26,13 @@ Reference
   - [Queue#getFailed](#queuegetfailed)
 
 - [Job](#job)
+  - [Job#progress](#jobprogress)
   - [Job#remove](#jobremove)
   - [Job#retry](#jobretry)
   - [Job#discard](#jobdiscard)
   - [Job#promote](#jobpromote)
+  - [Job#finished](#jobfinished)
+
 - [Events](#events)
 
 
@@ -486,6 +489,20 @@ A job includes all data needed to perform its execution, as well as the progress
 
 The most important property for the user is `Job#data` that includes the object that was passed to [`Queue#add`](#queueadd), and that is normally used to perform the job.
 
+### Job#progress
+
+```ts
+progress(progress: number): Promise
+```
+
+Updates a job progress.
+
+**Arguments**
+
+```js
+  progress: number; Job progress between 0 and 100.
+```
+
 ---
 
 ### Job#remove
@@ -525,6 +542,16 @@ promote(): Promise
 ```
 
 Promotes a job that is currently "delayed" to the "waiting" state and executed as soon as possible.
+
+---
+
+### Job#finished
+
+```ts
+finished(): Promise
+```
+
+Returns a promise that resolves or rejects when the job completes or fails.
 
 ---
 
