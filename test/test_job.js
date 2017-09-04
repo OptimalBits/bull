@@ -83,6 +83,20 @@ describe('Job', function(){
     });
   });
 
+  describe.only('.update', function(){
+    it('should allow updating job data', function(){
+      return Job.create(queue, {foo: 'bar'}).then(function(job){
+        return job.update({baz: 'qux'}).then(function(){
+          return job;
+        });
+      }).then(function(job){
+        return Job.fromId(queue, job.id).then(function(job){
+          expect(job.data).to.be.eql({baz: 'qux'});
+        });
+      });
+    });
+  });
+
   describe('.remove', function () {
     it('removes the job from redis', function(){
       return Job.create(queue, {foo: 'bar'})
