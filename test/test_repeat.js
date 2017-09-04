@@ -13,7 +13,7 @@ var ONE_HOUR = 60 * ONE_MINUTE;
 var ONE_DAY = 24 * ONE_HOUR;
 var ONE_MONTH = 31 * ONE_DAY;
 
-describe.only('repeat', function () {
+describe('repeat', function () {
   var queue;
 
   beforeEach(function(){
