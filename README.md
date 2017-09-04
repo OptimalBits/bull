@@ -85,6 +85,7 @@ And coming up on the roadmap...
 - [ ] Job completion acknowledgement.
 - [ ] Rate limiter for jobs.
 - [ ] Parent-child jobs relationships.
+- [ ] Threaded processing functions.
 
 ---
 
