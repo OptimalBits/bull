@@ -131,7 +131,8 @@ better suits your needs.
 ```bash
 npm install bull --save
 ```
-_**Note:** Installs prerelease version. Use_ `npm install bull@* --save` _to install latest production ready release._
+or
+
 ```bash
 yarn add bull
 ```
