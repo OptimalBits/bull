@@ -73,6 +73,7 @@ Are you developing bull sponsored by a company? Please, let us now!
 - [x] Robust design based on Redis.
 - [x] Delayed jobs.
 - [x] Schedule and repeat jobs according to a cron specification.
+- [x] Rate limiter for jobs.
 - [x] Retries.
 - [x] Priority.
 - [x] Concurrency.
@@ -83,7 +84,6 @@ Are you developing bull sponsored by a company? Please, let us now!
 And coming up on the roadmap...
 
 - [ ] Job completion acknowledgement.
-- [ ] Rate limiter for jobs.
 - [ ] Parent-child jobs relationships.
 
 ---
