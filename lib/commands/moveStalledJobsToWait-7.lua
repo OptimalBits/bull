@@ -17,7 +17,7 @@
       ARGV[4]  max check time
 
     Events:
-      'stalled' with stalled job ids.
+      'stalled' with stalled job id.
 ]]
 
 -- Check if we need to check for stalled jobs now.
@@ -64,9 +64,7 @@ if(#stalling > 0) then
         else
           -- Move the job back to the wait queue, to immediately be picked up by a waiting worker.
           redis.call("RPUSH", dst, jobId)
-
-          -- TODO: Publish a global stalled event.
-          -- redis.call('PUBLISH', KEYS[1], stalled);
+          redis.call('PUBLISH', KEYS[1] .. '@', jobId)
           table.insert(stalled, jobId)
         end
       end
