@@ -23,6 +23,26 @@ describe('events', function () {
     return queue.close();
   });
 
+  it('should emit waiting when a job has been added', function(done){
+    queue.on('waiting', function(){
+      done();
+    });
+
+    queue.on('registered:waiting', function(){
+      queue.add({ foo: 'bar' });
+    });
+  });
+
+  it('should emit global:waiting when a job has been added', function(done){
+    queue.on('global:waiting', function(){
+      done();
+    });
+
+    queue.on('registered:global:waiting', function(){
+      queue.add({ foo: 'bar' });
+    });
+  });
+
   it('should emit stalled when a job has been stalled', function (done) {
     queue.on('completed', function (job) {
       done(new Error('should not have completed'));
