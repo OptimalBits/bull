@@ -27,6 +27,7 @@ Reference
 
 - [Job](#job)
   - [Job#progress](#jobprogress)
+  - [Job#update](#jobupdate)
   - [Job#remove](#jobremove)
   - [Job#retry](#jobretry)
   - [Job#discard](#jobdiscard)
@@ -510,6 +511,16 @@ Updates a job progress.
 ```js
   progress: number; Job progress between 0 and 100.
 ```
+
+---
+
+### Job#update
+
+```ts
+update(data: object): Promise
+```
+
+Updated a job data field with the give data object.
 
 ---
 
