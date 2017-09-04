@@ -39,7 +39,7 @@ describe('events', function () {
     }});
 
     queue2.on('stalled', function (job) {
-      done();
+      queue2.close().then(done);
     });
 
     queue.on('active', function(){
@@ -64,7 +64,7 @@ describe('events', function () {
     }});
 
     queue2.on('global:stalled', function (job) {
-      done();
+      queue2.close().then(done);
     });
 
     queue.on('active', function(){
