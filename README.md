@@ -116,7 +116,8 @@ better suits your needs.
 | Priorities      | ✓             |  ✓    |     |   ✓    |
 | Concurrency     | ✓             |  ✓    |  ✓  |   ✓    |
 | Delayed jobs    | ✓             |  ✓    |     |   ✓    |
-| Global events   | ✓             |       |     |        |
+| Global events   | ✓             |  ✓    |     |        |
+| Rate Limiter    | ✓             |       |     |        |
 | Pause/Resume    | ✓             |  ✓    |     |        |
 | Repeatable jobs | ✓             |       |     |   ✓    |
 | Atomic ops      | ✓             |       |  ✓  |        |
