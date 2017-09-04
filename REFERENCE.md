@@ -52,9 +52,17 @@ The optional ```url``` argument, allows to specify a redis connection string suc
 
 ```typescript
 interface QueueOpts{
+  limiter?: RateLimiter;
   redis?: RedisOpts;
   prefix?: string = 'bull'; // prefix for all queue keys.
   settings?: AdvancedSettings;
+}
+```
+
+```typescript
+interface RateLimiter {
+  max: number,      // Max number of jobs processed
+  duration: number, // per duration in milliseconds
 }
 ```
 

@@ -53,10 +53,11 @@ end
 redis.call("HMSET", jobIdKey, "name", ARGV[3], "data", ARGV[4], "opts", ARGV[5], "timestamp", ARGV[6], "delay", ARGV[7])
 
 -- Check if job is delayed
-if(tonumber(ARGV[8]) ~= 0) then
-  local timestamp = tonumber(ARGV[8]) * 0x1000 + bit.band(jobCounter, 0xfff)
+local delayedTimestamp = tonumber(ARGV[8])
+if(delayedTimestamp ~= 0) then
+  local timestamp = delayedTimestamp * 0x1000 + bit.band(jobCounter, 0xfff)
   redis.call("ZADD", KEYS[5], timestamp, jobId)
-  redis.call("PUBLISH", KEYS[5], (timestamp / 0x1000))
+  redis.call("PUBLISH", KEYS[5], delayedTimestamp)
 else
   local target
 
