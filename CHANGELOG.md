@@ -1,3 +1,12 @@
+v.3.1.0
+=======
+
+- Added rate limiter support.
+- Added method to update jobs data.
+- Implemented stalled as global event.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0...v3.1.0)
+
 v.3.0.0
 =======
 
