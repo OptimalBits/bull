@@ -83,7 +83,7 @@ describe('Job', function(){
     });
   });
 
-  describe.only('.update', function(){
+  describe('.update', function(){
     it('should allow updating job data', function(){
       return Job.create(queue, {foo: 'bar'}).then(function(job){
         return job.update({baz: 'qux'}).then(function(){
