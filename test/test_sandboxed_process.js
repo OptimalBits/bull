@@ -5,7 +5,7 @@ var expect = require('chai').expect;
 var utils = require('./utils');
 var redis = require('ioredis');
 
-describe.only('sandboxed process', function () {
+describe('sandboxed process', function () {
   var queue;
 
   beforeEach(function(){
