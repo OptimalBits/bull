@@ -79,13 +79,13 @@ Are you developing bull sponsored by a company? Please, let us now!
 - [x] Concurrency.
 - [x] Pause/resume—globally or locally.
 - [x] Multiple job types per queue.
+- [x] Threaded (sandboxed) processing functions.
 - [x] Automatic recovery from process crashes.
 
 And coming up on the roadmap...
 
 - [ ] Job completion acknowledgement.
 - [ ] Parent-child jobs relationships.
-- [ ] Threaded processing functions.
 
 ---
 
@@ -119,6 +119,7 @@ better suits your needs.
 | Global events   | ✓             |  ✓    |     |        |
 | Rate Limiter    | ✓             |       |     |        |
 | Pause/Resume    | ✓             |  ✓    |     |        |
+| Sandboxed worker| ✓             |       |     |        |
 | Repeatable jobs | ✓             |       |     |   ✓    |
 | Atomic ops      | ✓             |       |  ✓  |        |
 | Persistence     | ✓             |   ✓   |  ✓  |   ✓    |
@@ -151,7 +152,6 @@ yarn add --dev @types/bull
 Definitions are currently maintained in the [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bull) repo.
 
 ---
-
 
 ### Quick Guide
 
@@ -246,6 +246,35 @@ videoQueue.process(function(job){ // don't forget to remove the done callback!
   // same as
   return Promise.reject(new Error('some unexpected error'));
 });
+```
+
+The process function can also be run in a separate process. This has several advantages:
+- The process is sandboxed so if it crashes it does not affect the worker.
+- You can run blocking code without affecting the queue (jobs will not stall).
+- Much better utilization of multi-core CPUs.
+- Less connections to redis.
+
+In order to use this feature just create a separate file with the processor:
+```js
+// processor.js
+module.exports = function(job){
+  // Do some heavy work
+
+  return Promise.resolve(result);
+}
+```
+
+And define the processor like this:
+
+```js
+// Single process:
+queue.process('/path/to/my/processor.js');
+
+// You can use concurrency as well:
+queue.process(5, '/path/to/my/processor.js');
+
+// and named processors:
+queue.process('my processor', 5, '/path/to/my/processor.js');
 ```
 
 A job can be added to a queue and processed repeatedly according to a cron specification:
