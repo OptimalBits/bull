@@ -11,7 +11,6 @@ var ONE_SECOND = 1000;
 var ONE_MINUTE = 60 * ONE_SECOND;
 var ONE_HOUR = 60 * ONE_MINUTE;
 var ONE_DAY = 24 * ONE_HOUR;
-var ONE_MONTH = 31 * ONE_DAY;
 
 describe('repeat', function () {
   var queue;
@@ -156,7 +155,7 @@ describe('repeat', function () {
       nextTick();
     });
 
-    queue.process('repeat', function(job){
+    queue.process('repeat', function(/*job*/){
       // Dummy
     });
 

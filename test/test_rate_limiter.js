@@ -27,20 +27,19 @@ describe('Rate limiter', function () {
 
   it('should obey the rate limit', function(done) {
     var startTime = new Date().getTime();
-    var nbProcessed = 0;
+    var numJobs = 4;
 
     queue.process(function() {
       return Promise.resolve();
     });
 
-    queue.add({});
-    queue.add({});
-    queue.add({});
-    queue.add({});
+    for(var i=0; i<numJobs; i++){
+      queue.add({});
+    }
 
-    queue.on('completed', _.after(4, function() {
+    queue.on('completed', _.after(numJobs, function() {
       try {
-        expect(new Date().getTime() - startTime).to.be.above(3000);
+        expect(new Date().getTime() - startTime).to.be.above((numJobs - 1) * 1000);
         done();
       } catch (e) {
         done(e);
