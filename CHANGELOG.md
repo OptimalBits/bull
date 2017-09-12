@@ -1,3 +1,9 @@
+v.3.2.0
+=======
+- Added support for running jobs in child processes #488
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.1.0...v3.2.0)
+
 v.3.1.0
 =======
 
