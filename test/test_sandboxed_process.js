@@ -37,6 +37,18 @@ describe('sandboxed process', function () {
     queue.add({foo:'bar'});
   });
 
+  it('should process and complete using done', function (done) {
+    queue.process(__dirname + '/fixtures/fixture_processor_callback.js');
+
+    queue.on('completed', function(job, value){
+      expect(job.data).to.be.eql({foo:'bar'});
+      expect(value).to.be.eql(42);
+      done();
+    });
+
+    queue.add({foo:'bar'});
+  });
+
   it('should process and update progress', function (done) {
     queue.process(__dirname + '/fixtures/fixture_processor_progress.js');
 
@@ -58,6 +70,19 @@ describe('sandboxed process', function () {
 
   it('should process and fail', function (done) {
     queue.process(__dirname + '/fixtures/fixture_processor_fail.js');
+
+    queue.on('failed', function(job, err){
+      expect(job.data).eql({foo:'bar'});
+      expect(job.failedReason).eql('Manually failed processor');
+      expect(err.message).eql('Manually failed processor');
+      done();
+    });
+
+    queue.add({foo:'bar'});
+  });
+
+  it('should process and fail', function (done) {
+    queue.process(__dirname + '/fixtures/fixture_processor_callback_fail.js');
 
     queue.on('failed', function(job, err){
       expect(job.data).eql({foo:'bar'});
