@@ -110,7 +110,7 @@ __Warning:__ Do not override these advanced settings unless you understand the i
 ### Queue#process
 
 ```ts
-process(name?: string, concurrency?: number, processor: (job, done?) => Promise<any>)
+process(name?: string, concurrency?: number, processor: (job, done?) => Promise<any> | string)
 ```
 
 Defines a processing function for the jobs in a given Queue.
@@ -122,6 +122,20 @@ results, as a second argument to the "completed" event.
 
 If, however, the callback signature does not contain the `done` argument, a promise must be returned to signal job completion. If the promise is rejected, the error will be passed as a second argument to the "failed" event.
 If it is resolved, its value will be the "completed" event's second argument.
+
+A process function can also be declared as a separate process. This will make a better use of the available CPU cores
+and run the jobs in parallel. This is a perfect way to run blocking code. Just specify an absolute path to a processor module.
+i.e. a file exporting the process function like this:
+```js
+// my-processor.js
+module.exports = function(job){
+  // do some job
+
+  return value;
+}
+```
+You can return a value or a promise to signale that the job has been completed.
+
 
 A name argument can be provided so that multiple process functions can be defined per queue. A named process will only process jobs that matches the given name.
 
@@ -146,6 +160,7 @@ queue.process(function(job) { // No done callback here :)
 ```
 
 You can specify a concurrency. Bull will then call you handler in parallel respecting this maximum value.
+
 
 ---
 
