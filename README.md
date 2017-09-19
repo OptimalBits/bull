@@ -325,7 +325,7 @@ A queue emits also some useful events, for example...
 
 For more information on events, including the full list of events that are fired, check out the [Events reference](./REFERENCE.md#events)
 
-#### Cheap queues
+#### Queues performace
 
 Queues are cheap, so if you need many of them just create new ones with different
 names:
@@ -336,6 +336,8 @@ var userLisa = new Queue('lisa');
 .
 .
 ```
+
+However every queue instance will require new redis connections, check how to [reuse connections](https://github.com/OptimalBits/bull/blob/master/PATTERNS.md#reusing-redis-connections) or you can also use [named processors](https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queueprocess) to achieve a similar result.
 
 #### Cluster support
 
