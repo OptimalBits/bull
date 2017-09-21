@@ -156,6 +156,7 @@ Definitions are currently maintained in the [DefinitelyTyped](https://github.com
 
 ### Quick Guide
 
+#### Basic Usage
 ```js
 var Queue = require('bull');
 
@@ -229,6 +230,8 @@ audioQueue.add({audio: 'http://example.com/audio1.mp3'});
 imageQueue.add({image: 'http://example.com/image1.tiff'});
 ```
 
+#### Using promises
+
 Alternatively, you can use return promises instead of using the `done` callback:
 
 ```javascript
@@ -248,6 +251,8 @@ videoQueue.process(function(job){ // don't forget to remove the done callback!
   return Promise.reject(new Error('some unexpected error'));
 });
 ```
+
+#### Separate processes
 
 The process function can also be run in a separate process. This has several advantages:
 - The process is sandboxed so if it crashes it does not affect the worker.
@@ -278,6 +283,8 @@ queue.process(5, '/path/to/my/processor.js');
 queue.process('my processor', 5, '/path/to/my/processor.js');
 ```
 
+#### Repeated jobs
+
 A job can be added to a queue and processed repeatedly according to a cron specification:
 
 ```
@@ -293,6 +300,7 @@ A job can be added to a queue and processed repeatedly according to a cron speci
 As a tip, check your expressions here to verify they are as you expect them:
 [cron expression descriptor](http://cronexpressiondescriptor.azurewebsites.net/)
 
+#### Pause / Resume
 
 A queue can be paused and resumed globally (pass `true` to pause processing for
 just this worker):
@@ -306,6 +314,8 @@ queue.resume().then(function(){
 })
 ```
 
+#### Events
+
 A queue emits also some useful events, for example...
 ```js
 .on('completed', function(job, result){
@@ -314,6 +324,8 @@ A queue emits also some useful events, for example...
 ```
 
 For more information on events, including the full list of events that are fired, check out the [Events reference](./REFERENCE.md#events)
+
+#### Queues performace
 
 Queues are cheap, so if you need many of them just create new ones with different
 names:
@@ -324,6 +336,12 @@ var userLisa = new Queue('lisa');
 .
 .
 ```
+
+However every queue instance will require new redis connections, check how to [reuse connections](https://github.com/OptimalBits/bull/blob/master/PATTERNS.md#reusing-redis-connections) or you can also use [named processors](https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queueprocess) to achieve a similar result.
+
+#### Cluster support
+
+NOTE: From version 3.2.0 and above it is recommended to use threaded processors instead.
 
 Queues are robust and can be run in parallel in several threads or processes
 without any risk of hazards or queue corruption. Check this simple example
