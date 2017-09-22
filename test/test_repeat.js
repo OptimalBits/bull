@@ -192,4 +192,39 @@ describe('repeat', function () {
       expect(jobs[0].id).to.be.eql(jobs[1].id);
     });
   });
+
+  it('should allow removing a named repeatable job', function(done){
+    var _this = this;
+    var date = new Date('2017-02-07 9:24:00');
+    this.clock.tick(date.getTime());
+
+    var nextTick = 2 * ONE_SECOND + 500;
+    var repeat = {cron: '*/2 * * * * *'};
+
+    queue.add('remove', {foo: 'bar'}, {repeat: repeat}).then(function(){
+      _this.clock.tick(nextTick);
+    });
+
+    queue.process('remove', function(){
+      counter ++;
+      if(counter == 20){
+        return queue.removeRepeatable('remove', repeat).then(function(){
+          setTimeout(done, 2000);
+        });
+      } if (counter > 20){
+        done(Error('should not repeat more than 20 times'));
+      }
+    });
+
+    var prev;
+    var counter = 0;
+    queue.on('completed', function(job){
+      _this.clock.tick(nextTick);
+      if(prev){
+        expect(prev.timestamp).to.be.lt(job.timestamp);
+        expect(job.timestamp - prev.timestamp).to.be.gte(2000);
+      }
+      prev = job;
+    });
+  });
 });
