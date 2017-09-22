@@ -210,6 +210,7 @@ describe('repeat', function () {
       if(counter == 20){
         return queue.removeRepeatable('remove', repeat).then(function(){
           setTimeout(done, 2000);
+          _this.clock.tick(nextTick);
         });
       } if (counter > 20){
         done(Error('should not repeat more than 20 times'));
