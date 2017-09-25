@@ -159,7 +159,7 @@ queue.process(function(job) { // No done callback here :)
 });
 ```
 
-You can specify a concurrency. Bull will then call you handler in parallel respecting this maximum value.
+You can specify a concurrency. Bull will then call your handler in parallel respecting this maximum value.
 
 
 ---
@@ -167,7 +167,7 @@ You can specify a concurrency. Bull will then call you handler in parallel respe
 ### Queue#add
 
 ```ts
-add(name?: string, data: any, opts?: JobOpt): Promise<Job>
+add(name?: string, data: any, opts?: JobOpts): Promise<Job>
 ```
 
 Creates a new job and adds it to the queue. If the queue is empty the job will be executed directly, otherwise it will be placed in the queue and executed as soon as possible.
