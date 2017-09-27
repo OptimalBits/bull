@@ -341,7 +341,7 @@ Returns a promise that will return the job counts for the given queue.
 
 ```typescript{
   interface JobCounts {
-    wait: number,
+    waiting: number,
     active: number,
     completed: number,
     failed: number,
