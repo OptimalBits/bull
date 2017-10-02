@@ -5,12 +5,12 @@ var expect = require('chai').expect;
 var utils = require('./utils');
 var sinon = require('sinon');
 var redis = require('ioredis');
+var moment = require('moment');
 
 var ONE_SECOND = 1000;
 var ONE_MINUTE = 60 * ONE_SECOND;
 var ONE_HOUR = 60 * ONE_MINUTE;
 var ONE_DAY = 24 * ONE_HOUR;
-var ONE_MONTH = 31 * ONE_DAY;
 
 describe('repeat', function () {
   var queue;
@@ -19,9 +19,10 @@ describe('repeat', function () {
     this.clock = sinon.useFakeTimers();
     var client = new redis();
     return client.flushdb().then(function(){
-      queue = utils.buildQueue('repeat', {settings: { 
+      queue = utils.buildQueue('repeat', {settings: {
         guardInterval: Number.MAX_VALUE,
-        stalledInterval: Number.MAX_VALUE
+        stalledInterval: Number.MAX_VALUE,
+        drainDelay: 1 // Small delay so that .close is faster.
       }});
     });
   });
@@ -101,13 +102,12 @@ describe('repeat', function () {
 
   it('should repeat once a day for 5 days', function (done) {
     var _this = this;
-    //this.timeout(50000);
     var date = new Date('2017-05-05 13:12:00');
     this.clock.tick(date.getTime());
     var nextTick = ONE_DAY;
 
     queue.add('repeat', {foo: 'bar'}, {repeat: {
-      cron: '0 1 * * *', 
+      cron: '0 1 * * *',
       endDate: new Date('2017-05-10 13:12:00')}
     }).then(function(){
       _this.clock.tick(nextTick);
@@ -145,11 +145,17 @@ describe('repeat', function () {
     var date = new Date('2017-02-02 7:21:42');
     this.clock.tick(date.getTime());
 
+    function nextTick(){
+      var now = moment();
+      var nextMonth = moment().add(1, 'months');
+      _this.clock.tick(nextMonth - now);
+    }
+
     queue.add('repeat', {foo: 'bar'}, { repeat: {cron: '* 25 9 7 * *'}}).then(function(){
-      _this.clock.tick(ONE_MONTH);
+      nextTick();
     });
 
-    queue.process('repeat', function(){
+    queue.process('repeat', function(/*job*/){
       // Dummy
     });
 
@@ -158,7 +164,8 @@ describe('repeat', function () {
     queue.on('completed', function(job){
       if(prev){
         expect(prev.timestamp).to.be.lt(job.timestamp);
-        expect(job.timestamp - prev.timestamp).to.be.gte(ONE_MONTH);
+        var diff = moment(job.timestamp).diff(moment(prev.timestamp), 'months', true);
+        expect(diff).to.be.gte(1);
       }
       prev = job;
 
@@ -166,7 +173,23 @@ describe('repeat', function () {
       if(counter == 0){
         done();
       }
-      _this.clock.tick(ONE_MONTH);
+      nextTick();
+    });
+  });
+
+  it('should create two jobs with the same ids', function(){
+    var options = {
+      repeat: {
+        cron: '0 1 * * *',
+      },
+    };
+
+    var p1 = queue.add({foo: 'bar'}, options);
+    var p2 = queue.add({foo: 'bar'}, options);
+
+    return Promise.all([p1, p2]).then(function(jobs) {
+      expect(jobs.length).to.be.eql(2);
+      expect(jobs[0].id).to.be.eql(jobs[1].id);
     });
   });
 });

@@ -12,16 +12,15 @@
          - LIFO
          - FIFO
          - prioritized.
-         - Emits a global event 'added' if not paused.
+         - Adds the job to the "added" list so that workers gets notified.
 
     Input:
       KEYS[1] 'wait',
       KEYS[2] 'paused'
       KEYS[3] 'meta-paused'
-      KEYS[4] 'added'
-      KEYS[5] 'id'
-      KEYS[6] 'delayed'
-      KEYS[7] 'priority'
+      KEYS[4] 'id'
+      KEYS[5] 'delayed'
+      KEYS[6] 'priority'
 
       ARGV[1]  key prefix,
       ARGV[2]  custom id (will not generate one automatically)
@@ -33,41 +32,34 @@
       ARGV[8]  delayedTimestamp
       ARGV[9]  priority
       ARGV[10] LIFO
-
-    Events:
-      'waiting'
+      ARGV[11] token
 ]]
-local jobCounter = redis.call("INCR", KEYS[5])
 local jobId
-if ARGV[2] == "" then 
-  jobId = jobCounter 
+local jobIdKey
+local jobCounter = redis.call("INCR", KEYS[4])
+
+if ARGV[2] == "" then
+  jobId = jobCounter
+  jobIdKey = ARGV[1] .. jobId
 else
   jobId = ARGV[2]
-end
-
-local jobIdKey = ARGV[1] .. jobId
-if redis.call("EXISTS", jobIdKey) == 1 then
-  return jobId .. "" -- convert to string
+  jobIdKey = ARGV[1] .. jobId
+  if redis.call("EXISTS", jobIdKey) == 1 then
+    return jobId .. "" -- convert to string
+  end
 end
 
 -- Store the job.
 redis.call("HMSET", jobIdKey, "name", ARGV[3], "data", ARGV[4], "opts", ARGV[5], "timestamp", ARGV[6], "delay", ARGV[7])
 
 -- Check if job is delayed
-if(ARGV[8] ~= "0") then
-  local timestamp = tonumber(ARGV[8]) * 0x1000 + bit.band(jobCounter, 0xfff)
-  redis.call("ZADD", KEYS[6], timestamp, jobId)
-  redis.call("PUBLISH", KEYS[6], (timestamp / 0x1000))
-  return jobId .. "" -- convert to string
-else  
-  local direction
+local delayedTimestamp = tonumber(ARGV[8])
+if(delayedTimestamp ~= 0) then
+  local timestamp = delayedTimestamp * 0x1000 + bit.band(jobCounter, 0xfff)
+  redis.call("ZADD", KEYS[5], timestamp, jobId)
+  redis.call("PUBLISH", KEYS[5], delayedTimestamp)
+else
   local target
-
-  if ARGV[10] == "LIFO" then 
-    direction = "RPUSH"
-  else 
-    direction = "LPUSH"
-  end
 
   -- Whe check for the meta-paused key to decide if we are paused or not
   -- (since an empty list and !EXISTS are not really the same)
@@ -80,13 +72,18 @@ else
     paused = true
   end
 
-  if ARGV[9] == "0" then
-    -- Standard add
-    redis.call(direction, target, jobId)
+  -- Standard or priority add
+  local priority = tonumber(ARGV[9])
+  if priority == 0 then
+      -- LIFO or FIFO
+    redis.call(ARGV[10], target, jobId)
+
+    -- Emit waiting event (wait..ing@token)
+    redis.call("PUBLISH", KEYS[1] .. "ing@" .. ARGV[11], jobId)
   else
     -- Priority add
-    redis.call("ZADD", KEYS[7], ARGV[9], jobId)
-    local count = redis.call("ZCOUNT", KEYS[7], 0, ARGV[9])
+    redis.call("ZADD", KEYS[6], priority, jobId)
+    local count = redis.call("ZCOUNT", KEYS[6], 0, priority)
 
     local len = redis.call("LLEN", target)
     local id = redis.call("LINDEX", target, len - (count-1))
@@ -95,11 +92,8 @@ else
     else
       redis.call("RPUSH", target, jobId)
     end
-  end
 
-  if(not paused) then
-    redis.call("PUBLISH", KEYS[4], jobId)
   end
-  
-  return jobId .. "" -- convert to string
 end
+
+return jobId .. "" -- convert to string

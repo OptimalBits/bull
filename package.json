@@ -1,6 +1,6 @@
 {
   "name": "bull",
-  "version": "3.0.0-rc.4",
+  "version": "3.2.0",
   "description": "Job manager",
   "main": "./lib/queue",
   "repository": {
@@ -20,22 +20,27 @@
     "bluebird": "^3.5.0",
     "cron-parser": "^2.4.1",
     "debuglog": "^1.0.0",
-    "ioredis": "^3.1.1",
+    "ioredis": "^3.1.4",
     "lodash": "^4.17.4",
-    "semver": "^5.3.0",
+    "semver": "^5.4.1",
     "uuid": "^3.1.0"
   },
   "devDependencies": {
     "chai": "^4.0.2",
-    "eslint": "^2.13.1",
+    "coveralls": "^2.13.1",
+    "eslint": "^4.4.1",
     "expect.js": "^0.3.1",
+    "istanbul": "^0.4.5",
     "mocha": "^3.4.2",
+    "mocha-lcov-reporter": "^1.3.0",
+    "moment": "^2.18.1",
     "sinon": "^1.17.7"
   },
   "scripts": {
     "lint": "eslint lib test",
     "pretest": "npm run lint",
-    "test": "mocha",
+    "test": "NODE_ENV=test mocha",
+    "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "postpublish": "git push && git push --tags"
   },
   "eslintConfig": {

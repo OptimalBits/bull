@@ -1,3 +1,74 @@
+v.3.2.0
+=======
+- Added support for running jobs in child processes #488
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.1.0...v3.2.0)
+
+v.3.1.0
+=======
+
+- Added rate limiter support.
+- Added method to update jobs data.
+- Implemented stalled as global event.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0...v3.1.0)
+
+v.3.0.0
+=======
+
+- No changes.
+
+v.3.0.0-rc.10
+============
+
+- Fixed #666.
+- Small improvements in the repeat code.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.9...v3.0.0-rc.10)
+
+
+v.3.0.0-rc.9
+============
+
+- Fixed #672.
+- Fixed #670
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.8...v3.0.0-rc.9)
+
+
+v.3.0.0-rc.8
+============
+
+- Enhanced job fetching #651 (faster and more reliable).
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.7...v3.0.0-rc.8)
+
+v.3.0.0-rc.7
+============
+
+- Fixed #659
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.6...v3.0.0-rc.7)
+
+
+v.3.0.0-rc.6
+============
+
+- Fixed #645.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.5...v3.0.0-rc.6)
+
+v.3.0.0-rc.5
+============
+
+- Improved performance, specially when having many concurrent workers.
+- Fixed #609 using zsets for storing repeatable jobs.
+- Fixed #608 Event chaining no longer works.
+- Improved getters.
+- Fixed #601 Add multiple repeatable jobs with the same cron pattern.
+
+[Changes](https://github.com/OptimalBits/bull/compare/3.0.0-rc.4...v3.0.0-rc.5)
+
 v.3.0.0-rc.4
 ============
 
@@ -8,7 +79,7 @@ v.3.0.0-rc.4
 - Emit 'drain' event when queue is empty. #596.
 - store finished and processed timestamps. #594, #606.
 
-[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.3...v3.0.0-rc.4)
+[Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.3...3.0.0-rc.4)
 
 v.3.0.0-rc.3
 ============
@@ -146,10 +217,10 @@ v.2.1.0
 =======
 
 - Fixed #397, Error: Unable to renew nonexisting lock
-- Fixed #402, Job.prototype.finished contains error in promise 
+- Fixed #402, Job.prototype.finished contains error in promise
 - Fixed #371, "Unexpected token u in JSON at position 0" while processing job
 - New feature #363, "method to permanently fail a job"
-- Fix job.progress() to return the correct progress  
+- Fix job.progress() to return the correct progress
 
 [Changes](https://github.com/OptimalBits/bull/compare/v2.0.0...v2.1.0)
 

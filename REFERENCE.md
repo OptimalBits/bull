@@ -13,11 +13,27 @@ Reference
   - [Queue#close](#queueclose)
   - [Queue#getJob](#queuegetjob)
   - [Queue#getJobCounts](#queuegetjobcounts)
+  - [Queue#getCompletedCount](#queuegetcompledtedcount)
+  - [Queue#getFailedCount](#queuegetfailedcount)
+  - [Queue#getDelayedCount](#queuegetdelayedcount)
+  - [Queue#getActiveCount](#queuegetactivecount)
+  - [Queue#getWaitingCount](#queuegetwaitingcount)
+  - [Queue#getPausedCount](#queuegetpausedcount)
+  - [Queue#getWaiting](#queuegetwaiting)
+  - [Queue#getActive](#queuegetactive)
+  - [Queue#getDelayed](#queuegetdelayed)
+  - [Queue#getCompleted](#queuegetcompledted)
+  - [Queue#getFailed](#queuegetfailed)
+
 - [Job](#job)
+  - [Job#progress](#jobprogress)
+  - [Job#update](#jobupdate)
   - [Job#remove](#jobremove)
   - [Job#retry](#jobretry)
   - [Job#discard](#jobdiscard)
   - [Job#promote](#jobpromote)
+  - [Job#finished](#jobfinished)
+
 - [Events](#events)
 
 
@@ -37,13 +53,21 @@ The optional ```url``` argument, allows to specify a redis connection string suc
 
 ```typescript
 interface QueueOpts{
+  limiter?: RateLimiter;
   redis?: RedisOpts;
   prefix?: string = 'bull'; // prefix for all queue keys.
   settings?: AdvancedSettings;
 }
 ```
 
-```RedisOpts``` are passed directly to ioredis constructor, check [https://github.com/luin/ioredis/blob/master/API.md](ioredis) 
+```typescript
+interface RateLimiter {
+  max: number,      // Max number of jobs processed
+  duration: number, // per duration in milliseconds
+}
+```
+
+```RedisOpts``` are passed directly to ioredis constructor, check [ioredis](https://github.com/luin/ioredis/blob/master/API.md)
 for details. We document here just the most important ones.
 
 ```typescript
@@ -86,7 +110,7 @@ __Warning:__ Do not override these advanced settings unless you understand the i
 ### Queue#process
 
 ```ts
-process(name?: string, concurrency?: number, processor: (job, done?) => Promise<any>)
+process(name?: string, concurrency?: number, processor: (job, done?) => Promise<any> | string)
 ```
 
 Defines a processing function for the jobs in a given Queue.
@@ -98,6 +122,20 @@ results, as a second argument to the "completed" event.
 
 If, however, the callback signature does not contain the `done` argument, a promise must be returned to signal job completion. If the promise is rejected, the error will be passed as a second argument to the "failed" event.
 If it is resolved, its value will be the "completed" event's second argument.
+
+A process function can also be declared as a separate process. This will make a better use of the available CPU cores
+and run the jobs in parallel. This is a perfect way to run blocking code. Just specify an absolute path to a processor module.
+i.e. a file exporting the process function like this:
+```js
+// my-processor.js
+module.exports = function(job){
+  // do some job
+
+  return value;
+}
+```
+You can return a value or a promise to signale that the job has been completed.
+
 
 A name argument can be provided so that multiple process functions can be defined per queue. A named process will only process jobs that matches the given name.
 
@@ -121,14 +159,15 @@ queue.process(function(job) { // No done callback here :)
 });
 ```
 
-You can specify a concurrency. Bull will then call you handler in parallel respecting this maximum value.
+You can specify a concurrency. Bull will then call your handler in parallel respecting this maximum value.
+
 
 ---
 
 ### Queue#add
 
 ```ts
-add(name?: string, data: any, opts?: JobOpt): Promise<Job>
+add(name?: string, data: any, opts?: JobOpts): Promise<Job>
 ```
 
 Creates a new job and adds it to the queue. If the queue is empty the job will be executed directly, otherwise it will be placed in the queue and executed as soon as possible.
@@ -140,7 +179,7 @@ interface JobOpts{
   priority: number; // Optional priority value. ranges from 1 (highest priority) to MAX_INT  (lowest priority). Note that
                     // using priorities has a slight impact on performance, so do not use it if not required.
 
-  delay: number; // An amount of miliseconds to wait until this job can be processed. Note that for accurate delays, both 
+  delay: number; // An amount of miliseconds to wait until this job can be processed. Note that for accurate delays, both
                  // server and clients should have their clocks synchronized. [optional].
 
   attempts: number; // The total number of attempts to try the job until it completes.
@@ -302,14 +341,126 @@ Returns a promise that will return the job counts for the given queue.
 
 ```typescript{
   interface JobCounts {
-    wait: number,
+    waiting: number,
     active: number,
     completed: number,
     failed: number,
-    delayed: number 
+    delayed: number
   }
 }
 ```
+
+---
+
+### Queue#getCompletedCount
+
+```ts
+getCompletedCount() : Promise<number>
+```
+
+Returns a promise that will return the completed job counts for the given queue.
+
+---
+
+### Queue#getFailedCount
+
+```ts
+getFailedCount() : Promise<number>
+```
+
+Returns a promise that will return the failed job counts for the given queue.
+
+---
+
+### Queue#getDelayedCount
+
+```ts
+getDelayedCount() : Promise<number>
+```
+
+Returns a promise that will return the delayed job counts for the given queue.
+
+---
+
+### Queue#getActiveCount
+
+```ts
+getActiveCount() : Promise<number>
+```
+
+Returns a promise that will return the active job counts for the given queue.
+
+---
+
+
+### Queue#getWaitingCount
+
+```ts
+getWaitingCount() : Promise<number>
+```
+
+Returns a promise that will return the waiting job counts for the given queue.
+
+---
+
+### Queue#getPausedCount
+
+```ts
+getPausedCount() : Promise<number>
+```
+
+Returns a promise that will return the paused job counts for the given queue.
+
+---
+
+### Queue#getWaiting
+
+```ts
+getWaiting(start?: number, end?: number) : Promise<Array<Job>>
+```
+
+Returns a promise that will return an array with the waiting jobs between start and end.
+
+---
+
+### Queue#getActive
+
+```ts
+getActive(start?: number, end?: number) : Promise<Array<Job>>
+```
+
+Returns a promise that will return an array with the active jobs between start and end.
+
+---
+
+### Queue#getDelayed
+
+```ts
+getDelayed(start?: number, end?: number) : Promise<Array<Job>>
+```
+
+Returns a promise that will return an array with the delayed jobs between start and end.
+
+---
+
+
+### Queue#getCompleted
+
+```ts
+getCompleted(start?: number, end?: number) : Promise<Array<Job>>
+```
+
+Returns a promise that will return an array with the completed jobs between start and end.
+
+---
+
+### Queue#getFailed
+
+```ts
+getFailed(start?: number, end?: number) : Promise<Array<Job>>
+```
+
+Returns a promise that will return an array with the failed jobs between start and end.
 
 ---
 
@@ -340,7 +491,7 @@ queue.on('cleaned', function (job, type) {
   status: string; Status of the job to clean. Values are completed, wait, active,
   delayed, and failed. Defaults to completed.
   limit: number; maximum amount of jobs to clean per call. If not provided will clean all matching jobs.
-  
+
   returns Promise; A promise that resolves with an array of removed jobs.
 ```
 
@@ -361,6 +512,30 @@ Job
 A job includes all data needed to perform its execution, as well as the progress method needed to update its progress.
 
 The most important property for the user is `Job#data` that includes the object that was passed to [`Queue#add`](#queueadd), and that is normally used to perform the job.
+
+### Job#progress
+
+```ts
+progress(progress: number): Promise
+```
+
+Updates a job progress.
+
+**Arguments**
+
+```js
+  progress: number; Job progress between 0 and 100.
+```
+
+---
+
+### Job#update
+
+```ts
+update(data: object): Promise
+```
+
+Updated a job data field with the give data object.
 
 ---
 
@@ -401,6 +576,16 @@ promote(): Promise
 ```
 
 Promotes a job that is currently "delayed" to the "waiting" state and executed as soon as possible.
+
+---
+
+### Job#finished
+
+```ts
+finished(): Promise
+```
+
+Returns a promise that resolves or rejects when the job completes or fails.
 
 ---
 

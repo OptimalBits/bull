@@ -460,11 +460,9 @@ describe('Queue', function () {
           queue.process(function(job, jobDone){
             expect(job.id).to.be.ok;
             expect(job.data.p).to.be.eql(currentPriority);
-
             jobDone();
 
             total ++;
-
             if(++counter === numJobsPerPriority){
               currentPriority++;
               counter = 0;
@@ -642,7 +640,8 @@ describe('Queue', function () {
       utils.newQueue('test queue stalled', {
         settings: {
           lockDuration: 15,
-          lockRenewTime: 5
+          lockRenewTime: 5,
+          stalledInterval: 100
         }
       }).then(function (queueStalled) {
         var jobs = [
@@ -809,7 +808,8 @@ describe('Queue', function () {
           redis: redisOpts,
           settings: {
             lockDuration: 30,
-            lockRenewTime: 10
+            lockRenewTime: 10,
+            stalledInterval: 100
           }
         });
 
@@ -834,9 +834,9 @@ describe('Queue', function () {
           processed++;
           if (processed === stalledQueues.length) {
             setTimeout(function () {
-              var queue2 = new Queue('test queue stalled 2', redisOpts);
-              queue2.on('error', function(){
-
+              var queue2 = new Queue('test queue stalled 2', {redis: redisOpts, settings: {stalledInterval: 100}});
+              queue2.on('error', function(err){
+                done(err);
               });
               queue2.process(function (job2, jobDone) {
                 jobDone();
@@ -937,6 +937,43 @@ describe('Queue', function () {
       }).catch(done);
     });
 
+    it('failed stalled jobs that stall more than allowable stalled limit', function(done){
+      var FAILED_MESSAGE = 'job stalled more than allowable limit';
+      this.timeout(10000);
+
+      var queue2 = utils.buildQueue('running-stalled-job-' + uuid(), {
+        settings: {
+          lockRenewTime: 2500,
+          lockDuration: 250,
+          stalledInterval: 500,
+          maxStalledCount: 1
+        }
+      });
+
+      var processedCount = 0;
+      queue2.process(function (job) {
+        processedCount ++;
+        expect(job.data.foo).to.be.equal('bar');
+        return Promise.delay(1500);
+      });
+
+      queue2.on('completed', function(){
+        done(new Error('should not complete'));
+      });
+
+      queue2.on('failed', function(job, err){
+        expect(processedCount).to.be.eql(2);
+        expect(job.failedReason).to.be.eql(FAILED_MESSAGE);
+        expect(err.message).to.be.eql(FAILED_MESSAGE);
+        done();
+      });
+
+      queue2.add({ foo: 'bar' }).then(function (job) {
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
+      }).catch(done);
+    });
+
     it('process a job that fails', function (done) {
       var jobError = new Error('Job Failed');
 
@@ -984,9 +1021,6 @@ describe('Queue', function () {
     });
 
     it('process a job that returns data with a circular dependency', function (done) {
-      queue.on('error', function (err) {
-        done(err);
-      });
       queue.on('failed', function () {
         done();
       });
@@ -1125,7 +1159,9 @@ describe('Queue', function () {
   });
 
   it('emits drained event when all jobs have been processed', function (done) {
-    var queue = utils.buildQueue();
+    var queue = utils.buildQueue('drained', {
+      settings: {drainDelay: 1}
+    });
 
     queue.process(function (job, done) {
       done();
@@ -1445,7 +1481,7 @@ describe('Queue', function () {
           expect(parseInt(message, 10)).to.be.a('number');
           publishHappened = true;
         });
-        client.subscribe(queue.toKey('added'));
+        client.subscribe(queue.toKey('delayed'));
       });
 
       queue.process(function (job, jobDone) {
@@ -1456,6 +1492,7 @@ describe('Queue', function () {
         expect(Date.now() > timestamp + delay);
         queue.getWaiting().then(function (jobs) {
           expect(jobs.length).to.be.equal(0);
+
         }).then(function () {
           return queue.getDelayed().then(function (jobs) {
             expect(jobs.length).to.be.equal(0);
@@ -1466,10 +1503,12 @@ describe('Queue', function () {
         });
       });
 
-      queue.add({ delayed: 'foobar' }, { delay: delay }).then(function (job) {
-        expect(job.id).to.be.ok;
-        expect(job.data.delayed).to.be.eql('foobar');
-        expect(job.delay).to.be.eql(delay);
+      queue._initializingProcess.then(function(){
+        queue.add({ delayed: 'foobar' }, { delay: delay }).then(function (job) {
+          expect(job.id).to.be.ok;
+          expect(job.data.delayed).to.be.eql('foobar');
+          expect(job.delay).to.be.eql(delay);
+        });
       });
     });
 
@@ -1526,24 +1565,25 @@ describe('Queue', function () {
         queue.add({ order: 2 }, { delay: 300 }),
         queue.add({ order: 4 }, { delay: 500 }),
         queue.add({ order: 1 }, { delay: 200 }),
-        queue.add({ order: 3 }, { delay: 400 })).then(function () {
-          //
-          // Start processing so that jobs get into the delay set.
-          //
-          queue.process(fn);
-        }).delay(20).then(function () {
-          /*
-          //We simulate a restart
-          console.log('RESTART');
-          return queue.close().then(function () {
-            console.log('CLOSED');
-            return Promise.delay(100).then(function () {
-              queue = new Queue(QUEUE_NAME);
-              queue.process(fn);
-            });
+        queue.add({ order: 3 }, { delay: 400 })
+      ).then(function () {
+        //
+        // Start processing so that jobs get into the delay set.
+        //
+        queue.process(fn);
+      }).delay(20).then(function () {
+        /*
+        //We simulate a restart
+        console.log('RESTART');
+        return queue.close().then(function () {
+          console.log('CLOSED');
+          return Promise.delay(100).then(function () {
+            queue = new Queue(QUEUE_NAME);
+            queue.process(fn);
           });
-          */
         });
+        */
+      });
     });
 
     it('should process delayed jobs with exact same timestamps in correct order (FIFO)', function (done) {
@@ -1986,8 +2026,8 @@ describe('Queue', function () {
         });
       });
 
-      queue.process(function (job, jobDone) {
-        return Promise.delay(300).then(jobDone);
+      queue.process(function (job) {
+        return Promise.delay(300);
       });
       queue.add({ foo: 'bar' }).then(addedHandler);
     });

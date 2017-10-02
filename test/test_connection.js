@@ -22,7 +22,7 @@ describe('connection', function () {
     queue.on('error', function () {
       // error event has to be observed or the exception will bubble up
     });
-    
+
     queue.process(function (job, jobDone) {
       expect(job.data.foo).to.be.equal('bar');
       jobDone();
@@ -39,36 +39,6 @@ describe('connection', function () {
       // add something to the queue
       queue.add({ 'foo': 'bar' });
     });
-  });
-
-  //
-  // This test is not relevant since ioredis keeps reconnects for us transparently.
-  //
-  it.skip('should reconnect when the blocking client triggers an "end" event', function (done) {
-    var runSpy = sandbox.spy(queue, 'run');
-    queue.process(function (job, jobDone) {
-      expect(runSpy.callCount).to.be(2);
-      jobDone();
-      // We do not wait since this close is expected to fail...
-      queue.close();
-      done();
-    });
-
-    expect(runSpy.callCount).to.be(1);
-
-    queue.add({ 'foo': 'bar' });
-    queue.client.emit('end');
-  });
-
-  it.skip('should not try to reconnect when the blocking client triggers an "end" event and no process have been called', function (done) {
-    var runSpy = sandbox.spy(queue, 'run');
-
-    queue.client.emit('end');
-
-    setTimeout(function () {
-      expect(runSpy.callCount).to.be(0);
-      queue.close(done());
-    }, 100);
   });
 
   it('should handle jobs added before and after a redis disconnect', function(done){

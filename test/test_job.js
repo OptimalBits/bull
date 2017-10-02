@@ -83,6 +83,20 @@ describe('Job', function(){
     });
   });
 
+  describe('.update', function(){
+    it('should allow updating job data', function(){
+      return Job.create(queue, {foo: 'bar'}).then(function(job){
+        return job.update({baz: 'qux'}).then(function(){
+          return job;
+        });
+      }).then(function(job){
+        return Job.fromId(queue, job.id).then(function(job){
+          expect(job.data).to.be.eql({baz: 'qux'});
+        });
+      });
+    });
+  });
+
   describe('.remove', function () {
     it('removes the job from redis', function(){
       return Job.create(queue, {foo: 'bar'})
@@ -177,14 +191,17 @@ describe('Job', function(){
       queue.process(function (job, done) {
         done(new Error('the job failed'));
       });
+
       queue.once('failed', function (job) {
-        queue.once('waiting', function (jobId2) {
+        queue.once('global:waiting', function (jobId2) {
           Job.fromId(queue, jobId2).then(function(job2){
             expect(job2.data.foo).to.be.equal('bar');
             cb();
           });
         });
-        job.retry();
+        queue.once('registered:global:waiting', function(){
+          job.retry();
+        });
       });
     });
   });
@@ -561,9 +578,6 @@ describe('Job', function(){
         done();
       });
     });
-
-    it.skip('should resolve using the watchdog if pubsub was lost');
-    it.skip('should reject using the watchdog if pubsub was lost');
 
   });
 });
