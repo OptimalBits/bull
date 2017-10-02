@@ -485,9 +485,43 @@ describe('Job', function(){
       });
     });
 
+    it('should resolve when the job has been delayed and completed and return object', function(done){
+      queue.process(function (job) {
+        return Promise.delay(300).then(function() {
+          return { resultFoo: 'bar' };
+        });
+      });
+      queue.add({ foo: 'bar' }).then(function(job){
+        return Promise.delay(600).then(function() {
+          return job.finished();
+        });
+      }).then(function(jobResult) {
+        expect(jobResult).to.be.an('object');
+        expect(jobResult.resultFoo).equal('bar');
+        done();
+      });
+    });
+
     it('should resolve when the job has been completed and return string', function(done){
       queue.process(function (job) {
         return Promise.delay(500).then(function() {
+          return 'a string';
+        });
+      });
+      queue.add({ foo: 'bar' }).then(function(job){
+        return Promise.delay(600).then(function() {
+          return job.finished();
+        });
+      }).then(function(jobResult) {
+        expect(jobResult).to.be.an('string');
+        expect(jobResult).equal('a string');
+        done();
+      });
+    });
+
+    it('should resolve when the job has been delayed and completed and return string', function(done){
+      queue.process(function (job) {
+        return Promise.delay(300).then(function() {
           return 'a string';
         });
       });
