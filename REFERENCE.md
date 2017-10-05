@@ -12,6 +12,7 @@ Reference
   - [Queue#clean](#queueclean)
   - [Queue#close](#queueclose)
   - [Queue#getJob](#queuegetjob)
+  - [Queue#removeRepeatable](#queueremoverepeatable)
   - [Queue#getJobCounts](#queuegetjobcounts)
   - [Queue#getCompletedCount](#queuegetcompledtedcount)
   - [Queue#getFailedCount](#queuegetfailedcount)
@@ -328,6 +329,17 @@ getJob(jobId: string): Promise<Job>
 
 Returns a promise that will return the job instance associated with the `jobId`
 parameter. If the specified job cannot be located, the promise will be resolved to `null`.
+
+---
+
+### Queue#removeRepeatable
+
+```ts
+removeRepeatable(name?: string, repeat: RepeatOpts): Promise<void>
+```
+
+Removes a given repeatable job. The RepeatOpts needs to be the same as the ones used
+for the job when it was added.
 
 ---
 

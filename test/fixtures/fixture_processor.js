@@ -5,7 +5,7 @@
 
 var Promise = require('bluebird');
 
-module.exports = function(job){
+module.exports = function(/*job*/){
   return Promise.delay(500).then(function(){
     return 42;
   });

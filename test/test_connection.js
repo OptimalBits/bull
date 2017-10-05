@@ -3,12 +3,10 @@
 
 var expect = require('expect.js');
 var utils = require('./utils');
-var sinon = require('sinon');
 var redis = require('ioredis');
 
 
 describe('connection', function () {
-  var sandbox = sinon.sandbox.create();
   var queue;
 
   beforeEach(function(){
