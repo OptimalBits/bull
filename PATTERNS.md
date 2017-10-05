@@ -70,17 +70,14 @@ var client = new redis();
 var subscriber = new redis();
 
 var opts = {
-  redis: {
-    opts: {
-      createClient: function(type){
-        switch(type){
-          case 'client':
-            return client;
-          case 'subscriber':
-            return subscriber;
-          default:
-            return new redis();
-        }
+    createClient: function(type){
+      switch(type){
+        case 'client':
+          return client;
+        case 'subscriber':
+          return subscriber;
+        default:
+          return new redis();
       }
     }
   }
