@@ -2,7 +2,6 @@
 /*eslint-env node */
 'use strict';
 
-var expect = require('chai').expect;
 var utils = require('./utils');
 var redis = require('ioredis');
 
@@ -44,11 +43,11 @@ describe('events', function () {
   });
 
   it('should emit stalled when a job has been stalled', function (done) {
-    queue.on('completed', function (job) {
+    queue.on('completed', function (/*job*/) {
       done(new Error('should not have completed'));
     });
 
-    queue.process(function (job, done) {
+    queue.process(function (/*job*/) {
       return Promise.delay(250);
     });
 
@@ -58,7 +57,7 @@ describe('events', function () {
       stalledInterval: 100
     }});
 
-    queue2.on('stalled', function (job) {
+    queue2.on('stalled', function (/*job*/) {
       queue2.close().then(done);
     });
 
@@ -69,11 +68,11 @@ describe('events', function () {
   });
 
   it('should emit global:stalled when a job has been stalled', function (done) {
-    queue.on('completed', function (job) {
+    queue.on('completed', function (/*job*/) {
       done(new Error('should not have completed'));
     });
 
-    queue.process(function (job, done) {
+    queue.process(function (/*job*/) {
       return Promise.delay(250);
     });
 
@@ -83,7 +82,7 @@ describe('events', function () {
       stalledInterval: 100
     }});
 
-    queue2.on('global:stalled', function (job) {
+    queue2.on('global:stalled', function (/*job*/) {
       queue2.close().then(done);
     });
 

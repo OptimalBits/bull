@@ -207,11 +207,9 @@ describe('Job', function(){
   });
 
   describe('Locking', function(){
-    var id = 1000;
     var job;
 
     beforeEach(function () {
-      id++;
       return Job.create(queue, {foo: 'bar'}).then(function(createdJob){
         job = createdJob;
       });
@@ -471,7 +469,7 @@ describe('Job', function(){
     });
 
     it('should resolve when the job has been completed and return object', function(done){
-      queue.process(function (job) {
+      queue.process(function (/*job*/) {
         return Promise.delay(500).then(function() {
           return { resultFoo: 'bar' };
         });
@@ -486,7 +484,7 @@ describe('Job', function(){
     });
 
     it('should resolve when the job has been completed and return string', function(done){
-      queue.process(function (job) {
+      queue.process(function (/*job*/) {
         return Promise.delay(500).then(function() {
           return 'a string';
         });

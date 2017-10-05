@@ -56,7 +56,7 @@ describe('Queue', function () {
 
     it('should resolve the promise when each client has disconnected', function () {
       function checkStatus(status){
-        return 'ready' || 'connecting';
+        return status === 'ready' || status === 'connecting';
       }
       expect(testQueue.client.status).to.satisfy(checkStatus);
       expect(testQueue.eclient.status).to.satisfy(checkStatus);
@@ -154,7 +154,7 @@ describe('Queue', function () {
       expect(queue.client.options.db).to.be.eql(0);
       expect(queue.eclient.options.db).to.be.eql(0);
 
-      queue.close().catch(function(err){
+      queue.close().catch(function(/*err*/){
         // Swallow error.
       });
     });
@@ -171,7 +171,7 @@ describe('Queue', function () {
       expect(queue.client.condition.select).to.be.eql(0);
       expect(queue.eclient.condition.select).to.be.eql(0);
 
-      queue.close().catch(function(err){
+      queue.close().catch(function(/*err*/){
         // Swallow error.
       });
     });
@@ -191,7 +191,7 @@ describe('Queue', function () {
       expect(queue.client.options.password).to.be.eql('123');
       expect(queue.eclient.options.password).to.be.eql('123');
 
-      queue.close().catch(function(err){
+      queue.close().catch(function(/*err*/){
         // Swallow error.
       });
     });
@@ -537,7 +537,7 @@ describe('Queue', function () {
 
     it('process a job that returns a string in the process handler', function(done) {
       var testString = 'a very dignified string';
-      queue.on('completed', function(job, data) {
+      queue.on('completed', function(job/*, data*/) {
         expect(job).to.be.ok;
         expect(job.returnvalue).to.be.equal(testString);
         setTimeout(function() {
@@ -549,7 +549,7 @@ describe('Queue', function () {
         }, 100);
       });
 
-      queue.process(function(job){
+      queue.process(function(/*job*/){
         return Promise.resolve(testString);
       });
 
@@ -1236,7 +1236,7 @@ describe('Queue', function () {
 
         queue.on('paused', function () {
           ispaused = false;
-          queue.resume().catch(function(err){
+          queue.resume().catch(function(/*err*/){
             // Swallow error.
           });
         });
@@ -1587,8 +1587,6 @@ describe('Queue', function () {
     });
 
     it('should process delayed jobs with exact same timestamps in correct order (FIFO)', function (done) {
-      var client = new redis(6379, '127.0.0.1', {});
-      client = Promise.promisifyAll(client);
       var QUEUE_NAME = 'delayed queue multiple' + uuid();
       queue = new Queue(QUEUE_NAME);
       var order = 1;
@@ -1633,7 +1631,7 @@ describe('Queue', function () {
         });
       });
 
-      queue.on('error', function(err){
+      queue.on('error', function(/*err*/){
         job.isDelayed().then(function(isDelayed) {
           expect(isDelayed).to.be.equal(false);
           queue.close().then(done, done);
@@ -1656,7 +1654,7 @@ describe('Queue', function () {
         });
       });
 
-      queue.on('error', function(err){
+      queue.on('error', function(/*err*/){
         job.isWaiting().then(function(isWaiting) {
           expect(isWaiting).to.be.equal(false);
           queue.close().then(done, done);
@@ -2026,7 +2024,7 @@ describe('Queue', function () {
         });
       });
 
-      queue.process(function (job) {
+      queue.process(function (/*job*/) {
         return Promise.delay(300);
       });
       queue.add({ foo: 'bar' }).then(addedHandler);
@@ -2049,7 +2047,7 @@ describe('Queue', function () {
         });
       });
 
-      queue.on('error', function(err){
+      queue.on('error', function(/*err*/){
         queue.close().then(done, done);
       });
 
