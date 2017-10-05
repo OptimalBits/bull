@@ -56,7 +56,7 @@ describe('Queue', function () {
 
     it('should resolve the promise when each client has disconnected', function () {
       function checkStatus(status){
-        return status === 'ready' || status === 'connecting';
+        return status === 'ready' || status === 'connecting' || status === 'connect';
       }
       expect(testQueue.client.status).to.satisfy(checkStatus);
       expect(testQueue.eclient.status).to.satisfy(checkStatus);
