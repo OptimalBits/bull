@@ -193,12 +193,12 @@ describe('repeat', function () {
     });
   });
 
-  it('should allow removing a named repeatable job', function(done){
+  it.only('should allow removing a named repeatable job', function(done){
     var _this = this;
     var date = new Date('2017-02-07 9:24:00');
     this.clock.tick(date.getTime());
 
-    var nextTick = 2 * ONE_SECOND + 500;
+    var nextTick = 2 * ONE_SECOND;
     var repeat = {cron: '*/2 * * * * *'};
 
     queue.add('remove', {foo: 'bar'}, {repeat: repeat}).then(function(){
@@ -209,7 +209,7 @@ describe('repeat', function () {
       counter ++;
       if(counter == 20){
         return queue.removeRepeatable('remove', repeat).then(function(){
-          setTimeout(done, 2000);
+          setTimeout(done, ONE_SECOND);
           _this.clock.tick(nextTick);
         });
       } if (counter > 20){
