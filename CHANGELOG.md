@@ -1,3 +1,10 @@
+v.3.3.0
+=======
+- Added a method ```Queue##removeRepeatable``` to remove repeatable jobs.
+-
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.2.0...v3.3.0)
+
 v.3.2.0
 =======
 - Added support for running jobs in child processes #488
