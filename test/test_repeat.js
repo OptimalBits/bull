@@ -193,7 +193,7 @@ describe('repeat', function () {
     });
   });
 
-  it.only('should allow removing a named repeatable job', function(done){
+  it.skip('should allow removing a named repeatable job', function(done){
     var _this = this;
     var date = new Date('2017-02-07 9:24:00');
     this.clock.tick(date.getTime());
