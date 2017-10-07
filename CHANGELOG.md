@@ -1,7 +1,8 @@
 v.3.3.0
 =======
 - Added a method ```Queue##removeRepeatable``` to remove repeatable jobs.
--
+- Now also emits drained as a global event.
+- Fixed #518, #624
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.2.0...v3.3.0)
 
