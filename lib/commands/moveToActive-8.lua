@@ -17,6 +17,9 @@
       KEYS[6] rate limiter key
       KEYS[7] delayed key
 
+      --
+      KEYS[8] drained key
+
       ARGV[1] key prefix
       ARGV[2] lock token
       ARGV[3] lock duration in milliseconds
@@ -58,7 +61,6 @@ if jobId then
         redis.call("PEXPIRE", KEYS[6], ARGV[7])
       end
     end
-
   end
 
   local jobKey = ARGV[1] .. jobId
@@ -72,4 +74,6 @@ if jobId then
   redis.call("HSET", jobKey, "processedOn", ARGV[4])
 
   return {redis.call("HGETALL", jobKey), jobId} -- get job data
+else
+  redis.call("PUBLISH", KEYS[8], "")
 end
