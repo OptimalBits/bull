@@ -1,3 +1,9 @@
+v.3.3.1
+=======
+- Fixed #714
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.3.0...v3.3.1)
+
 v.3.3.0
 =======
 - Added a method ```Queue##removeRepeatable``` to remove repeatable jobs.
