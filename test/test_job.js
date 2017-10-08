@@ -484,7 +484,7 @@ describe('Job', function(){
     });
 
     it('should resolve when the job has been delayed and completed and return object', function(done){
-      queue.process(function (job) {
+      queue.process(function (/*job*/) {
         return Promise.delay(300).then(function() {
           return { resultFoo: 'bar' };
         });
@@ -518,7 +518,7 @@ describe('Job', function(){
     });
 
     it('should resolve when the job has been delayed and completed and return string', function(done){
-      queue.process(function (job) {
+      queue.process(function (/*job*/) {
         return Promise.delay(300).then(function() {
           return 'a string';
         });

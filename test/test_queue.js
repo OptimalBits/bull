@@ -2,7 +2,6 @@
 'use strict';
 
 var Queue = require('../');
-var Job = require('../lib/job');
 var expect = require('chai').expect;
 var Promise = require('bluebird');
 var redis = require('ioredis');
