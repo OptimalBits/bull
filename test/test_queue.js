@@ -476,7 +476,7 @@ describe('Queue', function () {
     });
 
     function priorityTestSetup(numJobsPerPriority, nbWorkers, done) {
-      var jobsPrioirtyInCompletedOrder = [];
+      var jobsPriorityInCompletedOrder = [];
       queue.process(nbWorkers, function(job, jobDone){
         expect(job.id).to.be.ok;
 
@@ -486,12 +486,12 @@ describe('Queue', function () {
       });
 
       queue.on('completed', function(job) {
-        jobsPrioirtyInCompletedOrder.push(job.data.p);
+        jobsPriorityInCompletedOrder.push(job.data.p);
       });
 
       // When jobs are all completed
       var intervalId = setInterval(function() {
-        if(jobsPrioirtyInCompletedOrder.length === numJobsPerPriority * 2) {
+        if(jobsPriorityInCompletedOrder.length === numJobsPerPriority * 2) {
           clearInterval(intervalId);
 
           var trueJobsPriorityInCompletedOrder = []; // [p1, p1, p1, ..., p2, p2, p2]
@@ -501,7 +501,7 @@ describe('Queue', function () {
             }
           }
 
-          var correlation = corr(jobsPrioirtyInCompletedOrder, trueJobsPriorityInCompletedOrder);
+          var correlation = corr(jobsPriorityInCompletedOrder, trueJobsPriorityInCompletedOrder);
           expect(correlation).to.be.greaterThan(0.9); // 90% correlation should be good
           done();
         }
