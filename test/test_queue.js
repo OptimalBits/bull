@@ -9,6 +9,7 @@ var sinon = require('sinon');
 var _ = require('lodash');
 var uuid = require('uuid');
 var utils = require('./utils');
+var corr = require('node-correlation').calc;
 
 Promise.config({
   // Enable warnings.
@@ -473,6 +474,89 @@ describe('Queue', function () {
           });
         }, done);
     });
+
+    function priorityTestSetup(numJobsPerPriority, nbWorkers, done) {
+      var jobsPrioirtyInCompletedOrder = []
+      queue.process(nbWorkers, function(job, jobDone){
+        expect(job.id).to.be.ok;
+
+        setTimeout(function() {
+          jobDone()
+        }, job.data.p * 200)
+      })
+
+      queue.on('completed', function(job) {
+        jobsPrioirtyInCompletedOrder.push(job.data.p)
+      })
+
+      // When jobs are all completed
+      var intervalId = setInterval(function() {
+        if(jobsPrioirtyInCompletedOrder.length === numJobsPerPriority * 2) {
+          clearInterval(intervalId);
+
+          var trueJobsPrioirtyInCompletedOrder = []; // [p1, p1, p1, ..., p2, p2, p2]
+          for(var p=1; p<3; p++) {
+            for(var i=0; i<numJobsPerPriority; i++) {
+              trueJobsPrioirtyInCompletedOrder.push(p)
+            }
+          }
+
+          var correlation = corr(jobsPrioirtyInCompletedOrder, trueJobsPrioirtyInCompletedOrder);
+          expect(correlation).to.be.greaterThan(0.9); // 90% correlation should be good
+          done();
+        }
+      }, 100)
+
+      // Make sure we remove the interval if there is a problem
+      queue.on("failed", function(job, err) {
+        clearInterval(intervalId);
+
+        queue.empty()
+        .then(function() {
+          console.error(err);
+          done(err);
+        })
+      })
+    }
+
+
+    it('should processes jobs by priority, [p1, p1, .., p2, p2]', function(done){
+      var numJobsPerPriority = 20;
+      var nbWorkers = 4;
+      priorityTestSetup(numJobsPerPriority, nbWorkers, done);
+
+      // Add jobs to the queue ([p1, p1, p1, ..., p2, p2, p2])
+      for(var p=1; p<3; p++) {
+        for(var i=0; i<numJobsPerPriority; i++) {
+          queue.add({p: p}, {priority: p})
+        }
+      }
+    })
+
+    it('should processes jobs by priority, [p2, p2, ..., p1, p1]', function(done){
+      var numJobsPerPriority = 20;
+      var nbWorkers = 4;
+      priorityTestSetup(numJobsPerPriority, nbWorkers, done);
+
+      // Add jobs to the queue ([p2, p2, ..., p1, p1])
+      for(var p=1; p<3; p++) {
+        for(var i=0; i<numJobsPerPriority; i++) {
+          queue.add({p: 3-p}, {priority: 3-p})
+        }
+      }
+    })
+
+    it('should processes jobs by priority, [p1, p2, p1, p2, ...]', function(done){
+      var numJobsPerPriority = 20;
+      var nbWorkers = 4;
+      priorityTestSetup(numJobsPerPriority, nbWorkers, done);
+
+      // Add jobs to the queue ([p1, p2, p1, p2, ...])
+      for(var i=0; i<numJobsPerPriority; i++) {
+        queue.add({p: 1}, {priority:1})
+        queue.add({p: 2}, {priority:2})
+      }
+    })
 
     it('process several jobs serially', function (done) {
       this.timeout(12000);
