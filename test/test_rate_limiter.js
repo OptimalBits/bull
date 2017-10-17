@@ -18,6 +18,7 @@ describe('Rate limiter', function () {
           duration: 1000
         }
       });
+      return queue;
     });
   });
 

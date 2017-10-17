@@ -21,6 +21,7 @@ describe('events', function () {
         stalledInterval: 100,
         lockDuration: 50
       }});
+      return queue;
     });
   });
 

@@ -15,6 +15,7 @@ describe('sandboxed process', function () {
         guardInterval: Number.MAX_VALUE,
         stalledInterval: Number.MAX_VALUE
       }});
+      return queue;
     });
   });
 

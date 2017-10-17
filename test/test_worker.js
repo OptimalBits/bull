@@ -11,10 +11,11 @@ describe('workers', function () {
   beforeEach(function(){
     var client = new redis();
     return client.flushdb().then(function(){
-      queue = utils.buildQueue('test workers', {settings: { 
+      queue = utils.buildQueue('test workers', {settings: {
         guardInterval: Number.MAX_VALUE,
         stalledInterval: Number.MAX_VALUE
       }});
+      return queue;
     });
   });
 

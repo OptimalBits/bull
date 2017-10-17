@@ -24,6 +24,7 @@ describe('repeat', function () {
         stalledInterval: Number.MAX_VALUE,
         drainDelay: 1 // Small delay so that .close is faster.
       }});
+      return queue;
     });
   });
 
