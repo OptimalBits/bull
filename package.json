@@ -2,7 +2,7 @@
   "name": "bull",
   "version": "3.3.1",
   "description": "Job manager",
-  "main": "./lib/queue",
+  "main": "./index.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/OptimalBits/bull.git"
