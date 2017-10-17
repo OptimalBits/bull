@@ -10,6 +10,8 @@ var _ = require('lodash');
 var uuid = require('uuid');
 var utils = require('./utils');
 
+Promise.config({'warnings': true});
+
 Promise.config({
   // Enable warnings.
   // warnings: true,
@@ -233,6 +235,7 @@ describe('Queue', function () {
           expect(job.data.foo).to.be.equal('bar');
           jobDone();
         });
+        return null;
       }).then(function () {
         return queue.close();
       });
@@ -249,6 +252,7 @@ describe('Queue', function () {
           expect(job.data.foo).to.be.equal('bar');
           jobDone();
         });
+        return null;
       }).then(function () {
         return queue.close();
       });
@@ -423,12 +427,17 @@ describe('Queue', function () {
 
         queue2.pause().then(function () {
           // Add a series of jobs in a predictable order
-          var fn = function (cb) {
-            queue2.add({ 'count': ++currentValue }, { 'lifo': true }).then(cb);
-          };
-          fn(fn(fn(fn(function () {
+          var jobs = [
+            { 'count': ++currentValue },
+            { 'count': ++currentValue },
+            { 'count': ++currentValue },
+            { 'count': ++currentValue }
+          ];
+          return Promise.each(jobs, function(jobData){
+            return queue2.add(jobData, { 'lifo': true });
+          }).then(function(){
             queue2.resume();
-          }))));
+          });
         });
       });
     });
@@ -1172,7 +1181,7 @@ describe('Queue', function () {
           return queue.add({ foo: 'paused' });
         }).then(function () {
           ispaused = false;
-          queue.resume();
+          return queue.resume();
         }), resultPromise);
       });
     });
@@ -1478,6 +1487,7 @@ describe('Queue', function () {
         // Start processing so that jobs get into the delay set.
         //
         queue.process(fn);
+        return null;
       }).delay(20).then(function () {
         /*
         //We simulate a restart
@@ -2307,6 +2317,7 @@ describe('Queue', function () {
       Promise.delay(200).then(function () {
         queue.add({ some: 'data' });
         queue.clean(100);
+        return null;
       }).delay(100).then(function () {
         return queue.getCompleted();
       }).then(function (jobs) {

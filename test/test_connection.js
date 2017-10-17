@@ -13,6 +13,7 @@ describe('connection', function () {
     var client = new redis();
     return client.flushdb().then(function(){
       queue = utils.buildQueue();
+      return queue;
     });
   });
 
