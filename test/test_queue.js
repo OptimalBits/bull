@@ -483,7 +483,7 @@ describe('Queue', function () {
         setTimeout(function() {
           jobDone();
         }, job.data.p * 200);
-      })
+      });
 
       queue.on('completed', function(job) {
         jobsPrioirtyInCompletedOrder.push(job.data.p);
@@ -505,7 +505,7 @@ describe('Queue', function () {
           expect(correlation).to.be.greaterThan(0.9); // 90% correlation should be good
           done();
         }
-      }, 100)
+      }, 100);
 
       // Make sure we remove the interval if there is a problem
       queue.on('failed', function(job, err) {
@@ -516,7 +516,7 @@ describe('Queue', function () {
             console.error(err);
             done(err);
           });
-      })
+      });
     }
 
 
@@ -531,7 +531,7 @@ describe('Queue', function () {
           queue.add({p: p}, {priority: p});
         }
       }
-    })
+    });
 
     it('should processes jobs by priority, [p2, p2, ..., p1, p1]', function(done){
       var numJobsPerPriority = 20;
@@ -544,7 +544,7 @@ describe('Queue', function () {
           queue.add({p: 3-p}, {priority: 3-p});
         }
       }
-    })
+    });
 
     it('should processes jobs by priority, [p1, p2, p1, p2, ...]', function(done){
       var numJobsPerPriority = 20;
@@ -556,7 +556,7 @@ describe('Queue', function () {
         queue.add({p: 1}, {priority:1});
         queue.add({p: 2}, {priority:2});
       }
-    })
+    });
 
     it('process several jobs serially', function (done) {
       this.timeout(12000);
