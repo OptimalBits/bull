@@ -138,7 +138,7 @@ module.exports = function(job){
 You can return a value or a promise to signale that the job has been completed.
 
 
-A name argument can be provided so that multiple process functions can be defined per queue. A named process will only process jobs that matches the given name.
+A name argument can be provided so that multiple process functions can be defined per queue. A named process will only process jobs that matches the given name. If you define multiple named process functions in one Queue they will run concurrently (in case jobs are queued for these processors).
 
 **Note:** in order to determine whether job completion is signaled by
 returning a promise or calling the `done` callback, Bull looks at
