@@ -1,3 +1,11 @@
+v.3.3.2
+=======
+- Fixed #721. SyntaxError: Unexpected token u in JSON at position 0.
+- Fixed #739. childs are not added to the retained set.
+- Fixed #734. fixed Promise warnings.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.3.1...v3.3.2)
+
 v.3.3.1
 =======
 - Fixed #714
