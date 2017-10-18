@@ -31,6 +31,7 @@ describe('sandboxed process', function () {
     queue.on('completed', function(job, value){
       expect(job.data).to.be.eql({foo:'bar'});
       expect(value).to.be.eql(42);
+      expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
       done();
     });
 
@@ -43,6 +44,7 @@ describe('sandboxed process', function () {
     queue.on('completed', function(job, value){
       expect(job.data).to.be.eql({foo:'bar'});
       expect(value).to.be.eql(42);
+      expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
       done();
     });
 
@@ -57,6 +59,7 @@ describe('sandboxed process', function () {
       expect(value).to.be.eql(37);
       expect(job.progress()).to.be.eql(100);
       expect(progresses).to.be.eql([10, 27, 78, 100]);
+      expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
       done();
     });
 
@@ -75,6 +78,7 @@ describe('sandboxed process', function () {
       expect(job.data).eql({foo:'bar'});
       expect(job.failedReason).eql('Manually failed processor');
       expect(err.message).eql('Manually failed processor');
+      expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
       done();
     });
 
@@ -88,6 +92,7 @@ describe('sandboxed process', function () {
       expect(job.data).eql({foo:'bar'});
       expect(job.failedReason).eql('Manually failed processor');
       expect(err.message).eql('Manually failed processor');
+      expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
       done();
     });
 
