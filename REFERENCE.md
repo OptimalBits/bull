@@ -111,7 +111,17 @@ __Warning:__ Do not override these advanced settings unless you understand the i
 ### Queue#process
 
 ```ts
-process(name?: string, concurrency?: number, processor: (job, done?) => Promise<any> | string)
+/**
+ * Consider these as overloaded functions. Since method overloading doesn't exist in javacript
+ * bull recognizes the desired function call by checking the parameters' types. Make sure you
+ * comply with one of the below defined patterns.
+ * 
+ * Note: Concurrency defaults to 1 if not specified.
+ */
+process(processor: (job, done?) => Promise<any> | string)
+process(concurrency: number, processor: (job, done?) => Promise<any> | string)
+process(name: string, processor: (job, done?) => Promise<any> | string)
+process(name: string, concurrency: number, processor: (job, done?) => Promise<any> | string)
 ```
 
 Defines a processing function for the jobs in a given Queue.
