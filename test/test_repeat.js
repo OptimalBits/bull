@@ -194,7 +194,7 @@ describe('repeat', function () {
     });
   });
 
-  it.skip('should allow removing a named repeatable job', function(done){
+  it('should allow removing a named repeatable job', function(done){
     var _this = this;
     var date = new Date('2017-02-07 9:24:00');
     this.clock.tick(date.getTime());
@@ -212,6 +212,7 @@ describe('repeat', function () {
         return queue.removeRepeatable('remove', repeat).then(function(){
           setTimeout(done, ONE_SECOND);
           _this.clock.tick(nextTick);
+          return null;
         });
       } if (counter > 20){
         done(Error('should not repeat more than 20 times'));
