@@ -150,23 +150,23 @@ You can return a value or a promise to signale that the job has been completed.
 
 A name argument can be provided so that multiple process functions can be defined per queue. A named process will only process jobs that matches the given name. If you define multiple named process functions in one Queue the defined concurrency for each process function stacks up for the Queue. See the following examples:
 ```js
-  /***
-   * For each named processor concurrency stacks up, so any of these three process functions
-   * can run with a concurrency of 125. To avoid this behaviour you need to create an own queue
-   * for each process function.
-   */
-  const loadBalancerQueue = new Queue('loadbalancer')
-  loadBalancerQueue.process('requestProfile', 100, requestProfile)
-  loadBalancerQueue.process('sendEmail', 25, sendEmail)
-  loadBalancerQueue.process('sendInvitation', 0, sendInvite)
+/***
+ * For each named processor concurrency stacks up, so any of these three process functions
+ * can run with a concurrency of 125. To avoid this behaviour you need to create an own queue
+ * for each process function.
+ */
+const loadBalancerQueue = new Queue('loadbalancer')
+loadBalancerQueue.process('requestProfile', 100, requestProfile)
+loadBalancerQueue.process('sendEmail', 25, sendEmail)
+loadBalancerQueue.process('sendInvitation', 0, sendInvite)
 
-  const profileQueue = new Queue('profile')
-  // Max concurrency for requestProfile is 100
-  profileQueue.process('requestProfile', 100, requestProfile)
+const profileQueue = new Queue('profile')
+// Max concurrency for requestProfile is 100
+profileQueue.process('requestProfile', 100, requestProfile)
 
-  const emailQueue = new Queue('email')
-  // Max concurrency for sendEmail is 25
-  emailQueue.process('sendEmail', 25, sendEmail)
+const emailQueue = new Queue('email')
+// Max concurrency for sendEmail is 25
+emailQueue.process('sendEmail', 25, sendEmail)
 ```
 
 
