@@ -31,10 +31,14 @@ describe('sandboxed process', function () {
     queue.process(__dirname + '/fixtures/fixture_processor.js');
 
     queue.on('completed', function(job, value){
-      expect(job.data).to.be.eql({foo:'bar'});
-      expect(value).to.be.eql(42);
-      expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
-      done();
+      try {
+        expect(job.data).to.be.eql({foo:'bar'});
+        expect(value).to.be.eql(42);
+        expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
 
     queue.add({foo:'bar'});
@@ -44,10 +48,14 @@ describe('sandboxed process', function () {
     queue.process(__dirname + '/fixtures/fixture_processor_callback.js');
 
     queue.on('completed', function(job, value){
-      expect(job.data).to.be.eql({foo:'bar'});
-      expect(value).to.be.eql(42);
-      expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
-      done();
+      try {
+        expect(job.data).to.be.eql({foo:'bar'});
+        expect(value).to.be.eql(42);
+        expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
 
     queue.add({foo:'bar'});
@@ -57,12 +65,16 @@ describe('sandboxed process', function () {
     queue.process(__dirname + '/fixtures/fixture_processor_progress.js');
 
     queue.on('completed', function(job, value){
-      expect(job.data).to.be.eql({foo:'bar'});
-      expect(value).to.be.eql(37);
-      expect(job.progress()).to.be.eql(100);
-      expect(progresses).to.be.eql([10, 27, 78, 100]);
-      expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
-      done();
+      try {
+        expect(job.data).to.be.eql({foo:'bar'});
+        expect(value).to.be.eql(37);
+        expect(job.progress()).to.be.eql(100);
+        expect(progresses).to.be.eql([10, 27, 78, 100]);
+        expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
 
     var progresses = [];
@@ -77,11 +89,15 @@ describe('sandboxed process', function () {
     queue.process(__dirname + '/fixtures/fixture_processor_fail.js');
 
     queue.on('failed', function(job, err){
-      expect(job.data).eql({foo:'bar'});
-      expect(job.failedReason).eql('Manually failed processor');
-      expect(err.message).eql('Manually failed processor');
-      expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
-      done();
+      try {
+        expect(job.data).eql({foo:'bar'});
+        expect(job.failedReason).eql('Manually failed processor');
+        expect(err.message).eql('Manually failed processor');
+        expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
 
     queue.add({foo:'bar'});
@@ -91,11 +107,15 @@ describe('sandboxed process', function () {
     queue.process(__dirname + '/fixtures/fixture_processor_callback_fail.js');
 
     queue.on('failed', function(job, err){
-      expect(job.data).eql({foo:'bar'});
-      expect(job.failedReason).eql('Manually failed processor');
-      expect(err.message).eql('Manually failed processor');
-      expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
-      done();
+      try {
+        expect(job.data).eql({foo:'bar'});
+        expect(job.failedReason).eql('Manually failed processor');
+        expect(err.message).eql('Manually failed processor');
+        expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
 
     queue.add({foo:'bar'});
