@@ -148,8 +148,36 @@ describe('sandboxed process', function () {
     queue.add({foo:'bar'});
   });
 
-  it('should process after exit', function () {
-    queue.process(__dirname + '/fixtures/fixture_processor_exit.js');
+  it('process will not leak memory with killOnComplete: true', function () {
+    queue.process(__dirname + '/fixtures/fixture_processor_leaky.js', true);
+
+    var completed = sinon.spy();
+    queue.on('completed', completed);
+
+    _.times(5, queue.add.bind(queue, {foo:'bar'}));
+
+    return Promise.delay(2000).then(function(){
+      expect(completed.callCount).to.equal(5);
+      expect(completed.getCall(4).args[1]).to.equal(0);
+    });
+  });
+
+  it('process will leak memory with killOnComplete: false', function () {
+    queue.process(__dirname + '/fixtures/fixture_processor_leaky.js');
+
+    var completed = sinon.spy();
+    queue.on('completed', completed);
+
+    _.times(5, queue.add.bind(queue, {foo:'bar'}));
+
+    return Promise.delay(2000).then(function(){
+      expect(completed.callCount).to.equal(5);
+      expect(completed.getCall(4).args[1]).to.equal(4);
+    });
+  });
+
+  it('should process after exit with killOnComplete: true', function () {
+    queue.process(__dirname + '/fixtures/fixture_processor_exit.js', true);
 
     var completed = sinon.spy();
     queue.on('completed', completed);
@@ -158,6 +186,19 @@ describe('sandboxed process', function () {
 
     return Promise.delay(4000).then(function(){
       expect(completed.callCount).to.equal(5);
+    });
+  });
+
+  it('should fail to process after exit with killOnComplete: false', function () {
+    queue.process(__dirname + '/fixtures/fixture_processor_exit.js');
+
+    var completed = sinon.spy();
+    queue.on('completed', completed);
+
+    _.times(5, queue.add.bind(queue, {foo:'bar'}));
+
+    return Promise.delay(4000).then(function(){
+      expect(completed.callCount).to.equal(1);
     });
   });
 });
