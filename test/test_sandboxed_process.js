@@ -1,6 +1,7 @@
 /*eslint-env node */
 'use strict';
 
+var Promise = require('bluebird');
 var expect = require('chai').expect;
 var utils = require('./utils');
 var redis = require('ioredis');
@@ -95,6 +96,24 @@ describe('sandboxed process', function () {
       expect(err.message).eql('Manually failed processor');
       expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
       done();
+    });
+
+    queue.add({foo:'bar'});
+  });
+
+  it('should remove exited process', function (done) {
+    queue.process(__dirname + '/fixtures/fixture_processor_exit.js');
+
+    queue.on('completed', function(){
+      try {
+        expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
+        Promise.delay(500).then(function(){
+          expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
+        })
+          .asCallback(done);
+      } catch (err) {
+        done(err);
+      }
     });
 
     queue.add({foo:'bar'});
