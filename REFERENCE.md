@@ -28,6 +28,7 @@ Reference
 
 - [Job](#job)
   - [Job#progress](#jobprogress)
+  - [Job#getState](#jobgetstate)
   - [Job#update](#jobupdate)
   - [Job#remove](#jobremove)
   - [Job#retry](#jobretry)
@@ -568,6 +569,18 @@ Updates a job progress.
 ```js
   progress: number; Job progress between 0 and 100.
 ```
+
+---
+
+### Job#getState
+
+```ts
+getState(): Promise
+```
+
+Returns a promise resolving to the current job's status (completed, failed, delayed etc.). Possible returns are: completed, failed, delayed, active, waiting, paused, stuck or null.
+
+Please take note that the implementation of this method is not very efficient, nor is it atomic. If your queue does have a very large quantity of jobs, you may want to avoid using this method.
 
 ---
 
