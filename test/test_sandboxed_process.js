@@ -5,6 +5,8 @@ var Promise = require('bluebird');
 var expect = require('chai').expect;
 var utils = require('./utils');
 var redis = require('ioredis');
+var sinon = require('sinon');
+var _ = require('lodash');
 
 describe('sandboxed process', function () {
   var queue;
@@ -144,5 +146,18 @@ describe('sandboxed process', function () {
     });
 
     queue.add({foo:'bar'});
+  });
+
+  it('should process after exit', function () {
+    queue.process(__dirname + '/fixtures/fixture_processor_exit.js');
+
+    var completed = sinon.spy();
+    queue.on('completed', completed);
+
+    _.times(5, queue.add.bind(queue, {foo:'bar'}));
+
+    return Promise.delay(4000).then(function(){
+      expect(completed.callCount).to.equal(5);
+    });
   });
 });
