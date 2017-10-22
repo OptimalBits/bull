@@ -7,7 +7,7 @@ var Promise = require('bluebird');
 
 module.exports = function(/*job*/){
   return Promise.delay(500).then(function(){
-    setImmediate(function(){
+    Promise.delay(100).then(function(){
       process.exit(0);
     });
   });
