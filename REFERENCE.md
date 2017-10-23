@@ -28,6 +28,7 @@ Reference
 
 - [Job](#job)
   - [Job#progress](#jobprogress)
+  - [Job#getState](#jobgetstate)
   - [Job#update](#jobupdate)
   - [Job#remove](#jobremove)
   - [Job#retry](#jobretry)
@@ -111,7 +112,17 @@ __Warning:__ Do not override these advanced settings unless you understand the i
 ### Queue#process
 
 ```ts
-process(name?: string, concurrency?: number, processor: (job, done?) => Promise<any> | string)
+/**
+ * Consider these as overloaded functions. Since method overloading doesn't exist in javacript
+ * bull recognizes the desired function call by checking the parameters' types. Make sure you
+ * comply with one of the below defined patterns.
+ * 
+ * Note: Concurrency defaults to 1 if not specified.
+ */
+process(processor: (job, done?) => Promise<any> | string)
+process(concurrency: number, processor: (job, done?) => Promise<any> | string)
+process(name: string, processor: (job, done?) => Promise<any> | string)
+process(name: string, concurrency: number, processor: (job, done?) => Promise<any> | string)
 ```
 
 Defines a processing function for the jobs in a given Queue.
@@ -138,7 +149,27 @@ module.exports = function(job){
 You can return a value or a promise to signale that the job has been completed.
 
 
-A name argument can be provided so that multiple process functions can be defined per queue. A named process will only process jobs that matches the given name.
+A name argument can be provided so that multiple process functions can be defined per queue. A named process will only process jobs that matches the given name. If you define multiple named process functions in one Queue the defined concurrency for each process function stacks up for the Queue. See the following examples:
+```js
+/***
+ * For each named processor concurrency stacks up, so any of these three process functions
+ * can run with a concurrency of 125. To avoid this behaviour you need to create an own queue
+ * for each process function.
+ */
+const loadBalancerQueue = new Queue('loadbalancer')
+loadBalancerQueue.process('requestProfile', 100, requestProfile)
+loadBalancerQueue.process('sendEmail', 25, sendEmail)
+loadBalancerQueue.process('sendInvitation', 0, sendInvite)
+
+const profileQueue = new Queue('profile')
+// Max concurrency for requestProfile is 100
+profileQueue.process('requestProfile', 100, requestProfile)
+
+const emailQueue = new Queue('email')
+// Max concurrency for sendEmail is 25
+emailQueue.process('sendEmail', 25, sendEmail)
+```
+
 
 **Note:** in order to determine whether job completion is signaled by
 returning a promise or calling the `done` callback, Bull looks at
@@ -538,6 +569,18 @@ Updates a job progress.
 ```js
   progress: number; Job progress between 0 and 100.
 ```
+
+---
+
+### Job#getState
+
+```ts
+getState(): Promise
+```
+
+Returns a promise resolving to the current job's status (completed, failed, delayed etc.). Possible returns are: completed, failed, delayed, active, waiting, paused, stuck or null.
+
+Please take note that the implementation of this method is not very efficient, nor is it atomic. If your queue does have a very large quantity of jobs, you may want to avoid using this method.
 
 ---
 
