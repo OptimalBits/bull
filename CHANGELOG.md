@@ -1,3 +1,11 @@
+v.3.3.3
+=======
+- Re-fixed 739.
+- Possibly fixed for #747.
+- Fixed removeRepeatable (missing file)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.3.2...v3.3.3)
+
 v.3.3.2
 =======
 - Fixed #721. SyntaxError: Unexpected token u in JSON at position 0.
