@@ -1,6 +1,6 @@
 v.3.3.3
 =======
-- Re-fixed 739.
+- Re-fixed #739.
 - Possibly fixed for #747.
 - Fixed removeRepeatable (missing file)
 
