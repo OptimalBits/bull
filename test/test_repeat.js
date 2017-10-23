@@ -105,7 +105,7 @@ describe('repeat', function () {
     var _this = this;
     var date = new Date('2017-05-05 13:12:00');
     this.clock.tick(date.getTime());
-    var nextTick = ONE_DAY;
+    var nextTick = ONE_DAY + ONE_MINUTE;
 
     queue.add('repeat', {foo: 'bar'}, {repeat: {
       cron: '0 1 * * *',
@@ -127,7 +127,7 @@ describe('repeat', function () {
         expect(job.timestamp - prev.timestamp).to.be.gte(ONE_DAY);
       }
       prev = job;
-
+      
       counter ++;
       if(counter == 5){
         queue.getWaiting().then(function(jobs){
@@ -230,4 +230,5 @@ describe('repeat', function () {
       prev = job;
     });
   });
+
 });
