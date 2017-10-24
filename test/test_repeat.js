@@ -105,7 +105,7 @@ describe('repeat', function () {
     var _this = this;
     var date = new Date('2017-05-05 13:12:00');
     this.clock.tick(date.getTime());
-    var nextTick = ONE_DAY + ONE_MINUTE;
+    var nextTick = ONE_DAY;
 
     queue.add('repeat', {foo: 'bar'}, {repeat: {
       cron: '0 1 * * *',
