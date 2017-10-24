@@ -780,8 +780,8 @@ inquirer@^3.0.6:
     through "^2.3.6"
 
 ioredis@^3.1.4:
-  version "3.1.4"
-  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-3.1.4.tgz#8688293f5f2f1757e1c812ad17cce49f46d811bc"
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-3.2.1.tgz#4c10bcce9659fdb0af923b0e7915208fe023d3f0"
   dependencies:
     bluebird "^3.3.4"
     cluster-key-slot "^1.0.6"
