@@ -1,3 +1,10 @@
+v.3.3.5
+=======
+- Fixed #764, #762, #759.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.3.4...v3.3.5)
+
+
 v.3.3.4
 =======
 - Fixed #748.
