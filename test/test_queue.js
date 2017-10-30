@@ -143,8 +143,8 @@ describe('Queue', function () {
       queue.close().then(done, done);
     });
 
-    it('should create a queue with a redis connection string', function () {
-      var queue = new Queue('connstring', 'redis://123.4.5.67:1234');
+    it.only('should create a queue with a redis connection string', function () {
+      var queue = new Queue('connstring', 'redis://123.4.5.67:1234/2');
 
       expect(queue.client.options.host).to.be.eql('123.4.5.67');
       expect(queue.eclient.options.host).to.be.eql('123.4.5.67');
@@ -152,8 +152,8 @@ describe('Queue', function () {
       expect(queue.client.options.port).to.be.eql(1234);
       expect(queue.eclient.options.port).to.be.eql(1234);
 
-      expect(queue.client.options.db).to.be.eql(0);
-      expect(queue.eclient.options.db).to.be.eql(0);
+      expect(queue.client.options.db).to.be.eql(2);
+      expect(queue.eclient.options.db).to.be.eql(2);
 
       queue.close().catch(function(/*err*/){
         // Swallow error.
