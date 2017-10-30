@@ -143,7 +143,7 @@ describe('Queue', function () {
       queue.close().then(done, done);
     });
 
-    it.only('should create a queue with a redis connection string', function () {
+    it('should create a queue with a redis connection string', function () {
       var queue = new Queue('connstring', 'redis://123.4.5.67:1234/2');
 
       expect(queue.client.options.host).to.be.eql('123.4.5.67');
