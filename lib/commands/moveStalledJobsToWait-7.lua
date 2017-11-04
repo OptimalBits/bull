@@ -20,28 +20,30 @@
       'stalled' with stalled job id.
 ]]
 
+local rcall = redis.call
+
 -- Check if we need to check for stalled jobs now.
-if redis.call("EXISTS", KEYS[5]) == 1 then
+if rcall("EXISTS", KEYS[5]) == 1 then
   return {{}, {}}
 end
 
-redis.call("SET", KEYS[5], ARGV[3], "PX", ARGV[4])
+rcall("SET", KEYS[5], ARGV[3], "PX", ARGV[4])
 
 -- Move all stalled jobs to wait
-local stalling = redis.call('SMEMBERS', KEYS[1])
+local stalling = rcall('SMEMBERS', KEYS[1])
 local stalled = {}
 local failed = {}
 if(#stalling > 0) then
 
   local dst
   -- wait or paused destination
-  if redis.call("EXISTS", KEYS[6]) ~= 1 then
+  if rcall("EXISTS", KEYS[6]) ~= 1 then
     dst = KEYS[2]
   else
     dst = KEYS[7]
   end
 
-  redis.call('DEL', KEYS[1])
+  rcall('DEL', KEYS[1])
 
   local MAX_STALLED_JOB_COUNT = tonumber(ARGV[1])
 
@@ -50,21 +52,21 @@ if(#stalling > 0) then
     local jobKey = ARGV[2] .. jobId
 
     -- Check that the lock is also missing, then we can handle this job as really stalled.
-    if(redis.call("EXISTS", jobKey .. ":lock") == 0) then
+    if(rcall("EXISTS", jobKey .. ":lock") == 0) then
       --  Remove from the active queue.
-      local removed = redis.call("LREM", KEYS[3], 1, jobId)
+      local removed = rcall("LREM", KEYS[3], 1, jobId)
 
       if(removed > 0) then
         -- If this job has been stalled too many times, such as if it crashes the worker, then fail it.
-        local stalledCount = redis.call("HINCRBY", jobKey, "stalledCounter", 1)
+        local stalledCount = rcall("HINCRBY", jobKey, "stalledCounter", 1)
         if(stalledCount > MAX_STALLED_JOB_COUNT) then
-          redis.call("ZADD", KEYS[4], ARGV[3], jobId)
-          redis.call("HSET", jobKey, "failedReason", "job stalled more than allowable limit")
+          rcall("ZADD", KEYS[4], ARGV[3], jobId)
+          rcall("HSET", jobKey, "failedReason", "job stalled more than allowable limit")
           table.insert(failed, jobId)
         else
           -- Move the job back to the wait queue, to immediately be picked up by a waiting worker.
-          redis.call("RPUSH", dst, jobId)
-          redis.call('PUBLISH', KEYS[1] .. '@', jobId)
+          rcall("RPUSH", dst, jobId)
+          rcall('PUBLISH', KEYS[1] .. '@', jobId)
           table.insert(stalled, jobId)
         end
       end
@@ -73,9 +75,9 @@ if(#stalling > 0) then
 end
 
 -- Mark potentially stalled jobs
-local active = redis.call('LRANGE', KEYS[3], 0, -1)
+local active = rcall('LRANGE', KEYS[3], 0, -1)
 if(#active > 0) then
-  redis.call('SADD', KEYS[1], unpack(active))
+  rcall('SADD', KEYS[1], unpack(active))
 end
 
 return {failed, stalled}

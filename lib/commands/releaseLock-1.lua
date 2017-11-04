@@ -10,8 +10,10 @@
       Output:
         "OK" if lock extented succesfully.
 ]]
-if redis.call("GET", KEYS[1]) == ARGV[1] then
-  return redis.call("DEL", KEYS[1])
+local rcall = redis.call
+
+if rcall("GET", KEYS[1]) == ARGV[1] then
+  return rcall("DEL", KEYS[1])
 else
   return 0
 end
