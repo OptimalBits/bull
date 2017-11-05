@@ -6,6 +6,7 @@ var utils = require('./utils');
 var sinon = require('sinon');
 var redis = require('ioredis');
 var moment = require('moment');
+var _ = require('lodash');
 
 var ONE_SECOND = 1000;
 var ONE_MINUTE = 60 * ONE_SECOND;
@@ -210,11 +211,54 @@ describe('repeat', function () {
       counter ++;
       if(counter == 20){
         return queue.removeRepeatable('remove', repeat).then(function(){
-          setTimeout(done, ONE_SECOND);
-          _this.clock.tick(nextTick);
-          return null;
+          _this.clock.tick(nextTick);          
+          return queue.getDelayed().then(function(delayed){
+            expect(delayed).to.be.empty;
+            done();
+            return null;
+          });
         });
-      } if (counter > 20){
+      } else if (counter > 20){
+        done(Error('should not repeat more than 20 times'));
+      }
+    });
+
+    var prev;
+    var counter = 0;
+    queue.on('completed', function(job){
+      _this.clock.tick(nextTick);
+      if(prev){
+        expect(prev.timestamp).to.be.lt(job.timestamp);
+        expect(job.timestamp - prev.timestamp).to.be.gte(2000);
+      }
+      prev = job;
+    });
+  });
+
+  it('should allow removing a customId repeatable job', function(done){
+    var _this = this;
+    var date = new Date('2017-02-07 9:24:00');
+    this.clock.tick(date.getTime());
+
+    var nextTick = 2 * ONE_SECOND;
+    var repeat = {cron: '*/2 * * * * *'};
+
+    queue.add({foo: 'bar'}, {repeat: repeat, jobId : 'xxxx'}).then(function(){
+      _this.clock.tick(nextTick);
+    });
+
+    queue.process(function(){
+      counter ++;
+      if(counter == 20){        
+        return queue.removeRepeatable(_.defaults({jobId:'xxxx'}, repeat)).then(function(){
+          _this.clock.tick(nextTick);
+          return queue.getDelayed().then(function(delayed){
+            expect(delayed).to.be.empty;
+            done();
+            return null;
+          });
+        });
+      } else if (counter > 20){
         done(Error('should not repeat more than 20 times'));
       }
     });
