@@ -25,30 +25,31 @@
      Events:
       'completed/failed'
 ]]
+local rcall = redis.call
 
-if redis.call("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
+if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
   if ARGV[5] ~= "0" then
     local lockKey = KEYS[3] .. ':lock'
-    if redis.call("GET", lockKey) == ARGV[5] then
-      redis.call("DEL", lockKey)
+    if rcall("GET", lockKey) == ARGV[5] then
+      rcall("DEL", lockKey)
     else
       return -2
     end
   end
 
   -- Remove from active list
-  redis.call("LREM", KEYS[1], -1, ARGV[1])
+  rcall("LREM", KEYS[1], -1, ARGV[1])
 
   -- Remove job?
   if ARGV[6] == "1" then
-    redis.call("DEL", KEYS[3])
+    rcall("DEL", KEYS[3])
   else
     -- Add to complete/failed set
-    redis.call("ZADD", KEYS[2], ARGV[2], ARGV[1])
-    redis.call("HMSET", KEYS[3], ARGV[3], ARGV[4], "finishedOn", ARGV[2]) -- "returnvalue" / "failedReason" and "finishedOn"
+    rcall("ZADD", KEYS[2], ARGV[2], ARGV[1])
+    rcall("HMSET", KEYS[3], ARGV[3], ARGV[4], "finishedOn", ARGV[2]) -- "returnvalue" / "failedReason" and "finishedOn"
   end
 
-  redis.call("PUBLISH", KEYS[2], ARGV[7])
+  rcall("PUBLISH", KEYS[2], ARGV[7])
   return 0
 else
   return -1

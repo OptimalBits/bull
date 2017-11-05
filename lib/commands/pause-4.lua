@@ -12,14 +12,16 @@
     Event:
       publish paused or resumed event.
 ]]
-if redis.call("EXISTS", KEYS[1]) == 1 then
-  redis.call("RENAME", KEYS[1], KEYS[2])
+local rcall = redis.call
+
+if rcall("EXISTS", KEYS[1]) == 1 then
+  rcall("RENAME", KEYS[1], KEYS[2])
 end
 
 if ARGV[1] == "paused" then
-  redis.call("SET", KEYS[3], 1)
+  rcall("SET", KEYS[3], 1)
 else
-  redis.call("DEL", KEYS[3])
+  rcall("DEL", KEYS[3])
 end
 
-redis.call("PUBLISH", KEYS[4], ARGV[1])
+rcall("PUBLISH", KEYS[4], ARGV[1])

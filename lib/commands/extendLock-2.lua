@@ -12,9 +12,10 @@
   Output:
     "1" if lock extented succesfully.
 ]]
-if redis.call("GET", KEYS[1]) == ARGV[1] then
-  if redis.call("SET", KEYS[1], ARGV[1], "PX", ARGV[2]) then
-    redis.call("SREM", KEYS[2], ARGV[3])
+local rcall = redis.call
+if rcall("GET", KEYS[1]) == ARGV[1] then
+  if rcall("SET", KEYS[1], ARGV[1], "PX", ARGV[2]) then
+    rcall("SREM", KEYS[2], ARGV[3])
     return 1
   end
 end

@@ -31,14 +31,16 @@
 ]]
 
 local jobId
+local rcall = redis.call
+
 if(ARGV[5] ~= "") then
   jobId = ARGV[5]
 
   -- clean stalled key
-  redis.call("SREM", KEYS[5], jobId)
+  rcall("SREM", KEYS[5], jobId)
 else
   -- move from wait to active
-  jobId = redis.call("RPOPLPUSH", KEYS[1], KEYS[2])
+  jobId = rcall("RPOPLPUSH", KEYS[1], KEYS[2])
 end
 
 if jobId then
@@ -46,19 +48,19 @@ if jobId then
   if(ARGV[6]) then
     local jobCounter
     local maxJobs = tonumber(ARGV[6])
-    jobCounter = tonumber(redis.call("GET", KEYS[6]))
+    jobCounter = tonumber(rcall("GET", KEYS[6]))
     if jobCounter ~= nil and jobCounter >= maxJobs then
-      local delay = tonumber(redis.call("PTTL", KEYS[6]))
+      local delay = tonumber(rcall("PTTL", KEYS[6]))
       local timestamp = delay + tonumber(ARGV[4])
 
-      redis.call("ZADD", KEYS[7], timestamp * 0x1000 + bit.band(jobCounter, 0xfff), jobId)
-      redis.call("PUBLISH", KEYS[7], timestamp)
-      redis.call("LREM", KEYS[2], 1, jobId)
+      rcall("ZADD", KEYS[7], timestamp * 0x1000 + bit.band(jobCounter, 0xfff), jobId)
+      rcall("PUBLISH", KEYS[7], timestamp)
+      rcall("LREM", KEYS[2], 1, jobId)
       return
     else
-      jobCounter = redis.call("INCR", KEYS[6])
+      jobCounter = rcall("INCR", KEYS[6])
       if tonumber(jobCounter) == 1 then
-        redis.call("PEXPIRE", KEYS[6], ARGV[7])
+        rcall("PEXPIRE", KEYS[6], ARGV[7])
       end
     end
   end
@@ -67,13 +69,13 @@ if jobId then
   local lockKey = jobKey .. ':lock'
 
   -- get a lock
-  redis.call("SET", lockKey, ARGV[2], "PX", ARGV[3])
+  rcall("SET", lockKey, ARGV[2], "PX", ARGV[3])
 
-  redis.call("ZREM", KEYS[3], jobId) -- remove from priority
-  redis.call("PUBLISH", KEYS[4], jobId)
-  redis.call("HSET", jobKey, "processedOn", ARGV[4])
+  rcall("ZREM", KEYS[3], jobId) -- remove from priority
+  rcall("PUBLISH", KEYS[4], jobId)
+  rcall("HSET", jobKey, "processedOn", ARGV[4])
 
-  return {redis.call("HGETALL", jobKey), jobId} -- get job data
+  return {rcall("HGETALL", jobKey), jobId} -- get job data
 else
-  redis.call("PUBLISH", KEYS[8], "")
+  rcall("PUBLISH", KEYS[8], "")
 end

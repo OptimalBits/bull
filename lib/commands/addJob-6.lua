@@ -36,7 +36,9 @@
 ]]
 local jobId
 local jobIdKey
-local jobCounter = redis.call("INCR", KEYS[4])
+local rcall = redis.call
+
+local jobCounter = rcall("INCR", KEYS[4])
 
 if ARGV[2] == "" then
   jobId = jobCounter
@@ -44,27 +46,27 @@ if ARGV[2] == "" then
 else
   jobId = ARGV[2]
   jobIdKey = ARGV[1] .. jobId
-  if redis.call("EXISTS", jobIdKey) == 1 then
+  if rcall("EXISTS", jobIdKey) == 1 then
     return jobId .. "" -- convert to string
   end
 end
 
 -- Store the job.
-redis.call("HMSET", jobIdKey, "name", ARGV[3], "data", ARGV[4], "opts", ARGV[5], "timestamp", ARGV[6], "delay", ARGV[7])
+rcall("HMSET", jobIdKey, "name", ARGV[3], "data", ARGV[4], "opts", ARGV[5], "timestamp", ARGV[6], "delay", ARGV[7])
 
 -- Check if job is delayed
 local delayedTimestamp = tonumber(ARGV[8])
 if(delayedTimestamp ~= 0) then
   local timestamp = delayedTimestamp * 0x1000 + bit.band(jobCounter, 0xfff)
-  redis.call("ZADD", KEYS[5], timestamp, jobId)
-  redis.call("PUBLISH", KEYS[5], delayedTimestamp)
+  rcall("ZADD", KEYS[5], timestamp, jobId)
+  rcall("PUBLISH", KEYS[5], delayedTimestamp)
 else
   local target
 
   -- Whe check for the meta-paused key to decide if we are paused or not
   -- (since an empty list and !EXISTS are not really the same)
   local paused
-  if redis.call("EXISTS", KEYS[3]) ~= 1 then
+  if rcall("EXISTS", KEYS[3]) ~= 1 then
     target = KEYS[1]
     paused = false
   else
@@ -76,21 +78,21 @@ else
   local priority = tonumber(ARGV[9])
   if priority == 0 then
       -- LIFO or FIFO
-    redis.call(ARGV[10], target, jobId)
+    rcall(ARGV[10], target, jobId)
 
     -- Emit waiting event (wait..ing@token)
-    redis.call("PUBLISH", KEYS[1] .. "ing@" .. ARGV[11], jobId)
+    rcall("PUBLISH", KEYS[1] .. "ing@" .. ARGV[11], jobId)
   else
     -- Priority add
-    redis.call("ZADD", KEYS[6], priority, jobId)
-    local count = redis.call("ZCOUNT", KEYS[6], 0, priority)
+    rcall("ZADD", KEYS[6], priority, jobId)
+    local count = rcall("ZCOUNT", KEYS[6], 0, priority)
 
-    local len = redis.call("LLEN", target)
-    local id = redis.call("LINDEX", target, len - (count-1))
+    local len = rcall("LLEN", target)
+    local id = rcall("LINDEX", target, len - (count-1))
     if id then
-      redis.call("LINSERT", target, "BEFORE", id, jobId)
+      rcall("LINSERT", target, "BEFORE", id, jobId)
     else
-      redis.call("RPUSH", target, jobId)
+      rcall("RPUSH", target, jobId)
     end
 
   end
