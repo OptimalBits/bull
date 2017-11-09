@@ -1,3 +1,12 @@
+v.3.3.6
+=======
+
+- Fixed #766, #781, #716.
+- Correctly accept DB in redis connection string.
+- Fixed global progress event.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.3.5...v3.3.6)
+
 v.3.3.5
 =======
 - Fixed #764, #762, #759.
