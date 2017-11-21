@@ -12,6 +12,8 @@
   Output:
     "1" if lock extented succesfully.
 ]]
+redis.replicate_commands()
+
 local rcall = redis.call
 if rcall("GET", KEYS[1]) == ARGV[1] then
   if rcall("SET", KEYS[1], ARGV[1], "PX", ARGV[2]) then

@@ -34,6 +34,8 @@
       ARGV[10] LIFO
       ARGV[11] token
 ]]
+redis.replicate_commands()
+
 local jobId
 local jobIdKey
 local rcall = redis.call

@@ -3,13 +3,15 @@
 
      Input:
         KEYS[1] 'lock',
-      
+
         ARGV[1]  token
         ARGV[2]  lock duration in milliseconds
-      
+
       Output:
         "OK" if lock extented succesfully.
 ]]
+redis.replicate_commands()
+
 local rcall = redis.call
 
 if rcall("GET", KEYS[1]) == ARGV[1] then

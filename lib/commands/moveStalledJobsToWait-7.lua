@@ -19,6 +19,7 @@
     Events:
       'stalled' with stalled job id.
 ]]
+redis.replicate_commands()
 
 local rcall = redis.call
 

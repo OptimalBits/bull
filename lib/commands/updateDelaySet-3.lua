@@ -13,6 +13,8 @@
      Events:
       'removed'
 ]]
+redis.replicate_commands()
+
 local RESULT = redis.call("ZRANGE", KEYS[1], 0, 0, "WITHSCORES")
 local jobId = RESULT[1]
 local score = RESULT[2]

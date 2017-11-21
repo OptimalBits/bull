@@ -17,6 +17,7 @@
      Events:
       'removed'
 ]]
+redis.replicate_commands()
 
 -- TODO PUBLISH global event 'removed'
 

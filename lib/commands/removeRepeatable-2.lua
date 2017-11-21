@@ -8,6 +8,8 @@
     ARGV[1] repeat job id
     ARGV[2] repeat job key
 ]]
+redis.replicate_commands()
+
 local millis = redis.call("ZSCORE", KEYS[1], ARGV[2])
 
 if(millis) then

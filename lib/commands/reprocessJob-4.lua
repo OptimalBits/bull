@@ -19,6 +19,8 @@
   Events:
     emits 'added' if succesfully moved job to wait.
 ]]
+redis.replicate_commands()
+
 if (redis.call("EXISTS", KEYS[1]) == 1) then
   if (redis.call("EXISTS", KEYS[2]) == 0) then
     if (redis.call("ZREM", KEYS[3], ARGV[1]) == 1) then
