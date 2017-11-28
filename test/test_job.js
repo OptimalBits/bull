@@ -346,6 +346,25 @@ describe('Job', function(){
       });
     });
 
+    it('applies stacktrace limit on failure', function(){
+      var stackTraceLimit = 1;
+      return Job.create(queue, {foo: 'bar'}, {stackTraceLimit: stackTraceLimit}).then(function(job){
+        return job.isFailed().then(function(isFailed){
+          expect(isFailed).to.be(false);
+        }).then(function(){
+          return job.moveToFailed(new Error('test error'), true);
+        }).then(function(){
+          return job.moveToFailed(new Error('test error'), true).then(function(){
+            return job.isFailed().then(function(isFailed){
+              expect(isFailed).to.be(true);
+              expect(job.stacktrace).not.be(null);
+              expect(job.stacktrace.length).to.be(stackTraceLimit);
+            });
+          });
+        });
+      });
+    });
+
   });
 
   describe('.promote', function() {
