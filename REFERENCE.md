@@ -234,7 +234,7 @@ interface JobOpts{
 
   removeOnFail: boolean; // If true, removes the job when it fails after all attempts.
                          // Default behavior is to keep the job in the failed set.
-  stackTraceLimit: number; // Limits the amount of failures that will be recorded in the stacktrace.
+  stackTraceLimit: number; // Limits the amount of stack trace lines that will be recorded in the stacktrace.
 }
 ```
 
