@@ -37,6 +37,7 @@ Reference
   - [Job#finished](#jobfinished)
 
 - [Events](#events)
+  - [Global events](#global-events)
 
 
 Queue
@@ -691,7 +692,9 @@ A queue emits also some useful events:
 });
 ```
 
-Events are local by default—in other words they only fire on the listeners that are registered on the given worker, if you need to listen to events globally, just prefix the event with `'global:'`:
+### Global events
+
+Events are local by default — in other words, they only fire on the listeners that are registered on the given worker. If you need to listen to events globally, for example from other servers across redis, just prefix the event with `'global:'`:
 
 ```js
 // Will listen locally, just to this queue...
