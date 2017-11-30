@@ -14,7 +14,7 @@ Reference
   - [Queue#getJob](#queuegetjob)
   - [Queue#removeRepeatable](#queueremoverepeatable)
   - [Queue#getJobCounts](#queuegetjobcounts)
-  - [Queue#getCompletedCount](#queuegetcompledtedcount)
+  - [Queue#getCompletedCount](#queuegetcompletedcount)
   - [Queue#getFailedCount](#queuegetfailedcount)
   - [Queue#getDelayedCount](#queuegetdelayedcount)
   - [Queue#getActiveCount](#queuegetactivecount)
@@ -23,7 +23,7 @@ Reference
   - [Queue#getWaiting](#queuegetwaiting)
   - [Queue#getActive](#queuegetactive)
   - [Queue#getDelayed](#queuegetdelayed)
-  - [Queue#getCompleted](#queuegetcompledted)
+  - [Queue#getCompleted](#queuegetcompleted)
   - [Queue#getFailed](#queuegetfailed)
 
 - [Job](#job)
