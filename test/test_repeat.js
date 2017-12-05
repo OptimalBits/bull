@@ -275,7 +275,7 @@ describe('repeat', function () {
     });
   });
 
-  it.only('should allow adding a repeatable job after removing it', function(){
+  it('should allow adding a repeatable job after removing it', function(){
     
     queue.process(function(/*job*/) {
       // dummy
