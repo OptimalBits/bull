@@ -1,3 +1,11 @@
+v.3.3.7
+=======
+
+- Fixed #807.
+- Adding ability to limit by stacktrace. #798.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.3.6...v3.3.7)
+
 v.3.3.6
 =======
 
