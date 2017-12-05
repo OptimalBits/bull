@@ -237,7 +237,7 @@ describe('.pause', function () {
     this.timeout(10000);
     var queue = new Queue('test');
 
-    queue.process(function(job) {
+    queue.process(function(/*job*/) {
       Promise.resolve();
     });
 

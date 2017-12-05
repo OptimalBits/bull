@@ -275,4 +275,41 @@ describe('repeat', function () {
     });
   });
 
+  it('should allow adding a repeatable job after removing it', function(){
+    
+    queue.process(function(/*job*/) {
+      // dummy
+    });
+        
+    var repeat = {
+      cron: '*/5 * * * *',
+    };
+    
+    return queue.add('myTestJob', {
+      data: '2',
+    }, {
+      repeat: repeat,
+    }).then(function(){
+      return queue.getDelayed();
+    }).then(function(delayed){
+      expect(delayed.length).to.be.eql(1);
+    }).then(function(){
+      return queue.removeRepeatable('myTestJob', repeat);
+    }).then(function(){
+      return queue.getDelayed();
+    }).then(function(delayed){
+      expect(delayed.length).to.be.eql(0);
+    }).then(function(){
+      return queue.add('myTestJob', {
+        data: '2',
+      }, {
+        repeat: repeat,
+      });
+    }).then(function(){
+      return queue.getDelayed();
+    }).then(function(delayed){
+      expect(delayed.length).to.be.eql(1);
+    });  
+  });
+
 });
