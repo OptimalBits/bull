@@ -71,4 +71,36 @@ describe('connection', function () {
     });
   });
 
+  it('should not close external connections', function () {
+
+    var client = new redis();
+    var subscriber = new redis();
+    
+    var opts = {
+      createClient: function(type){
+        switch(type){
+          case 'client':
+            return client;
+          case 'subscriber':
+            return subscriber;
+          default:
+            return new redis();
+        }
+      }
+    };
+
+    var testQueue = utils.buildQueue('external connections', opts);
+
+    return testQueue.isReady().then(function(){
+      return testQueue.add({'foo': 'bar'});
+    }).then(function(){
+      expect(testQueue.client).to.be.eql(client);
+      expect(testQueue.eclient).to.be.eql(subscriber);
+
+      return testQueue.close();
+    }).then(function(){
+      expect(client.status).to.be.eql('ready');
+      expect(subscriber.status).to.be.eql('ready');
+    });
+  });
 });
