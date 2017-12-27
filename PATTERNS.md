@@ -67,8 +67,11 @@ Reusing Redis Connections
 A standard queue requires **3 connections** to the Redis server. In some situations you might want to re-use connections—for example on Heroku where the connection count is restricted. You can do this with the `createClient` option in the `Queue` constructor:
 
 ```js
-var client = new redis();
-var subscriber = new redis();
+var {REDIS_URL} = process.env
+
+var Redis = require('ioredis')
+var client = new Redis(REDIS_URL);
+var subscriber = new Redis(REDIS_URL);
 
 var opts = {
     createClient: function(type){
@@ -78,7 +81,7 @@ var opts = {
         case 'subscriber':
           return subscriber;
         default:
-          return new redis();
+          return new Redis();
       }
     }
   }
