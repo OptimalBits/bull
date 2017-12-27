@@ -60,7 +60,7 @@
   <a href="http://optimalbits.com">
     <img src="http://optimalbits.com/images/logo.png" />
   </a>
-  <a href="http://taskforce.sh"   style="margin-top: -50px;">
+  <a href="http://taskforce.sh"  style="margin-left: 50px;">
     <img src="http://taskforce.sh/assets/logo_square.png" width="160" alt="Taskforce.sh, Inc" />
   </a>
 </div>
@@ -98,6 +98,7 @@ There are a few third-party UIs that you can use for monitoring:
 
 **Bull v3**
 
+- [NEW (Preview) Taskforce](https://taskforce.sh)
 - [Arena](https://github.com/mixmaxhq/arena)
 
 **Bull <= v2**
