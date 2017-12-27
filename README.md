@@ -60,6 +60,9 @@
   <a href="http://optimalbits.com">
     <img src="http://optimalbits.com/images/logo.png" />
   </a>
+  <a href="http://taskforce.sh">
+    <img src="http://taskforce.sh/assets/logo_square.png" />
+  </a>
 </div>
 
 Are you developing bull sponsored by a company? Please, let us now!
