@@ -60,7 +60,7 @@
   <a href="http://optimalbits.com">
     <img src="http://optimalbits.com/images/logo.png" />
   </a>
-  <a href="http://taskforce.sh">
+  <a href="http://taskforce.sh"   style="margin-top: -50px;">
     <img src="http://taskforce.sh/assets/logo_square.png" width="160" alt="Taskforce.sh, Inc" />
   </a>
 </div>
