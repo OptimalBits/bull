@@ -1604,6 +1604,41 @@ describe('Queue', function () {
       });
     });
 
+    it('should retry a job after a delay if a custom backoff is given', function (done) {
+      this.timeout(12000);
+      queue = utils.buildQueue('test retries and backoffs', {
+        settings: {
+          backoffStrategies: {
+            custom: function (attemptsMade) {
+              return attemptsMade * 1000;
+            }
+          }
+        }
+      });
+      var start;
+      queue.isReady().then(function () {
+        queue.process(function (job, jobDone) {
+          if (job.attemptsMade < 2) {
+            throw new Error('Not yet!');
+          }
+          jobDone();
+        });
+
+        start = Date.now();
+        queue.add({ foo: 'bar' }, {
+          attempts: 3,
+          backoff: {
+            type: 'custom'
+          }
+        });
+      });
+      queue.on('completed', function () {
+        var elapse = Date.now() - start;
+        expect(elapse).to.be.greaterThan(3000);
+        done();
+      });
+    });
+
     it('should not retry a job that has been removed', function (done) {
       queue = utils.buildQueue('retry a removed job');
       var attempts = 0;

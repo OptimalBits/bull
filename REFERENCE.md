@@ -89,6 +89,7 @@ interface AdvancedSettings {
   maxStalledCount: number = 1; // Max amount of times a stalled job will be re-processed.
   guardInterval: number = 5000; // Poll interval for delayed jobs and added jobs.s
   retryProcessDelay: number = 5000; // delay before processing next job in case of internal error.
+  backoffStrategies: {}; // A set of custom backoff strategies keyed by name. The value should be a function that when invoked, returns the delay in milliseconds.
 }
 ```
 
@@ -252,7 +253,7 @@ More information regarding the [cron expression](https://github.com/harrisiirak/
 
 ```typescript
 interface BackoffOpts{
-  type: string; // Backoff type, which can be either `fixed` or `exponential`
+  type: string; // Backoff type, which can be either `fixed` or `exponential`. A custom backoff strategy can also be specified in `backoffStrategies` on the queue settings.
   delay: number; // Backoff delay, in milliseconds.
 }
 ```
