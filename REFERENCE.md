@@ -89,7 +89,7 @@ interface AdvancedSettings {
   maxStalledCount: number = 1; // Max amount of times a stalled job will be re-processed.
   guardInterval: number = 5000; // Poll interval for delayed jobs and added jobs.s
   retryProcessDelay: number = 5000; // delay before processing next job in case of internal error.
-  backoffStrategies: {}; // A set of custom backoff strategies keyed by name. The value should be a function that when invoked, returns the delay in milliseconds.
+  backoffStrategies: {}; // A set of custom backoff strategies keyed by name.
 }
 ```
 
@@ -109,6 +109,16 @@ __Warning:__ Do not override these advanced settings unless you understand the i
 
 `retryProcessDelay`: Time in milliseconds in which to wait before trying to process jobs, in case of a Redis error. Set to a lower value on an unstable Redis connection.
 
+`backoffStrategies`: An object containing custom backoff strategies. The key in the object is the name of the strategy and the value is a function that should return the delay in milliseconds. For a full example see [Patterns](./PATTERNS.md).
+
+```js
+backoffStrategies: {
+  jitter: function () {
+    return 5000 + Math.random() * 500;
+  }
+}
+```
+
 ---
 
 ### Queue#process
@@ -118,7 +128,7 @@ __Warning:__ Do not override these advanced settings unless you understand the i
  * Consider these as overloaded functions. Since method overloading doesn't exist in javacript
  * bull recognizes the desired function call by checking the parameters' types. Make sure you
  * comply with one of the below defined patterns.
- * 
+ *
  * Note: Concurrency defaults to 1 if not specified.
  */
 process(processor: (job, done?) => Promise<any> | string)
