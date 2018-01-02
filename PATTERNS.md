@@ -9,7 +9,7 @@ Here are a few examples of useful patterns that are often implemented with Bull:
 - [Reusing Redis Connections](#reusing-redis-connections)
 - [Redis Cluster](#redis-cluster)
 - [Debugging](#debugging)
-- [Custom backoff strategy](#Custom-backoff-strategy)
+- [Custom backoff strategy](#custom-backoff-strategy)
 
 If you have any other common patterns you want to add, pull request them!
 
