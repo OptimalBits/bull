@@ -55,7 +55,7 @@ The optional ```url``` argument, allows to specify a redis connection string suc
 ```redis://mypassword@myredis.server.com:1234```
 
 ```typescript
-interface QueueOpts{
+interface QueueOptions {
   limiter?: RateLimiter;
   redis?: RedisOpts;
   prefix?: string = 'bull'; // prefix for all queue keys.
@@ -117,7 +117,7 @@ __Warning:__ Do not override these advanced settings unless you understand the i
  * Consider these as overloaded functions. Since method overloading doesn't exist in javacript
  * bull recognizes the desired function call by checking the parameters' types. Make sure you
  * comply with one of the below defined patterns.
- * 
+ *
  * Note: Concurrency defaults to 1 if not specified.
  */
 process(processor: (job, done?) => Promise<any> | string)
