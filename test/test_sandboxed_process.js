@@ -104,7 +104,9 @@ describe('sandboxed process', function () {
     });
 
     queue.add('foo', {foo: 'bar'}).then(function(){
-      queue.add('bar', {bar: 'qux'});
+      Promise.delay(500).then(function(){
+        queue.add('bar', {bar: 'qux'});
+      });
     });
 
     queue.on('error', function(err){
