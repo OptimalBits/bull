@@ -21,8 +21,8 @@ describe('repeat', function () {
     var client = new redis();
     return client.flushdb().then(function(){
       queue = utils.buildQueue('repeat', {settings: {
-        guardInterval: Number.MAX_SAFE_INTEGER,
-        stalledInterval: Number.MAX_SAFE_INTEGER,
+        guardInterval: 300000,
+        stalledInterval: 300000,
         drainDelay: 1 // Small delay so that .close is faster.
       }});
       return queue;
