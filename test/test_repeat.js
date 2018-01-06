@@ -12,6 +12,7 @@ var ONE_SECOND = 1000;
 var ONE_MINUTE = 60 * ONE_SECOND;
 var ONE_HOUR = 60 * ONE_MINUTE;
 var ONE_DAY = 24 * ONE_HOUR;
+var MAX_INT = 2147483647;
 
 describe('repeat', function () {
   var queue;
@@ -21,8 +22,8 @@ describe('repeat', function () {
     var client = new redis();
     return client.flushdb().then(function(){
       queue = utils.buildQueue('repeat', {settings: {
-        guardInterval: Number.MAX_VALUE,
-        stalledInterval: Number.MAX_VALUE,
+        guardInterval: MAX_INT,
+        stalledInterval: MAX_INT,
         drainDelay: 1 // Small delay so that .close is faster.
       }});
       return queue;
