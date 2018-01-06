@@ -12,8 +12,8 @@ describe('workers', function () {
     var client = new redis();
     return client.flushdb().then(function(){
       queue = utils.buildQueue('test workers', {settings: {
-        guardInterval: Number.MAX_VALUE,
-        stalledInterval: Number.MAX_VALUE
+        guardInterval: 300000,
+        stalledInterval: 300000
       }});
       return queue;
     });
