@@ -89,6 +89,7 @@ interface AdvancedSettings {
   maxStalledCount: number = 1; // Max amount of times a stalled job will be re-processed.
   guardInterval: number = 5000; // Poll interval for delayed jobs and added jobs.s
   retryProcessDelay: number = 5000; // delay before processing next job in case of internal error.
+  backoffStrategies: {}; // A set of custom backoff strategies keyed by name.
 }
 ```
 
@@ -107,6 +108,16 @@ __Warning:__ Do not override these advanced settings unless you understand the i
 `guardInterval`: Interval in milliseconds on which the delayed job watchdog will run. This watchdog is only in place for unstable Redis connections which can caused delayed jobs to not be processed. Set to a lower value if your Redis connection is unstable and delayed jobs aren't being processed in time.
 
 `retryProcessDelay`: Time in milliseconds in which to wait before trying to process jobs, in case of a Redis error. Set to a lower value on an unstable Redis connection.
+
+`backoffStrategies`: An object containing custom backoff strategies. The key in the object is the name of the strategy and the value is a function that should return the delay in milliseconds. For a full example see [Patterns](./PATTERNS.md#custom-backoff-strategy).
+
+```js
+backoffStrategies: {
+  jitter: function () {
+    return 5000 + Math.random() * 500;
+  }
+}
+```
 
 ---
 
@@ -252,7 +263,7 @@ More information regarding the [cron expression](https://github.com/harrisiirak/
 
 ```typescript
 interface BackoffOpts{
-  type: string; // Backoff type, which can be either `fixed` or `exponential`
+  type: string; // Backoff type, which can be either `fixed` or `exponential`. A custom backoff strategy can also be specified in `backoffStrategies` on the queue settings.
   delay: number; // Backoff delay, in milliseconds.
 }
 ```

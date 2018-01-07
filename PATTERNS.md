@@ -9,6 +9,7 @@ Here are a few examples of useful patterns that are often implemented with Bull:
 - [Reusing Redis Connections](#reusing-redis-connections)
 - [Redis Cluster](#redis-cluster)
 - [Debugging](#debugging)
+- [Custom backoff strategy](#custom-backoff-strategy)
 
 If you have any other common patterns you want to add, pull request them!
 
@@ -56,7 +57,7 @@ sendQueue.add({msg:"World"});
 Returning Job Completions
 -------------------------
 
-A common pattern is where you have a cluster of queue processors that just process jobs as fast as they can, and some other services that need to take the result of this processors and do something with it, maybe storing results in a database. 
+A common pattern is where you have a cluster of queue processors that just process jobs as fast as they can, and some other services that need to take the result of this processors and do something with it, maybe storing results in a database.
 
 The most robust and scalable way to accomplish this is by combining the standard job queue with the message queue pattern: a service sends jobs to the cluster just by opening a job queue and adding jobs to it, the cluster will start processing as fast as it can. Everytime a job gets completed in the cluster a message is send to a results message queue with the result data, this queue is listened by some other service that stores the results in a database.
 
@@ -97,9 +98,9 @@ Bull internals requires atomic operations that spans different keys. This fact b
 rules for cluster configurations, however it is still possible to use a cluster environment
 by using the proper bull prefix option as a cluster "hash tag". Hash tags are used to guarantee
 that certain keys are placed in the same hash slot, read more about hash tags in the [redis cluster
-tutorial](https://redis.io/topics/cluster-tutorial). 
+tutorial](https://redis.io/topics/cluster-tutorial).
 
-A hash tag is defined with brakets. I.e. a key that has a substring inside brackets will use that 
+A hash tag is defined with brakets. I.e. a key that has a substring inside brackets will use that
 substring to determine in which hash slot the key will be placed. So to make bull compatible with
 cluster, just use a queue prefix inside brackes, for example:
 
@@ -109,7 +110,7 @@ cluster, just use a queue prefix inside brackes, for example:
   })
 ```
 
-If you use several queues in the same cluster, you should use different prefixes so that the 
+If you use several queues in the same cluster, you should use different prefixes so that the
 queues are evenly placed in the cluster nodes.
 
 Debugging
@@ -124,3 +125,35 @@ export NODE_DEBUG=bull
 ```bash
 NODE_DEBUG=bull node ./your-script.js
 ```
+
+Custom backoff strategy
+-----------------------
+
+When the builtin backoff strategies on retries are not sufficient, a custom strategy can be defined. Custom backoff strategies are defined by a function on the queue:
+
+```js
+var Queue = require('bull');
+
+var myQueue = new Queue("Server B", {
+  settings: {
+    backoffStrategies: {
+      jitter: function () {
+        return 5000 + Math.random() * 500;
+      }
+    }
+  }
+});
+```
+
+The new backoff strategy can then be specified on the job, using the name defined above:
+
+```js
+myQueue.add({foo: 'bar'}, {
+  attempts: 3,
+  backoff: {
+    type: 'jitter'
+  }
+});
+```
+
+
