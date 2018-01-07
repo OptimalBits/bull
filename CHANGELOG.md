@@ -1,3 +1,10 @@
+v.3.3.8
+=======
+
+- Fixed #812. External process doesn't terminate on `queue.close()`.
+- Fixed #830. Named Process Sent to Wrong Processor.
+- Fixed #572. Do not close external connections.
+
 v.3.3.7
 =======
 
