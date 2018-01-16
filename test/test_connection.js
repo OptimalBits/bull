@@ -75,7 +75,7 @@ describe('connection', function () {
 
     var client = new redis();
     var subscriber = new redis();
-    
+
     var opts = {
       createClient: function(type){
         switch(type){
@@ -101,6 +101,9 @@ describe('connection', function () {
     }).then(function(){
       expect(client.status).to.be.eql('ready');
       expect(subscriber.status).to.be.eql('ready');
+      expect(testQueue.clients.reduce(function(sum, c) {
+        return sum + c.listeners.length;
+      }, 0)).to.be.eql(0);
     });
   });
 });
