@@ -1,3 +1,10 @@
+v.3.3.9
+=======
+
+- Support custom backoff strategies.
+- Fixed #786. Handling of ES6 default export.
+- Fixed #782. Better handling of "isReady".
+
 v.3.3.8
 =======
 
