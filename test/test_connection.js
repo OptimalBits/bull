@@ -103,4 +103,21 @@ describe('connection', function () {
       expect(subscriber.status).to.be.eql('ready');
     });
   });
+
+  it('should fail if redis connection fails', function(done){
+    queue = utils.buildQueue('connection fail', {
+      redis: {
+        host: 'localhost',
+        port: 1234
+      }
+    });
+
+    queue.isReady().then(function(){
+      done(new Error('Did not fail connecting to invalid redis instance'));
+    }, function(err){
+      expect(err.code).to.be.eql('ECONNREFUSED');
+      queue.close().then(done, done);
+    });
+  });
+  
 });

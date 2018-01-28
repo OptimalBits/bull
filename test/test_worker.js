@@ -23,12 +23,12 @@ describe('workers', function () {
     return queue.close();
   });
 
-  it('should get all workers for this queue', function (done) {
+  it('should get all workers for this queue', function () {
     queue.process(function(){});
 
-    queue.getWorkers().then(function(workers){
+    return queue.getWorkers().then(function(workers){
       expect(workers).to.have.length(1);
-      done();
     });
+    
   });
 });
