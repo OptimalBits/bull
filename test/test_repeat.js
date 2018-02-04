@@ -313,4 +313,33 @@ describe('repeat', function () {
     });  
   });
 
+  it('should not repeat more than 5 times', function (done) {
+    var _this = this;
+    var date = new Date('2017-02-07 9:24:00');
+    this.clock.tick(date.getTime());
+    var nextTick = ONE_SECOND + 500;
+
+    queue.add('repeat', {foo: 'bar'}, { repeat: {limit: 5, cron: '*/1 * * * * *'}}).then(function(){
+      _this.clock.tick(nextTick);
+    });
+
+    queue.process('repeat', function(){
+      // dummy
+    });
+
+    var counter = 0;
+    queue.on('completed', function(){
+      _this.clock.tick(nextTick);
+      counter++;
+      if(counter == 5){
+        utils.sleep(nextTick*2).then(function() {
+          done();
+        }, nextTick*2);
+      }
+      else if (counter > 5) {
+        done(Error('should not repeat more than 5 times'));
+      }
+    });
+  });
+
 });

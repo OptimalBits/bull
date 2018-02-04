@@ -8,6 +8,8 @@ var _ = require('lodash');
 
 var queues = [];
 
+var originalSetTimeout = setTimeout;
+
 function simulateDisconnect(queue){
   queue.client.disconnect();
   queue.eclient.disconnect();
@@ -39,10 +41,19 @@ function cleanupQueues() {
   });
 }
 
+function sleep(ms){
+  return new Promise(function(resolve) {
+    originalSetTimeout(function() {
+      resolve();
+    }, ms);
+  });
+}
+
 module.exports = {
   simulateDisconnect: simulateDisconnect,
   buildQueue: buildQueue,
   cleanupQueue: cleanupQueue,
   newQueue: newQueue,
-  cleanupQueues: cleanupQueues
+  cleanupQueues: cleanupQueues,
+  sleep: sleep
 };
