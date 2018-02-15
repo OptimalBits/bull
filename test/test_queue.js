@@ -399,7 +399,7 @@ describe('Queue', function () {
     it('should remove a job after completed if the default job options specify removeOnComplete', function (done) {
       utils.newQueue('test-' + uuid(), {
         defaultJobOptions: {
-          removeOnComplete: true
+          removeOnComplete: true,
         }
       }).then(function (myQueue) {
         myQueue.process(function (job, jobDone) {
@@ -447,6 +447,36 @@ describe('Queue', function () {
           });
         });
       });
+    });
+
+    it('should remove a job after fail if the default job options specify removeOnFail', function (done) {
+      utils.newQueue('test-' + uuid(), {
+        defaultJobOptions: {
+          removeOnFail: true,
+        }
+      }).then(function (myQueue) {
+        myQueue.process(function (job) {
+          expect(job.data.foo).to.be.equal('bar');
+          throw Error('error');
+        }).catch(done);
+
+        myQueue.add({ foo: 'bar' }).then(function (job) {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        }, done).catch(done);
+
+        myQueue.on('failed', function(jobId){
+          myQueue.getJob(jobId).then(function(job){
+            expect(job).to.be.equal(null);
+          }).then(function(){
+            return myQueue.getJobCounts();
+          }).then(function(counts){
+            expect(counts.completed).to.be.equal(0);
+
+            return utils.cleanupQueues();
+          }).then(done).catch(done);
+        });
+      }).catch(done);
     });
 
     it('process a lifo queue', function (done) {
@@ -1191,7 +1221,7 @@ describe('Queue', function () {
       });
   });
 
-  
+
 
   describe('Delayed jobs', function () {
     var queue;
