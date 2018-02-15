@@ -59,6 +59,7 @@ interface QueueOptions {
   limiter?: RateLimiter;
   redis?: RedisOpts;
   prefix?: string = 'bull'; // prefix for all queue keys.
+  defaultJobOptions?: JobOpts;
   settings?: AdvancedSettings;
 }
 ```
