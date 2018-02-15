@@ -332,6 +332,15 @@ describe('Queue', function () {
         });
       }, done);
     });
+
+    it('creates a queue with default job options', function (done) {
+      var defaultJobOptions = { removeOnComplete: true };
+      var queue = new Queue('custom', { defaultJobOptions: defaultJobOptions });
+
+      expect(queue.defaultJobOptions).to.be.eql(defaultJobOptions);
+
+      queue.close().then(done, done);
+    });
   });
 
   describe(' a worker', function () {
@@ -385,6 +394,36 @@ describe('Queue', function () {
           });
         });
       });
+    });
+
+    it('should remove a job after completed if the default job options specify removeOnComplete', function (done) {
+      utils.newQueue('test-' + uuid(), {
+        defaultJobOptions: {
+          removeOnComplete: true
+        }
+      }).then(function (myQueue) {
+        myQueue.process(function (job, jobDone) {
+          expect(job.data.foo).to.be.equal('bar');
+          jobDone();
+        }).catch(done);
+
+        myQueue.add({ foo: 'bar' }).then(function (job) {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        }, done).catch(done);
+
+        myQueue.on('completed', function(job){
+          myQueue.getJob(job.id).then(function(job){
+            expect(job).to.be.equal(null);
+          }).then(function(){
+            return myQueue.getJobCounts();
+          }).then(function(counts){
+            expect(counts.completed).to.be.equal(0);
+
+            return utils.cleanupQueues();
+          }).then(done).catch(done);
+        });
+      }).catch(done);
     });
 
     it('should remove job after failed if removeOnFail', function (done) {
