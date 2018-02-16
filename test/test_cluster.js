@@ -24,12 +24,10 @@ function purgeQueue(queue) {
   var script = [
     'local KS = redis.call("KEYS", ARGV[1])',
     'local result = redis.call("DEL", unpack(KS))',
-    'return'].join('\n');
+    'return'
+  ].join('\n');
 
-  return queue.client.eval(
-    script,
-    0,
-    queue.toKey('*'));
+  return queue.client.eval(script, 0, queue.toKey('*'));
 }
 
 cluster.setupMaster({
@@ -38,19 +36,18 @@ cluster.setupMaster({
 
 var workerMessageHandler;
 function workerMessageHandlerWrapper(message) {
-  if(workerMessageHandler) {
+  if (workerMessageHandler) {
     workerMessageHandler(message);
   }
 }
 
-describe.skip('Cluster', function () {
-
+describe.skip('Cluster', function() {
   var workers = [];
 
   before(function() {
     var worker;
     var _i = 0;
-    for(_i; _i < os.cpus().length - 1; _i++) {
+    for (_i; _i < os.cpus().length - 1; _i++) {
       worker = cluster.fork();
       worker.on('message', workerMessageHandlerWrapper);
       workers.push(worker);
@@ -60,13 +57,15 @@ describe.skip('Cluster', function () {
 
   var queue;
 
-  afterEach(function(){
-    if(queue){
+  afterEach(function() {
+    if (queue) {
       return purgeQueue(queue).then(function() {
-        return queue.close.bind(queue)().then(function() {
-          queue = undefined;
-          workerMessageHandler = undefined;
-        });
+        return queue.close
+          .bind(queue)()
+          .then(function() {
+            queue = undefined;
+            workerMessageHandler = undefined;
+          });
       });
     }
   });
@@ -76,16 +75,16 @@ describe.skip('Cluster', function () {
     queue = buildQueue();
     var numJobs = 100;
 
-    queue.on('stalled', function(job){
+    queue.on('stalled', function(job) {
       jobs.splice(jobs.indexOf(job.jobId), 1);
     });
 
     workerMessageHandler = function(job) {
       jobs.push(job.id);
-      if(jobs.length === numJobs) {
+      if (jobs.length === numJobs) {
         var counts = {};
         var j = 0;
-        for(j; j < jobs.length; j++) {
+        for (j; j < jobs.length; j++) {
           expect(counts[jobs[j]]).to.be(undefined);
           counts[jobs[j]] = 1;
         }
@@ -94,7 +93,7 @@ describe.skip('Cluster', function () {
     };
 
     var i = 0;
-    for(i; i < numJobs; i++) {
+    for (i; i < numJobs; i++) {
       queue.add({});
     }
   });
@@ -107,7 +106,7 @@ describe.skip('Cluster', function () {
     workerMessageHandler = function(job) {
       expect(order).to.be.below(job.data.order);
       order = job.data.order;
-      if(order === 10) {
+      if (order === 10) {
         done();
       }
     };
@@ -143,7 +142,7 @@ describe.skip('Cluster', function () {
     workerMessageHandler = function(job) {
       expect(order).to.be.below(job.data.order);
       order = job.data.order;
-      if(order === 10) {
+      if (order === 10) {
         done();
       }
     };
@@ -162,9 +161,8 @@ describe.skip('Cluster', function () {
 
   after(function() {
     var _i = 0;
-    for(_i; _i < workers.length; _i++) {
+    for (_i; _i < workers.length; _i++) {
       workers[_i].kill();
     }
   });
-
 });

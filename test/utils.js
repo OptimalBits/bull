@@ -10,19 +10,19 @@ var queues = [];
 
 var originalSetTimeout = setTimeout;
 
-function simulateDisconnect(queue){
+function simulateDisconnect(queue) {
   queue.client.disconnect();
   queue.eclient.disconnect();
 }
 
 function buildQueue(name, options) {
-  options = _.extend({redis: {port: 6379, host: '127.0.0.1'}}, options);
+  options = _.extend({ redis: { port: 6379, host: '127.0.0.1' } }, options);
   var queue = new Queue(name || STD_QUEUE_NAME, options);
   queues.push(queue);
   return queue;
 }
 
-function newQueue(name, opts){
+function newQueue(name, opts) {
   var queue = buildQueue(name, opts);
   return queue.isReady();
 }
@@ -32,16 +32,16 @@ function cleanupQueue(queue) {
 }
 
 function cleanupQueues() {
-  return Promise.map(queues, function(queue){
+  return Promise.map(queues, function(queue) {
     var errHandler = function() {};
     queue.on('error', errHandler);
     return queue.close().catch(errHandler);
-  }).then(function(){
+  }).then(function() {
     queues = [];
   });
 }
 
-function sleep(ms){
+function sleep(ms) {
   return new Promise(function(resolve) {
     originalSetTimeout(function() {
       resolve();
