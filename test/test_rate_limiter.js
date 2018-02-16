@@ -6,12 +6,12 @@ var utils = require('./utils');
 var redis = require('ioredis');
 var _ = require('lodash');
 
-describe('Rate limiter', function () {
+describe('Rate limiter', function() {
   var queue;
 
-  beforeEach(function(){
+  beforeEach(function() {
     var client = new redis();
-    return client.flushdb().then(function(){
+    return client.flushdb().then(function() {
       queue = utils.buildQueue('test rate limiter', {
         limiter: {
           max: 1,
@@ -22,7 +22,7 @@ describe('Rate limiter', function () {
     });
   });
 
-  afterEach(function(){
+  afterEach(function() {
     return queue.close();
   });
 
@@ -34,20 +34,24 @@ describe('Rate limiter', function () {
       return Promise.resolve();
     });
 
-    for(var i=0; i<numJobs; i++){
+    for (var i = 0; i < numJobs; i++) {
       queue.add({});
     }
 
-    queue.on('completed', _.after(numJobs, function() {
-      try {
-        expect(new Date().getTime() - startTime).to.be.above((numJobs - 1) * 1000);
-        done();
-      } catch (e) {
-        done(e);
-      }
-    }));
+    queue.on(
+      'completed',
+      _.after(numJobs, function() {
+        try {
+          expect(new Date().getTime() - startTime).to.be.above(
+            (numJobs - 1) * 1000
+          );
+          done();
+        } catch (e) {
+          done(e);
+        }
+      })
+    );
 
     queue.on('failed', done);
   });
-
 });
