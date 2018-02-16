@@ -18,6 +18,8 @@
      -1 - Missing key
      -2 - Job Not locked
 ]]
+redis.replicate_commands()
+
 if redis.call("EXISTS", KEYS[3]) == 1 then
 
   -- Check for job lock

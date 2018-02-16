@@ -12,6 +12,8 @@
     Event:
       publish paused or resumed event.
 ]]
+redis.replicate_commands()
+
 local rcall = redis.call
 
 if rcall("EXISTS", KEYS[1]) == 1 then

@@ -29,6 +29,7 @@
       ARGV[6] optional jobs per time unit (rate limiter)
       ARGV[7] optional time unit
 ]]
+redis.replicate_commands()
 
 local jobId
 local rcall = redis.call
