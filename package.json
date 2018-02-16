@@ -51,14 +51,6 @@
   },
   "eslintConfig": {
     "rules": {
-      "indent": [
-        2,
-        2,
-        {
-          "SwitchCase": 1
-        }
-      ],
-      "semi": 2,
       "valid-jsdoc": 0,
       "func-style": 0,
       "no-use-before-define": 0,
@@ -71,7 +63,6 @@
           "allow": ["warn", "error"]
         }
       ],
-      "quotes": [2, "single"],
       "no-underscore-dangle": 0
     }
   }
