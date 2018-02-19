@@ -236,9 +236,9 @@ describe('.pause', function() {
               expect(count).to.be.eql(2);
             });
 
-          return Promise.all([active, pending, completed]).then(function(){
-            return Promise.all([queue1.close(), queue2.close()])
-          })
+          return Promise.all([active, pending, completed]).then(function() {
+            return Promise.all([queue1.close(), queue2.close()]);
+          });
         });
       }
     );
@@ -280,9 +280,9 @@ describe('.pause', function() {
             expect(count).to.be.eql(1);
           });
 
-        return Promise.all([active, pending, completed]).then(function(){
+        return Promise.all([active, pending, completed]).then(function() {
           return queue.close();
-        })
+        });
       });
   });
 
