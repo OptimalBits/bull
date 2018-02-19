@@ -1,3 +1,10 @@
+v.3.3.10
+========
+
+- Faster next job fetch #868
+- Added global default options for jobs. Fixes #706.
+- Added a limit for repeatable jobs. #854.
+
 v.3.3.9
 =======
 
