@@ -56,15 +56,14 @@ describe('.pause', function() {
       first = true;
 
     utils.newQueue().then(function(queue) {
-      queue.process(function(job, jobDone) {
+      queue.process(function(job) {
         expect(ispaused).to.be.eql(false);
         expect(job.data.foo).to.be.equal('paused');
-        jobDone();
 
         if (first) {
           first = false;
           ispaused = true;
-          queue.pause();
+          return queue.pause();
         } else {
           expect(isresumed).to.be.eql(true);
           queue.close().then(done, done);
@@ -237,7 +236,9 @@ describe('.pause', function() {
               expect(count).to.be.eql(2);
             });
 
-          return Promise.all([active, pending, completed]);
+          return Promise.all([active, pending, completed]).then(function() {
+            return Promise.all([queue1.close(), queue2.close()]);
+          });
         });
       }
     );
@@ -279,7 +280,9 @@ describe('.pause', function() {
             expect(count).to.be.eql(1);
           });
 
-        return Promise.all([active, pending, completed]);
+        return Promise.all([active, pending, completed]).then(function() {
+          return queue.close();
+        });
       });
   });
 
@@ -297,7 +300,7 @@ describe('.pause', function() {
         return queue.pause(true).finally(function() {
           var finish = new Date().getTime();
           expect(finish - start).to.be.lt(1000);
-          done();
+          queue.close().then(done, done);
         });
       });
     });
