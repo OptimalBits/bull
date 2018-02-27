@@ -5,30 +5,31 @@ var expect = require('chai').expect;
 var utils = require('./utils');
 var redis = require('ioredis');
 
-describe('workers', function () {
+describe('workers', function() {
   var queue;
 
-  beforeEach(function(){
+  beforeEach(function() {
     var client = new redis();
-    return client.flushdb().then(function(){
-      queue = utils.buildQueue('test workers', {settings: {
-        guardInterval: 300000,
-        stalledInterval: 300000
-      }});
+    return client.flushdb().then(function() {
+      queue = utils.buildQueue('test workers', {
+        settings: {
+          guardInterval: 300000,
+          stalledInterval: 300000
+        }
+      });
       return queue;
     });
   });
 
-  afterEach(function(){
+  afterEach(function() {
     return queue.close();
   });
 
-  it('should get all workers for this queue', function (done) {
-    queue.process(function(){});
+  it('should get all workers for this queue', function() {
+    queue.process(function() {});
 
-    queue.getWorkers().then(function(workers){
+    return queue.getWorkers().then(function(workers) {
       expect(workers).to.have.length(1);
-      done();
     });
   });
 });

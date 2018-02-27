@@ -75,18 +75,18 @@ var client = new Redis(REDIS_URL);
 var subscriber = new Redis(REDIS_URL);
 
 var opts = {
-    createClient: function(type){
-      switch(type){
-        case 'client':
-          return client;
-        case 'subscriber':
-          return subscriber;
-        default:
-          return new Redis();
-      }
+  createClient: function (type) {
+    switch (type) {
+      case 'client':
+        return client;
+      case 'subscriber':
+        return subscriber;
+      default:
+        return new Redis();
     }
   }
 }
+
 var queueFoo = new Queue('foobar', opts);
 var queueQux = new Queue('quxbaz', opts);
 ```

@@ -59,6 +59,7 @@ interface QueueOptions {
   limiter?: RateLimiter;
   redis?: RedisOpts;
   prefix?: string = 'bull'; // prefix for all queue keys.
+  defaultJobOptions?: JobOpts;
   settings?: AdvancedSettings;
 }
 ```
@@ -255,6 +256,7 @@ interface RepeatOpts{
   cron: string; // Cron string
   tz?: string, // Timezone
   endDate?: Date | string | number; // End data when the repeat job should stop repeating.
+  limit?: number; // Number of times the job should repeat at max.
 }
 ```
 
