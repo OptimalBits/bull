@@ -132,10 +132,10 @@ backoffStrategies: {
  *
  * Note: Concurrency defaults to 1 if not specified.
  */
-process(processor: (job, done?) => Promise<any> | string)
-process(concurrency: number, processor: (job, done?) => Promise<any> | string)
-process(name: string, processor: (job, done?) => Promise<any> | string)
-process(name: string, concurrency: number, processor: (job, done?) => Promise<any> | string)
+process(processor: ((job, done?) => Promise<any>) | string)
+process(concurrency: number, processor: ((job, done?) => Promise<any>) | string)
+process(name: string, processor: ((job, done?) => Promise<any>) | string)
+process(name: string, concurrency: number, processor: ((job, done?) => Promise<any>) | string)
 ```
 
 Defines a processing function for the jobs in a given Queue.
