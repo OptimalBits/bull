@@ -12,6 +12,7 @@ Reference
   - [Queue#clean](#queueclean)
   - [Queue#close](#queueclose)
   - [Queue#getJob](#queuegetjob)
+  - [Queue#getJobs](#queuegetjobs)
   - [Queue#removeRepeatable](#queueremoverepeatable)
   - [Queue#getJobCounts](#queuegetjobcounts)
   - [Queue#getCompletedCount](#queuegetcompletedcount)
@@ -375,6 +376,16 @@ getJob(jobId: string): Promise<Job>
 
 Returns a promise that will return the job instance associated with the `jobId`
 parameter. If the specified job cannot be located, the promise will be resolved to `null`.
+
+---
+
+### Queue#getJobs
+
+```ts
+getJobs(types: string[], start?: number, end?: number, asc?: boolean): Promise<Job[]>
+```
+
+Returns a promise that will return an array of job instances of the given types. Optional parameters for range and ordering are provided.
 
 ---
 
