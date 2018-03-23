@@ -392,7 +392,7 @@ Returns a promise that will return an array of job instances of the given types.
 
 ### Queue#getRepeatableJobs
 ```ts
-getRepeatableJobs(start?:number,end?: number,asc?: boolean): Promise <Job[]>
+getRepeatableJobs(start?: number, end?: number, asc?: boolean): Promise <Job[]>
 ```
 
 Returns a promise that will return an array of Repeatable Job configurations. Optional parameters for range and ordering are provided.
