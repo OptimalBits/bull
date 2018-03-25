@@ -13,6 +13,7 @@ Reference
   - [Queue#close](#queueclose)
   - [Queue#getJob](#queuegetjob)
   - [Queue#getJobs](#queuegetjobs)
+  - [Queue#getRepeatableJobs](#queuegetrepeatablejobs)
   - [Queue#removeRepeatable](#queueremoverepeatable)
   - [Queue#getJobCounts](#queuegetjobcounts)
   - [Queue#getCompletedCount](#queuegetcompletedcount)
@@ -386,6 +387,15 @@ getJobs(types: string[], start?: number, end?: number, asc?: boolean): Promise<J
 ```
 
 Returns a promise that will return an array of job instances of the given types. Optional parameters for range and ordering are provided.
+
+---
+
+### Queue#getRepeatableJobs
+```ts
+getRepeatableJobs(start?: number, end?: number, asc?: boolean): Promise <Job[]>
+```
+
+Returns a promise that will return an array of Repeatable Job configurations. Optional parameters for range and ordering are provided.
 
 ---
 
