@@ -890,6 +890,29 @@ describe('Queue', function() {
         });
     });
 
+    it('process a named job with an overrideHandler that returns a promise', function(done) {
+      queue.process(function(job) {
+        expect(job.data.foo).to.be.equal('bar');
+        return Promise.delay(250).then(function() {
+          return 'my data';
+        });
+      });
+
+      queue
+        .add('myname', { foo: 'bar' }, { handler: '__default__' })
+        .then(function(job) {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        })
+        .catch(done);
+
+      queue.on('completed', function(job, data) {
+        expect(job).to.be.ok;
+        expect(data).to.be.eql('my data');
+        done();
+      });
+    });
+
     it('process a named job that returns a promise', function(done) {
       queue.process('myname', function(job) {
         expect(job.data.foo).to.be.equal('bar');
