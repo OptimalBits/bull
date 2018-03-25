@@ -890,7 +890,7 @@ describe('Queue', function() {
         });
     });
 
-    it('process a named job with an overrideHandler that returns a promise', function(done) {
+    it('process a named job with an override handler that returns a promise', function(done) {
       queue.process(function(job) {
         expect(job.data.foo).to.be.equal('bar');
         return Promise.delay(250).then(function() {
