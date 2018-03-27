@@ -955,6 +955,41 @@ describe('Queue', function() {
         }
       });
     });
+    
+    it('process all named jobs from one process function', function(done) {
+      queue.process('*', function(job) {
+        expect(job.data).to.be.ok;
+        return Promise.delay(250).then(function() {
+          return 'my data';
+        });
+      });
+
+      queue.add('job_a', { foo: 'bar' }).then(function(job) {
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
+      });
+
+      queue.add('job_b', { baz: 'qux' }).then(function(job) {
+        expect(job.id).to.be.ok;
+        expect(job.data.baz).to.be.eql('qux');
+      });
+
+      var one, two;
+      queue.on('completed', function(job, data) {
+        expect(job).to.be.ok;
+        if (job.data.foo) {
+          one = true;
+          expect(data).to.be.eql('my data');
+        }
+        if (job.data.baz) {
+          two = true;
+          expect(data).to.be.eql('my data');
+        }
+        if (one && two) {
+          done();
+        }
+      });
+    });
 
     it('fails job if missing named process', function(done) {
       queue.process(function(/*job*/) {
