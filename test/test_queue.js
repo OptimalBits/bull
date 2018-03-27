@@ -955,7 +955,7 @@ describe('Queue', function() {
         }
       });
     });
-    
+
     it('process all named jobs from one process function', function(done) {
       queue.process('*', function(job) {
         expect(job.data).to.be.ok;
