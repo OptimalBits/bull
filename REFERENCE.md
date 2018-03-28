@@ -194,7 +194,6 @@ differentJobsQueue.add('jobA', data, opts)
 differentJobsQueue.add('jobB', data, opts)
 ```
 
-
 **Note:** in order to determine whether job completion is signaled by
 returning a promise or calling the `done` callback, Bull looks at
 the length property of the callback you pass to it.
