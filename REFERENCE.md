@@ -52,6 +52,7 @@ Queue(queueName: string, url?: string, opts?: QueueOptions): Queue
 This is the Queue constructor. It creates a new Queue that is persisted in
 Redis. Everytime the same queue is instantiated it tries to process all the
 old jobs that may exist from a previous unfinished session.
+By naming the as '*' you will get the ability to process all named jobs from one process function  
 
 The optional ```url``` argument, allows to specify a redis connection string such as for example:
 ```redis://mypassword@myredis.server.com:1234```
@@ -183,6 +184,15 @@ profileQueue.process('requestProfile', 100, requestProfile)
 const emailQueue = new Queue('email')
 // Max concurrency for sendEmail is 25
 emailQueue.process('sendEmail', 25, sendEmail)
+```
+
+Specify `*` as the process name will make it the default processor for all named jobs.
+It frequently used to process all named jobs from one process function:
+```js
+const differentJobsQueue = new Queue('differentJobsQueue')
+differentJobsQueue.process('*', processFunction)
+differentJobsQueue.add('jobA', data, opts)
+differentJobsQueue.add('jobB', data, opts)
 ```
 
 
