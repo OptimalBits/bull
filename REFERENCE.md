@@ -219,7 +219,7 @@ add(name?: string, data: any, opts?: JobOpts): Promise<Job>
 
 Creates a new job and adds it to the queue. If the queue is empty the job will be executed directly, otherwise it will be placed in the queue and executed as soon as possible.
 
-An optional name can be added, so that only process functions defined for that name will process the job.
+An optional name can be added, so that only process functions defined for that name will process the job. If combined with handler from opts, you can effectively set a display name for a UI.
 
 ```typescript
 interface JobOpts{
@@ -250,6 +250,8 @@ interface JobOpts{
   removeOnFail: boolean; // If true, removes the job when it fails after all attempts.
                          // Default behavior is to keep the job in the failed set.
   stackTraceLimit: number; // Limits the amount of stack trace lines that will be recorded in the stacktrace.
+
+  handler: string; // Override the job handler - this allows you to set a friendly job display name for a UI without having to create a process handler for it. [optional]
 }
 ```
 
