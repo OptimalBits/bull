@@ -185,6 +185,14 @@ const emailQueue = new Queue('email')
 emailQueue.process('sendEmail', 25, sendEmail)
 ```
 
+Specify `*` as the process name will make it the default processor for all named jobs.  
+It frequently used to process all named jobs from one process function:
+```js
+const differentJobsQueue = new Queue('differentJobsQueue')
+differentJobsQueue.process('*', processFunction)
+differentJobsQueue.add('jobA', data, opts)
+differentJobsQueue.add('jobB', data, opts)
+```
 
 **Note:** in order to determine whether job completion is signaled by
 returning a promise or calling the `done` callback, Bull looks at
