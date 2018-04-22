@@ -417,4 +417,31 @@ describe('repeat', function() {
       }
     });
   });
+
+  it('should processes delayed jobs by priority', function(done) {
+    var _this = this;
+    var jobAdds = [];
+    var currentPriority = 1;
+    var nextTick = 1000;
+    var total = 0;
+
+    jobAdds.push(queue.add({ p: 1 }, { priority: 1, delay: nextTick * 3 }));
+    jobAdds.push(queue.add({ p: 2 }, { priority: 2, delay: nextTick * 2 }));
+    jobAdds.push(queue.add({ p: 3 }, { priority: 3, delay: nextTick }));
+
+    _this.clock.tick(nextTick * 3);
+
+    Promise.all(jobAdds).then(function() {
+      queue.process(function(job, jobDone) {
+        expect(job.id).to.be.ok;
+        expect(job.data.p).to.be.eql(currentPriority++);
+        total++;
+        jobDone();
+
+        if (currentPriority > 3) {
+          done();
+        }
+      });
+    }, done);
+  });
 });

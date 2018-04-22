@@ -12,6 +12,8 @@ Reference
   - [Queue#clean](#queueclean)
   - [Queue#close](#queueclose)
   - [Queue#getJob](#queuegetjob)
+  - [Queue#getJobs](#queuegetjobs)
+  - [Queue#getRepeatableJobs](#queuegetrepeatablejobs)
   - [Queue#removeRepeatable](#queueremoverepeatable)
   - [Queue#getJobCounts](#queuegetjobcounts)
   - [Queue#getCompletedCount](#queuegetcompletedcount)
@@ -88,7 +90,7 @@ interface AdvancedSettings {
   lockDuration: number = 30000; // Key expiration time for job locks.
   stalledInterval: number = 30000; // How often check for stalled jobs (use 0 for never checking).
   maxStalledCount: number = 1; // Max amount of times a stalled job will be re-processed.
-  guardInterval: number = 5000; // Poll interval for delayed jobs and added jobs.s
+  guardInterval: number = 5000; // Poll interval for delayed jobs and added jobs.
   retryProcessDelay: number = 5000; // delay before processing next job in case of internal error.
   backoffStrategies: {}; // A set of custom backoff strategies keyed by name.
 }
@@ -132,10 +134,10 @@ backoffStrategies: {
  *
  * Note: Concurrency defaults to 1 if not specified.
  */
-process(processor: (job, done?) => Promise<any> | string)
-process(concurrency: number, processor: (job, done?) => Promise<any> | string)
-process(name: string, processor: (job, done?) => Promise<any> | string)
-process(name: string, concurrency: number, processor: (job, done?) => Promise<any> | string)
+process(processor: ((job, done?) => Promise<any>) | string)
+process(concurrency: number, processor: ((job, done?) => Promise<any>) | string)
+process(name: string, processor: ((job, done?) => Promise<any>) | string)
+process(name: string, concurrency: number, processor: ((job, done?) => Promise<any>) | string)
 ```
 
 Defines a processing function for the jobs in a given Queue.
@@ -183,6 +185,14 @@ const emailQueue = new Queue('email')
 emailQueue.process('sendEmail', 25, sendEmail)
 ```
 
+Specify `*` as the process name will make it the default processor for all named jobs.  
+It frequently used to process all named jobs from one process function:
+```js
+const differentJobsQueue = new Queue('differentJobsQueue')
+differentJobsQueue.process('*', processFunction)
+differentJobsQueue.add('jobA', data, opts)
+differentJobsQueue.add('jobB', data, opts)
+```
 
 **Note:** in order to determine whether job completion is signaled by
 returning a promise or calling the `done` callback, Bull looks at
@@ -375,6 +385,25 @@ getJob(jobId: string): Promise<Job>
 
 Returns a promise that will return the job instance associated with the `jobId`
 parameter. If the specified job cannot be located, the promise will be resolved to `null`.
+
+---
+
+### Queue#getJobs
+
+```ts
+getJobs(types: string[], start?: number, end?: number, asc?: boolean): Promise<Job[]>
+```
+
+Returns a promise that will return an array of job instances of the given types. Optional parameters for range and ordering are provided.
+
+---
+
+### Queue#getRepeatableJobs
+```ts
+getRepeatableJobs(start?: number, end?: number, asc?: boolean): Promise <Job[]>
+```
+
+Returns a promise that will return an array of Repeatable Job configurations. Optional parameters for range and ordering are provided.
 
 ---
 
