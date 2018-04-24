@@ -6,6 +6,8 @@ v.3.4.1
 
 - Better check for closing in moveUnlockedJobsToWait, possibly fixing #806.
 
+[Changes](https://github.com/OptimalBits/bull/compare/v3.4.0...v3.4.1)
+
 v.3.4.0
 -------
 
