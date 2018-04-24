@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v.3.4.1
+-------
+
+- Better check for closing in moveUnlockedJobsToWait, possibly fixing #806.
+
 v.3.4.0
 -------
 
