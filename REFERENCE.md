@@ -732,6 +732,11 @@ A queue emits also some useful events:
   // Old jobs have been cleaned from the queue. `jobs` is an array of cleaned
   // jobs, and `type` is the type of jobs cleaned.
 });
+
+.on('drained', function() {
+  // Emitted every time the queue has processed all the waiting jobs (even if there can be some delayed jobs not yet processed)
+});
+
 ```
 
 ### Global events
