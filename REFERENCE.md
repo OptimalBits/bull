@@ -150,6 +150,8 @@ results, as a second argument to the "completed" event.
 If, however, the callback signature does not contain the `done` argument, a promise must be returned to signal job completion. If the promise is rejected, the error will be passed as a second argument to the "failed" event.
 If it is resolved, its value will be the "completed" event's second argument.
 
+You can specify a `concurrency` argument. Bull will then call your handler in parallel respecting this maximum value.
+
 A process function can also be declared as a separate process. This will make a better use of the available CPU cores
 and run the jobs in parallel. This is a perfect way to run blocking code. Just specify an absolute path to a processor module.
 i.e. a file exporting the process function like this:
@@ -161,13 +163,13 @@ module.exports = function(job){
   return value;
 }
 ```
-You can return a value or a promise to signale that the job has been completed.
+You can return a value or a promise to signal that the job has been completed.
 
 
-A name argument can be provided so that multiple process functions can be defined per queue. A named process will only process jobs that matches the given name. If you define multiple named process functions in one Queue the defined concurrency for each process function stacks up for the Queue. See the following examples:
+A `name` argument can be provided so that multiple process functions can be defined per queue. A named process will only process jobs that matches the given name. However, if you define multiple named process functions in one Queue, the defined concurrency for each process function stacks up for the Queue. See the following examples:
 ```js
 /***
- * For each named processor concurrency stacks up, so any of these three process functions
+ * For each named processor, concurrency stacks up, so any of these three process functions
  * can run with a concurrency of 125. To avoid this behaviour you need to create an own queue
  * for each process function.
  */
@@ -185,8 +187,8 @@ const emailQueue = new Queue('email')
 emailQueue.process('sendEmail', 25, sendEmail)
 ```
 
-Specify `*` as the process name will make it the default processor for all named jobs.  
-It frequently used to process all named jobs from one process function:
+Specifying `*` as the process name will make it the default processor for all named jobs.  
+It is frequently used to process all named jobs from one process function:
 ```js
 const differentJobsQueue = new Queue('differentJobsQueue')
 differentJobsQueue.process('*', processFunction)
@@ -213,9 +215,6 @@ queue.process(function(job) { // No done callback here :)
   return Promise.resolve();
 });
 ```
-
-You can specify a concurrency. Bull will then call your handler in parallel respecting this maximum value.
-
 
 ---
 
