@@ -146,6 +146,34 @@ describe('sandboxed process', function() {
     });
   });
 
+  it('should reuse process with single processors', function(done) {
+    var after = _.after(4, function() {
+      expect(queue.childPool.getAllFree().length).to.eql(1);
+      done();
+    });
+    queue.on('completed', function(job, value) {
+      try {
+        expect(value).to.be.eql(42);
+        expect(
+          Object.keys(queue.childPool.retained).length +
+            queue.childPool.getAllFree().length
+        ).to.eql(1);
+        after();
+      } catch (err) {
+        done(err);
+      }
+    });
+
+    Promise.all([
+      queue.add({ foo: 'bar1' }),
+      queue.add({ foo: 'bar2' }),
+      queue.add({ foo: 'bar3' }),
+      queue.add({ foo: 'bar4' })
+    ]).then(function() {
+      queue.process(__dirname + '/fixtures/fixture_processor_slow.js');
+    });
+  });
+
   it('should process and complete using done', function(done) {
     queue.process(__dirname + '/fixtures/fixture_processor_callback.js');
 
