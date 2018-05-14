@@ -27,7 +27,9 @@ function purgeQueue(queue) {
     'return'
   ].join('\n');
 
-  return queue.client.eval(script, 0, queue.toKey('*'));
+  return queue.client.eval(script, 0, queue.toKey('*')).finally(function() {
+    return client.quit();
+  });
 }
 
 cluster.setupMaster({

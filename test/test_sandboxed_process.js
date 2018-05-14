@@ -9,9 +9,10 @@ var _ = require('lodash');
 
 describe('sandboxed process', function() {
   var queue;
+  var client;
 
   beforeEach(function() {
-    var client = new redis();
+    client = new redis();
     return client.flushdb().then(function() {
       queue = utils.buildQueue('test process', {
         settings: {
@@ -24,10 +25,14 @@ describe('sandboxed process', function() {
   });
 
   afterEach(function() {
-    return queue.close().then(function() {
-      var client = new redis();
-      return client.flushall();
-    });
+    return queue
+      .close()
+      .then(function() {
+        return client.flushall();
+      })
+      .then(function() {
+        return client.quit();
+      });
   });
 
   it('should process and complete', function(done) {

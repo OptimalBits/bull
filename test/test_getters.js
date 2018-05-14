@@ -12,9 +12,10 @@ var _ = require('lodash');
 describe('Jobs getters', function() {
   this.timeout(12000);
   var queue;
+  var client;
 
   beforeEach(function() {
-    var client = new redis();
+    client = new redis();
     return client.flushdb();
   });
 
@@ -26,9 +27,14 @@ describe('Jobs getters', function() {
     this.timeout(
       queue.settings.stalledInterval * (1 + queue.settings.maxStalledCount)
     );
-    return queue.clean(1000).then(function() {
-      return queue.close();
-    });
+    return queue
+      .clean(1000)
+      .then(function() {
+        return queue.close();
+      })
+      .then(function() {
+        return client.quit();
+      });
   });
 
   it('should get waiting jobs', function() {

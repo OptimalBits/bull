@@ -7,13 +7,18 @@ var redis = require('ioredis');
 
 describe('connection', function() {
   var queue;
+  var client;
 
   beforeEach(function() {
-    var client = new redis();
+    client = new redis();
     return client.flushdb().then(function() {
       queue = utils.buildQueue();
       return queue;
     });
+  });
+
+  afterEach(function() {
+    return client.quit();
   });
 
   it('should recover from a connection loss', function(done) {
@@ -108,6 +113,7 @@ describe('connection', function() {
       .then(function() {
         expect(client.status).to.be.eql('ready');
         expect(subscriber.status).to.be.eql('ready');
+        return Promise.all([client.quit(), subscriber.quit()]);
       });
   });
 

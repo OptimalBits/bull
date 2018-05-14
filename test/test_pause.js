@@ -9,9 +9,14 @@ var redis = require('ioredis');
 var utils = require('./utils');
 
 describe('.pause', function() {
+  var client;
   beforeEach(function() {
-    var client = new redis();
+    client = new redis();
     return client.flushdb();
+  });
+
+  afterEach(function() {
+    return client.quit();
   });
 
   it('should pause a queue until resumed', function() {

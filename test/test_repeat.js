@@ -16,10 +16,11 @@ var MAX_INT = 2147483647;
 
 describe('repeat', function() {
   var queue;
+  var client;
 
   beforeEach(function() {
     this.clock = sinon.useFakeTimers();
-    var client = new redis();
+    client = new redis();
     return client.flushdb().then(function() {
       queue = utils.buildQueue('repeat', {
         settings: {
@@ -34,7 +35,9 @@ describe('repeat', function() {
 
   afterEach(function() {
     this.clock.restore();
-    return queue.close();
+    return queue.close().then(function() {
+      return client.quit();
+    });
   });
 
   it('should create multiple jobs if they have the same cron pattern', function(done) {

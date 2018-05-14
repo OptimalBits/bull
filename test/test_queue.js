@@ -23,14 +23,16 @@ Promise.config({
 
 describe('Queue', function() {
   var sandbox = sinon.sandbox.create();
+  var client;
 
   beforeEach(function() {
-    var client = new redis();
+    client = new redis();
     return client.flushdb();
   });
 
   afterEach(function() {
     sandbox.restore();
+    return client.quit();
   });
 
   describe('.close', function() {
@@ -157,9 +159,7 @@ describe('Queue', function() {
       expect(queue.client.options.db).to.be.eql(2);
       expect(queue.eclient.options.db).to.be.eql(2);
 
-      queue.close().catch(function(/*err*/) {
-        // Swallow error.
-      });
+      queue.close();
     });
 
     it('should create a queue with only a hostname', function() {
@@ -279,6 +279,7 @@ describe('Queue', function() {
           var client = new redis();
           return client.hgetall('myQ:q:' + job.id).then(function(result) {
             expect(result).to.not.be.null;
+            return client.quit();
           });
         })
         .then(function() {

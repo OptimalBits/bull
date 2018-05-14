@@ -10,9 +10,10 @@ var uuid = require('uuid');
 
 describe('Job', function() {
   var queue;
+  var client;
 
   beforeEach(function() {
-    var client = new redis();
+    client = new redis();
     return client.flushdb();
   });
 
@@ -26,7 +27,9 @@ describe('Job', function() {
     this.timeout(
       queue.settings.stalledInterval * (1 + queue.settings.maxStalledCount)
     );
-    return queue.close();
+    return queue.close().then(function() {
+      return client.quit();
+    });
   });
 
   describe('.create', function() {
@@ -492,94 +495,98 @@ describe('Job', function() {
     this.timeout(12000);
 
     var client = new redis();
-    return Job.create(queue, { foo: 'baz' }).then(function(job) {
-      return job
-        .isStuck()
-        .then(function(isStuck) {
-          expect(isStuck).to.be(false);
-          return job.getState();
-        })
-        .then(function(state) {
-          expect(state).to.be('waiting');
-          return scripts.moveToActive(queue).then(function() {
-            return job.moveToCompleted();
+    return Job.create(queue, { foo: 'baz' })
+      .then(function(job) {
+        return job
+          .isStuck()
+          .then(function(isStuck) {
+            expect(isStuck).to.be(false);
+            return job.getState();
+          })
+          .then(function(state) {
+            expect(state).to.be('waiting');
+            return scripts.moveToActive(queue).then(function() {
+              return job.moveToCompleted();
+            });
+          })
+          .then(function() {
+            return job.isCompleted();
+          })
+          .then(function(isCompleted) {
+            expect(isCompleted).to.be(true);
+            return job.getState();
+          })
+          .then(function(state) {
+            expect(state).to.be('completed');
+            return client.zrem(queue.toKey('completed'), job.id);
+          })
+          .then(function() {
+            return job.moveToDelayed(Date.now() + 10000, true);
+          })
+          .then(function() {
+            return job.isDelayed();
+          })
+          .then(function(yes) {
+            expect(yes).to.be(true);
+            return job.getState();
+          })
+          .then(function(state) {
+            expect(state).to.be('delayed');
+            return client.zrem(queue.toKey('delayed'), job.id);
+          })
+          .then(function() {
+            return job.moveToFailed(new Error('test'), true);
+          })
+          .then(function() {
+            return job.isFailed();
+          })
+          .then(function(isFailed) {
+            expect(isFailed).to.be(true);
+            return job.getState();
+          })
+          .then(function(state) {
+            expect(state).to.be('failed');
+            return client.zrem(queue.toKey('failed'), job.id);
+          })
+          .then(function(res) {
+            expect(res).to.be(1);
+            return job.getState();
+          })
+          .then(function(state) {
+            expect(state).to.be('stuck');
+            return client.rpop(queue.toKey('wait'));
+          })
+          .then(function() {
+            return client.lpush(queue.toKey('paused'), job.id);
+          })
+          .then(function() {
+            return job.isPaused();
+          })
+          .then(function(isPaused) {
+            expect(isPaused).to.be(true);
+            return job.getState();
+          })
+          .then(function(state) {
+            expect(state).to.be('paused');
+            return client.rpop(queue.toKey('paused'));
+          })
+          .then(function() {
+            return client.lpush(queue.toKey('wait'), job.id);
+          })
+          .then(function() {
+            return job.isWaiting();
+          })
+          .then(function(isWaiting) {
+            expect(isWaiting).to.be(true);
+            return job.getState();
+          })
+          .then(function(state) {
+            expect(state).to.be('waiting');
           });
-        })
-        .then(function() {
-          return job.isCompleted();
-        })
-        .then(function(isCompleted) {
-          expect(isCompleted).to.be(true);
-          return job.getState();
-        })
-        .then(function(state) {
-          expect(state).to.be('completed');
-          return client.zrem(queue.toKey('completed'), job.id);
-        })
-        .then(function() {
-          return job.moveToDelayed(Date.now() + 10000, true);
-        })
-        .then(function() {
-          return job.isDelayed();
-        })
-        .then(function(yes) {
-          expect(yes).to.be(true);
-          return job.getState();
-        })
-        .then(function(state) {
-          expect(state).to.be('delayed');
-          return client.zrem(queue.toKey('delayed'), job.id);
-        })
-        .then(function() {
-          return job.moveToFailed(new Error('test'), true);
-        })
-        .then(function() {
-          return job.isFailed();
-        })
-        .then(function(isFailed) {
-          expect(isFailed).to.be(true);
-          return job.getState();
-        })
-        .then(function(state) {
-          expect(state).to.be('failed');
-          return client.zrem(queue.toKey('failed'), job.id);
-        })
-        .then(function(res) {
-          expect(res).to.be(1);
-          return job.getState();
-        })
-        .then(function(state) {
-          expect(state).to.be('stuck');
-          return client.rpop(queue.toKey('wait'));
-        })
-        .then(function() {
-          return client.lpush(queue.toKey('paused'), job.id);
-        })
-        .then(function() {
-          return job.isPaused();
-        })
-        .then(function(isPaused) {
-          expect(isPaused).to.be(true);
-          return job.getState();
-        })
-        .then(function(state) {
-          expect(state).to.be('paused');
-          return client.rpop(queue.toKey('paused'));
-        })
-        .then(function() {
-          return client.lpush(queue.toKey('wait'), job.id);
-        })
-        .then(function() {
-          return job.isWaiting();
-        })
-        .then(function(isWaiting) {
-          expect(isWaiting).to.be(true);
-          return job.getState();
-        })
-        .then(function(state) {
-          expect(state).to.be('waiting');
-        });
-    });
+      })
+      .then(function() {
+        return client.quit();
+      });
   });
 
   describe('.finished', function() {

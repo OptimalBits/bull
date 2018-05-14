@@ -147,6 +147,7 @@ describe('events', function() {
     var queue = new Queue('test pub sub');
     queue.on('waiting', function(jobId) {
       expect(parseInt(jobId, 10)).to.be.eql(1);
+      client.quit();
       done();
     });
     queue.once('registered:waiting', function() {

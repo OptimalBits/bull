@@ -7,9 +7,10 @@ var redis = require('ioredis');
 
 describe('workers', function() {
   var queue;
+  var client;
 
   beforeEach(function() {
-    var client = new redis();
+    client = new redis();
     return client.flushdb().then(function() {
       queue = utils.buildQueue('test workers', {
         settings: {
@@ -22,7 +23,9 @@ describe('workers', function() {
   });
 
   afterEach(function() {
-    return queue.close();
+    return queue.close().then(function() {
+      return client.quit();
+    });
   });
 
   it('should get all workers for this queue', function() {

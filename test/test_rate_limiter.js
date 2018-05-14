@@ -8,9 +8,10 @@ var _ = require('lodash');
 
 describe('Rate limiter', function() {
   var queue;
+  var client;
 
   beforeEach(function() {
-    var client = new redis();
+    client = new redis();
     return client.flushdb().then(function() {
       queue = utils.buildQueue('test rate limiter', {
         limiter: {
@@ -23,7 +24,9 @@ describe('Rate limiter', function() {
   });
 
   afterEach(function() {
-    return queue.close();
+    return queue.close().then(function() {
+      return client.quit();
+    });
   });
 
   it('should obey the rate limit', function(done) {
