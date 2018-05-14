@@ -1364,6 +1364,40 @@ describe('Queue', function() {
         retryQueue.close().then(done);
       });
     });
+
+    it('retry a job that fails using job retry method', function(done) {
+      var called = 0;
+      var failedOnce = false;
+      var notEvenErr = new Error('Not even!');
+
+      var retryQueue = utils.buildQueue('retry-test-queue');
+
+      retryQueue.add({ foo: 'bar' }).then(function(job) {
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
+      });
+
+      retryQueue.process(function(job, jobDone) {
+        called++;
+        if (called % 2 !== 0) {
+          throw notEvenErr;
+        }
+        jobDone();
+      });
+
+      retryQueue.once('failed', function(job, err) {
+        expect(job).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
+        expect(err).to.be.eql(notEvenErr);
+        failedOnce = true;
+        job.retry();
+      });
+
+      retryQueue.once('completed', function() {
+        expect(failedOnce).to.be.eql(true);
+        retryQueue.close().then(done);
+      });
+    });
   });
 
   it('count added, unprocessed jobs', function() {
