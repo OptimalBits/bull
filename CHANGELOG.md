@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v.3.4.2
+-------
+
+- Fixed #903 Globally paused queue cannot receive job (or not shown in Arena untill queue is globally resumed).
+- Workaround for #911 Seperate process worker fails to launch when Node is started with --inspect flag
+- added missing retain on reused child job #908.
+- added more tests for child jobs.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.4.1...v3.4.2)
+
 v.3.4.1
 -------
 
