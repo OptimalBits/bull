@@ -46,6 +46,30 @@ describe('Child pool', function() {
       });
   });
 
+  it('should return a new child if reused the last free one', function() {
+    var processor = __dirname + '/fixtures/fixture_processor_bar.js';
+    var child;
+    return pool
+      .retain(processor)
+      .then(function(_child) {
+        expect(_child).to.be.ok;
+        child = _child;
+        pool.release(child);
+
+        expect(pool.retained).to.be.empty;
+
+        return pool.retain(processor);
+      })
+      .then(function(newChild) {
+        expect(child).to.be.eql(newChild);
+        child = newChild;
+        return pool.retain(processor);
+      })
+      .then(function(newChild) {
+        expect(child).not.to.be.eql(newChild);
+      });
+  });
+
   it('should return a new child if none free', function() {
     var processor = __dirname + '/fixtures/fixture_processor_bar.js';
     var child;
