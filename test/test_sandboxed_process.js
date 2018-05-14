@@ -49,62 +49,6 @@ describe('sandboxed process', function() {
     queue.add({ foo: 'bar' });
   });
 
-  it('reuses same child process when same path', function(done) {
-    var processFile = __dirname + '/fixtures/fixture_processor.js';
-    var child;
-
-    queue.process('first', processFile);
-    queue.process('second', processFile);
-
-    function getChildFromPool() {
-      var id = Object.keys(queue.childPool.retained)[0];
-
-      return queue.childPool.retained[id];
-    }
-
-    function completedSecondHandler(job) {
-      try {
-        expect(job.data).to.be.eql({ foo: 'bar' });
-        expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
-        expect(queue.childPool.free[processFile]).to.have.lengthOf(1);
-        done();
-      } catch (err) {
-        done(err);
-      }
-    }
-
-    function activeSecondHandler() {
-      try {
-        expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
-        expect(queue.childPool.free[processFile]).to.have.lengthOf(0);
-
-        expect(getChildFromPool()).to.equal(child);
-      } catch (err) {
-        done(err);
-      }
-    }
-
-    queue.once('completed', function() {
-      queue.once('active', activeSecondHandler);
-      queue.once('completed', completedSecondHandler);
-
-      queue.add('second', { foo: 'bar' });
-    });
-
-    queue.once('active', function() {
-      try {
-        expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
-        expect(queue.childPool.free[processFile]).to.have.lengthOf(0);
-
-        child = getChildFromPool();
-      } catch (err) {
-        done(err);
-      }
-    });
-
-    queue.add('first');
-  });
-
   it('should process with named processor', function(done) {
     var processFile = __dirname + '/fixtures/fixture_processor.js';
     queue.process('foobar', processFile);
