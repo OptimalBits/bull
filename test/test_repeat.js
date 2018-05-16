@@ -447,4 +447,39 @@ describe('repeat', function() {
       });
     }, done);
   });
+
+  it('should use seconds and milliseconds as valid intervals', function(done) {
+    var _this = this;
+    var date = new Date('2017-02-07 9:24:00');
+    this.clock.tick(date.getTime());
+    var nextTick = ONE_SECOND + 500;
+
+    queue
+      .add('repeat', { type: 'm' }, { repeat: { milliseconds: 2000 } })
+      .then(function() {
+        _this.clock.tick(ONE_SECOND);
+        return queue.add('repeat', { type: 's' }, { repeat: { seconds: 2 } });
+      })
+      .then(function() {
+        _this.clock.tick(nextTick);
+      });
+
+    queue.process('repeat', function() {
+      // dummy
+    });
+
+    var prevType;
+    var counter = 0;
+    queue.on('completed', function(job) {
+      _this.clock.tick(nextTick);
+      if (prevType) {
+        expect(prevType).to.not.be.eql(job.data.type);
+      }
+      prevType = job.data.type;
+      counter++;
+      if (counter == 20) {
+        done();
+      }
+    });
+  });
 });
