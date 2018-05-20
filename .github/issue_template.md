@@ -6,7 +6,7 @@ issue can be resolved efficiently. The following template should be filled for b
 
 ## Description
 
-## Test code to reproduce
+## Minimal, Working Test code to reproduce the issue.
 
 ## Bull version
 
