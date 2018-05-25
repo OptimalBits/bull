@@ -14,7 +14,7 @@ var ONE_HOUR = 60 * ONE_MINUTE;
 var ONE_DAY = 24 * ONE_HOUR;
 var MAX_INT = 2147483647;
 
-describe('repeat', function() {
+describe.only('repeat', function() {
   var queue;
   var client;
 
@@ -481,5 +481,25 @@ describe('repeat', function() {
         done();
       }
     });
+  });
+
+  it('should throw an error when using .cron and .every simutaneously', function(done) {
+    queue
+      .add(
+        'repeat',
+        { type: 'm' },
+        { repeat: { every: 5000, cron: '*/1 * * * * *' } }
+      )
+      .then(
+        function() {
+          throw new Error('The error was not thrown');
+        },
+        function(err) {
+          expect(err.message).to.be.eql(
+            'Both .cron and .every options are defined for this repeatable job'
+          );
+          done();
+        }
+      );
   });
 });
