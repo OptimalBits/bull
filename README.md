@@ -63,6 +63,9 @@
   <a href="http://taskforce.sh"  style="margin-left: 50px;">
     <img src="http://taskforce.sh/assets/logo_square.png" width="160" alt="Taskforce.sh, Inc" />
   </a>
+  <a href="https://getstream.io">
+    <img src="https://i.imgur.com/asDSMwp.png" alt="GetStream.io" />
+  </a>
 </div>
 
 Are you developing bull sponsored by a company? Please, let us now!
