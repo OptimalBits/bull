@@ -14,7 +14,7 @@ var ONE_HOUR = 60 * ONE_MINUTE;
 var ONE_DAY = 24 * ONE_HOUR;
 var MAX_INT = 2147483647;
 
-describe.only('repeat', function() {
+describe('repeat', function() {
   var queue;
   var client;
 
