@@ -493,4 +493,59 @@ describe('repeat', function() {
       });
     }, done);
   });
+
+  it('should use ".every" as a valid interval', function(done) {
+    var _this = this;
+    var date = new Date('2017-02-07 9:24:00');
+    this.clock.tick(date.getTime());
+    var nextTick = ONE_SECOND + 500;
+
+    queue
+      .add('repeat', { type: 'm' }, { repeat: { every: 2000 } })
+      .then(function() {
+        _this.clock.tick(ONE_SECOND);
+        return queue.add('repeat', { type: 's' }, { repeat: { every: 2000 } });
+      })
+      .then(function() {
+        _this.clock.tick(nextTick);
+      });
+
+    queue.process('repeat', function() {
+      // dummy
+    });
+
+    var prevType;
+    var counter = 0;
+    queue.on('completed', function(job) {
+      _this.clock.tick(nextTick);
+      if (prevType) {
+        expect(prevType).to.not.be.eql(job.data.type);
+      }
+      prevType = job.data.type;
+      counter++;
+      if (counter == 20) {
+        done();
+      }
+    });
+  });
+
+  it('should throw an error when using .cron and .every simutaneously', function(done) {
+    queue
+      .add(
+        'repeat',
+        { type: 'm' },
+        { repeat: { every: 5000, cron: '*/1 * * * * *' } }
+      )
+      .then(
+        function() {
+          throw new Error('The error was not thrown');
+        },
+        function(err) {
+          expect(err.message).to.be.eql(
+            'Both .cron and .every options are defined for this repeatable job'
+          );
+          done();
+        }
+      );
+  });
 });
