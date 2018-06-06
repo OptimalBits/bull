@@ -231,6 +231,9 @@ Creates a new job and adds it to the queue. If the queue is empty the job will b
 
 An optional name can be added, so that only process functions defined for that name will process the job.
 
+**Note:**
+You need to define *processors* for all the named jobs that you add to your queue or the queue will complain that you are missing a processor for the given job, unless you use the ```*``` as job name when defining the processor.
+
 ```typescript
 interface JobOpts{
   priority: number; // Optional priority value. ranges from 1 (highest priority) to MAX_INT  (lowest priority). Note that

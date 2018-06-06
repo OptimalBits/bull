@@ -334,6 +334,52 @@ describe('repeat', function() {
     });
   });
 
+  it('should not re-add a repeatable job after it has been deleted', function() {
+    var _this = this;
+    var date = new Date('2017-02-07 9:24:00');
+    var nextTick = 2 * ONE_SECOND;
+    var repeat = { cron: '*/2 * * * * *' };
+    var nextRepeatableJob = queue.nextRepeatableJob;
+    this.clock.tick(date.getTime());
+
+    var afterRemoved = new Promise(function(resolve) {
+      queue.process(function() {
+        queue.nextRepeatableJob = function() {
+          var args = arguments;
+          // In order to simulate race condition
+          // Make removeRepeatables happen any time after a moveToX is called
+          return queue
+            .removeRepeatable(_.defaults({ jobId: 'xxxx' }, repeat))
+            .then(function() {
+              // nextRepeatableJob will now re-add the removed repeatable
+              return nextRepeatableJob.apply(queue, args);
+            })
+            .then(function(result) {
+              resolve();
+              return result;
+            });
+        };
+      });
+
+      queue
+        .add({ foo: 'bar' }, { repeat: repeat, jobId: 'xxxx' })
+        .then(function() {
+          _this.clock.tick(nextTick);
+        });
+
+      queue.on('completed', function() {
+        _this.clock.tick(nextTick);
+      });
+    });
+
+    return afterRemoved.then(function() {
+      return queue.getRepeatableJobs().then(function(jobs) {
+        // Repeatable job was recreated
+        expect(jobs.length).to.eql(0);
+      });
+    });
+  });
+
   it('should allow adding a repeatable job after removing it', function() {
     queue.process(function(/*job*/) {
       // dummy
