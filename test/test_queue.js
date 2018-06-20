@@ -2298,5 +2298,42 @@ describe('Queue', function() {
           done();
         });
     });
+
+    it('should emit Job#completed after processing the job result', function(done) {
+      var jobEvent = sinon.spy(function(result) {
+        expect(result).to.be.eql('The result');
+        expect(jobEvent.calledAfter(queueEvent)).to.be.ok;
+        done();
+      });
+      var queueEvent = sinon.spy();
+
+      queue.on('completed', queueEvent);
+
+      queue.process(function(job) {
+        job.on('completed', jobEvent);
+        return 'The result';
+      });
+
+      queue.add({ some: 'data' });
+    });
+
+    it('should emit Job#failed event after processing the job error', function(done) {
+      const jobError = new Error('an error');
+      var jobEvent = sinon.spy(function(error) {
+        expect(error).to.be.eql(jobError);
+        expect(jobEvent.calledAfter(queueEvent)).to.be.ok;
+        done();
+      });
+      var queueEvent = sinon.spy();
+
+      queue.on('failed', queueEvent);
+
+      queue.process(function(job) {
+        job.on('failed', jobEvent);
+        throw jobError;
+      });
+
+      queue.add({ some: 'data' });
+    });
   });
 });

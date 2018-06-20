@@ -190,7 +190,7 @@ const emailQueue = new Queue('email')
 emailQueue.process('sendEmail', 25, sendEmail)
 ```
 
-Specifying `*` as the process name will make it the default processor for all named jobs.  
+Specifying `*` as the process name will make it the default processor for all named jobs.
 It is frequently used to process all named jobs from one process function:
 ```js
 const differentJobsQueue = new Queue('differentJobsQueue')
@@ -744,6 +744,21 @@ A queue emits also some useful events:
 });
 
 ```
+
+A job emits some events too:
+
+```js
+.on('failed', function(job, err){
+  // The job failed with reason `err`!
+  // This is fired *after* the queue's `failed` event
+})
+
+.on('completed', function(job, result){
+  // The job successfully completed with a `result`.
+  // This is fired *after* the queue's `completed` event
+})
+```
+
 
 ### Global events
 
