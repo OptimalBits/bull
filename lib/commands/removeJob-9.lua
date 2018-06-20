@@ -9,7 +9,9 @@
       KEYS[4] 'paused',
       KEYS[5] 'completed',
       KEYS[6] 'failed',
-      KEYS[7] jobId
+      KEYS[7] 'priority',
+      KEYS[8] 'id', 
+      KEYS[9] jobId -- Index range modified from 7 to 9
 
       ARGV[1]  jobId
       ARGV[2]  lock token
@@ -20,7 +22,7 @@
 
 -- TODO PUBLISH global event 'removed'
 
-local lockKey = KEYS[7] .. ':lock'
+local lockKey = KEYS[9] .. ':lock'
 local lock = redis.call("GET", lockKey)
 if not lock then             -- or (lock == ARGV[2])) then
   redis.call("LREM", KEYS[1], 0, ARGV[1])
@@ -29,7 +31,9 @@ if not lock then             -- or (lock == ARGV[2])) then
   redis.call("LREM", KEYS[4], 0, ARGV[1])
   redis.call("ZREM", KEYS[5], ARGV[1])
   redis.call("ZREM", KEYS[6], ARGV[1])
-  redis.call("DEL", KEYS[7])
+  redis.call("ZREM", KEYS[7], ARGV[1])
+  redis.call("DECR", KEYS[8])
+  redis.call("DEL", KEYS[9])
   return 1
 else
   return 0
