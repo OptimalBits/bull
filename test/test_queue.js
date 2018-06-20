@@ -2318,7 +2318,7 @@ describe('Queue', function() {
     });
 
     it('should emit Job#failed event after processing the job error', function(done) {
-      const jobError = new Error('an error');
+      var jobError = new Error('an error');
       var jobEvent = sinon.spy(function(error) {
         expect(error).to.be.eql(jobError);
         expect(jobEvent.calledAfter(queueEvent)).to.be.ok;
