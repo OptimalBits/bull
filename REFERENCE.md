@@ -743,6 +743,10 @@ A queue emits also some useful events:
   // Emitted every time the queue has processed all the waiting jobs (even if there can be some delayed jobs not yet processed)
 });
 
+.on('removed', function(job){
+  // A job successfully removed.
+});
+
 ```
 
 ### Global events
