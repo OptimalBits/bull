@@ -129,7 +129,7 @@ NODE_DEBUG=bull node ./your-script.js
 Custom backoff strategy
 -----------------------
 
-When the builtin backoff strategies on retries are not sufficient, a custom strategy can be defined. Custom backoff strategies are defined by a function on the queue:
+When the builtin backoff strategies on retries are not sufficient, a custom strategy can be defined. Custom backoff strategies are defined by a function on the queue. The number of attempts already made to process the job is passed to this function as the first parameter.
 
 ```js
 var Queue = require('bull');
@@ -137,7 +137,7 @@ var Queue = require('bull');
 var myQueue = new Queue("Server B", {
   settings: {
     backoffStrategies: {
-      jitter: function () {
+      jitter: function (attemptsMade) {
         return 5000 + Math.random() * 500;
       }
     }
