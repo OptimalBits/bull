@@ -53,6 +53,8 @@
 
 ### Sponsors
 
+Please visit our sponsors!:
+
 <div style="display:flex; align-items: center;" valign="middle">
   <a href="https://getstream.io/winds?utm_source=bull&utm_medium=banner&utm_campaign=github" >
     <img src="https://getstream.imgix.net/images/winds/winds-word-logo.svg" alt="Winds" width="200" style="padding: 10px"/>
@@ -65,7 +67,7 @@
   </a>
 </div>
 
-Are you developing bull sponsored by a company? Please, let us now!
+Do you want to sponsor bull development? Please, let us now!
 
 
 ---
