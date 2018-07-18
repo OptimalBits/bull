@@ -129,7 +129,7 @@ NODE_DEBUG=bull node ./your-script.js
 Custom backoff strategy
 -----------------------
 
-When the builtin backoff strategies on retries are not sufficient, a custom strategy can be defined. Custom backoff strategies are defined by a function on the queue. The number of attempts already made to process the job is passed to this function as the first parameter.
+When the builtin backoff strategies on retries are not sufficient, a custom strategy can be defined. Custom backoff strategies are defined by a function on the queue. The number of attempts already made to process the job is passed to this function as the first parameter, the error that the job failed with as the second parameter.
 
 ```js
 var Queue = require('bull');
@@ -137,7 +137,7 @@ var Queue = require('bull');
 var myQueue = new Queue("Server B", {
   settings: {
     backoffStrategies: {
-      jitter: function (attemptsMade) {
+      jitter: function (attemptsMade, err) {
         return 5000 + Math.random() * 500;
       }
     }
@@ -156,4 +156,44 @@ myQueue.add({foo: 'bar'}, {
 });
 ```
 
+You may base you backoff strategy on the error that the job throws:
+```js
+var Queue = require('bull');
 
+function MySpecificError() {}
+
+var myQueue = new Queue('Server C', {
+  settings: {
+    backoffStrategies: {
+      foo: function (attemptsMade, err) {
+        if (err instanceof MySpecificError) {
+          return 10000;
+        }
+        return 1000;
+      }
+    }
+  }
+});
+
+myQueue.process(function(job, done){
+  if (job.data.msg === 'Specific Error') {
+    throw new MySpecificError();
+  } else {
+    throw new Error();
+  }
+});
+
+myQueue.add({msg: 'Hello'}, {
+  attempts: 3,
+  backoff: {
+    type: 'foo'
+  }
+});
+
+myQueue.add({msg: 'Specific Error'}, {
+ attempts: 3,
+ backoff: {
+   type: 'foo'
+ }
+});
+```
