@@ -1948,6 +1948,49 @@ describe('Queue', function() {
       });
     });
 
+    it('should retry a job after a delay if a custom backoff is given based on the error thrown', function(done) {
+      function CustomError() {}
+
+      this.timeout(12000);
+      queue = utils.buildQueue('test retries and backoffs', {
+        settings: {
+          backoffStrategies: {
+            custom: function(attemptsMade, err) {
+              if (err instanceof CustomError) {
+                return 1500;
+              }
+              return 500;
+            }
+          }
+        }
+      });
+      var start;
+      queue.isReady().then(function() {
+        queue.process(function(job, jobDone) {
+          if (job.attemptsMade < 2) {
+            throw new CustomError('Hey, custom error!');
+          }
+          jobDone();
+        });
+
+        start = Date.now();
+        queue.add(
+          { foo: 'bar' },
+          {
+            attempts: 3,
+            backoff: {
+              type: 'custom'
+            }
+          }
+        );
+      });
+      queue.on('completed', function() {
+        var elapse = Date.now() - start;
+        expect(elapse).to.be.greaterThan(3000);
+        done();
+      });
+    });
+
     it('should not retry a job that has been removed', function(done) {
       queue = utils.buildQueue('retry a removed job');
       var attempts = 0;
