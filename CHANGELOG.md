@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v.3.4.3
+-------
+
+- Fixed #994 queue.getJobs() race condition.
+- Fixed #966 Race conditions reviving repeatable jobs.
+- Fixed getters: Update types array to include paused.
+- Fixed #958 job.finished slowdown.
+- Fixed #949 TypeError: job.queue.client.isFinished is not a function.
+- Fixed #870 TypeError when retrying jobs.
+- Fixed #942 Support for milliseconds intervals in repeatable jobs.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.4.2...v3.4.3)
+
 v.3.4.2
 -------
 
