@@ -1,13 +1,18 @@
 {
   "name": "bull",
-  "version": "3.4.3",
+  "version": "3.4.4",
   "description": "Job manager",
   "main": "./index.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/OptimalBits/bull.git"
   },
-  "keywords": ["job", "queue", "task", "parallel"],
+  "keywords": [
+    "job",
+    "queue",
+    "task",
+    "parallel"
+  ],
   "author": "OptimalBits",
   "license": "MIT",
   "readmeFilename": "README.md",
@@ -38,14 +43,16 @@
     "lint": "eslint lib test",
     "pretest": "npm run lint",
     "test": "NODE_ENV=test mocha --exit",
-    "coveralls":
-      "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- --exit -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
+    "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- --exit -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "postpublish": "git push && git push --tags",
     "prettier": "prettier --config package.json --write '**/*.js'",
     "precommit": "lint-staged"
   },
   "lint-staged": {
-    "*.{js,json}": ["prettier --write", "git add"]
+    "*.{js,json}": [
+      "prettier --write",
+      "git add"
+    ]
   },
   "prettier": {
     "singleQuote": true
@@ -61,7 +68,10 @@
       "no-console": [
         2,
         {
-          "allow": ["warn", "error"]
+          "allow": [
+            "warn",
+            "error"
+          ]
         }
       ],
       "no-underscore-dangle": 0
