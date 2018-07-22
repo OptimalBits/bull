@@ -496,21 +496,33 @@ describe('repeat', function() {
 
   it('should use ".every" as a valid interval', function(done) {
     var _this = this;
+    var interval = ONE_SECOND * 2;
     var date = new Date('2017-02-07 9:24:00');
-    this.clock.tick(date.getTime());
-    var nextTick = ONE_SECOND + 500;
+
+    // Quantize time
+    var time = Math.floor(date.getTime() / interval) * interval;
+    this.clock.tick(time);
+
+    var nextTick = ONE_SECOND * 2 + 500;
 
     queue
-      .add('repeat', { type: 'm' }, { repeat: { every: 2000 } })
+      .add('repeat m', { type: 'm' }, { repeat: { every: interval } })
       .then(function() {
-        _this.clock.tick(ONE_SECOND);
-        return queue.add('repeat', { type: 's' }, { repeat: { every: 2000 } });
+        return queue.add(
+          'repeat s',
+          { type: 's' },
+          { repeat: { every: interval } }
+        );
       })
       .then(function() {
         _this.clock.tick(nextTick);
       });
 
-    queue.process('repeat', function() {
+    queue.process('repeat m', function() {
+      // dummy
+    });
+
+    queue.process('repeat s', function() {
       // dummy
     });
 
