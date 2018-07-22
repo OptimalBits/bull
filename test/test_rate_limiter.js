@@ -29,6 +29,32 @@ describe('Rate limiter', function() {
     });
   });
 
+  it('should throw exception if missing duration option', function(done) {
+    try {
+      var queue = utils.buildQueue('rate limiter fail', {
+        limiter: {
+          max: 5
+        }
+      });
+      expect.fail('Should not allow missing `duration` option');
+    } catch (err) {
+      done();
+    }
+  });
+
+  it('should throw exception if missing max option', function(done) {
+    try {
+      var queue = utils.buildQueue('rate limiter fail', {
+        limiter: {
+          duration: 5000
+        }
+      });
+      expect.fail('Should not allow missing `max`option');
+    } catch (err) {
+      done();
+    }
+  });
+
   it('should obey the rate limit', function(done) {
     var startTime = new Date().getTime();
     var numJobs = 4;
