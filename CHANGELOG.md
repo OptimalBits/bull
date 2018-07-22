@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v.3.4.4
+-------
+
+- Partially fixed #845. When call queue.close() bull throws Error: Connection is closed.
+- Fixed #998. Check for existence of rate limiter options.
+- Fixed #1003. Fixed fixed repeatable jobs duplication using every.
+- Feature/provide error to custom backoff strategy.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.4.3...v3.4.4)
+
 v.3.4.3
 -------
 
