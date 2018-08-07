@@ -297,22 +297,25 @@ describe('Job', function() {
   });
 
   describe('.moveToCompleted', function() {
-    it('marks the job as completed', function() {
-      return Job.create(queue, { foo: 'bar' }).then(function(job) {
-        return job
-          .isCompleted()
-          .then(function(isCompleted) {
-            expect(isCompleted).to.be(false);
-          })
-          .then(function() {
-            return job.moveToCompleted('succeeded', true);
-          })
-          .then(function(/*moved*/) {
-            return job.isCompleted().then(function(isCompleted) {
-              expect(isCompleted).to.be(true);
-              expect(job.returnvalue).to.be('succeeded');
+    it('marks the job as completed and returns new job', function() {
+      return Job.create(queue, { foo: 'bar' }).then(function(job1) {
+        return Job.create(queue, { foo: 'bar' }).then(function(job2) {
+          return job2
+            .isCompleted()
+            .then(function(isCompleted) {
+              expect(isCompleted).to.be(false);
+            })
+            .then(function() {
+              return job2.moveToCompleted('succeeded', true);
+            })
+            .then(function(job1Id) {
+              return job2.isCompleted().then(function(isCompleted) {
+                expect(isCompleted).to.be(true);
+                expect(job2.returnvalue).to.be('succeeded');
+                expect(job1Id[1]).to.be(job1.id);
+              });
             });
-          });
+        });
       });
     });
   });
