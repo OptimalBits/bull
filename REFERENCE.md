@@ -699,23 +699,22 @@ Returns a promise that resolves or rejects when the job completes or fails.
 ### Job#moveToCompleted
 
 ```ts
-moveToCompleted(returnValue, ignoreLock): Promise<string[]>
+moveToCompleted(returnValue, ignoreLock): Promise<string[Jobdata, JobId] | null>
 ```
 
-Moves a job to the completed queue. Pulls a job from 'waiting' to 'active' and returns a promise with it's id.
+Moves a job to the `completed` queue. Pulls a job from 'waiting' to 'active' and returns a tuple containing the next jobs data and id. If no job is in the `waiting` queue, returns null.
 
 ---
 
 ### Job#moveToFailed
 
 ```ts
-moveToFailed(errorInfo, ignoreLock): Promise<void>
+moveToFailed(errorInfo, ignoreLock): Promise<string[Jobdata, JobId] | null>
 ```
 
-Moves a job to the failed queue.
+Moves a job to the `failed` queue. Pulls a job from 'waiting' to 'active' and returns a tuple containing the next jobs data and id. If no job is in the `waiting` queue, returns null.
 
 ---
-
 
 
 Events

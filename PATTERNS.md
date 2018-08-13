@@ -221,10 +221,10 @@ queue.add({ random_attr: "random_value" });
 const job: Job = await queue.getNextJob();
 ```
 
-3. (Optional) Move the job to the 'failed' queue if something goes wrong.
+3. Move the job to the 'failed' queue if something goes wrong.
 
 ```typescript
-await job.moveToFailed(
+const (nextJobData, nextJobId) = await job.moveToFailed(
   {
     message: "Call to external service failed!",
   },
@@ -232,10 +232,18 @@ await job.moveToFailed(
 );
 ```
 
-4. Move the job to the 'completed' queue.
+3. Move the job to the 'completed' queue.
 
 ```typescript
-const newJob = await job.moveToCompleted("succeeded", true);
+const (nextJobData, nextJobId) = await job.moveToCompleted("succeeded", true);
+```
+
+4. Return the next job if one is returned.
+
+```typescript
+if (nextJobdata) {
+  return Job.fromJSON(queue, nextJobData, nextJobId);
+}
 ```
 
 Then you can easily wrap `bull` in an API for use with external systems.
