@@ -11,7 +11,7 @@
       KEYS[6] 'failed',
       KEYS[7] 'priority',
       KEYS[8] 'id', 
-      KEYS[9] jobId -- Index range modified from 7 to 9
+      KEYS[9] jobId
 
       ARGV[1]  jobId
       ARGV[2]  lock token
