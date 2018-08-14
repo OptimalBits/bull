@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v.3.4.5
+-------
+- Fixed Unhandled promise rejections #1012.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.4.4...v3.4.5)
+
 v.3.4.4
 -------
 
