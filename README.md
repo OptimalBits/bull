@@ -53,19 +53,21 @@
 
 ### Sponsors
 
-<div valign="middle">
-  <a href="http://mixmax.com">
-    <img src="https://mixmax.com/images/logo_confirmation.png" alt="Mixmax, Inc" width="85" />
+Please visit our sponsors!:
+
+<div style="display:flex; align-items: center;" valign="middle">
+  <a href="https://getstream.io/winds?utm_source=bull&utm_medium=banner&utm_campaign=github" >
+    <img src="https://getstream.imgix.net/images/winds/winds-word-logo.svg" alt="Winds" width="200" style="padding: 10px"/>
   </a>
-  <a href="http://optimalbits.com">
-    <img src="http://optimalbits.com/images/logo.png" />
+  <a href="http://mixmax.com">
+    <img src="https://mixmax.com/images/logo_confirmation.png" alt="Mixmax, Inc" width="75" style="padding: 10px"/>
   </a>
   <a href="http://taskforce.sh"  style="margin-left: 50px;">
-    <img src="http://taskforce.sh/assets/logo_square.png" width="160" alt="Taskforce.sh, Inc" />
+    <img src="http://taskforce.sh/assets/logo_square.png" width="160" alt="Taskforce.sh, Inc" style="padding: 10px"/>
   </a>
 </div>
 
-Are you developing bull sponsored by a company? Please, let us now!
+Do you want to sponsor bull development? Please, let us now!
 
 
 ---

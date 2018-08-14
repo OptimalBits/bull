@@ -1,6 +1,29 @@
 Changelog
 =========
 
+v.3.4.4
+-------
+
+- Partially fixed #845. When call queue.close() bull throws Error: Connection is closed.
+- Fixed #998. Check for existence of rate limiter options.
+- Fixed #1003. Fixed fixed repeatable jobs duplication using every.
+- Feature/provide error to custom backoff strategy.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.4.3...v3.4.4)
+
+v.3.4.3
+-------
+
+- Fixed #994 queue.getJobs() race condition.
+- Fixed #966 Race conditions reviving repeatable jobs.
+- Fixed getters: Update types array to include paused.
+- Fixed #958 job.finished slowdown.
+- Fixed #949 TypeError: job.queue.client.isFinished is not a function.
+- Fixed #870 TypeError when retrying jobs.
+- Fixed #942 Support for milliseconds intervals in repeatable jobs.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.4.2...v3.4.3)
+
 v.3.4.2
 -------
 
