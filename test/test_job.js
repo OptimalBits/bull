@@ -91,6 +91,37 @@ describe('Job', function() {
     });
   });
 
+  describe('.add jobs on priority queues', function() {
+    it('add 4 jobs with different priorities', function() {
+      return queue
+        .add({ foo: 'bar' }, { jobId: '1', priority: 3 })
+        .then(function() {
+          return queue.add({ foo: 'bar' }, { jobId: '2', priority: 3 });
+        })
+        .then(function() {
+          return queue.add({ foo: 'bar' }, { jobId: '3', priority: 2 });
+        })
+        .then(function() {
+          return queue.add({ foo: 'bar' }, { jobId: '4', priority: 1 });
+        })
+        .then(function() {
+          return queue
+            .getWaiting()
+            .then(function(result) {
+              var waitingIDs = [];
+              result.forEach(function(element) {
+                waitingIDs.push(element.id);
+              });
+              return waitingIDs;
+            })
+            .then(function(waitingIDs) {
+              expect(waitingIDs.length).to.be.equal(4);
+              expect(waitingIDs).to.be.eql(['4', '3', '1', '2']);
+            });
+        });
+    });
+  });
+
   describe('.update', function() {
     it('should allow updating job data', function() {
       return Job.create(queue, { foo: 'bar' })
@@ -211,6 +242,94 @@ describe('Job', function() {
           .then(done)
           .catch(done);
       });
+    });
+  });
+
+  describe('.remove on priority queues', function() {
+    it('remove a job with jobID 1 and priority 3 and check the new order in the queue', function() {
+      return queue
+        .add({ foo: 'bar' }, { jobId: '1', priority: 3 })
+        .then(function() {
+          return queue.add({ foo: 'bar' }, { jobId: '2', priority: 3 });
+        })
+        .then(function() {
+          return queue.add({ foo: 'bar' }, { jobId: '3', priority: 2 });
+        })
+        .then(function() {
+          return queue.add({ foo: 'bar' }, { jobId: '4', priority: 1 });
+        })
+        .then(function() {
+          return queue.getJob('1').then(function(job) {
+            return job.remove().then(function() {
+              return queue
+                .getWaiting()
+                .then(function(result) {
+                  var waitingIDs = [];
+                  result.forEach(function(element) {
+                    waitingIDs.push(element.id);
+                  });
+                  return waitingIDs;
+                })
+                .then(function(waitingIDs) {
+                  expect(waitingIDs.length).to.be.equal(3);
+                  expect(waitingIDs).to.be.eql(['4', '3', '2']);
+                });
+            });
+          });
+        });
+    });
+
+    it('add a new job with priority 10 and ID 5 and check the new order (along with the previous 4 jobs)', function() {
+      return queue
+        .add({ foo: 'bar' }, { jobId: '1', priority: 3 })
+        .then(function() {
+          return queue.add({ foo: 'bar' }, { jobId: '2', priority: 3 });
+        })
+        .then(function() {
+          return queue.add({ foo: 'bar' }, { jobId: '3', priority: 2 });
+        })
+        .then(function() {
+          return queue.add({ foo: 'bar' }, { jobId: '4', priority: 1 });
+        })
+        .then(function() {
+          return queue.getJob('1').then(function(job) {
+            return job.remove().then(function() {
+              return queue
+                .getWaiting()
+                .then(function(result) {
+                  var waitingIDs = [];
+                  result.forEach(function(element) {
+                    waitingIDs.push(element.id);
+                  });
+                  return waitingIDs;
+                })
+                .then(function(waitingIDs) {
+                  expect(waitingIDs.length).to.be.equal(3);
+                  expect(waitingIDs).to.be.eql(['4', '3', '2']);
+                  return true;
+                })
+                .then(function() {
+                  return queue
+                    .add({ foo: 'bar' }, { jobId: '5', priority: 10 })
+                    .then(function() {
+                      return queue
+                        .getWaiting()
+                        .then(function(result) {
+                          var waitingIDs = [];
+                          result.forEach(function(element) {
+                            waitingIDs.push(element.id);
+                          });
+                          return waitingIDs;
+                        })
+                        .then(function(waitingIDs) {
+                          expect(waitingIDs.length).to.be.equal(4);
+                          expect(waitingIDs).to.be.eql(['4', '3', '2', '5']);
+                        });
+                    });
+                });
+            });
+          });
+        });
     });
   });
 
