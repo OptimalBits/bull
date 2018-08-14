@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v.3.4.6
+-------
+
+- Reverted use of arrow function that was incompatible with older versions of node.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.4.5...v3.4.6)
+
 v.3.4.5
 -------
 - Fixed Unhandled promise rejections #1012.
