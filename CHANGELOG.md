@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v.3.4.7
+-------
+
+- Fixes to deal with removing correctly in priority queues #984
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.4.6...v3.4.7)
+
 v.3.4.6
 -------
 
