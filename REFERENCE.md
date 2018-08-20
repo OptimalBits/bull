@@ -37,6 +37,8 @@ Reference
   - [Job#discard](#jobdiscard)
   - [Job#promote](#jobpromote)
   - [Job#finished](#jobfinished)
+  - [Job#moveToCompleted](#jobMoveToCompleted)
+  - [Job#moveToFailed](#moveToFailed)
 
 - [Events](#events)
   - [Global events](#global-events)
@@ -691,6 +693,26 @@ finished(): Promise
 ```
 
 Returns a promise that resolves or rejects when the job completes or fails.
+
+---
+
+### Job#moveToCompleted
+
+```ts
+moveToCompleted(returnValue, ignoreLock): Promise<string[Jobdata, JobId] | null>
+```
+
+Moves a job to the `completed` queue. Pulls a job from 'waiting' to 'active' and returns a tuple containing the next jobs data and id. If no job is in the `waiting` queue, returns null.
+
+---
+
+### Job#moveToFailed
+
+```ts
+moveToFailed(errorInfo, ignoreLock): Promise<string[Jobdata, JobId] | null>
+```
+
+Moves a job to the `failed` queue. Pulls a job from 'waiting' to 'active' and returns a tuple containing the next jobs data and id. If no job is in the `waiting` queue, returns null.
 
 ---
 

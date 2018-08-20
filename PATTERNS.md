@@ -10,6 +10,7 @@ Here are a few examples of useful patterns that are often implemented with Bull:
 - [Redis Cluster](#redis-cluster)
 - [Debugging](#debugging)
 - [Custom backoff strategy](#custom-backoff-strategy)
+- [Async multiple-repo job processor](#async-multiple-repo-job-processor)
 
 If you have any other common patterns you want to add, pull request them!
 
@@ -197,3 +198,52 @@ myQueue.add({msg: 'Specific Error'}, {
  }
 });
 ```
+
+Manually fetching jobs
+----------------------------------
+
+If you want the actual job processing to be done in a seperate repo/service than where `bull` is running, this pattern may be for you.
+
+Manually transitioning states for jobs can be done with a few simple methods.
+
+1. Adding a job to the 'waiting' queue. Grab the queue and call `add`.
+
+```typescript
+import Queue from "bull";
+
+const queue = new Queue(description, queueOptions);
+queue.add({ random_attr: "random_value" });
+```
+
+2. Pulling a job from 'waiting' and moving it to 'active'.
+
+```typescript
+const job: Job = await queue.getNextJob();
+```
+
+3. Move the job to the 'failed' queue if something goes wrong.
+
+```typescript
+const (nextJobData, nextJobId) = await job.moveToFailed(
+  {
+    message: "Call to external service failed!",
+  },
+  true,
+);
+```
+
+3. Move the job to the 'completed' queue.
+
+```typescript
+const (nextJobData, nextJobId) = await job.moveToCompleted("succeeded", true);
+```
+
+4. Return the next job if one is returned.
+
+```typescript
+if (nextJobdata) {
+  return Job.fromJSON(queue, nextJobData, nextJobId);
+}
+```
+
+Then you can easily wrap `bull` in an API for use with external systems.
