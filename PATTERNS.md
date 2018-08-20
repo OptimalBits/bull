@@ -199,7 +199,7 @@ myQueue.add({msg: 'Specific Error'}, {
 });
 ```
 
-Async multiple-repo job processor
+Manually fetching jobs
 ----------------------------------
 
 If you want the actual job processing to be done in a seperate repo/service than where `bull` is running, this pattern may be for you.
