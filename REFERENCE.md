@@ -117,7 +117,7 @@ __Warning:__ Do not override these advanced settings unless you understand the i
 
 `backoffStrategies`: An object containing custom backoff strategies. The key in the object is the name of the strategy and the value is a function that should return the delay in milliseconds. For a full example see [Patterns](./PATTERNS.md#custom-backoff-strategy).
 
-`drainDelay`: A timeout for when the queue is in `drained` state (empty waiting for jobs). It is used when calling `queue.getNextJob()`, which will pass itto `.brpoplpush` on the Redis client.
+`drainDelay`: A timeout for when the queue is in `drained` state (empty waiting for jobs). It is used when calling `queue.getNextJob()`, which will pass it to `.brpoplpush` on the Redis client.
 
 ```js
 backoffStrategies: {
