@@ -1,7 +1,7 @@
 
 <div align="center">
   <br/>
-  <img src="../support/logo@2x.png" width="300" />
+  <img src="https://raw.githubusercontent.com/OptimalBits/bull/master/support/logo%402x.png" width="300" />
   <br/>
   <br/>
   <p>
