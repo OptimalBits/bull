@@ -241,7 +241,16 @@ describe('sandboxed process', function() {
     queue.add({ foo: 'bar' });
   });
 
-  it('should process and fail', function(done) {
+  it('should error if processor file is missing', function(done) {
+    try {
+      queue.process(__dirname + '/fixtures/missing_processor.js');
+      done(new Error('did not throw error'));
+    } catch (err) {
+      done();
+    }
+  });
+
+  it('should process and fail using callback', function(done) {
     queue.process(__dirname + '/fixtures/fixture_processor_callback_fail.js');
 
     queue.on('failed', function(job, err) {
