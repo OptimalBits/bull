@@ -67,7 +67,7 @@ Please visit our sponsors!:
   </a>
 </div>
 
-Do you want to sponsor bull development? Please, let us now!
+Do you want to sponsor bull development? Please, let us know!
 
 
 ---
