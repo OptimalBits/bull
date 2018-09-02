@@ -16,17 +16,6 @@ describe('Child pool', function() {
     pool.clean();
   });
 
-  it('should raise an expection if invalid processor', function() {
-    return pool.retain('foobar').then(
-      function() {
-        throw new Error('Should raise an exception');
-      },
-      function(err) {
-        expect(err).to.be.instanceOf(Error);
-      }
-    );
-  });
-
   it('should return same child if free', function() {
     var processor = __dirname + '/fixtures/fixture_processor_bar.js';
     var child;
