@@ -1,28 +1,31 @@
-Changelog
-=========
+# Changelog
 
-v.3.4.7
--------
+## v.3.4.8
+
+- emit waiting event when waking up sleep jobs fixing #792
+- throw error if missing processor file fixing #954
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.4.7...v3.4.8)
+
+## v.3.4.7
 
 - Fixes to deal with removing correctly in priority queues #984
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.4.6...v3.4.7)
 
-v.3.4.6
--------
+## v.3.4.6
 
 - Reverted use of arrow function that was incompatible with older versions of node.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.4.5...v3.4.6)
 
-v.3.4.5
--------
+## v.3.4.5
+
 - Fixed Unhandled promise rejections #1012.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.4.4...v3.4.5)
 
-v.3.4.4
--------
+## v.3.4.4
 
 - Partially fixed #845. When call queue.close() bull throws Error: Connection is closed.
 - Fixed #998. Check for existence of rate limiter options.
@@ -31,8 +34,7 @@ v.3.4.4
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.4.3...v3.4.4)
 
-v.3.4.3
--------
+## v.3.4.3
 
 - Fixed #994 queue.getJobs() race condition.
 - Fixed #966 Race conditions reviving repeatable jobs.
@@ -44,8 +46,7 @@ v.3.4.3
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.4.2...v3.4.3)
 
-v.3.4.2
--------
+## v.3.4.2
 
 - Fixed #903 Globally paused queue cannot receive job (or not shown in Arena untill queue is globally resumed).
 - Workaround for #911 Seperate process worker fails to launch when Node is started with --inspect flag
@@ -54,15 +55,13 @@ v.3.4.2
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.4.1...v3.4.2)
 
-v.3.4.1
--------
+## v.3.4.1
 
 - Better check for closing in moveUnlockedJobsToWait, possibly fixing #806.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.4.0...v3.4.1)
 
-v.3.4.0
--------
+## v.3.4.0
 
 - Added support for prioritized delayed jobs.
 - Added ability to process all named jobs from one process function.
@@ -70,8 +69,7 @@ v.3.4.0
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.3.10...v3.4.0)
 
-v.3.3.10
--------
+## v.3.3.10
 
 - Faster next job fetch #868
 - Added global default options for jobs. Fixes #706.
@@ -79,9 +77,7 @@ v.3.3.10
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.3.9...v3.3.10)
 
-
-v.3.3.9
--------
+## v.3.3.9
 
 - Support custom backoff strategies.
 - Fixed #786. Handling of ES6 default export.
@@ -89,9 +85,7 @@ v.3.3.9
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.3.8...v3.3.9)
 
-
-v.3.3.8
--------
+## v.3.3.8
 
 - Fixed #812. External process doesn't terminate on `queue.close()`.
 - Fixed #830. Named Process Sent to Wrong Processor.
@@ -99,17 +93,14 @@ v.3.3.8
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.3.7...v3.3.8)
 
-
-v.3.3.7
--------
+## v.3.3.7
 
 - Fixed #807.
 - Adding ability to limit by stacktrace. #798.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.3.6...v3.3.7)
 
-v.3.3.6
--------
+## v.3.3.6
 
 - Fixed #766, #781, #716.
 - Correctly accept DB in redis connection string.
@@ -117,23 +108,19 @@ v.3.3.6
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.3.5...v3.3.6)
 
-v.3.3.5
--------
+## v.3.3.5
 
 - Fixed #764, #762, #759.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.3.4...v3.3.5)
 
-
-v.3.3.4
--------
+## v.3.3.4
 
 - Fixed #748.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.3.3...v3.3.4)
 
-v.3.3.3
--------
+## v.3.3.3
 
 - Re-fixed #739.
 - Possibly fixed for #747.
@@ -141,8 +128,7 @@ v.3.3.3
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.3.2...v3.3.3)
 
-v.3.3.2
--------
+## v.3.3.2
 
 - Fixed #721. SyntaxError: Unexpected token u in JSON at position 0.
 - Fixed #739. childs are not added to the retained set.
@@ -150,31 +136,27 @@ v.3.3.2
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.3.1...v3.3.2)
 
-v.3.3.1
--------
+## v.3.3.1
 
 - Fixed #714
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.3.0...v3.3.1)
 
-v.3.3.0
--------
+## v.3.3.0
 
-- Added a method ```Queue##removeRepeatable``` to remove repeatable jobs.
+- Added a method `Queue##removeRepeatable` to remove repeatable jobs.
 - Now also emits drained as a global event.
 - Fixed #518, #624
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.2.0...v3.3.0)
 
-v.3.2.0
--------
+## v.3.2.0
 
 - Added support for running jobs in child processes #488
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.1.0...v3.2.0)
 
-v.3.1.0
--------
+## v.3.1.0
 
 - Added rate limiter support.
 - Added method to update jobs data.
@@ -182,53 +164,43 @@ v.3.1.0
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.0.0...v3.1.0)
 
-v.3.0.0
--------
+## v.3.0.0
 
 - No changes.
 
-v.3.0.0-rc.10
--------------
+## v.3.0.0-rc.10
 
 - Fixed #666.
 - Small improvements in the repeat code.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.9...v3.0.0-rc.10)
 
-
-v.3.0.0-rc.9
-------------
+## v.3.0.0-rc.9
 
 - Fixed #672.
 - Fixed #670
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.8...v3.0.0-rc.9)
 
-
-v.3.0.0-rc.8
-------------
+## v.3.0.0-rc.8
 
 - Enhanced job fetching #651 (faster and more reliable).
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.7...v3.0.0-rc.8)
 
-v.3.0.0-rc.7
-------------
+## v.3.0.0-rc.7
 
 - Fixed #659
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.6...v3.0.0-rc.7)
 
-
-v.3.0.0-rc.6
-------------
+## v.3.0.0-rc.6
 
 - Fixed #645.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.5...v3.0.0-rc.6)
 
-v.3.0.0-rc.5
-------------
+## v.3.0.0-rc.5
 
 - Improved performance, specially when having many concurrent workers.
 - Fixed #609 using zsets for storing repeatable jobs.
@@ -238,8 +210,7 @@ v.3.0.0-rc.5
 
 [Changes](https://github.com/OptimalBits/bull/compare/3.0.0-rc.4...v3.0.0-rc.5)
 
-v.3.0.0-rc.4
-------------
+## v.3.0.0-rc.4
 
 - Added support for naming workers in redis connections #530.
 - Lazy instantiation of redis clients. Fixes #526.
@@ -250,8 +221,7 @@ v.3.0.0-rc.4
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.3...3.0.0-rc.4)
 
-v.3.0.0-rc.3
-------------
+## v.3.0.0-rc.3
 
 - Fixed #579.
 - Lazy subscription to events for better performance.
@@ -259,16 +229,14 @@ v.3.0.0-rc.3
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.2...v3.0.0-rc.3)
 
-v.3.0.0-rc.2
-------------
+## v.3.0.0-rc.2
 
 - Improved performance of moveToActive #550.
 - Fixed issue with cancelable promise #546.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-rc.1...v3.0.0-rc.2)
 
-v.3.0.0-rc.1
-------------
+## v.3.0.0-rc.1
 
 - Improved error and lock handling for failed jobs #499, #539.
 - Corrected instantiation from urls #538.
@@ -276,30 +244,25 @@ v.3.0.0-rc.1
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-alpha.4...v3.0.0-rc.1)
 
-v.3.0.0-alpha.4
----------------
+## v.3.0.0-alpha.4
 
 - Implemented repeatable jobs. #252.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-alpha.3...v3.0.0-alpha.4)
 
-v.3.0.0-alpha.3
----------------
+## v.3.0.0-alpha.3
 
 - Simplified global events #501.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-alpha.2...v3.0.0-alpha.3)
 
-v.3.0.0-alpha.2
----------------
+## v.3.0.0-alpha.2
 
 - Eliminated possible memory leak #503
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.0.0-alpha.1...v3.0.0-alpha.2)
 
-
-v.3.0.0-alpha.1
----------------
+## v.3.0.0-alpha.1
 
 - improved job fetch mechanism. #480.
 - job.jobId changed to job.id.
@@ -310,55 +273,46 @@ v.3.0.0-alpha.1
 
 [Changes](https://github.com/OptimalBits/bull/compare/v2.2.6...v3.0.0-alpha.1)
 
-v.2.2.6
--------
+## v.2.2.6
 
 - Persisted failedReason when storing job data.
 - added queue##isReady()
 
 [Changes](https://github.com/OptimalBits/bull/compare/v2.2.5...v2.2.6)
 
-
-v.2.2.5
--------
+## v.2.2.5
 
 - Fixed so that redis key prefix works properly.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v2.2.4...v2.2.5)
 
-
-v.2.2.4
--------
+## v.2.2.4
 
 - Allow reusing certain redis connections.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v2.2.3...v2.2.4)
 
-v.2.2.3
--------
+## v.2.2.3
 
 - Added getJobCounts.
 - Fixed global events #394.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v2.2.2...v2.2.3)
 
-v.2.2.2
--------
+## v.2.2.2
 
 - Fixed redis script cache gets bloated after update to bull 2.0 #426
 
 [Changes](https://github.com/OptimalBits/bull/compare/v2.2.1...v2.2.2)
 
-v.2.2.1
--------
+## v.2.2.1
 
 - Re-added createClient option that was removed by mistake.
 - Corrected getJobCountByTypes, fixes #419 and #401
 
 [Changes](https://github.com/OptimalBits/bull/compare/v2.2.0...v2.2.1)
 
-v.2.2.0
--------
+## v.2.2.0
 
 - Much improved priority queues, simpler, faster and more reliable.
 - Fixed issue where lua scripts where leaking memory.
@@ -367,24 +321,20 @@ v.2.2.0
 
 [Changes](https://github.com/OptimalBits/bull/compare/v2.1.2...v2.2.0)
 
-
-v.2.1.2
--------
+## v.2.1.2
 
 - Fixed Error renewing lock LockError: Exceeded 0 attempts to lock the resource #437
 - Fixed Unable to renew nonexisting lock on job fail #441
 
 [Changes](https://github.com/OptimalBits/bull/compare/v2.1.1...v2.1.2)
 
-v.2.1.1
--------
+## v.2.1.1
 
 - Catch errors produced in timers. Related to #441
 
 [Changes](https://github.com/OptimalBits/bull/compare/v2.1.0...v2.1.1)
 
-v.2.1.0
--------
+## v.2.1.0
 
 - Fixed #397, Error: Unable to renew nonexisting lock
 - Fixed #402, Job.prototype.finished contains error in promise
@@ -394,38 +344,33 @@ v.2.1.0
 
 [Changes](https://github.com/OptimalBits/bull/compare/v2.0.0...v2.1.0)
 
-v.2.0.0
--------
+## v.2.0.0
 
 - Changed redis module to ioredis fixing many issues along the way, see changes.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v1.1.3...v2.0.0)
 
-v.1.1.3
--------
+## v.1.1.3
 
 - fixed "Broken constructor pattern from recent commit" #384
 - fixed "Queue.prototype.getWaiting() returns empty list if Queue is paused" #342
 
 [Changes](https://github.com/OptimalBits/bull/compare/v1.1.2...v1.1.3)
 
-v1.1.2
--------
+## v1.1.2
 
 - regained backwards compatibility in events by using disturbed 1.0.6
 
 [Changes](https://github.com/OptimalBits/bull/compare/v1.1.1...v1.1.2)
 
-v1.1.1
--------
+## v1.1.1
 
 - Returned this in queue##on and queue##once for backwards compatibility.
 - [Fixes PriorityQueue Events and Local Worker Pause/Resume](https://github.com/OptimalBits/bull/pull/341)
 
 [Changes](https://github.com/OptimalBits/bull/compare/v1.1.0...v1.1.1)
 
-v1.1.0
--------
+## v1.1.0
 
 - Fixed [job corruption issue](https://github.com/OptimalBits/bull/pull/359)
 - The job id can be [overridden](https://github.com/OptimalBits/bull/pull/335) to implement job throttling behavior
@@ -435,30 +380,26 @@ v1.1.0
 
 [Changes](https://github.com/OptimalBits/bull/compare/v1.0.0...v1.1.0)
 
-v1.0.0
--------
+## v1.0.0
 
 - improvements in clean (fixes and performance).
 
 [Changes](https://github.com/OptimalBits/bull/compare/v1.0.0-rc4...v1.0.0)
 
-v1.0.0-rc4
-----------
+## v1.0.0-rc4
 
 - fixed lock renew logic.
 - atomized code for getting stalled jobs.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v1.0.0-rc3...v1.0.0-rc4)
 
-v1.0.0-rc3
-----------
+## v1.0.0-rc3
 
 - smaller fixes.
 
 [Changes](https://github.com/OptimalBits/bull/compare/v1.0.0-rc2...v1.0.0-rc3)
 
-v1.0.0-rc2
-----------
+## v1.0.0-rc2
 
 - Improved locking when removing and processing stalled jobs.
 - Fixed #302 EVALSHA failure.
@@ -470,19 +411,17 @@ v1.0.0-rc2
 
 [Changes](https://github.com/OptimalBits/bull/compare/v1.0.0-rc1...v1.0.0-rc2)
 
-v1.0.0-rc1
-----------
+## v1.0.0-rc1
 
 - Removed all potential dangerous hazards by atomizing many operations using
-cached LUA scripts.
+  cached LUA scripts.
 - Improved performance around 400% compared to previous version.
 - Better pause/resume (#266), and added pause for local workers.
 - Fixed #272, #271, #261, #253, #240, #239
 
 [Changes](https://github.com/OptimalBits/bull/compare/v0.7.2...v1.0.0-rc1)
 
-v0.7.2
-------
+## v0.7.2
 
 - Added local pause/resume functionality
 - fixed memory leaks present in the run promise chain.
@@ -490,15 +429,13 @@ v0.7.2
 
 [Changes](https://github.com/OptimalBits/bull/compare/v0.7.1...v0.7.2)
 
-v0.7.1
-------
+## v0.7.1
 
 - fixed storing of stacktraces
 
 [Changes](https://github.com/OptimalBits/bull/compare/v0.7.0...v0.7.1)
 
-v0.7.0
-------
+## v0.7.0
 
 - store the return value from the job handlers.
 - store stacktraces.
@@ -506,15 +443,13 @@ v0.7.0
 
 [Changes](https://github.com/OptimalBits/bull/compare/v0.6.0...v0.7.0)
 
-v0.4.0
-------
+## v0.4.0
 
 - added a Queue##clean method
 
 [Changes](https://github.com/OptimalBits/bull/compare/v0.3.0...v0.4.0)
 
-v0.3.0
-------
+## v0.3.0
 
 - added support for custom clients.
 - added test support for node 0.12.
@@ -525,19 +460,16 @@ v0.3.0
 
 [Changes](https://github.com/OptimalBits/bull/compare/v0.2.7...v0.3.0)
 
-v0.2.7
-------
+## v0.2.7
 
 [Changes](https://github.com/OptimalBits/bull/compare/v0.2.6...v0.2.7)
 
-v0.2.6
-------
+## v0.2.6
 
 - [Fix] #103 When a queue start it do not process delayed job.
-[Changes](https://github.com/OptimalBits/bull/compare/v0.2.5...v0.2.6)
+  [Changes](https://github.com/OptimalBits/bull/compare/v0.2.5...v0.2.6)
 
-v0.2.5
-------
+## v0.2.5
 
 - [upgrade] Upgraded node redis to version 0.12.x
 - [improvement] eslinted all code.
@@ -545,35 +477,29 @@ v0.2.5
 
 [Changes](https://github.com/OptimalBits/bull/compare/v0.2.4...v0.2.5)
 
-v0.2.4
-------
+## v0.2.4
 
 [Changes](https://github.com/OptimalBits/bull/compare/v0.2.3...v0.2.4)
 
-v0.2.3
-------
+## v0.2.3
 
 [Changes](https://github.com/OptimalBits/bull/compare/v0.1.9...v0.2.3)
 
-v0.1.9
-------
+## v0.1.9
 
 - [Improvement] Faster job removal. (manast)
 
-v0.1.8
-------
+## v0.1.8
 
 - [Improvement] Better promisification of redis methods. (manast)
 
-v0.1.7
-------
+## v0.1.7
 
 - [Feature] Added a convenience method for getting a job. (loginx)
 - [Fix] Only set a redis db from options if defined. (jboga)
 - [Fix] Fixed issue #52. (manast)
 
-v0.1.6
-------
+## v0.1.6
 
 - [Fix] Improved and corrected job's getters.
 - [Fix] Automatically restart queues in the event of redis disconnections.
