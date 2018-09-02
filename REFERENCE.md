@@ -727,6 +727,10 @@ A queue emits also some useful events:
   // An error occured.
 })
 
+.on('waiting', function(jobId){
+  // A Job is waiting to be processed as soon as a worker is idling.
+});
+
 .on('active', function(job, jobPromise){
   // A job has started. You can use `jobPromise.cancel()`` to abort it.
 })
