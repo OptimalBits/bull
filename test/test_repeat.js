@@ -334,7 +334,7 @@ describe('repeat', function() {
     });
   });
 
-  it('should not re-add a repeatable job after it has been deleted', function() {
+  it('should not re-add a repeatable job after it has been removed', function() {
     var _this = this;
     var date = new Date('2017-02-07 9:24:00');
     var nextTick = 2 * ONE_SECOND;
@@ -559,5 +559,26 @@ describe('repeat', function() {
           done();
         }
       );
+  });
+
+  it('should emit a waiting event when adding a repeatable job to the waiting list', function(done) {
+    var _this = this;
+    var date = new Date('2017-02-07 9:24:00');
+    this.clock.tick(date.getTime());
+    var nextTick = 2 * ONE_SECOND + 500;
+
+    queue.on('waiting', function() {
+      done();
+    });
+
+    queue
+      .add('repeat', { foo: 'bar' }, { repeat: { cron: '*/2 * * * * *' } })
+      .then(function() {
+        _this.clock.tick(nextTick);
+      });
+
+    queue.process('repeat', function() {
+      console.error('hiasd');
+    });
   });
 });
