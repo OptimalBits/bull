@@ -89,14 +89,16 @@ in a listener for the `completed` event.
 Sometimes you need to provide job's _progress_ information to an external listener, this can be easily accomplished
 by using the `progress` method on the job object:
 
+```js
 myFirstQueue.process( async (job, data) => {
-let progress = 0;
-for(i = 0; i < 100; i++){
-await doSomething(data);
-progress += 10;
-job.progress(progress);
-}
+  let progress = 0;
+  for(i = 0; i < 100; i++){
+    await doSomething(data);
+    progress += 10;
+    job.progress(progress);
+  }
 });
+```
 
 ## Listeners
 
@@ -145,7 +147,7 @@ Events can be local for a given queue instance (a worker), for example if a job 
 
 A local complete event:
 ```js
-queue.on('complete', job => {
+queue.on('completed', job => {
   console.log(`Job with id ${job.id} has been completed```);
   )
 })
@@ -154,7 +156,7 @@ queue.on('complete', job => {
 Whereas the global version of the event can be listen to with:
 
 ```js
-queue.on('global: complete', jobId => {
+queue.on('global: completed', jobId => {
   console.log(`Job with id ${jobId} has been completed```);
   )
 })
