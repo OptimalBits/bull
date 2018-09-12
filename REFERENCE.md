@@ -226,12 +226,12 @@ queue.process(function(job) { // No done callback here :)
 ### Queue#add
 
 ```ts
-add(name?: string, data: any, opts?: JobOpts): Promise<Job>
+add(name?: string, data: object, opts?: JobOpts): Promise<Job>
 ```
 
 Creates a new job and adds it to the queue. If the queue is empty the job will be executed directly, otherwise it will be placed in the queue and executed as soon as possible.
 
-An optional name can be added, so that only process functions defined for that name will process the job.
+An optional name can be added, so that only process functions defined for that name (also called job type) will process the job.
 
 **Note:**
 You need to define *processors* for all the named jobs that you add to your queue or the queue will complain that you are missing a processor for the given job, unless you use the ```*``` as job name when defining the processor.
