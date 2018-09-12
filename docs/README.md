@@ -164,12 +164,12 @@ queue.on('global: completed', jobId => {
 
 Note that signatures of global events are slighly different than their local counterpart, in the example above it is only sent the job id not a complete instance of the job itself, this is done for performance reasons.
 
-The list of available events can be found in the [reference](link).
+The list of available events can be found in the [reference](linhttps://github.com/OptimalBits/bull/blob/master/REFERENCE.md#eventsk).
 
 # Queue options
 
 A queue can be instantiated with some useful options, for instance you can specify the location and password of your redis server,
-as well as some other useful settings. All these settings are described in bull's [reference](link) and we will not repeat them here, however we will go through some use cases.
+as well as some other useful settings. All these settings are described in bull's [reference](https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queue) and we will not repeat them here, however we will go through some use cases.
 
 ## Rate limiter
 
