@@ -1,4 +1,4 @@
-<div align="center">
+<div align="center" style="padding-bottom: 50px;">
   <br/>
   <img src="https://raw.githubusercontent.com/OptimalBits/bull/master/support/logo%402x.png" width="300" />
   <br/>
@@ -140,10 +140,34 @@ Stalled jobs can be avoided by either making sure that the process function does
 
 # Events
 
+A Queue in bull generates a hanful of events that are useful in many use cases.
+Events can be local for a given queue instance (a worker), for example if a job is completed in a given worker a local event will be emitted just for that instance. However it is possible to listen to all events, by prefixing ```global:``` to the local event name. Then we can listen to all the events produced by all the workers of a given queue.
+
+A local complete event:
+```js
+queue.on('complete', job => {
+  console.log(`Job with id ${job.id} has been completed```);
+  )
+})
+```
+
+Whereas the global version of the event can be listen to with:
+
+```js
+queue.on('global: complete', jobId => {
+  console.log(`Job with id ${jobId} has been completed```);
+  )
+})
+```
+
+Note that signatures of global events are slighly different than their local counterpart, in the example above it is only sent the job id not a complete instance of the job itself, this is done for performance reasons.
+
+The list of available events can be found in the [reference](link).
+
 # Queue options
 
 A queue can be instantiated with some useful options, for instance you can specify the location and password of your redis server,
-as well as some other useful settings. All these settings are described in bull's reference and we will not repeat them here, however we will go through some use cases.
+as well as some other useful settings. All these settings are described in bull's [reference](link) and we will not repeat them here, however we will go through some use cases.
 
 ## Rate limiter
 
@@ -182,6 +206,16 @@ Just keep in mind that every queue instance require to provide a processor for *
 
 ## Sandboxed processors
 
+As explained above, when defining a process function, it is also possible to provide a concurrency setting. This setting allow the worker to process several
+jobs in parallel. The jobs are still processed in the same nodejs process, 
+and if the jobs are very io intensive they will be handled just fine.
+
+Sometimes jobs are more CPU intensive which will could lock nodejs event loop
+for too long and Bull could decide the job has been stalled. To avoid this 
+situation, it is possible to run the process functions in separarate nodejs processes. In this case the concurrency parameter will decide the maximum number of concurrent processes that are allow to run.
+
+We call these kind of processes for "sandboxed" processes, and they also have the property that if the crash the will not affect any other process, and a new
+process will be spawn automatically to replace it.
 
 
 # Job types
