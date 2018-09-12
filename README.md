@@ -19,7 +19,7 @@
   </p>
   <br/>
   <br/>
-  <p>Check the new [Guide!](https://optimalbits.github.io/bull/)</p>
+  <p>Check the new <a href="https://optimalbits.github.io/bull/"><strong>Guide!</strong></p>
   <br/>
   <p>
     <a href="https://gitter.im/OptimalBits/bull">
