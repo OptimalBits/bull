@@ -17,9 +17,9 @@
     <a href="#quick-guide"><strong>Quick Guide</strong></a> ·
     <a href="#documentation"><strong>Documentation</strong></a>
   </p>
-  <br/>
-  <br/>
   <p>Check the new <a href="https://optimalbits.github.io/bull/"><strong>Guide!</strong></p>
+  <br/>
+  <br/>
   <br/>
   <p>
     <a href="https://gitter.im/OptimalBits/bull">
