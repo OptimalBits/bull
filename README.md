@@ -19,6 +19,7 @@
   </p>
   <br/>
   <br/>
+  <p>Check the new [Guide!](https://optimalbits.github.io/bull/)</p>
   <br/>
   <p>
     <a href="https://gitter.im/OptimalBits/bull">
@@ -390,7 +391,8 @@ if(cluster.isMaster){
 
 For the full documentation, check out the reference and common patterns:
 
-- [Reference](./REFERENCE.md) — the full reference material for Bull.
+- [Guide](https://optimalbits.github.io/bull/) — Your startpoint for developing with Bull.
+- [Reference](./REFERENCE.md) — Reference document with all objects and methods available.
 - [Patterns](./PATTERNS.md) — a set of examples for common patterns.
 - [License](./LICENSE.md) — the Bull license—it's MIT.
 
