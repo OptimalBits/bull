@@ -19,8 +19,6 @@
   </p>
   <p>Check the new <a href="https://optimalbits.github.io/bull/"><strong>Guide!</strong></p>
   <br/>
-  <br/>
-  <br/>
   <p>
     <a href="https://gitter.im/OptimalBits/bull">
       <img src="https://badges.gitter.im/Join%20Chat.svg"/>
