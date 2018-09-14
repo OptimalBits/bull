@@ -10,7 +10,7 @@ Here are a few examples of useful patterns that are often implemented with Bull:
 - [Redis Cluster](#redis-cluster)
 - [Debugging](#debugging)
 - [Custom backoff strategy](#custom-backoff-strategy)
-- [Async multiple-repo job processor](#async-multiple-repo-job-processor)
+- [Manually fetching jobs](#manually-fetching-jobs)
 
 If you have any other common patterns you want to add, pull request them!
 
