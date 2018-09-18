@@ -19,8 +19,8 @@ Message Queue
 -------------
 
 Bull can also be used for persistent message queues. This is a quite useful
-feature in some usecases. For example, you can have two servers that need to
-communicate with each other. By using a queue the servers do not need to be online at the same time, this creates a very robust communication channel. You can treat `add` as *send* and `process` as *receive*:
+feature in some use cases. For example, you can have two servers that need to
+communicate with each other. By using a queue the servers do not need to be online at the same time, so this creates a very robust communication channel. You can treat `add` as *send* and `process` as *receive*:
 
 Server A:
 
@@ -60,7 +60,7 @@ Returning Job Completions
 
 A common pattern is where you have a cluster of queue processors that just process jobs as fast as they can, and some other services that need to take the result of this processors and do something with it, maybe storing results in a database.
 
-The most robust and scalable way to accomplish this is by combining the standard job queue with the message queue pattern: a service sends jobs to the cluster just by opening a job queue and adding jobs to it, the cluster will start processing as fast as it can. Everytime a job gets completed in the cluster a message is send to a results message queue with the result data, this queue is listened by some other service that stores the results in a database.
+The most robust and scalable way to accomplish this is by combining the standard job queue with the message queue pattern: a service sends jobs to the cluster just by opening a job queue and adding jobs to it, and the cluster will start processing as fast as it can. Everytime a job gets completed in the cluster a message is sent to a results message queue with the result data, and this queue is listened by some other service that stores the results in a database.
 
 
 Reusing Redis Connections
@@ -95,15 +95,15 @@ var queueQux = new Queue('quxbaz', opts);
 Redis cluster
 -------------
 
-Bull internals requires atomic operations that spans different keys. This fact breaks redis
-rules for cluster configurations, however it is still possible to use a cluster environment
+Bull internals requires atomic operations that spans different keys. This fact breaks Redis'
+rules for cluster configurations. However it is still possible to use a cluster environment
 by using the proper bull prefix option as a cluster "hash tag". Hash tags are used to guarantee
 that certain keys are placed in the same hash slot, read more about hash tags in the [redis cluster
 tutorial](https://redis.io/topics/cluster-tutorial).
 
-A hash tag is defined with brakets. I.e. a key that has a substring inside brackets will use that
+A hash tag is defined with brackets. I.e. a key that has a substring inside brackets will use that
 substring to determine in which hash slot the key will be placed. So to make bull compatible with
-cluster, just use a queue prefix inside brackes, for example:
+cluster, just use a queue prefix inside brackets, for example:
 
 ```js
   var queue = new Queue('cluster', {
@@ -130,7 +130,7 @@ NODE_DEBUG=bull node ./your-script.js
 Custom backoff strategy
 -----------------------
 
-When the builtin backoff strategies on retries are not sufficient, a custom strategy can be defined. Custom backoff strategies are defined by a function on the queue. The number of attempts already made to process the job is passed to this function as the first parameter, the error that the job failed with as the second parameter.
+When the builtin backoff strategies on retries are not sufficient, a custom strategy can be defined. Custom backoff strategies are defined by a function on the queue. The number of attempts already made to process the job is passed to this function as the first parameter, and the error that the job failed with as the second parameter.
 
 ```js
 var Queue = require('bull');
@@ -157,7 +157,7 @@ myQueue.add({foo: 'bar'}, {
 });
 ```
 
-You may base you backoff strategy on the error that the job throws:
+You may base your backoff strategy on the error that the job throws:
 ```js
 var Queue = require('bull');
 
