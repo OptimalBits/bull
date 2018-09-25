@@ -185,6 +185,8 @@ const myRateLimitedQueue = new Queue('rateLimited', {
 });
 ```
 
+When a queue hits the rate limit, requested jobs will join the `delayed` queue.
+
 ## Named jobs
 
 It is possible to give names to jobs. This does not change any of the mechanics of the queue but can be used for clearer code and
