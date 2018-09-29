@@ -8,7 +8,7 @@
 
 Bulls is a NodeJs library that implements a fast and robust queue system based on [redis](https://redis.io).
 
-Although it is possible to implement queues diretly using redis commands, this library provides an api that takes care of all the low level details and enriches redis basic functionality so that more complex use-cases can be handled easily.
+Although it is possible to implement queues directly using redis commands, this library provides an api that takes care of all the low level details and enriches redis basic functionality so that more complex use-cases can be handled easily.
 
 If you are new to queues you may wonder why they are needed after all. Queues can solve many different problems in an elegant way, from smothing out processing peaks to creating robust communication channels between microservices or offloading heavy work from one server to many smaller workers, etc.
 
