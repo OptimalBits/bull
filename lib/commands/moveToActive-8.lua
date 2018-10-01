@@ -27,7 +27,8 @@
       ARGV[5] optional jobid
 
       ARGV[6] optional jobs per time unit (rate limiter)
-      ARGV[7] optional time unit
+      ARGV[7] optional time unit (rate limiter)
+      ARGV[8] optional discard delayed rate limit
 ]]
 
 local jobId
@@ -48,8 +49,12 @@ if jobId then
   if(ARGV[6]) then
     local jobCounter
     local maxJobs = tonumber(ARGV[6])
+    local discard = ARGV[8]
     jobCounter = tonumber(rcall("GET", KEYS[6]))
     if jobCounter ~= nil and jobCounter >= maxJobs then
+      if discard == 'true' then
+        return
+      end
       local delay = tonumber(rcall("PTTL", KEYS[6]))
       local timestamp = delay + tonumber(ARGV[4])
 
