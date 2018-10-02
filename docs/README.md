@@ -65,7 +65,7 @@ It is also possible to provide an options object after the job's data, but we wi
 
 ## Consumers
 
-A consumer or worker (we will use these two terms interchangeably in this guide), is nothing more than a modejs program
+A consumer or worker (we will use these two terms interchangeably in this guide), is nothing more than a nodejs program
 that defines a process function like so:
 
 ```js
