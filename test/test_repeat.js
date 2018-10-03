@@ -143,6 +143,89 @@ describe('repeat', function() {
     });
   });
 
+  it('should repeat every 2 seconds with startDate in future', function(done) {
+    var _this = this;
+    var date = new Date('2017-02-07 9:24:00');
+    this.clock.tick(date.getTime());
+    var nextTick = 2 * ONE_SECOND + 500;
+    var delay = 5 * ONE_SECOND + 500;
+
+    queue
+      .add(
+        'repeat',
+        { foo: 'bar' },
+        {
+          repeat: {
+            cron: '*/2 * * * * *',
+            startDate: new Date('2017-02-07 9:24:05')
+          }
+        }
+      )
+      .then(function() {
+        _this.clock.tick(nextTick + delay);
+      });
+
+    queue.process('repeat', function() {
+      // dummy
+    });
+
+    var prev;
+    var counter = 0;
+    queue.on('completed', function(job) {
+      _this.clock.tick(nextTick);
+      if (prev) {
+        expect(prev.timestamp).to.be.lt(job.timestamp);
+        expect(job.timestamp - prev.timestamp).to.be.gte(2000);
+      }
+      prev = job;
+      counter++;
+      if (counter == 20) {
+        done();
+      }
+    });
+  });
+
+  it('should repeat every 2 seconds with startDate in past', function(done) {
+    var _this = this;
+    var date = new Date('2017-02-07 9:24:00');
+    this.clock.tick(date.getTime());
+    var nextTick = 2 * ONE_SECOND + 500;
+
+    queue
+      .add(
+        'repeat',
+        { foo: 'bar' },
+        {
+          repeat: {
+            cron: '*/2 * * * * *',
+            startDate: new Date('2017-02-07 9:22:00')
+          }
+        }
+      )
+      .then(function() {
+        _this.clock.tick(nextTick);
+      });
+
+    queue.process('repeat', function() {
+      // dummy
+    });
+
+    var prev;
+    var counter = 0;
+    queue.on('completed', function(job) {
+      _this.clock.tick(nextTick);
+      if (prev) {
+        expect(prev.timestamp).to.be.lt(job.timestamp);
+        expect(job.timestamp - prev.timestamp).to.be.gte(2000);
+      }
+      prev = job;
+      counter++;
+      if (counter == 20) {
+        done();
+      }
+    });
+  });
+
   it('should repeat once a day for 5 days', function(done) {
     var _this = this;
     var date = new Date('2017-05-05 13:12:00');
