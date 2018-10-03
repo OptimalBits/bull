@@ -1991,6 +1991,54 @@ describe('Queue', function() {
       });
     });
 
+    it('should retry a job after a delay if a custom backoff is given based on the job data', function(done) {
+      function CustomError() {}
+      this.timeout(2500);
+      queue = utils.buildQueue('test retries and backoffs', {
+        settings: {
+          backoffStrategies: {
+            custom: function(attemptsMade, err, job) {
+              if (err.failedIds) {
+                var data = job.data;
+                data.ids = err.failedIds;
+                job.update(data);
+                return 2000;
+              }
+              return 500;
+            }
+          }
+        }
+      });
+      var start;
+      queue.isReady().then(function() {
+        queue.process(function(job, jobDone) {
+
+          if (job.data.ids.length > 2) {
+            var err = new CustomError('Some ids could not be processed');
+            err.failedIds = [1, 2];
+            throw err;
+          }
+          jobDone();
+        });
+
+        start = Date.now();
+        queue.add(
+          { ids: [1, 2, 3] },
+          {
+            attempts: 3,
+            backoff: {
+              type: 'custom'
+            }
+          }
+        );
+      });
+      queue.on('completed', function() {
+        var elapse = Date.now() - start;
+        expect(elapse).to.be.greaterThan(2000);
+        done();
+      });
+    });
+
     it('should not retry a job that has been removed', function(done) {
       queue = utils.buildQueue('retry a removed job');
       var attempts = 0;

@@ -130,7 +130,7 @@ NODE_DEBUG=bull node ./your-script.js
 Custom backoff strategy
 -----------------------
 
-When the builtin backoff strategies on retries are not sufficient, a custom strategy can be defined. Custom backoff strategies are defined by a function on the queue. The number of attempts already made to process the job is passed to this function as the first parameter, and the error that the job failed with as the second parameter.
+When the builtin backoff strategies on retries are not sufficient, a custom strategy can be defined. Custom backoff strategies are defined by a function on the queue. The number of attempts already made to process the job is passed to this function as the first parameter, and the error that the job failed with as the second parameter. The job is the third parameter.
 
 ```js
 var Queue = require('bull');
@@ -138,7 +138,7 @@ var Queue = require('bull');
 var myQueue = new Queue("Server B", {
   settings: {
     backoffStrategies: {
-      jitter: function (attemptsMade, err) {
+      jitter: function (attemptsMade, err, job) {
         return 5000 + Math.random() * 500;
       }
     }
@@ -166,7 +166,7 @@ function MySpecificError() {}
 var myQueue = new Queue('Server C', {
   settings: {
     backoffStrategies: {
-      foo: function (attemptsMade, err) {
+      foo: function (attemptsMade, err, job) {
         if (err instanceof MySpecificError) {
           return 10000;
         }
@@ -199,6 +199,49 @@ myQueue.add({msg: 'Specific Error'}, {
 });
 ```
 
+Or you can update the job data before retrying:
+```js
+var Queue = require('bull');
+
+var myQueue = new Queue('Server D', {
+  settings: {
+    backoffStrategies: {
+      partialRetry: function (attemptsMade, err, job) {
+        if (err instanceof CustomError) {
+          const data = job.data;
+          data.ids = err.failedIds;
+          job.update(data);
+        }
+        return 1000;
+      }
+    }
+  }
+});
+
+myQueue.process(function(job) {
+  return externalAPICall(job.data.ids).then(function (results) {
+    var failedIds = results.reduce(function (ids, result) {
+      if (result.error) {
+        ids.push(result.id);
+      }
+      return ids;
+    }, []);
+
+    if (failedIds.length > 0) {
+      var err = new CustomError();
+      err.failedIds = failedIds;
+      throw err;
+    }
+  });
+});
+
+myQueue.add({ids: [1, 2, 3]}, {
+  attempts: 3,
+  backoff: {
+    type: 'partialRetry'
+  }
+});
+```
 Manually fetching jobs
 ----------------------------------
 
