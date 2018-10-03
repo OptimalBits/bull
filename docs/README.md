@@ -71,16 +71,15 @@ that defines a process function like so:
 ```js
 const myFirstQueue = new Bull('my-first-queue');
 
-myFirstQueue.process(async (job, data) => {
-  return doSomething(data);
+myFirstQueue.process((job, done) => {
+  done(null, doSomething(data));
 });
 ```
 
 The `process` function will be called every time the worker is idling and there are jobs to process in the queue. Since
 the consumer does not need to be online when the jobs are added it could happen that the queue has already many jobs waiting in it, so then the process will be kept busy processing jobs one by one until all of them are done.
 
-In the example above we define the process function as `async`, which is the higly recommended way to define them.
-If your nodejs runtime does not support async/await, then you can just return a promise at the end of the process
+In the example above we use the done callback, you can just return a promise at the end of the process
 function for a similar result.
 
 The value returned by your process function will be stored in the jobs object and can be accessed later on, for example
@@ -90,13 +89,14 @@ Sometimes you need to provide job's _progress_ information to an external listen
 by using the `progress` method on the job object:
 
 ```js
-myFirstQueue.process( async (job, data) => {
+myFirstQueue.process((job, done) => {
   let progress = 0;
   for(i = 0; i < 100; i++){
-    await doSomething(data);
+    doSomething(data);
     progress += 10;
     job.progress(progress);
   }
+  done();
 });
 ```
 
