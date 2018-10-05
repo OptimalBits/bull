@@ -1299,6 +1299,37 @@ describe('Queue', function() {
       });
     });
 
+    it('process a job that rejects with a nested error', function(done) {
+      var cause = new Error('cause');
+      var jobError = new Error('wrapper');
+      jobError.cause = function() {
+        return cause;
+      };
+
+      queue.process(function(job) {
+        expect(job.data.foo).to.be.equal('bar');
+        return Promise.reject(jobError);
+      });
+
+      queue.add({ foo: 'bar' }).then(
+        function(job) {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        },
+        function(err) {
+          done(err);
+        }
+      );
+
+      queue.once('failed', function(job, err) {
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
+        expect(err).to.be.eql(jobError);
+        expect(err.cause()).to.be.eql(cause);
+        done();
+      });
+    });
+
     it('does not renew a job lock after the lock has been released [#397]', function(done) {
       this.timeout(queue.LOCK_RENEW_TIME * 4);
 
