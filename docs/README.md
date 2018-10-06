@@ -111,7 +111,7 @@ case.
 const myFirstQueue = new Bull('my-first-queue');
 
 // Define a local completed event
-myFirstQueue.on('completed', (job, result) {
+myFirstQueue.on('completed', (job, result) => {
   console.log(`Job completed with result ${result}`);
 })
 ```
