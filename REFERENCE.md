@@ -301,6 +301,8 @@ Returns a promise that resolves when the queue is paused. A paused queue will no
 
 Pausing a queue that is already paused does nothing.
 
+Please note, that paused queue will process all the delayed jobs, and won't pick only waiting jobs.
+
 ---
 
 ### Queue#resume
