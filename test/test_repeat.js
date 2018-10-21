@@ -658,7 +658,8 @@ describe('repeat', function() {
 
     queue.on('waiting', function(jobId) {
       expect(jobId).to.be.equal(
-        'repeat:93168b0ea97b55fb5a8325e8c66e4300:1486455842000'
+        'repeat:93168b0ea97b55fb5a8325e8c66e4300:' +
+          (date.getTime() + 2 * ONE_SECOND)
       );
       done();
     });
