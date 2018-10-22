@@ -276,6 +276,7 @@ interface RepeatOpts{
   endDate?: Date | string | number; // End date when the repeat job should stop repeating.
   limit?: number; // Number of times the job should repeat at max.
   every?: number; // Repeat every millis (cron setting cannot be used together with this setting.)
+  count?: number; // The start value for the repeat iteration count.
 }
 ```
 

@@ -667,4 +667,20 @@ describe('repeat', function() {
       console.error('hiasd');
     });
   });
+
+  it('should have the right count value', function(done) {
+    var _this = this;
+
+    queue.add({ foo: 'bar' }, { repeat: { every: 1000 } }).then(function() {
+      _this.clock.tick(ONE_SECOND);
+    });
+
+    queue.process(function(job) {
+      if (job.opts.repeat.count === 1) {
+        done();
+      } else {
+        done(Error('repeatable job got the wrong repeat count'));
+      }
+    });
+  });
 });
