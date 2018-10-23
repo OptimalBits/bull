@@ -59,11 +59,11 @@ describe('repeat', function() {
   });
 
   it('should get repeatable jobs with different cron pattern', function(done) {
-    var crons = ['10 * * * * *', '2 * * 1 * 2', '1 * * 5 * *', '2 * * 4 * *'];
+    var crons = ['10 * * * * *', '2 10 * * * *', '1 * * 5 * *', '2 * * 4 * *'];
 
     Promise.all([
       queue.add('first', {}, { repeat: { cron: crons[0], endDate: 12345 } }),
-      queue.add('second', {}, { repeat: { cron: crons[1], endDate: 54321 } }),
+      queue.add('second', {}, { repeat: { cron: crons[1], endDate: 610000 } }),
       queue.add(
         'third',
         {},
@@ -83,28 +83,34 @@ describe('repeat', function() {
         return queue.getRepeatableJobs(0, -1, true);
       })
       .then(function(jobs) {
+        return jobs.sort(function(a, b) {
+          return crons.indexOf(a.cron) > crons.indexOf(b.cron);
+        });
+      })
+      .then(function(jobs) {
         expect(jobs)
           .to.be.and.an('array')
           .and.have.length(4);
+
         expect(jobs[0]).to.include({
-          cron: '2 * * 1 * 2',
-          next: 2000,
-          endDate: 54321
-        });
-        expect(jobs[1]).to.include({
           cron: '10 * * * * *',
           next: 10000,
           endDate: 12345
         });
-        expect(jobs[2]).to.include({
-          cron: '2 * * 4 * *',
-          next: 259202000,
-          tz: 'Africa/Accra'
+        expect(jobs[1]).to.include({
+          cron: '2 10 * * * *',
+          next: 602000,
+          endDate: 610000
         });
-        expect(jobs[3]).to.include({
+        expect(jobs[2]).to.include({
           cron: '1 * * 5 * *',
           next: 345601000,
           tz: 'Africa/Abidjan'
+        });
+        expect(jobs[3]).to.include({
+          cron: '2 * * 4 * *',
+          next: 259202000,
+          tz: 'Africa/Accra'
         });
         done();
       })
@@ -652,7 +658,8 @@ describe('repeat', function() {
 
     queue.on('waiting', function(jobId) {
       expect(jobId).to.be.equal(
-        'repeat:93168b0ea97b55fb5a8325e8c66e4300:1486455842000'
+        'repeat:93168b0ea97b55fb5a8325e8c66e4300:' +
+          (date.getTime() + 2 * ONE_SECOND)
       );
       done();
     });
