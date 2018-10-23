@@ -230,6 +230,7 @@ describe('sandboxed process', function() {
         expect(job.data).eql({ foo: 'bar' });
         expect(job.failedReason).eql('Manually failed processor');
         expect(err.message).eql('Manually failed processor');
+        expect(err.stack).include('fixture_processor_fail.js');
         expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
         expect(queue.childPool.getAllFree()).to.have.lengthOf(1);
         done();
