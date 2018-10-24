@@ -14,7 +14,7 @@ describe('workers', function() {
     return client.flushdb().then(function() {
       queue = utils.buildQueue('test workers', {
         settings: {
-          guardInterval: 300000,
+          tickInterval: 300000,
           stalledInterval: 300000
         }
       });

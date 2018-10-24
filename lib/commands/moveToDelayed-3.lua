@@ -1,7 +1,7 @@
 --[[
   Moves job from active to delayed set.
 
-  Input: 
+  Input:
     KEYS[1] active key
     KEYS[2] delayed key
     KEYS[3] job key
@@ -30,10 +30,9 @@ if rcall("EXISTS", KEYS[3]) == 1 then
       return -2
     end
   end
-  
+
   local score = tonumber(ARGV[1])
   rcall("ZADD", KEYS[2], score, ARGV[2])
-  rcall("PUBLISH", KEYS[2], (score / 0x1000))
   rcall("LREM", KEYS[1], 0, ARGV[2])
 
   return 0

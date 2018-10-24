@@ -51,7 +51,6 @@ if (score ~= nil) then
     local nextTimestamp = rcall("ZRANGE", KEYS[1], 0, 0, "WITHSCORES")[2]
     if(nextTimestamp ~= nil) then
       nextTimestamp = nextTimestamp / 0x1000
-      rcall("PUBLISH", KEYS[1], nextTimestamp)
     end
     return nextTimestamp
   end
