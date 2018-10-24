@@ -22,7 +22,7 @@ Promise.config({
 });
 
 describe('Queue', function() {
-  var sandbox = sinon.sandbox.create();
+  var sandbox = sinon.createSandbox();
   var client;
 
   beforeEach(function() {
