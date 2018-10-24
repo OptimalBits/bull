@@ -28,7 +28,7 @@
 
       ARGV[6] optional jobs per time unit (rate limiter)
       ARGV[7] optional time unit (rate limiter)
-      ARGV[8] optional discard delayed rate limit
+      ARGV[8] optional do not do anything with job if rate limit hit
 ]]
 
 local jobId
@@ -49,17 +49,19 @@ if jobId then
   if(ARGV[6]) then
     local jobCounter
     local maxJobs = tonumber(ARGV[6])
-    local discard = ARGV[8]
+    local bounceBack = ARGV[8]
     jobCounter = tonumber(rcall("GET", KEYS[6]))
+    -- rate limit hit
     if jobCounter ~= nil and jobCounter >= maxJobs then
-      if discard == 'true' then
-        return
-      end
       local delay = tonumber(rcall("PTTL", KEYS[6]))
       local timestamp = delay + tonumber(ARGV[4])
 
-      rcall("ZADD", KEYS[7], timestamp * 0x1000 + bit.band(jobCounter, 0xfff), jobId)
-      rcall("PUBLISH", KEYS[7], timestamp)
+      if bounceBack == 'false' then
+        -- put job into delayed queue
+        rcall("ZADD", KEYS[7], timestamp * 0x1000 + bit.band(jobCounter, 0xfff), jobId)
+        rcall("PUBLISH", KEYS[7], timestamp)
+      end
+      -- remove from active queue
       rcall("LREM", KEYS[2], 1, jobId)
       return
     else

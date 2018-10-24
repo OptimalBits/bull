@@ -1,4 +1,6 @@
-# Patterns
+
+Patterns
+========
 
 Here are a few examples of useful patterns that are often implemented with Bull:
 
@@ -12,26 +14,28 @@ Here are a few examples of useful patterns that are often implemented with Bull:
 
 If you have any other common patterns you want to add, pull request them!
 
-## Message Queue
+
+Message Queue
+-------------
 
 Bull can also be used for persistent message queues. This is a quite useful
-feature in some usecases. For example, you can have two servers that need to
-communicate with each other. By using a queue the servers do not need to be online at the same time, this creates a very robust communication channel. You can treat `add` as _send_ and `process` as _receive_:
+feature in some use cases. For example, you can have two servers that need to
+communicate with each other. By using a queue the servers do not need to be online at the same time, so this creates a very robust communication channel. You can treat `add` as *send* and `process` as *receive*:
 
 Server A:
 
 ```js
 var Queue = require('bull');
 
-var sendQueue = new Queue('Server B');
-var receiveQueue = new Queue('Server A');
+var sendQueue = new Queue("Server B");
+var receiveQueue = new Queue("Server A");
 
-receiveQueue.process(function(job, done) {
-  console.log('Received message', job.data.msg);
+receiveQueue.process(function(job, done){
+  console.log("Received message", job.data.msg);
   done();
 });
 
-sendQueue.add({ msg: 'Hello' });
+sendQueue.add({msg:"Hello"});
 ```
 
 Server B:
@@ -39,36 +43,40 @@ Server B:
 ```js
 var Queue = require('bull');
 
-var sendQueue = new Queue('Server A');
-var receiveQueue = new Queue('Server B');
+var sendQueue = new Queue("Server A");
+var receiveQueue = new Queue("Server B");
 
-receiveQueue.process(function(job, done) {
-  console.log('Received message', job.data.msg);
+receiveQueue.process(function(job, done){
+  console.log("Received message", job.data.msg);
   done();
 });
 
-sendQueue.add({ msg: 'World' });
+sendQueue.add({msg:"World"});
 ```
 
-## Returning Job Completions
+
+Returning Job Completions
+-------------------------
 
 A common pattern is where you have a cluster of queue processors that just process jobs as fast as they can, and some other services that need to take the result of this processors and do something with it, maybe storing results in a database.
 
 The most robust and scalable way to accomplish this is by combining the standard job queue with the message queue pattern: a service sends jobs to the cluster just by opening a job queue and adding jobs to it, and the cluster will start processing as fast as it can. Everytime a job gets completed in the cluster a message is sent to a results message queue with the result data, and this queue is listened by some other service that stores the results in a database.
 
-## Reusing Redis Connections
+
+Reusing Redis Connections
+-------------------------
 
 A standard queue requires **3 connections** to the Redis server. In some situations you might want to re-use connections—for example on Heroku where the connection count is restricted. You can do this with the `createClient` option in the `Queue` constructor:
 
 ```js
-var { REDIS_URL } = process.env;
+var {REDIS_URL} = process.env
 
-var Redis = require('ioredis');
+var Redis = require('ioredis')
 var client = new Redis(REDIS_URL);
 var subscriber = new Redis(REDIS_URL);
 
 var opts = {
-  createClient: function(type) {
+  createClient: function (type) {
     switch (type) {
       case 'client':
         return client;
@@ -78,13 +86,14 @@ var opts = {
         return new Redis();
     }
   }
-};
+}
 
 var queueFoo = new Queue('foobar', opts);
 var queueQux = new Queue('quxbaz', opts);
 ```
 
-## Redis cluster
+Redis cluster
+-------------
 
 Bull internals requires atomic operations that spans different keys. This fact breaks Redis'
 rules for cluster configurations. However it is still possible to use a cluster environment
@@ -97,15 +106,16 @@ substring to determine in which hash slot the key will be placed. So to make bul
 cluster, just use a queue prefix inside brackets, for example:
 
 ```js
-var queue = new Queue('cluster', {
-  prefix: '{myprefix}'
-});
+  var queue = new Queue('cluster', {
+    prefix: '{myprefix}'
+  })
 ```
 
 If you use several queues in the same cluster, you should use different prefixes so that the
 queues are evenly placed in the cluster nodes.
 
-## Debugging
+Debugging
+---------
 
 To see debug statements set or add `bull` to the `NODE_DEBUG` environment variable:
 
@@ -117,17 +127,18 @@ export NODE_DEBUG=bull
 NODE_DEBUG=bull node ./your-script.js
 ```
 
-## Custom backoff strategy
+Custom backoff strategy
+-----------------------
 
 When the builtin backoff strategies on retries are not sufficient, a custom strategy can be defined. Custom backoff strategies are defined by a function on the queue. The number of attempts already made to process the job is passed to this function as the first parameter, and the error that the job failed with as the second parameter.
 
 ```js
 var Queue = require('bull');
 
-var myQueue = new Queue('Server B', {
+var myQueue = new Queue("Server B", {
   settings: {
     backoffStrategies: {
-      jitter: function(attemptsMade, err) {
+      jitter: function (attemptsMade, err) {
         return 5000 + Math.random() * 500;
       }
     }
@@ -138,19 +149,15 @@ var myQueue = new Queue('Server B', {
 The new backoff strategy can then be specified on the job, using the name defined above:
 
 ```js
-myQueue.add(
-  { foo: 'bar' },
-  {
-    attempts: 3,
-    backoff: {
-      type: 'jitter'
-    }
+myQueue.add({foo: 'bar'}, {
+  attempts: 3,
+  backoff: {
+    type: 'jitter'
   }
-);
+});
 ```
 
-You may base you backoff strategy on the error that the job throws:
-
+You may base your backoff strategy on the error that the job throws:
 ```js
 var Queue = require('bull');
 
@@ -159,7 +166,7 @@ function MySpecificError() {}
 var myQueue = new Queue('Server C', {
   settings: {
     backoffStrategies: {
-      foo: function(attemptsMade, err) {
+      foo: function (attemptsMade, err) {
         if (err instanceof MySpecificError) {
           return 10000;
         }
@@ -169,7 +176,7 @@ var myQueue = new Queue('Server C', {
   }
 });
 
-myQueue.process(function(job, done) {
+myQueue.process(function(job, done){
   if (job.data.msg === 'Specific Error') {
     throw new MySpecificError();
   } else {
@@ -177,28 +184,23 @@ myQueue.process(function(job, done) {
   }
 });
 
-myQueue.add(
-  { msg: 'Hello' },
-  {
-    attempts: 3,
-    backoff: {
-      type: 'foo'
-    }
+myQueue.add({msg: 'Hello'}, {
+  attempts: 3,
+  backoff: {
+    type: 'foo'
   }
-);
+});
 
-myQueue.add(
-  { msg: 'Specific Error' },
-  {
-    attempts: 3,
-    backoff: {
-      type: 'foo'
-    }
-  }
-);
+myQueue.add({msg: 'Specific Error'}, {
+ attempts: 3,
+ backoff: {
+   type: 'foo'
+ }
+});
 ```
 
-## Manually fetching jobs
+Manually fetching jobs
+----------------------------------
 
 If you want the actual job processing to be done in a seperate repo/service than where `bull` is running, this pattern may be for you.
 
@@ -207,17 +209,17 @@ Manually transitioning states for jobs can be done with a few simple methods.
 1. Adding a job to the 'waiting' queue. Grab the queue and call `add`.
 
 ```typescript
-import Queue from 'bull';
+import Queue from "bull";
 
-const queue = new Queue(description, {
+const queue = new Queue(
   limiter: {
     max: 5,
     duration: 5000,
-    discard: true // important
+    bounceBack: true // important
   },
   ...queueOptions
 });
-queue.add({ random_attr: 'random_value' });
+queue.add({ random_attr: "random_value" });
 ```
 
 2. Pulling a job from 'waiting' and moving it to 'active'.

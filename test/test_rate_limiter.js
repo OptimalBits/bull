@@ -87,20 +87,29 @@ describe('Rate limiter', function() {
   });
 
   it('should put a job into the delayed queue when limit is hit', function() {
+    var newQueue = utils.buildQueue('test rate limiter', {
+      limiter: {
+        max: 1,
+        duration: 1000
+      }
+    });
+
     queue.on('failed', function(e) {
       assert.fail(e);
     });
 
-    return Promise.all(
-      [1, 2, 3, 4].map(function() {
-        return queue.add({});
-      })
-    ).then(function() {
-      Promise.all(
-        [1, 2, 3, 4].map(function() {
-          return queue.getNextJob();
-        })
-      ).then(function() {
+    return Promise.all([
+      newQueue.add({}),
+      newQueue.add({}),
+      newQueue.add({}),
+      newQueue.add({})
+    ]).then(function() {
+      Promise.all([
+        newQueue.getNextJob({}),
+        newQueue.getNextJob({}),
+        newQueue.getNextJob({}),
+        newQueue.getNextJob({})
+      ]).then(function() {
         return queue.getDelayedCount().then(function(delayedCount) {
           expect(delayedCount).to.eq(3);
         });
@@ -113,25 +122,30 @@ describe('Rate limiter', function() {
       limiter: {
         max: 1,
         duration: 1000,
-        discard: true
+        bounceBack: true
       }
     });
 
     newQueue.on('failed', function(e) {
       assert.fail(e);
     });
-    return Promise.all(
-      [1, 2, 3, 4].map(function() {
-        return newQueue.add({});
-      })
-    ).then(function() {
-      Promise.all(
-        [1, 2, 3, 4].map(function() {
-          return newQueue.getNextJob();
-        })
-      ).then(function() {
+    return Promise.all([
+      newQueue.add({}),
+      newQueue.add({}),
+      newQueue.add({}),
+      newQueue.add({})
+    ]).then(function() {
+      Promise.all([
+        newQueue.getNextJob({}),
+        newQueue.getNextJob({}),
+        newQueue.getNextJob({}),
+        newQueue.getNextJob({})
+      ]).then(function() {
         return newQueue.getDelayedCount().then(function(delayedCount) {
           expect(delayedCount).to.eq(0);
+          return newQueue.getActiveCount().then(function(waitingCount) {
+            expect(waitingCount).to.eq(1);
+          });
         });
       });
     });
