@@ -1979,6 +1979,46 @@ describe('Queue', function() {
       });
     });
 
+    it('should not retry a job if the custom backoff returns -1', function(done) {
+      queue = utils.buildQueue('test retries and backoffs', {
+        settings: {
+          backoffStrategies: {
+            custom: function() {
+              return -1;
+            }
+          }
+        }
+      });
+      var tries = 0;
+      queue.isReady().then(function() {
+        queue.process(function(job, jobDone) {
+          tries++;
+          if (job.attemptsMade < 3) {
+            throw new Error('Not yet!');
+          }
+          jobDone();
+        });
+
+        queue.add(
+          { foo: 'bar' },
+          {
+            attempts: 3,
+            backoff: {
+              type: 'custom'
+            }
+          }
+        );
+      });
+      queue.on('completed', function() {
+        done(new Error('Failed job was retried more than it should be!'));
+      });
+      queue.on('failed', function() {
+        if (tries === 1) {
+          done();
+        }
+      });
+    });
+
     it('should retry a job after a delay if a custom backoff is given based on the error thrown', function(done) {
       function CustomError() {}
 
