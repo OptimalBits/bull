@@ -59,7 +59,6 @@ local delayedTimestamp = tonumber(ARGV[8])
 if(delayedTimestamp ~= 0) then
   local timestamp = delayedTimestamp * 0x1000 + bit.band(jobCounter, 0xfff)
   rcall("ZADD", KEYS[5], timestamp, jobId)
-  rcall("PUBLISH", KEYS[5], delayedTimestamp)
 else
   local target
 

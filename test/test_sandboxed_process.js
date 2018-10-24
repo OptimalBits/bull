@@ -16,7 +16,7 @@ describe('sandboxed process', function() {
     return client.flushdb().then(function() {
       queue = utils.buildQueue('test process', {
         settings: {
-          guardInterval: 300000,
+          tickInterval: 300000,
           stalledInterval: 300000
         }
       });

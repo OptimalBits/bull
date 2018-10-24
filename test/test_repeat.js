@@ -24,7 +24,7 @@ describe('repeat', function() {
     return client.flushdb().then(function() {
       queue = utils.buildQueue('repeat', {
         settings: {
-          guardInterval: MAX_INT,
+          tickInterval: MAX_INT,
           stalledInterval: MAX_INT,
           drainDelay: 1 // Small delay so that .close is faster.
         }
