@@ -211,7 +211,14 @@ Manually transitioning states for jobs can be done with a few simple methods.
 ```typescript
 import Queue from "bull";
 
-const queue = new Queue(description, queueOptions);
+const queue = new Queue(
+  limiter: {
+    max: 5,
+    duration: 5000,
+    bounceBack: true // important
+  },
+  ...queueOptions
+});
 queue.add({ random_attr: "random_value" });
 ```
 

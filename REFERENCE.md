@@ -72,7 +72,7 @@ interface QueueOptions {
 interface RateLimiter {
   max: number,      // Max number of jobs processed
   duration: number, // per duration in milliseconds
-}
+  bounceBack: boolean = false; // When jobs get rate limited, they stay in the waiting queue and are not moved to the delayed queue
 ```
 
 ```RedisOpts``` are passed directly to ioredis constructor, check [ioredis](https://github.com/luin/ioredis/blob/master/API.md)
