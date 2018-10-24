@@ -10,17 +10,6 @@ var _ = require('lodash');
 var uuid = require('uuid');
 var utils = require('./utils');
 
-Promise.config({ warnings: true });
-
-Promise.config({
-  // Enable warnings.
-  // warnings: true,
-  // Enable long stack traces.
-  longStackTraces: process.NODE_ENV !== 'production',
-  // Enable cancellation.
-  cancellation: true
-});
-
 describe('Queue', function() {
   var sandbox = sinon.createSandbox();
   var client;
