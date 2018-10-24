@@ -15,7 +15,7 @@
      Events:
       'removed'
 ]]
-local MAX_BATCH_SIZE = 20;
+local MAX_BATCH_SIZE = 100;
 local rcall = redis.call;
 
 local dequeued_jobs = 0
