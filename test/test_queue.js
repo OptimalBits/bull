@@ -1411,7 +1411,17 @@ describe('Queue', function() {
         expect(job.data.foo).to.be.eql('bar');
         expect(err).to.be.eql(notEvenErr);
         failedOnce = true;
-        job.retry();
+        job.retry().then(function() {
+          expect(job.failedReason).to.be.null;
+          expect(job.processedOn).to.be.null;
+          expect(job.finishedOn).to.be.null;
+
+          retryQueue.getJob(job.id).then(function(updatedJob) {
+            expect(updatedJob.failedReason).to.be.undefined;
+            expect(updatedJob.processedOn).to.be.undefined;
+            expect(updatedJob.finishedOn).to.be.undefined;
+          });
+        });
       });
 
       retryQueue.once('completed', function() {
