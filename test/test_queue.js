@@ -1990,25 +1990,23 @@ describe('Queue', function() {
         }
       });
       var tries = 0;
-      queue.isReady().then(function() {
-        queue.process(function(job, jobDone) {
-          tries++;
-          if (job.attemptsMade < 3) {
-            throw new Error('Not yet!');
-          }
-          jobDone();
-        });
-
-        queue.add(
-          { foo: 'bar' },
-          {
-            attempts: 3,
-            backoff: {
-              type: 'custom'
-            }
-          }
-        );
+      queue.process(function(job, jobDone) {
+        tries++;
+        if (job.attemptsMade < 3) {
+          throw new Error('Not yet!');
+        }
+        jobDone();
       });
+
+      queue.add(
+        { foo: 'bar' },
+        {
+          attempts: 3,
+          backoff: {
+            type: 'custom'
+          }
+        }
+      );
       queue.on('completed', function() {
         done(new Error('Failed job was retried more than it should be!'));
       });
