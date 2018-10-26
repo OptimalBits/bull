@@ -131,6 +131,7 @@ Custom backoff strategy
 -----------------------
 
 When the builtin backoff strategies on retries are not sufficient, a custom strategy can be defined. Custom backoff strategies are defined by a function on the queue. The number of attempts already made to process the job is passed to this function as the first parameter, and the error that the job failed with as the second parameter.
+The function returns either the time to delay the retry with, 0 to retry immediately or -1 to fail the job immediately.
 
 ```js
 var Queue = require('bull');
