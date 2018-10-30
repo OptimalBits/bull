@@ -62,9 +62,12 @@ if jobId then
         -- put job into delayed queue
         rcall("ZADD", KEYS[7], timestamp * 0x1000 + bit.band(jobCounter, 0xfff), jobId)
         rcall("PUBLISH", KEYS[7], timestamp)
+        -- remove from active queue
+        rcall("LREM", KEYS[2], 1, jobId)
+        return
       end
-      -- remove from active queue
-      rcall("LREM", KEYS[2], 1, jobId)
+      -- move from active to wait
+      rcall("RPOPLPUSH", KEYS[2], KEYS[1])
       return
     else
       jobCounter = rcall("INCR", rateLimiterKey)

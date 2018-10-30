@@ -143,8 +143,8 @@ describe('Rate limiter', function() {
       ]).then(function() {
         return newQueue.getDelayedCount().then(function(delayedCount) {
           expect(delayedCount).to.eq(0);
-          return newQueue.getActiveCount().then(function(waitingCount) {
-            expect(waitingCount).to.eq(1);
+          return newQueue.getWaitingCount().then(function(waitingCount) {
+            expect(waitingCount).to.eq(3);
           });
         });
       });
