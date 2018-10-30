@@ -270,6 +270,52 @@ describe('sandboxed process', function() {
     queue.add({ foo: 'bar' });
   });
 
+  it('should fail if the process crashes', function() {
+    queue.process(__dirname + '/fixtures/fixture_processor_crash.js');
+
+    return queue
+      .add({})
+      .then(function(job) {
+        return job.finished().reflect();
+      })
+      .then(function(inspection) {
+        expect(inspection.isRejected()).to.be.eql(true);
+        expect(inspection.reason().message).to.be.eql('boom!');
+      });
+  });
+
+  it('should fail if the process exits 0', function() {
+    queue.process(__dirname + '/fixtures/fixture_processor_crash.js');
+
+    return queue
+      .add({ exitCode: 0 })
+      .then(function(job) {
+        return job.finished().reflect();
+      })
+      .then(function(inspection) {
+        expect(inspection.isRejected()).to.be.eql(true);
+        expect(inspection.reason().message).to.be.eql(
+          'Unexpected exit code: 0'
+        );
+      });
+  });
+
+  it('should fail if the process exits non-0', function() {
+    queue.process(__dirname + '/fixtures/fixture_processor_crash.js');
+
+    return queue
+      .add({ exitCode: 1 })
+      .then(function(job) {
+        return job.finished().reflect();
+      })
+      .then(function(inspection) {
+        expect(inspection.isRejected()).to.be.eql(true);
+        expect(inspection.reason().message).to.be.eql(
+          'Unexpected exit code: 1'
+        );
+      });
+  });
+
   it('should remove exited process', function(done) {
     queue.process(__dirname + '/fixtures/fixture_processor_exit.js');
 
