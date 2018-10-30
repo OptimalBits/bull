@@ -1,5 +1,9 @@
 # Changelog
 
+## v.3.5.0
+
+- new config in ratelimiter to do nothing when a queue hits the limit
+
 ## v.3.4.8
 
 - emit waiting event when waking up sleep jobs fixing #792
