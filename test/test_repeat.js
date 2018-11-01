@@ -90,28 +90,43 @@ describe('repeat', function() {
       .then(function(jobs) {
         expect(jobs)
           .to.be.and.an('array')
-          .and.have.length(4);
-
-        expect(jobs[0]).to.include({
-          cron: '10 * * * * *',
-          next: 10000,
-          endDate: 12345
-        });
-        expect(jobs[1]).to.include({
-          cron: '2 10 * * * *',
-          next: 602000,
-          endDate: 610000
-        });
-        expect(jobs[2]).to.include({
-          cron: '1 * * 5 * *',
-          next: 345601000,
-          tz: 'Africa/Abidjan'
-        });
-        expect(jobs[3]).to.include({
-          cron: '2 * * 4 * *',
-          next: 259202000,
-          tz: 'Africa/Accra'
-        });
+          .and.have.length(4)
+          .and.to.deep.include({
+            key: 'first::12345::10 * * * * *',
+            name: 'first',
+            id: null,
+            endDate: 12345,
+            tz: null,
+            cron: '10 * * * * *',
+            next: 10000
+          })
+          .and.to.deep.include({
+            key: 'second::610000::2 10 * * * *',
+            name: 'second',
+            id: null,
+            endDate: 610000,
+            tz: null,
+            cron: '2 10 * * * *',
+            next: 602000
+          })
+          .and.to.deep.include({
+            key: 'fourth:::Africa/Accra:2 * * 4 * *',
+            name: 'fourth',
+            id: null,
+            endDate: null,
+            tz: 'Africa/Accra',
+            cron: '2 * * 4 * *',
+            next: 259202000
+          })
+          .and.to.deep.include({
+            key: 'third:::Africa/Abidjan:1 * * 5 * *',
+            name: 'third',
+            id: null,
+            endDate: null,
+            tz: 'Africa/Abidjan',
+            cron: '1 * * 5 * *',
+            next: 345601000
+          });
         done();
       })
       .catch(done);
