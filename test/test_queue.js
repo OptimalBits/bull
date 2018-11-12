@@ -1991,7 +1991,7 @@ describe('Queue', function() {
       });
     });
 
-    it.only('should not retry a job that has been removed', function(done) {
+    it('should not retry a job that has been removed', function(done) {
       queue = utils.buildQueue('retry a removed job');
       var attempts = 0;
       var failedError = new Error('failed');
