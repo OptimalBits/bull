@@ -98,7 +98,7 @@ describe('.pause', function() {
 
     queue
       .pause(true /* Local */)
-      .tap(function() {
+      .then(function() {
         // Add the worker after the queue is in paused mode since the normal behavior is to pause
         // it after the current lock expires. This way, we can ensure there isn't a lock already
         // to test that pausing behavior works.
@@ -298,6 +298,8 @@ describe('.pause', function() {
     queue.process(function(/*job*/) {
       Promise.resolve();
     });
+
+    queue.add({});
 
     queue.on('drained', function() {
       Promise.delay(500).then(function() {

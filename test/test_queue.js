@@ -74,7 +74,7 @@ describe('Queue', function() {
 
     it('should return a promise', function() {
       var closePromise = testQueue.close().then(function() {
-        expect(closePromise).to.be.instanceof(Promise);
+        expect(closePromise.then).to.be.a('function');
       });
       return closePromise;
     });
@@ -1991,7 +1991,7 @@ describe('Queue', function() {
       });
     });
 
-    it('should not retry a job that has been removed', function(done) {
+    it.only('should not retry a job that has been removed', function(done) {
       queue = utils.buildQueue('retry a removed job');
       var attempts = 0;
       var failedError = new Error('failed');

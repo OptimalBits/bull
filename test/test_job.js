@@ -141,8 +141,10 @@ describe('Job', function() {
   describe('.remove', function() {
     it('removes the job from redis', function() {
       return Job.create(queue, { foo: 'bar' })
-        .tap(function(job) {
-          return job.remove();
+        .then(function(job) {
+          return job.remove().then(function() {
+            return job;
+          });
         })
         .then(function(job) {
           return Job.fromId(queue, job.id);
