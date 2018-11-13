@@ -7,7 +7,7 @@ issue can be resolved efficiently. The following template should be filled for b
 ## Description
 
 ## Minimal, Working Test code to reproduce the issue.
-#### (An easy to reproduce test case will dramatically decrease the time for resolution.)
+#### (An easy to reproduce test case will dramatically decrease the resolution time.)
 
 ## Bull version
 
