@@ -46,11 +46,12 @@ end
 if jobId then
   -- Check if we need to perform rate limiting.
   if(ARGV[6]) then
+    local rateLimiterKey = KEYS[6];
     local jobCounter
     local maxJobs = tonumber(ARGV[6])
-    jobCounter = tonumber(rcall("GET", KEYS[6]))
+    jobCounter = tonumber(rcall("GET", rateLimiterKey))
     if jobCounter ~= nil and jobCounter >= maxJobs then
-      local delay = tonumber(rcall("PTTL", KEYS[6]))
+      local delay = tonumber(rcall("PTTL", rateLimiterKey))
       local timestamp = delay + tonumber(ARGV[4])
 
       rcall("ZADD", KEYS[7], timestamp * 0x1000 + bit.band(jobCounter, 0xfff), jobId)
@@ -58,9 +59,9 @@ if jobId then
       rcall("LREM", KEYS[2], 1, jobId)
       return
     else
-      jobCounter = rcall("INCR", KEYS[6])
+      jobCounter = rcall("INCR", rateLimiterKey)
       if tonumber(jobCounter) == 1 then
-        rcall("PEXPIRE", KEYS[6], ARGV[7])
+        rcall("PEXPIRE", rateLimiterKey, ARGV[7])
       end
     end
   end
