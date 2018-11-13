@@ -59,11 +59,11 @@ describe('repeat', function() {
   });
 
   it('should get repeatable jobs with different cron pattern', function(done) {
-    var crons = ['10 * * * * *', '2 * * 1 * 2', '1 * * 5 * *', '2 * * 4 * *'];
+    var crons = ['10 * * * * *', '2 10 * * * *', '1 * * 5 * *', '2 * * 4 * *'];
 
     Promise.all([
       queue.add('first', {}, { repeat: { cron: crons[0], endDate: 12345 } }),
-      queue.add('second', {}, { repeat: { cron: crons[1], endDate: 54321 } }),
+      queue.add('second', {}, { repeat: { cron: crons[1], endDate: 610000 } }),
       queue.add(
         'third',
         {},
@@ -83,29 +83,50 @@ describe('repeat', function() {
         return queue.getRepeatableJobs(0, -1, true);
       })
       .then(function(jobs) {
+        return jobs.sort(function(a, b) {
+          return crons.indexOf(a.cron) > crons.indexOf(b.cron);
+        });
+      })
+      .then(function(jobs) {
         expect(jobs)
           .to.be.and.an('array')
-          .and.have.length(4);
-        expect(jobs[0]).to.include({
-          cron: '2 * * 1 * 2',
-          next: 2000,
-          endDate: 54321
-        });
-        expect(jobs[1]).to.include({
-          cron: '10 * * * * *',
-          next: 10000,
-          endDate: 12345
-        });
-        expect(jobs[2]).to.include({
-          cron: '2 * * 4 * *',
-          next: 259202000,
-          tz: 'Africa/Accra'
-        });
-        expect(jobs[3]).to.include({
-          cron: '1 * * 5 * *',
-          next: 345601000,
-          tz: 'Africa/Abidjan'
-        });
+          .and.have.length(4)
+          .and.to.deep.include({
+            key: 'first::12345::10 * * * * *',
+            name: 'first',
+            id: null,
+            endDate: 12345,
+            tz: null,
+            cron: '10 * * * * *',
+            next: 10000
+          })
+          .and.to.deep.include({
+            key: 'second::610000::2 10 * * * *',
+            name: 'second',
+            id: null,
+            endDate: 610000,
+            tz: null,
+            cron: '2 10 * * * *',
+            next: 602000
+          })
+          .and.to.deep.include({
+            key: 'fourth:::Africa/Accra:2 * * 4 * *',
+            name: 'fourth',
+            id: null,
+            endDate: null,
+            tz: 'Africa/Accra',
+            cron: '2 * * 4 * *',
+            next: 259202000
+          })
+          .and.to.deep.include({
+            key: 'third:::Africa/Abidjan:1 * * 5 * *',
+            name: 'third',
+            id: null,
+            endDate: null,
+            tz: 'Africa/Abidjan',
+            cron: '1 * * 5 * *',
+            next: 345601000
+          });
         done();
       })
       .catch(done);
@@ -119,6 +140,89 @@ describe('repeat', function() {
 
     queue
       .add('repeat', { foo: 'bar' }, { repeat: { cron: '*/2 * * * * *' } })
+      .then(function() {
+        _this.clock.tick(nextTick);
+      });
+
+    queue.process('repeat', function() {
+      // dummy
+    });
+
+    var prev;
+    var counter = 0;
+    queue.on('completed', function(job) {
+      _this.clock.tick(nextTick);
+      if (prev) {
+        expect(prev.timestamp).to.be.lt(job.timestamp);
+        expect(job.timestamp - prev.timestamp).to.be.gte(2000);
+      }
+      prev = job;
+      counter++;
+      if (counter == 20) {
+        done();
+      }
+    });
+  });
+
+  it('should repeat every 2 seconds with startDate in future', function(done) {
+    var _this = this;
+    var date = new Date('2017-02-07 9:24:00');
+    this.clock.tick(date.getTime());
+    var nextTick = 2 * ONE_SECOND + 500;
+    var delay = 5 * ONE_SECOND + 500;
+
+    queue
+      .add(
+        'repeat',
+        { foo: 'bar' },
+        {
+          repeat: {
+            cron: '*/2 * * * * *',
+            startDate: new Date('2017-02-07 9:24:05')
+          }
+        }
+      )
+      .then(function() {
+        _this.clock.tick(nextTick + delay);
+      });
+
+    queue.process('repeat', function() {
+      // dummy
+    });
+
+    var prev;
+    var counter = 0;
+    queue.on('completed', function(job) {
+      _this.clock.tick(nextTick);
+      if (prev) {
+        expect(prev.timestamp).to.be.lt(job.timestamp);
+        expect(job.timestamp - prev.timestamp).to.be.gte(2000);
+      }
+      prev = job;
+      counter++;
+      if (counter == 20) {
+        done();
+      }
+    });
+  });
+
+  it('should repeat every 2 seconds with startDate in past', function(done) {
+    var _this = this;
+    var date = new Date('2017-02-07 9:24:00');
+    this.clock.tick(date.getTime());
+    var nextTick = 2 * ONE_SECOND + 500;
+
+    queue
+      .add(
+        'repeat',
+        { foo: 'bar' },
+        {
+          repeat: {
+            cron: '*/2 * * * * *',
+            startDate: new Date('2017-02-07 9:22:00')
+          }
+        }
+      )
       .then(function() {
         _this.clock.tick(nextTick);
       });
@@ -570,7 +674,8 @@ describe('repeat', function() {
 
     queue.on('waiting', function(jobId) {
       expect(jobId).to.be.equal(
-        'repeat:93168b0ea97b55fb5a8325e8c66e4300:1486455842000'
+        'repeat:93168b0ea97b55fb5a8325e8c66e4300:' +
+          (date.getTime() + 2 * ONE_SECOND)
       );
       done();
     });
@@ -582,5 +687,21 @@ describe('repeat', function() {
       });
 
     queue.process('repeat', function() {});
+  });
+
+  it('should have the right count value', function(done) {
+    var _this = this;
+
+    queue.add({ foo: 'bar' }, { repeat: { every: 1000 } }).then(function() {
+      _this.clock.tick(ONE_SECOND);
+    });
+
+    queue.process(function(job) {
+      if (job.opts.repeat.count === 1) {
+        done();
+      } else {
+        done(Error('repeatable job got the wrong repeat count'));
+      }
+    });
   });
 });

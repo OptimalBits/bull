@@ -22,7 +22,7 @@ Bluebird.config({
 });
 
 describe('Queue', function() {
-  var sandbox = sinon.sandbox.create();
+  var sandbox = sinon.createSandbox();
   var client;
 
   beforeEach(function() {
@@ -1299,8 +1299,38 @@ describe('Queue', function() {
       });
     });
 
-    // Skipped since the test is unstable and difficult to understand.
-    it.skip('does not renew a job lock after the lock has been released [#397]', function() {
+    it('process a job that rejects with a nested error', function(done) {
+      var cause = new Error('cause');
+      var jobError = new Error('wrapper');
+      jobError.cause = function() {
+        return cause;
+      };
+
+      queue.process(function(job) {
+        expect(job.data.foo).to.be.equal('bar');
+        return Promise.reject(jobError);
+      });
+
+      queue.add({ foo: 'bar' }).then(
+        function(job) {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        },
+        function(err) {
+          done(err);
+        }
+      );
+
+      queue.once('failed', function(job, err) {
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
+        expect(err).to.be.eql(jobError);
+        expect(err.cause()).to.be.eql(cause);
+        done();
+      });
+    });
+
+    it.skip('does not renew a job lock after the lock has been released [#397]', function(done) {
       this.timeout(queue.LOCK_RENEW_TIME * 4);
 
       var processing = queue.process(function(job) {
@@ -1390,7 +1420,17 @@ describe('Queue', function() {
         expect(job.data.foo).to.be.eql('bar');
         expect(err).to.be.eql(notEvenErr);
         failedOnce = true;
-        job.retry();
+        job.retry().then(function() {
+          expect(job.failedReason).to.be.null;
+          expect(job.processedOn).to.be.null;
+          expect(job.finishedOn).to.be.null;
+
+          retryQueue.getJob(job.id).then(function(updatedJob) {
+            expect(updatedJob.failedReason).to.be.undefined;
+            expect(updatedJob.processedOn).to.be.undefined;
+            expect(updatedJob.finishedOn).to.be.undefined;
+          });
+        });
       });
 
       retryQueue.once('completed', function() {
@@ -1943,6 +1983,44 @@ describe('Queue', function() {
         var elapse = Date.now() - start;
         expect(elapse).to.be.greaterThan(3000);
         done();
+      });
+    });
+
+    it('should not retry a job if the custom backoff returns -1', function(done) {
+      queue = utils.buildQueue('test retries and backoffs', {
+        settings: {
+          backoffStrategies: {
+            custom: function() {
+              return -1;
+            }
+          }
+        }
+      });
+      var tries = 0;
+      queue.process(function(job, jobDone) {
+        tries++;
+        if (job.attemptsMade < 3) {
+          throw new Error('Not yet!');
+        }
+        jobDone();
+      });
+
+      queue.add(
+        { foo: 'bar' },
+        {
+          attempts: 3,
+          backoff: {
+            type: 'custom'
+          }
+        }
+      );
+      queue.on('completed', function() {
+        done(new Error('Failed job was retried more than it should be!'));
+      });
+      queue.on('failed', function() {
+        if (tries === 1) {
+          done();
+        }
       });
     });
 

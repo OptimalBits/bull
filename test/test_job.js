@@ -406,11 +406,20 @@ describe('Job', function() {
   });
 
   describe('.progress', function() {
-    it('can set and get progress', function() {
+    it('can set and get progress as number', function() {
       return Job.create(queue, { foo: 'bar' }).then(function(job) {
         return job.progress(42).then(function() {
           return Job.fromId(queue, job.id).then(function(storedJob) {
             expect(storedJob.progress()).to.be(42);
+          });
+        });
+      });
+    });
+    it('can set and get progress as object', function() {
+      return Job.create(queue, { foo: 'bar' }).then(function(job) {
+        return job.progress({ total: 120, completed: 40 }).then(function() {
+          return Job.fromId(queue, job.id).then(function(storedJob) {
+            expect(storedJob.progress()).to.eql({ total: 120, completed: 40 });
           });
         });
       });
