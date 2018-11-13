@@ -2,7 +2,6 @@
 'use strict';
 
 var expect = require('chai').expect;
-var redis = require('ioredis');
 var childPool = require('../lib/process/child-pool');
 
 describe('Child pool', function() {

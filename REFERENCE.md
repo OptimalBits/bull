@@ -72,7 +72,7 @@ interface QueueOptions {
 interface RateLimiter {
   max: number,      // Max number of jobs processed
   duration: number, // per duration in milliseconds
-}
+  bounceBack: boolean = false; // When jobs get rate limited, they stay in the waiting queue and are not moved to the delayed queue
 ```
 
 ```RedisOpts``` are passed directly to ioredis constructor, check [ioredis](https://github.com/luin/ioredis/blob/master/API.md)
@@ -272,9 +272,11 @@ interface JobOpts{
 interface RepeatOpts{
   cron?: string; // Cron string
   tz?: string, // Timezone
-  endDate?: Date | string | number; // End data when the repeat job should stop repeating.
+  startDate?: Date | string | number; // Start date when the repeat job should start repeating (only with cron).
+  endDate?: Date | string | number; // End date when the repeat job should stop repeating.
   limit?: number; // Number of times the job should repeat at max.
   every?: number; // Repeat every millis (cron setting cannot be used together with this setting.)
+  count?: number; // The start value for the repeat iteration count.
 }
 ```
 
