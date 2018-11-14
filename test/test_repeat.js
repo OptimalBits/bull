@@ -585,9 +585,12 @@ describe('repeat', function() {
 
     Promise.all(jobAdds).then(function() {
       queue.process(function(job, jobDone) {
-        expect(job.id).to.be.ok;
-        expect(job.data.p).to.be.eql(currentPriority++);
-        total++;
+        try {
+          expect(job.id).to.be.ok;
+          expect(job.data.p).to.be.eql(currentPriority++);
+        } catch (err) {
+          done(err);
+        }
         jobDone();
 
         if (currentPriority > 3) {
