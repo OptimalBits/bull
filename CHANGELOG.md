@@ -1,5 +1,11 @@
 # Changelog
 
+## v.3.5.1
+
+- chore(yarn): updated yarn.lock
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.5.0...v3.5.1)
+
 ## v.3.5.0
 
 - fix(delayed): pause delayed jobs #1087
