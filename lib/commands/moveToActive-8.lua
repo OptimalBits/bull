@@ -46,10 +46,11 @@ end
 
 if jobId then
   -- Check if we need to perform rate limiting.
-  if(ARGV[6]) then
+  local maxJobs = tonumber(ARGV[6])
+
+  if(maxJobs) then
     local rateLimiterKey = KEYS[6];
     local jobCounter = tonumber(rcall("GET", rateLimiterKey))
-    local maxJobs = tonumber(rateLimiterKey)
     local bounceBack = ARGV[8]
     
     -- rate limit hit
