@@ -4,7 +4,7 @@
 var Queue = require('../');
 
 var expect = require('chai').expect;
-var Promise = require('bluebird');
+var Bluebird = require('bluebird');
 var redis = require('ioredis');
 var utils = require('./utils');
 
@@ -36,7 +36,7 @@ describe('.pause', function() {
         });
       });
 
-      return Promise.join(
+      return Bluebird.join(
         queue
           .pause()
           .then(function() {
@@ -132,7 +132,7 @@ describe('.pause', function() {
     var startProcessing = new Promise(function(resolve) {
       queue.process(function(/*job*/) {
         resolve();
-        return Promise.delay(200);
+        return Bluebird.delay(200);
       });
     });
 
@@ -255,7 +255,7 @@ describe('.pause', function() {
     var startsProcessing = new Promise(function(resolve) {
       queue.process(function(/*job*/) {
         resolve();
-        return Promise.delay(200);
+        return Bluebird.delay(200);
       });
     });
 
@@ -302,7 +302,7 @@ describe('.pause', function() {
     queue.add({});
 
     queue.on('drained', function() {
-      Promise.delay(500).then(function() {
+      Bluebird.delay(500).then(function() {
         var start = new Date().getTime();
         return queue.pause(true).finally(function() {
           var finish = new Date().getTime();
@@ -310,6 +310,42 @@ describe('.pause', function() {
           queue.close().then(done, done);
         });
       });
+    });
+  });
+
+  it('should not processed delayed jobs', function(done) {
+    this.timeout(5000);
+    var queue = new Queue('pause-test');
+
+    queue.process(function() {
+      done(new Error('should not process delayed jobs in paused queue.'));
+    });
+
+    queue.pause().then(function() {
+      queue
+        .add(
+          {},
+          {
+            delay: 500
+          }
+        )
+        .then(function() {
+          return queue.getJobCounts();
+        })
+        .then(function(counts) {
+          expect(counts).to.have.property('paused', 0);
+          expect(counts).to.have.property('waiting', 0);
+          expect(counts).to.have.property('delayed', 1);
+          return Bluebird.delay(1000);
+        })
+        .then(function() {
+          return queue.getJobCounts();
+        })
+        .then(function(counts) {
+          expect(counts).to.have.property('paused', 1);
+          expect(counts).to.have.property('waiting', 0);
+          done();
+        });
     });
   });
 });
