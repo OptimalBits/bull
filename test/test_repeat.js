@@ -576,7 +576,6 @@ describe('repeat', function() {
     var jobAdds = [];
     var currentPriority = 1;
     var nextTick = 1000;
-    var total = 0;
 
     jobAdds.push(queue.add({ p: 1 }, { priority: 1, delay: nextTick * 3 }));
     jobAdds.push(queue.add({ p: 2 }, { priority: 2, delay: nextTick * 2 }));
