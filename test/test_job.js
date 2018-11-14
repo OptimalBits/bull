@@ -813,9 +813,7 @@ describe('Job', function() {
 
     it('should reject when the job has been failed', function(done) {
       queue.process(function() {
-        console.error('processing');
         return Bluebird.delay(500).then(function() {
-          console.error('processing 2');
           return Promise.reject(new Error('test error'));
         });
       });
@@ -823,16 +821,13 @@ describe('Job', function() {
       queue
         .add({ foo: 'bar' })
         .then(function(job) {
-          console.error('wait for finished');
           return job.finished();
         })
         .then(
           function() {
-            console.error('finished');
             done(Error('should have been rejected'));
           },
           function(err) {
-            console.error('finished with error');
             expect(err.message).equal('test error');
             done();
           }
