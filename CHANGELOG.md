@@ -1,5 +1,26 @@
 # Changelog
 
+## v.3.5.0
+
+- fix(delayed): pause delayed jobs #1087
+- fix(lua): correct numJobs fetch in moveToActive
+- perf(moveToActive): used local var for rate limiter
+- perf(queue): replace bluebird by native promises where possible
+- chore(queue): fix typo in forcedReconnection variable
+- feat(child-processes): catch sub process crashes
+- fix(jobs): reset 'failedReason', 'finishedOn' and 'processedOn' fields on job retry
+- fix(queue): fix Warning: cancellation is disabled
+- fix(queue): remove the correct listener in isRedisReady
+- feat(jobs): allow cancelling of retries when using custom backoff strategy
+- feat(rate-limiter): add discard config for rate-limiter
+- feat(jobs): make job progress accepts variant types
+- fix(repeatable): Fixed wrong repeatable count updates
+- fix(jobs): fix copy paste mistake for stacktrace in job toData
+- feat(child-processes): Propagate stack traces
+- feat(repeatable): add ability for cron repeatable job with startDate
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.4.8...v3.5.0)
+
 ## v.3.4.8
 
 - emit waiting event when waking up sleep jobs fixing #792
