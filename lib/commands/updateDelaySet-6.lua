@@ -8,6 +8,9 @@
       KEYS[3] 'wait'
       KEYS[4] 'priority'
 
+      KEYS[5] 'paused'
+      KEYS[6] 'meta-paused'
+
       ARGV[1]  queue.toKey('')
       ARGV[2]  delayed timestamp
       ARGV[3]  queue token
@@ -27,20 +30,28 @@ if (score ~= nil) then
 
     local priority = tonumber(rcall("HGET", ARGV[1] .. jobId, "priority")) or 0
 
+    -- check if we need to use push in paused instead of waiting
+    local target;
+    if rcall("EXISTS", KEYS[6]) ~= 1 then
+      target = KEYS[3]
+    else
+      target = KEYS[5]
+    end
+
     if priority == 0 then
       -- LIFO or FIFO
-      rcall("LPUSH", KEYS[3], jobId)
+      rcall("LPUSH", target, jobId)
     else
       -- Priority add
       rcall("ZADD", KEYS[4], priority, jobId)
       local count = rcall("ZCOUNT", KEYS[4], 0, priority)
 
-      local len = rcall("LLEN", KEYS[3])
-      local id = rcall("LINDEX", KEYS[3], len - (count-1))
+      local len = rcall("LLEN", target)
+      local id = rcall("LINDEX", target, len - (count-1))
       if id then
-        rcall("LINSERT", KEYS[3], "BEFORE", id, jobId)
+        rcall("LINSERT", target, "BEFORE", id, jobId)
       else
-        rcall("RPUSH", KEYS[3], jobId)
+        rcall("RPUSH", target, jobId)
       end
     end
 
