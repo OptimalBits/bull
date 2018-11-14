@@ -12,7 +12,7 @@
          - LIFO
          - FIFO
          - prioritized.
-         - Adds the job to the "added" list so that workers gets notified.
+      - Adds the job to the "added" list so that workers gets notified.
 
     Input:
       KEYS[1] 'wait',

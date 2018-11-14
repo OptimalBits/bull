@@ -5,7 +5,7 @@ var Job = require('../lib/job');
 var Queue = require('../lib/queue');
 var expect = require('expect.js');
 var redis = require('ioredis');
-var Promise = require('bluebird');
+var Bluebird = require('bluebird');
 var uuid = require('uuid');
 
 describe('Job', function() {
@@ -141,8 +141,10 @@ describe('Job', function() {
   describe('.remove', function() {
     it('removes the job from redis', function() {
       return Job.create(queue, { foo: 'bar' })
-        .tap(function(job) {
-          return job.remove();
+        .then(function(job) {
+          return job.remove().then(function() {
+            return job;
+          });
         })
         .then(function(job) {
           return Job.fromId(queue, job.id);
@@ -723,7 +725,7 @@ describe('Job', function() {
   describe('.finished', function() {
     it('should resolve when the job has been completed', function(done) {
       queue.process(function() {
-        return Promise.delay(500);
+        return Bluebird.delay(500);
       });
       queue
         .add({ foo: 'bar' })
@@ -735,7 +737,7 @@ describe('Job', function() {
 
     it('should resolve when the job has been completed and return object', function(done) {
       queue.process(function(/*job*/) {
-        return Promise.delay(500).then(function() {
+        return Bluebird.delay(500).then(function() {
           return { resultFoo: 'bar' };
         });
       });
@@ -753,14 +755,14 @@ describe('Job', function() {
 
     it('should resolve when the job has been delayed and completed and return object', function(done) {
       queue.process(function(/*job*/) {
-        return Promise.delay(300).then(function() {
+        return Bluebird.delay(300).then(function() {
           return { resultFoo: 'bar' };
         });
       });
       queue
         .add({ foo: 'bar' })
         .then(function(job) {
-          return Promise.delay(600).then(function() {
+          return Bluebird.delay(600).then(function() {
             return job.finished();
           });
         })
@@ -773,14 +775,14 @@ describe('Job', function() {
 
     it('should resolve when the job has been completed and return string', function(done) {
       queue.process(function(/*job*/) {
-        return Promise.delay(500).then(function() {
+        return Bluebird.delay(500).then(function() {
           return 'a string';
         });
       });
       queue
         .add({ foo: 'bar' })
         .then(function(job) {
-          return Promise.delay(600).then(function() {
+          return Bluebird.delay(600).then(function() {
             return job.finished();
           });
         })
@@ -793,7 +795,7 @@ describe('Job', function() {
 
     it('should resolve when the job has been delayed and completed and return string', function(done) {
       queue.process(function(/*job*/) {
-        return Promise.delay(300).then(function() {
+        return Bluebird.delay(300).then(function() {
           return 'a string';
         });
       });
@@ -811,10 +813,11 @@ describe('Job', function() {
 
     it('should reject when the job has been failed', function(done) {
       queue.process(function() {
-        return Promise.delay(500).then(function() {
-          return Promise.reject(Error('test error'));
+        return Bluebird.delay(500).then(function() {
+          return Promise.reject(new Error('test error'));
         });
       });
+
       queue
         .add({ foo: 'bar' })
         .then(function(job) {
@@ -838,7 +841,7 @@ describe('Job', function() {
       queue
         .add({ foo: 'bar' })
         .then(function(job) {
-          return Promise.delay(500).then(function() {
+          return Bluebird.delay(500).then(function() {
             return job.finished();
           });
         })
@@ -854,7 +857,7 @@ describe('Job', function() {
       queue
         .add({ foo: 'bar' })
         .then(function(job) {
-          return Promise.delay(500).then(function() {
+          return Bluebird.delay(500).then(function() {
             return job.finished();
           });
         })

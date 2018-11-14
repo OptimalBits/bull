@@ -319,7 +319,7 @@ describe('Jobs getters', function() {
 
   it('should return jobs for multiple types', function(done) {
     var counter = 0;
-    queue.process(function(job) {
+    queue.process(function(/*job*/) {
       counter++;
       if (counter == 2) {
         return queue.pause();

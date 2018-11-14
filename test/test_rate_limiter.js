@@ -75,14 +75,14 @@ describe('Rate limiter', function() {
           var timeDiff = new Date().getTime() - startTime;
           expect(timeDiff).to.be.above((numJobs - 1) * 1000);
           done();
-        } catch (e) {
-          assert.fail(e);
+        } catch (err) {
+          done(err);
         }
       })
     );
 
-    queue.on('failed', function(e) {
-      assert.fail(e);
+    queue.on('failed', function(err) {
+      done(err);
     });
   });
 
