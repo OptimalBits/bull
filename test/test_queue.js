@@ -1335,7 +1335,6 @@ describe('Queue', function() {
       this.timeout(queue.LOCK_RENEW_TIME * 4);
 
       var processing = queue.process(function(job) {
-        console.error('processing');
         expect(job.data.foo).to.be.equal('bar');
         return Promise.resolve();
       });
@@ -1343,7 +1342,6 @@ describe('Queue', function() {
       var emit = queue.emit.bind(queue);
       queue.emit = function() {
         var args = arguments;
-        console.error('emitting', args);
         return Bluebird.delay(queue.LOCK_RENEW_TIME * 2).then(function() {
           return emit.apply(null, args);
         });
