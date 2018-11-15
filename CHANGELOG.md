@@ -1,5 +1,11 @@
 # Changelog
 
+## v.3.5.2
+
+- chore(queue): remove bluebird config from the codebase.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.5.1...v3.5.2)
+
 ## v.3.5.1
 
 - chore(yarn): updated yarn.lock
