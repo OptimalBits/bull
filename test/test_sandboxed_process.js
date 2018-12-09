@@ -1,7 +1,6 @@
 /*eslint-env node */
 'use strict';
 
-var Bluebird = require('bluebird');
 var expect = require('chai').expect;
 var utils = require('./utils');
 var redis = require('ioredis');
@@ -113,7 +112,7 @@ describe('sandboxed process', function() {
     });
 
     queue.add('foo', { foo: 'bar' }).then(function() {
-      Bluebird.delay(500).then(function() {
+      Promise.delay(500).then(function() {
         queue.add('bar', { bar: 'qux' });
       });
     });
@@ -276,7 +275,7 @@ describe('sandboxed process', function() {
     return queue
       .add({})
       .then(function(job) {
-        return Bluebird.resolve(job.finished()).reflect();
+        return Promise.resolve(job.finished()).reflect();
       })
       .then(function(inspection) {
         expect(inspection.isRejected()).to.be.eql(true);
@@ -290,7 +289,7 @@ describe('sandboxed process', function() {
     return queue
       .add({ exitCode: 0 })
       .then(function(job) {
-        return Bluebird.resolve(job.finished()).reflect();
+        return Promise.resolve(job.finished()).reflect();
       })
       .then(function(inspection) {
         expect(inspection.isRejected()).to.be.eql(true);
@@ -306,7 +305,7 @@ describe('sandboxed process', function() {
     return queue
       .add({ exitCode: 1 })
       .then(function(job) {
-        return Bluebird.resolve(job.finished()).reflect();
+        return Promise.resolve(job.finished()).reflect();
       })
       .then(function(inspection) {
         expect(inspection.isRejected()).to.be.eql(true);
@@ -323,7 +322,7 @@ describe('sandboxed process', function() {
       try {
         expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
         expect(queue.childPool.getAllFree()).to.have.lengthOf(1);
-        Bluebird.delay(500)
+        Promise.delay(500)
           .then(function() {
             expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
             expect(queue.childPool.getAllFree()).to.have.lengthOf(0);

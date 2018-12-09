@@ -3,7 +3,6 @@
 
 var utils = require('./utils');
 var redis = require('ioredis');
-var Bluebird = require('bluebird');
 
 var Queue = require('../');
 var Job = require('../lib/job');
@@ -57,7 +56,7 @@ describe('events', function() {
     });
 
     queue.process(function(/*job*/) {
-      return Bluebird.delay(250);
+      return Promise.delay(250);
     });
 
     queue.add({ foo: 'bar' });
@@ -84,7 +83,7 @@ describe('events', function() {
     });
 
     queue.process(function(/*job*/) {
-      return Bluebird.delay(250);
+      return Promise.delay(250);
     });
 
     queue.add({ foo: 'bar' });

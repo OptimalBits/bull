@@ -3,8 +3,6 @@
  *
  */
 
-var Promise = require('bluebird');
-
 module.exports = function(job) {
   setTimeout(function() {
     if (typeof job.data.exitCode !== 'number') {

@@ -2,7 +2,6 @@
 'use strict';
 
 var Queue = require('../');
-var Promise = require('bluebird');
 var STD_QUEUE_NAME = 'test queue';
 var _ = require('lodash');
 
@@ -32,13 +31,15 @@ function cleanupQueue(queue) {
 }
 
 function cleanupQueues() {
-  return Promise.map(queues, function(queue) {
-    var errHandler = function() {};
-    queue.on('error', errHandler);
-    return queue.close().catch(errHandler);
-  }).then(function() {
-    queues = [];
-  });
+  return Promise.resolve(queues)
+    .map(function(queue) {
+      var errHandler = function() {};
+      queue.on('error', errHandler);
+      return queue.close().catch(errHandler);
+    })
+    .then(function() {
+      queues = [];
+    });
 }
 
 function sleep(ms) {

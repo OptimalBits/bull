@@ -3,7 +3,7 @@
  *
  */
 
-var Promise = require('bluebird');
+require('../../lib/promise');
 
 module.exports = function(job, done) {
   Promise.delay(500).then(function() {

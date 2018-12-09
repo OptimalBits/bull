@@ -4,7 +4,6 @@
 var Queue = require('../');
 
 var expect = require('chai').expect;
-var Bluebird = require('bluebird');
 var redis = require('ioredis');
 var utils = require('./utils');
 
@@ -36,7 +35,7 @@ describe('.pause', function() {
         });
       });
 
-      return Bluebird.join(
+      return Promise.all([
         queue
           .pause()
           .then(function() {
@@ -51,7 +50,7 @@ describe('.pause', function() {
             return queue.resume();
           }),
         resultPromise
-      );
+      ]);
     });
   });
 
@@ -132,7 +131,7 @@ describe('.pause', function() {
     var startProcessing = new Promise(function(resolve) {
       queue.process(function(/*job*/) {
         resolve();
-        return Bluebird.delay(200);
+        return Promise.delay(200);
       });
     });
 
@@ -255,7 +254,7 @@ describe('.pause', function() {
     var startsProcessing = new Promise(function(resolve) {
       queue.process(function(/*job*/) {
         resolve();
-        return Bluebird.delay(200);
+        return Promise.delay(200);
       });
     });
 
@@ -302,7 +301,7 @@ describe('.pause', function() {
     queue.add({});
 
     queue.on('drained', function() {
-      Bluebird.delay(500).then(function() {
+      Promise.delay(500).then(function() {
         var start = new Date().getTime();
         return queue.pause(true).finally(function() {
           var finish = new Date().getTime();
@@ -336,7 +335,7 @@ describe('.pause', function() {
           expect(counts).to.have.property('paused', 0);
           expect(counts).to.have.property('waiting', 0);
           expect(counts).to.have.property('delayed', 1);
-          return Bluebird.delay(1000);
+          return Promise.delay(1000);
         })
         .then(function() {
           return queue.getJobCounts();

@@ -5,7 +5,6 @@ var redis = require('ioredis');
 
 var utils = require('./utils');
 var expect = require('chai').expect;
-var Promise = require('bluebird');
 
 var _ = require('lodash');
 
@@ -38,10 +37,10 @@ describe('Jobs getters', function() {
   });
 
   it('should get waiting jobs', function() {
-    return Promise.join(
+    return Promise.all([
       queue.add({ foo: 'bar' }),
       queue.add({ baz: 'qux' })
-    ).then(function() {
+    ]).then(function() {
       return queue.getWaiting().then(function(jobs) {
         expect(jobs).to.be.a('array');
         expect(jobs.length).to.be.equal(2);
@@ -53,10 +52,10 @@ describe('Jobs getters', function() {
 
   it('should get paused jobs', function() {
     return queue.pause().then(function() {
-      return Promise.join(
+      return Promise.all([
         queue.add({ foo: 'bar' }),
         queue.add({ baz: 'qux' })
-      ).then(function() {
+      ]).then(function() {
         return queue.getWaiting().then(function(jobs) {
           expect(jobs).to.be.a('array');
           expect(jobs.length).to.be.equal(2);
