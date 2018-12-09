@@ -59,6 +59,9 @@
     "singleQuote": true
   },
   "eslintConfig": {
+    "env": {
+      "es6": true
+    },
     "rules": {
       "valid-jsdoc": 0,
       "func-style": 0,
