@@ -140,11 +140,11 @@ describe('Jobs getters', function() {
 
   it('fails jobs that exceed their specified timeout', function(done) {
     queue.process(function(job, jobDone) {
-      setTimeout(jobDone, 150);
+      setTimeout(jobDone, 200);
     });
 
     queue.on('failed', function(job, error) {
-      expect(error.message).to.be.eql('operation timed out');
+      expect(error.message).to.contain('timed out');
       done();
     });
 
