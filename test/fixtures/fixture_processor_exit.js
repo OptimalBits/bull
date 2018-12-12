@@ -3,11 +3,11 @@
  *
  */
 
-var Promise = require('bluebird');
+var delay = require('delay');
 
 module.exports = function(/*job*/) {
-  return Promise.delay(500).then(function() {
-    Promise.delay(100).then(function() {
+  return delay(500).then(function() {
+    delay(100).then(function() {
       process.exit(0);
     });
   });

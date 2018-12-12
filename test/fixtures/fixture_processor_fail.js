@@ -3,10 +3,10 @@
  *
  */
 
-var Promise = require('bluebird');
+var delay = require('delay');
 
 module.exports = function(/*job*/) {
-  return Promise.delay(500).then(function() {
+  return delay(500).then(function() {
     throw new Error('Manually failed processor');
   });
 };
