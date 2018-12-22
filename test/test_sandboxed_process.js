@@ -1,11 +1,12 @@
 /*eslint-env node */
 'use strict';
 
-var Bluebird = require('bluebird');
 var expect = require('chai').expect;
 var utils = require('./utils');
 var redis = require('ioredis');
 var _ = require('lodash');
+var delay = require('delay');
+var pReflect = require('p-reflect');
 
 describe('sandboxed process', function() {
   var queue;
@@ -113,7 +114,7 @@ describe('sandboxed process', function() {
     });
 
     queue.add('foo', { foo: 'bar' }).then(function() {
-      Bluebird.delay(500).then(function() {
+      delay(500).then(function() {
         queue.add('bar', { bar: 'qux' });
       });
     });
@@ -276,11 +277,11 @@ describe('sandboxed process', function() {
     return queue
       .add({})
       .then(function(job) {
-        return Bluebird.resolve(job.finished()).reflect();
+        return pReflect(Promise.resolve(job.finished()));
       })
       .then(function(inspection) {
-        expect(inspection.isRejected()).to.be.eql(true);
-        expect(inspection.reason().message).to.be.eql('boom!');
+        expect(inspection.isRejected).to.be.eql(true);
+        expect(inspection.reason.message).to.be.eql('boom!');
       });
   });
 
@@ -290,13 +291,11 @@ describe('sandboxed process', function() {
     return queue
       .add({ exitCode: 0 })
       .then(function(job) {
-        return Bluebird.resolve(job.finished()).reflect();
+        return pReflect(Promise.resolve(job.finished()));
       })
       .then(function(inspection) {
-        expect(inspection.isRejected()).to.be.eql(true);
-        expect(inspection.reason().message).to.be.eql(
-          'Unexpected exit code: 0'
-        );
+        expect(inspection.isRejected).to.be.eql(true);
+        expect(inspection.reason.message).to.be.eql('Unexpected exit code: 0');
       });
   });
 
@@ -306,13 +305,11 @@ describe('sandboxed process', function() {
     return queue
       .add({ exitCode: 1 })
       .then(function(job) {
-        return Bluebird.resolve(job.finished()).reflect();
+        return pReflect(Promise.resolve(job.finished()));
       })
       .then(function(inspection) {
-        expect(inspection.isRejected()).to.be.eql(true);
-        expect(inspection.reason().message).to.be.eql(
-          'Unexpected exit code: 1'
-        );
+        expect(inspection.isRejected).to.be.eql(true);
+        expect(inspection.reason.message).to.be.eql('Unexpected exit code: 1');
       });
   });
 
@@ -323,12 +320,14 @@ describe('sandboxed process', function() {
       try {
         expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
         expect(queue.childPool.getAllFree()).to.have.lengthOf(1);
-        Bluebird.delay(500)
+        delay(500)
           .then(function() {
             expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
             expect(queue.childPool.getAllFree()).to.have.lengthOf(0);
           })
-          .asCallback(done);
+          .then(function() {
+            done();
+          }, done);
       } catch (err) {
         done(err);
       }
