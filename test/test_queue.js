@@ -1196,6 +1196,35 @@ describe('Queue', function() {
         .catch(done);
     });
 
+    it('should get stalled jobs', function(done) {
+      this.timeout(10000);
+
+      var uid = uuid();
+      var producer = utils.buildQueue('running-stalled-job-' + uid);
+      var consumer = utils.buildQueue('running-stalled-job-' + uid, {
+        settings: {
+          lockRenewTime: 60000,
+          lockDuration: 250000,
+          stalledInterval: -1,
+          maxStalledCount: 3
+        }
+      });
+
+      consumer.process(function() {
+        consumer.close(true);
+      });
+
+      setTimeout(function() {
+        producer.getStalledJobs().then(function(jobs) {
+          expect(jobs).to.be.a('array');
+          producer.close(true);
+          done();
+        });
+      }, 3000);
+
+      producer.add({ foo: 'bar' });
+    });
+
     it('process a job that fails', function(done) {
       var jobError = new Error('Job Failed');
 
