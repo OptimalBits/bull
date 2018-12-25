@@ -1196,6 +1196,38 @@ describe('Queue', function() {
         .catch(done);
     });
 
+    it('should get empty stalled jobs', function(done) {
+      var type = 'empty-stalled-queue-job';
+      var producer = new Queue(type);
+
+      producer.close();
+      producer.getStalledJobs().then(function(jobs) {
+        expect(jobs).to.eql([]);
+        done();
+      });
+    });
+
+    it('should failed to get stalled jobs', function(done) {
+      var type = 'failed-stalled-queue-job';
+      var data = { foo: 'bar', stalled: 'ok' };
+      var jobError = new Error(
+        'Failed to get stalled jobs, Connection is closed.'
+      );
+      var producer = new Queue(type);
+
+      var stalledJobs = function() {
+        producer.disconnect();
+        producer.getStalledJobs().catch(function(error) {
+          expect(error.message).to.be.eql(jobError.message);
+          done();
+        });
+      };
+
+      producer.add(type, data).then(function() {
+        stalledJobs();
+      });
+    });
+
     it('should get stalled jobs', function(done) {
       this.timeout(5000);
 
@@ -1222,7 +1254,7 @@ describe('Queue', function() {
         });
       };
 
-      consumer.process(type, function(job, jobDone) {
+      consumer.process(type, function() {
         consumer.close();
         consumer.disconnect();
 
