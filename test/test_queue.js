@@ -1196,59 +1196,6 @@ describe('Queue', function() {
         .catch(done);
     });
 
-    it.skip('should get stalled jobs', function(done) {
-      this.timeout(12000);
-
-      var queue2 = utils.buildQueue('running-stalled-job-' + uuid(), {
-        settings: {
-          lockRenewTime: 5000,
-          lockDuration: 500,
-          stalledInterval: 100000
-        }
-      });
-
-      var collect = function() {
-        setTimeout(function() {
-          queue2.getStalledJobs().then(function(jobs) {
-            setTimeout(function() {
-              queue2.getStalledJobs().then(function(jobs) {
-                setTimeout(function() {
-                  queue2.getStalledJobs().then(function(jobs) {
-                    console.log(jobs);
-                  });
-                }, 1000);
-              });
-            }, 1000);
-          });
-        }, 1000);
-      };
-
-      queue2.on('completed', function() {
-        var client = new redis();
-        client
-          .multi()
-          .zrem(queue2.toKey('completed'), 1)
-          .lpush(queue2.toKey('active'), 1)
-          .del(queue2.toKey('stalled-check'))
-          .exec();
-        client.quit();
-        collect();
-      });
-
-      queue2.process(function(job, jobDone) {
-        expect(job.data.foo).to.be.equal('bar');
-        jobDone();
-      });
-
-      queue2
-        .add({ foo: 'bar' })
-        .then(function(job) {
-          expect(job.id).to.be.ok;
-          expect(job.data.foo).to.be.eql('bar');
-        })
-        .catch(done);
-    });
-
     it('should get stalled jobs', function(done) {
       this.timeout(5000);
 
