@@ -1196,33 +1196,98 @@ describe('Queue', function() {
         .catch(done);
     });
 
-    it('should get stalled jobs', function(done) {
-      this.timeout(10000);
+    it.skip('should get stalled jobs', function(done) {
+      this.timeout(12000);
 
-      var uid = uuid();
-      var producer = utils.buildQueue('running-stalled-job-' + uid);
-      var consumer = utils.buildQueue('running-stalled-job-' + uid, {
+      var queue2 = utils.buildQueue('running-stalled-job-' + uuid(), {
         settings: {
-          lockRenewTime: 60000,
-          lockDuration: 250000,
-          stalledInterval: -1,
-          maxStalledCount: 3
+          lockRenewTime: 5000,
+          lockDuration: 500,
+          stalledInterval: 100000
         }
       });
 
-      consumer.process(function() {
-        consumer.close(true);
+      var collect = function() {
+        setTimeout(function() {
+          queue2.getStalledJobs().then(function(jobs) {
+            setTimeout(function() {
+              queue2.getStalledJobs().then(function(jobs) {
+                setTimeout(function() {
+                  queue2.getStalledJobs().then(function(jobs) {
+                    console.log(jobs);
+                  });
+                }, 1000);
+              });
+            }, 1000);
+          });
+        }, 1000);
+      };
+
+      queue2.on('completed', function() {
+        var client = new redis();
+        client
+          .multi()
+          .zrem(queue2.toKey('completed'), 1)
+          .lpush(queue2.toKey('active'), 1)
+          .del(queue2.toKey('stalled-check'))
+          .exec();
+        client.quit();
+        collect();
       });
 
-      setTimeout(function() {
-        producer.getStalledJobs().then(function(jobs) {
-          expect(jobs).to.be.a('array');
-          producer.close(true);
-          done();
-        });
-      }, 3000);
+      queue2.process(function(job, jobDone) {
+        expect(job.data.foo).to.be.equal('bar');
+        jobDone();
+      });
 
-      producer.add({ foo: 'bar' });
+      queue2
+        .add({ foo: 'bar' })
+        .then(function(job) {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        })
+        .catch(done);
+    });
+
+    it('should get stalled jobs', function(done) {
+      this.timeout(5000);
+
+      var type = 'stalled-queue-job';
+      var data = { foo: 'bar', stalled: 'ok' };
+      var setting = {
+        settings: {
+          lockRenewTime: 5000,
+          lockDuration: 500,
+          stalledInterval: 100000
+        }
+      };
+      var producer = new Queue(type);
+      var consumer = new Queue(type, setting);
+
+      var stalledJobs = function() {
+        producer.getStalledJobs().then(function() {
+          producer.getStalledJobs().then(function(jobs) {
+            var job = jobs[0];
+            expect(job.id).to.eql('1');
+            expect(job.data).to.eql(data);
+            done();
+          });
+        });
+      };
+
+      consumer.process(type, function(job, jobDone) {
+        consumer.close();
+        consumer.disconnect();
+
+        setTimeout(function() {
+          stalledJobs();
+        }, 2000);
+      });
+
+      producer.add(type, data).then(function(job) {
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
+      });
     });
 
     it('process a job that fails', function(done) {
