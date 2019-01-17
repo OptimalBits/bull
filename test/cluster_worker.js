@@ -1,18 +1,17 @@
-/*eslint-env node */
 'use strict';
 
-var Queue = require('../');
+const Queue = require('../');
 
-var STD_QUEUE_NAME = 'cluster test queue';
+const STD_QUEUE_NAME = 'cluster test queue';
 
 function buildQueue(name) {
-  var qName = name || STD_QUEUE_NAME;
+  const qName = name || STD_QUEUE_NAME;
   return new Queue(qName, 6379, '127.0.0.1');
 }
 
-var queue = buildQueue();
+const queue = buildQueue();
 
-queue.process(1, function(job, jobDone) {
+queue.process(1, (job, jobDone) => {
   jobDone();
   process.send({
     id: job.jobId,
@@ -20,13 +19,13 @@ queue.process(1, function(job, jobDone) {
   });
 });
 
-process.on('disconnect', function() {
+process.on('disconnect', () => {
   queue
     .close()
-    .then(function() {
+    .then(() => {
       //  process.exit(0);
     })
-    .catch(function(err) {
+    .catch(err => {
       console.error(err);
       //  process.exit(-1);
     });
