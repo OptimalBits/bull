@@ -3,8 +3,7 @@
 
 var utils = require('./utils');
 var redis = require('ioredis');
-var Bluebird = require('bluebird');
-
+var delay = require('delay');
 var Queue = require('../');
 var Job = require('../lib/job');
 var expect = require('chai').expect;
@@ -57,7 +56,7 @@ describe('events', function() {
     });
 
     queue.process(function(/*job*/) {
-      return Bluebird.delay(250);
+      return delay(250);
     });
 
     queue.add({ foo: 'bar' });
@@ -84,7 +83,7 @@ describe('events', function() {
     });
 
     queue.process(function(/*job*/) {
-      return Bluebird.delay(250);
+      return delay(250);
     });
 
     queue.add({ foo: 'bar' });
