@@ -1,33 +1,32 @@
-/*eslint-env node */
 'use strict';
 
-var cluster = require('cluster');
-var os = require('os');
-var path = require('path');
-var Queue = require('../');
-var expect = require('expect.js');
-var redis = require('ioredis');
+const cluster = require('cluster');
+const os = require('os');
+const path = require('path');
+const Queue = require('../');
+const expect = require('expect.js');
+const redis = require('ioredis');
 
-var STD_QUEUE_NAME = 'cluster test queue';
+const STD_QUEUE_NAME = 'cluster test queue';
 
 function buildQueue(name) {
-  var qName = name || STD_QUEUE_NAME;
+  const qName = name || STD_QUEUE_NAME;
   return new Queue(qName, 6379, '127.0.0.1');
 }
 
 function purgeQueue(queue) {
   // Since workers spawned only listen to the default queue,
   // we need to purge all keys after each test
-  var client = new redis(6379, '127.0.0.1', {});
+  const client = new redis(6379, '127.0.0.1', {});
   client.select(0);
 
-  var script = [
+  const script = [
     'local KS = redis.call("KEYS", ARGV[1])',
     'local result = redis.call("DEL", unpack(KS))',
     'return'
   ].join('\n');
 
-  return queue.client.eval(script, 0, queue.toKey('*')).finally(function() {
+  return queue.client.eval(script, 0, queue.toKey('*')).finally(() => {
     return client.quit();
   });
 }
@@ -36,19 +35,19 @@ cluster.setupMaster({
   exec: path.join(__dirname, '/cluster_worker.js')
 });
 
-var workerMessageHandler;
+let workerMessageHandler;
 function workerMessageHandlerWrapper(message) {
   if (workerMessageHandler) {
     workerMessageHandler(message);
   }
 }
 
-describe.skip('Cluster', function() {
-  var workers = [];
+describe.skip('Cluster', () => {
+  const workers = [];
 
-  before(function() {
-    var worker;
-    var _i = 0;
+  before(() => {
+    let worker;
+    let _i = 0;
     for (_i; _i < os.cpus().length - 1; _i++) {
       worker = cluster.fork();
       worker.on('message', workerMessageHandlerWrapper);
@@ -57,14 +56,14 @@ describe.skip('Cluster', function() {
     }
   });
 
-  var queue;
+  let queue;
 
-  afterEach(function() {
+  afterEach(() => {
     if (queue) {
-      return purgeQueue(queue).then(function() {
+      return purgeQueue(queue).then(() => {
         return queue.close
           .bind(queue)()
-          .then(function() {
+          .then(() => {
             queue = undefined;
             workerMessageHandler = undefined;
           });
@@ -72,20 +71,20 @@ describe.skip('Cluster', function() {
     }
   });
 
-  it('should process each job once', function(done) {
-    var jobs = [];
+  it('should process each job once', done => {
+    const jobs = [];
     queue = buildQueue();
-    var numJobs = 100;
+    const numJobs = 100;
 
-    queue.on('stalled', function(job) {
+    queue.on('stalled', job => {
       jobs.splice(jobs.indexOf(job.jobId), 1);
     });
 
     workerMessageHandler = function(job) {
       jobs.push(job.id);
       if (jobs.length === numJobs) {
-        var counts = {};
-        var j = 0;
+        const counts = {};
+        let j = 0;
         for (j; j < jobs.length; j++) {
           expect(counts[jobs[j]]).to.be(undefined);
           counts[jobs[j]] = 1;
@@ -94,7 +93,7 @@ describe.skip('Cluster', function() {
       }
     };
 
-    var i = 0;
+    let i = 0;
     for (i; i < numJobs; i++) {
       queue.add({});
     }
@@ -103,7 +102,7 @@ describe.skip('Cluster', function() {
   it('should process delayed jobs in correct order', function(done) {
     this.timeout(5000);
     queue = buildQueue();
-    var order = 0;
+    let order = 0;
 
     workerMessageHandler = function(job) {
       expect(order).to.be.below(job.data.order);
@@ -139,7 +138,7 @@ describe.skip('Cluster', function() {
 
     this.timeout(5000);
     queue = buildQueue();
-    var order = 0;
+    let order = 0;
 
     workerMessageHandler = function(job) {
       expect(order).to.be.below(job.data.order);
@@ -161,8 +160,8 @@ describe.skip('Cluster', function() {
     queue.add({ order: 10 }, { delay: 200 });
   });
 
-  after(function() {
-    var _i = 0;
+  after(() => {
+    let _i = 0;
     for (_i; _i < workers.length; _i++) {
       workers[_i].kill();
     }

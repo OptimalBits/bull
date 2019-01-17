@@ -1,17 +1,16 @@
-/*eslint-env node */
 'use strict';
 
-var expect = require('chai').expect;
-var utils = require('./utils');
-var redis = require('ioredis');
+const expect = require('chai').expect;
+const utils = require('./utils');
+const redis = require('ioredis');
 
-describe('workers', function() {
-  var queue;
-  var client;
+describe('workers', () => {
+  let queue;
+  let client;
 
-  beforeEach(function() {
+  beforeEach(() => {
     client = new redis();
-    return client.flushdb().then(function() {
+    return client.flushdb().then(() => {
       queue = utils.buildQueue('test workers', {
         settings: {
           guardInterval: 300000,
@@ -22,16 +21,16 @@ describe('workers', function() {
     });
   });
 
-  afterEach(function() {
-    return queue.close().then(function() {
+  afterEach(() => {
+    return queue.close().then(() => {
       return client.quit();
     });
   });
 
-  it('should get all workers for this queue', function() {
-    queue.process(function() {});
+  it('should get all workers for this queue', () => {
+    queue.process(() => {});
 
-    return queue.getWorkers().then(function(workers) {
+    return queue.getWorkers().then(workers => {
       expect(workers).to.have.length(1);
     });
   });
