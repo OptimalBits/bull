@@ -19,7 +19,7 @@
   "dependencies": {
     "cron-parser": "^2.5.0",
     "debuglog": "^1.0.0",
-    "ioredis": "^3.1.4",
+    "ioredis": "^4.5.1",
     "lodash": "^4.17.11",
     "p-timeout": "^2.0.1",
     "promise.prototype.finally": "^3.1.0",
@@ -42,7 +42,7 @@
     "moment": "^2.23.0",
     "p-reflect": "^1.0.0",
     "prettier": "^1.15.3",
-    "sinon": "^5.0.7"
+    "sinon": "^7.2.3"
   },
   "scripts": {
     "lint": "eslint lib test",
