@@ -83,7 +83,7 @@ var opts = {
       case 'subscriber':
         return subscriber;
       default:
-        return new Redis();
+        return new Redis(REDIS_URL);
     }
   }
 }

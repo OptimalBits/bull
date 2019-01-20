@@ -1,23 +1,22 @@
-/*eslint-env node */
 'use strict';
 
-var Job = require('../lib/job');
-var Queue = require('../lib/queue');
-var expect = require('expect.js');
-var redis = require('ioredis');
-var uuid = require('uuid');
-var delay = require('delay');
+const Job = require('../lib/job');
+const Queue = require('../lib/queue');
+const expect = require('expect.js');
+const redis = require('ioredis');
+const uuid = require('uuid');
+const delay = require('delay');
 
-describe('Job', function() {
-  var queue;
-  var client;
+describe('Job', () => {
+  let queue;
+  let client;
 
-  beforeEach(function() {
+  beforeEach(() => {
     client = new redis();
     return client.flushdb();
   });
 
-  beforeEach(function() {
+  beforeEach(() => {
     queue = new Queue('test-' + uuid(), {
       redis: { port: 6379, host: '127.0.0.1' }
     });
@@ -27,36 +26,36 @@ describe('Job', function() {
     this.timeout(
       queue.settings.stalledInterval * (1 + queue.settings.maxStalledCount)
     );
-    return queue.close().then(function() {
+    return queue.close().then(() => {
       return client.quit();
     });
   });
 
-  describe('.create', function() {
-    var job;
-    var data;
-    var opts;
+  describe('.create', () => {
+    let job;
+    let data;
+    let opts;
 
-    beforeEach(function() {
+    beforeEach(() => {
       data = { foo: 'bar' };
       opts = { testOpt: 'enabled' };
 
-      return Job.create(queue, data, opts).then(function(createdJob) {
+      return Job.create(queue, data, opts).then(createdJob => {
         job = createdJob;
       });
     });
 
-    it('returns a promise for the job', function() {
+    it('returns a promise for the job', () => {
       expect(job).to.have.property('id');
       expect(job).to.have.property('data');
     });
 
-    it('should not modify input options', function() {
+    it('should not modify input options', () => {
       expect(opts).not.to.have.property('jobId');
     });
 
-    it('saves the job in redis', function() {
-      return Job.fromId(queue, job.id).then(function(storedJob) {
+    it('saves the job in redis', () => {
+      return Job.fromId(queue, job.id).then(storedJob => {
         expect(storedJob).to.have.property('id');
         expect(storedJob).to.have.property('data');
 
@@ -66,24 +65,24 @@ describe('Job', function() {
       });
     });
 
-    it('should use the custom jobId if one is provided', function() {
-      var customJobId = 'customjob';
-      return Job.create(queue, data, { jobId: customJobId }).then(function(
-        createdJob
-      ) {
-        expect(createdJob.id).to.be.equal(customJobId);
-      });
+    it('should use the custom jobId if one is provided', () => {
+      const customJobId = 'customjob';
+      return Job.create(queue, data, { jobId: customJobId }).then(
+        createdJob => {
+          expect(createdJob.id).to.be.equal(customJobId);
+        }
+      );
     });
 
-    it('should process jobs with custom jobIds', function(done) {
-      var customJobId = 'customjob';
-      queue.process(function() {
+    it('should process jobs with custom jobIds', done => {
+      const customJobId = 'customjob';
+      queue.process(() => {
         return Promise.resolve();
       });
 
       queue.add({ foo: 'bar' }, { jobId: customJobId });
 
-      queue.on('completed', function(job) {
+      queue.on('completed', job => {
         if (job.id == customJobId) {
           done();
         }
@@ -91,30 +90,30 @@ describe('Job', function() {
     });
   });
 
-  describe('.add jobs on priority queues', function() {
-    it('add 4 jobs with different priorities', function() {
+  describe('.add jobs on priority queues', () => {
+    it('add 4 jobs with different priorities', () => {
       return queue
         .add({ foo: 'bar' }, { jobId: '1', priority: 3 })
-        .then(function() {
+        .then(() => {
           return queue.add({ foo: 'bar' }, { jobId: '2', priority: 3 });
         })
-        .then(function() {
+        .then(() => {
           return queue.add({ foo: 'bar' }, { jobId: '3', priority: 2 });
         })
-        .then(function() {
+        .then(() => {
           return queue.add({ foo: 'bar' }, { jobId: '4', priority: 1 });
         })
-        .then(function() {
+        .then(() => {
           return queue
             .getWaiting()
-            .then(function(result) {
-              var waitingIDs = [];
-              result.forEach(function(element) {
+            .then(result => {
+              const waitingIDs = [];
+              result.forEach(element => {
                 waitingIDs.push(element.id);
               });
               return waitingIDs;
             })
-            .then(function(waitingIDs) {
+            .then(waitingIDs => {
               expect(waitingIDs.length).to.be.equal(4);
               expect(waitingIDs).to.be.eql(['4', '3', '1', '2']);
             });
@@ -122,83 +121,83 @@ describe('Job', function() {
     });
   });
 
-  describe('.update', function() {
-    it('should allow updating job data', function() {
+  describe('.update', () => {
+    it('should allow updating job data', () => {
       return Job.create(queue, { foo: 'bar' })
-        .then(function(job) {
-          return job.update({ baz: 'qux' }).then(function() {
+        .then(job => {
+          return job.update({ baz: 'qux' }).then(() => {
             return job;
           });
         })
-        .then(function(job) {
-          return Job.fromId(queue, job.id).then(function(job) {
+        .then(job => {
+          return Job.fromId(queue, job.id).then(job => {
             expect(job.data).to.be.eql({ baz: 'qux' });
           });
         });
     });
   });
 
-  describe('.remove', function() {
-    it('removes the job from redis', function() {
+  describe('.remove', () => {
+    it('removes the job from redis', () => {
       return Job.create(queue, { foo: 'bar' })
-        .then(function(job) {
-          return job.remove().then(function() {
+        .then(job => {
+          return job.remove().then(() => {
             return job;
           });
         })
-        .then(function(job) {
+        .then(job => {
           return Job.fromId(queue, job.id);
         })
-        .then(function(storedJob) {
+        .then(storedJob => {
           expect(storedJob).to.be(null);
         });
     });
 
-    it('fails to remove a locked job', function() {
-      return Job.create(queue, 1, { foo: 'bar' }).then(function(job) {
+    it('fails to remove a locked job', () => {
+      return Job.create(queue, 1, { foo: 'bar' }).then(job => {
         return job
           .takeLock()
-          .then(function(lock) {
+          .then(lock => {
             expect(lock).to.be.truthy;
           })
-          .then(function() {
-            return Job.fromId(queue, job.id).then(function(job) {
+          .then(() => {
+            return Job.fromId(queue, job.id).then(job => {
               return job.remove();
             });
           })
-          .then(function() {
+          .then(() => {
             throw new Error('Should not be able to remove a locked job');
           })
-          .catch(function(/*err*/) {
+          .catch((/*err*/) => {
             // Good!
           });
       });
     });
 
-    it('removes any job from active set', function() {
-      return queue.add({ foo: 'bar' }).then(function(job) {
+    it('removes any job from active set', () => {
+      return queue.add({ foo: 'bar' }).then(job => {
         // Simulate a job in active state but not locked
         return queue
           .getNextJob()
-          .then(function() {
+          .then(() => {
             return job
               .isActive()
-              .then(function(isActive) {
+              .then(isActive => {
                 expect(isActive).to.be(true);
                 return job.releaseLock();
               })
-              .then(function() {
+              .then(() => {
                 return job.remove();
               });
           })
-          .then(function() {
+          .then(() => {
             return Job.fromId(queue, job.id);
           })
-          .then(function(stored) {
+          .then(stored => {
             expect(stored).to.be(null);
             return job.getState();
           })
-          .then(function(state) {
+          .then(state => {
             // This check is a bit of a hack. A job that is not found in any list will return the state
             // stuck.
             expect(state).to.equal('stuck');
@@ -206,24 +205,24 @@ describe('Job', function() {
       });
     });
 
-    it('emits removed event', function(cb) {
-      queue.once('removed', function(job) {
+    it('emits removed event', cb => {
+      queue.once('removed', job => {
         expect(job.data.foo).to.be.equal('bar');
         cb();
       });
-      Job.create(queue, { foo: 'bar' }).then(function(job) {
+      Job.create(queue, { foo: 'bar' }).then(job => {
         job.remove();
       });
     });
 
-    it('a succesful job should be removable', function(done) {
-      queue.process(function() {
+    it('a succesful job should be removable', done => {
+      queue.process(() => {
         return Promise.resolve();
       });
 
       queue.add({ foo: 'bar' });
 
-      queue.on('completed', function(job) {
+      queue.on('completed', job => {
         job
           .remove()
           .then(done)
@@ -231,14 +230,14 @@ describe('Job', function() {
       });
     });
 
-    it('a failed job should be removable', function(done) {
-      queue.process(function() {
+    it('a failed job should be removable', done => {
+      queue.process(() => {
         throw new Error();
       });
 
       queue.add({ foo: 'bar' });
 
-      queue.on('failed', function(job) {
+      queue.on('failed', job => {
         job
           .remove()
           .then(done)
@@ -247,32 +246,32 @@ describe('Job', function() {
     });
   });
 
-  describe('.remove on priority queues', function() {
-    it('remove a job with jobID 1 and priority 3 and check the new order in the queue', function() {
+  describe('.remove on priority queues', () => {
+    it('remove a job with jobID 1 and priority 3 and check the new order in the queue', () => {
       return queue
         .add({ foo: 'bar' }, { jobId: '1', priority: 3 })
-        .then(function() {
+        .then(() => {
           return queue.add({ foo: 'bar' }, { jobId: '2', priority: 3 });
         })
-        .then(function() {
+        .then(() => {
           return queue.add({ foo: 'bar' }, { jobId: '3', priority: 2 });
         })
-        .then(function() {
+        .then(() => {
           return queue.add({ foo: 'bar' }, { jobId: '4', priority: 1 });
         })
-        .then(function() {
-          return queue.getJob('1').then(function(job) {
-            return job.remove().then(function() {
+        .then(() => {
+          return queue.getJob('1').then(job => {
+            return job.remove().then(() => {
               return queue
                 .getWaiting()
-                .then(function(result) {
-                  var waitingIDs = [];
-                  result.forEach(function(element) {
+                .then(result => {
+                  const waitingIDs = [];
+                  result.forEach(element => {
                     waitingIDs.push(element.id);
                   });
                   return waitingIDs;
                 })
-                .then(function(waitingIDs) {
+                .then(waitingIDs => {
                   expect(waitingIDs.length).to.be.equal(3);
                   expect(waitingIDs).to.be.eql(['4', '3', '2']);
                 });
@@ -281,49 +280,49 @@ describe('Job', function() {
         });
     });
 
-    it('add a new job with priority 10 and ID 5 and check the new order (along with the previous 4 jobs)', function() {
+    it('add a new job with priority 10 and ID 5 and check the new order (along with the previous 4 jobs)', () => {
       return queue
         .add({ foo: 'bar' }, { jobId: '1', priority: 3 })
-        .then(function() {
+        .then(() => {
           return queue.add({ foo: 'bar' }, { jobId: '2', priority: 3 });
         })
-        .then(function() {
+        .then(() => {
           return queue.add({ foo: 'bar' }, { jobId: '3', priority: 2 });
         })
-        .then(function() {
+        .then(() => {
           return queue.add({ foo: 'bar' }, { jobId: '4', priority: 1 });
         })
-        .then(function() {
-          return queue.getJob('1').then(function(job) {
-            return job.remove().then(function() {
+        .then(() => {
+          return queue.getJob('1').then(job => {
+            return job.remove().then(() => {
               return queue
                 .getWaiting()
-                .then(function(result) {
-                  var waitingIDs = [];
-                  result.forEach(function(element) {
+                .then(result => {
+                  const waitingIDs = [];
+                  result.forEach(element => {
                     waitingIDs.push(element.id);
                   });
                   return waitingIDs;
                 })
-                .then(function(waitingIDs) {
+                .then(waitingIDs => {
                   expect(waitingIDs.length).to.be.equal(3);
                   expect(waitingIDs).to.be.eql(['4', '3', '2']);
                   return true;
                 })
-                .then(function() {
+                .then(() => {
                   return queue
                     .add({ foo: 'bar' }, { jobId: '5', priority: 10 })
-                    .then(function() {
+                    .then(() => {
                       return queue
                         .getWaiting()
-                        .then(function(result) {
-                          var waitingIDs = [];
-                          result.forEach(function(element) {
+                        .then(result => {
+                          const waitingIDs = [];
+                          result.forEach(element => {
                             waitingIDs.push(element.id);
                           });
                           return waitingIDs;
                         })
-                        .then(function(waitingIDs) {
+                        .then(waitingIDs => {
                           expect(waitingIDs.length).to.be.equal(4);
                           expect(waitingIDs).to.be.eql(['4', '3', '2', '5']);
                         });
@@ -335,90 +334,90 @@ describe('Job', function() {
     });
   });
 
-  describe('.retry', function() {
-    it('emits waiting event', function(cb) {
+  describe('.retry', () => {
+    it('emits waiting event', cb => {
       queue.add({ foo: 'bar' });
-      queue.process(function(job, done) {
+      queue.process((job, done) => {
         done(new Error('the job failed'));
       });
 
-      queue.once('failed', function(job) {
-        queue.once('global:waiting', function(jobId2) {
-          Job.fromId(queue, jobId2).then(function(job2) {
+      queue.once('failed', job => {
+        queue.once('global:waiting', jobId2 => {
+          Job.fromId(queue, jobId2).then(job2 => {
             expect(job2.data.foo).to.be.equal('bar');
             cb();
           });
         });
-        queue.once('registered:global:waiting', function() {
+        queue.once('registered:global:waiting', () => {
           job.retry();
         });
       });
     });
   });
 
-  describe('Locking', function() {
-    var job;
+  describe('Locking', () => {
+    let job;
 
-    beforeEach(function() {
-      return Job.create(queue, { foo: 'bar' }).then(function(createdJob) {
+    beforeEach(() => {
+      return Job.create(queue, { foo: 'bar' }).then(createdJob => {
         job = createdJob;
       });
     });
 
-    it('can take a lock', function() {
+    it('can take a lock', () => {
       return job
         .takeLock()
-        .then(function(lockTaken) {
+        .then(lockTaken => {
           expect(lockTaken).to.be.truthy;
         })
-        .then(function() {
-          return job.releaseLock().then(function(lockReleased) {
+        .then(() => {
+          return job.releaseLock().then(lockReleased => {
             expect(lockReleased).to.not.exist;
           });
         });
     });
 
-    it('take an already taken lock', function() {
+    it('take an already taken lock', () => {
       return job
         .takeLock()
-        .then(function(lockTaken) {
+        .then(lockTaken => {
           expect(lockTaken).to.be.truthy;
         })
-        .then(function() {
-          return job.takeLock().then(function(lockTaken) {
+        .then(() => {
+          return job.takeLock().then(lockTaken => {
             expect(lockTaken).to.be.truthy;
           });
         });
     });
 
-    it('can release a lock', function() {
+    it('can release a lock', () => {
       return job
         .takeLock()
-        .then(function(lockTaken) {
+        .then(lockTaken => {
           expect(lockTaken).to.be.truthy;
         })
-        .then(function() {
-          return job.releaseLock().then(function(lockReleased) {
+        .then(() => {
+          return job.releaseLock().then(lockReleased => {
             expect(lockReleased).to.not.exist;
           });
         });
     });
   });
 
-  describe('.progress', function() {
-    it('can set and get progress as number', function() {
-      return Job.create(queue, { foo: 'bar' }).then(function(job) {
-        return job.progress(42).then(function() {
-          return Job.fromId(queue, job.id).then(function(storedJob) {
+  describe('.progress', () => {
+    it('can set and get progress as number', () => {
+      return Job.create(queue, { foo: 'bar' }).then(job => {
+        return job.progress(42).then(() => {
+          return Job.fromId(queue, job.id).then(storedJob => {
             expect(storedJob.progress()).to.be(42);
           });
         });
       });
     });
-    it('can set and get progress as object', function() {
-      return Job.create(queue, { foo: 'bar' }).then(function(job) {
-        return job.progress({ total: 120, completed: 40 }).then(function() {
-          return Job.fromId(queue, job.id).then(function(storedJob) {
+    it('can set and get progress as object', () => {
+      return Job.create(queue, { foo: 'bar' }).then(job => {
+        return job.progress({ total: 120, completed: 40 }).then(() => {
+          return Job.fromId(queue, job.id).then(storedJob => {
             expect(storedJob.progress()).to.eql({ total: 120, completed: 40 });
           });
         });
@@ -426,20 +425,20 @@ describe('Job', function() {
     });
   });
 
-  describe('.moveToCompleted', function() {
-    it('marks the job as completed and returns new job', function() {
-      return Job.create(queue, { foo: 'bar' }).then(function(job1) {
-        return Job.create(queue, { foo: 'bar' }).then(function(job2) {
+  describe('.moveToCompleted', () => {
+    it('marks the job as completed and returns new job', () => {
+      return Job.create(queue, { foo: 'bar' }).then(job1 => {
+        return Job.create(queue, { foo: 'bar' }).then(job2 => {
           return job2
             .isCompleted()
-            .then(function(isCompleted) {
+            .then(isCompleted => {
               expect(isCompleted).to.be(false);
             })
-            .then(function() {
+            .then(() => {
               return job2.moveToCompleted('succeeded', true);
             })
-            .then(function(job1Id) {
-              return job2.isCompleted().then(function(isCompleted) {
+            .then(job1Id => {
+              return job2.isCompleted().then(isCompleted => {
                 expect(isCompleted).to.be(true);
                 expect(job2.returnvalue).to.be('succeeded');
                 expect(job1Id[1]).to.be(job1.id);
@@ -450,19 +449,19 @@ describe('Job', function() {
     });
   });
 
-  describe('.moveToFailed', function() {
-    it('marks the job as failed', function() {
-      return Job.create(queue, { foo: 'bar' }).then(function(job) {
+  describe('.moveToFailed', () => {
+    it('marks the job as failed', () => {
+      return Job.create(queue, { foo: 'bar' }).then(job => {
         return job
           .isFailed()
-          .then(function(isFailed) {
+          .then(isFailed => {
             expect(isFailed).to.be(false);
           })
-          .then(function() {
+          .then(() => {
             return job.moveToFailed(new Error('test error'), true);
           })
-          .then(function() {
-            return job.isFailed().then(function(isFailed) {
+          .then(() => {
+            return job.isFailed().then(isFailed => {
               expect(isFailed).to.be(true);
               expect(job.stacktrace).not.be(null);
               expect(job.stacktrace.length).to.be(1);
@@ -471,24 +470,22 @@ describe('Job', function() {
       });
     });
 
-    it('moves the job to wait for retry if attempts are given', function() {
-      return Job.create(queue, { foo: 'bar' }, { attempts: 3 }).then(function(
-        job
-      ) {
+    it('moves the job to wait for retry if attempts are given', () => {
+      return Job.create(queue, { foo: 'bar' }, { attempts: 3 }).then(job => {
         return job
           .isFailed()
-          .then(function(isFailed) {
+          .then(isFailed => {
             expect(isFailed).to.be(false);
           })
-          .then(function() {
+          .then(() => {
             return job.moveToFailed(new Error('test error'), true);
           })
-          .then(function() {
-            return job.isFailed().then(function(isFailed) {
+          .then(() => {
+            return job.isFailed().then(isFailed => {
               expect(isFailed).to.be(false);
               expect(job.stacktrace).not.be(null);
               expect(job.stacktrace.length).to.be(1);
-              return job.isWaiting().then(function(isWaiting) {
+              return job.isWaiting().then(isWaiting => {
                 expect(isWaiting).to.be(true);
               });
             });
@@ -496,20 +493,18 @@ describe('Job', function() {
       });
     });
 
-    it('marks the job as failed when attempts made equal to attempts given', function() {
-      return Job.create(queue, { foo: 'bar' }, { attempts: 1 }).then(function(
-        job
-      ) {
+    it('marks the job as failed when attempts made equal to attempts given', () => {
+      return Job.create(queue, { foo: 'bar' }, { attempts: 1 }).then(job => {
         return job
           .isFailed()
-          .then(function(isFailed) {
+          .then(isFailed => {
             expect(isFailed).to.be(false);
           })
-          .then(function() {
+          .then(() => {
             return job.moveToFailed(new Error('test error'), true);
           })
-          .then(function() {
-            return job.isFailed().then(function(isFailed) {
+          .then(() => {
+            return job.isFailed().then(isFailed => {
               expect(isFailed).to.be(true);
               expect(job.stacktrace).not.be(null);
               expect(job.stacktrace.length).to.be(1);
@@ -518,26 +513,26 @@ describe('Job', function() {
       });
     });
 
-    it('moves the job to delayed for retry if attempts are given and backoff is non zero', function() {
+    it('moves the job to delayed for retry if attempts are given and backoff is non zero', () => {
       return Job.create(
         queue,
         { foo: 'bar' },
         { attempts: 3, backoff: 300 }
-      ).then(function(job) {
+      ).then(job => {
         return job
           .isFailed()
-          .then(function(isFailed) {
+          .then(isFailed => {
             expect(isFailed).to.be(false);
           })
-          .then(function() {
+          .then(() => {
             return job.moveToFailed(new Error('test error'), true);
           })
-          .then(function() {
-            return job.isFailed().then(function(isFailed) {
+          .then(() => {
+            return job.isFailed().then(isFailed => {
               expect(isFailed).to.be(false);
               expect(job.stacktrace).not.be(null);
               expect(job.stacktrace.length).to.be(1);
-              return job.isDelayed().then(function(isDelayed) {
+              return job.isDelayed().then(isDelayed => {
                 expect(isDelayed).to.be(true);
               });
             });
@@ -545,53 +540,49 @@ describe('Job', function() {
       });
     });
 
-    it('applies stacktrace limit on failure', function() {
-      var stackTraceLimit = 1;
-      return Job.create(
-        queue,
-        { foo: 'bar' },
-        { stackTraceLimit: stackTraceLimit }
-      ).then(function(job) {
-        return job
-          .isFailed()
-          .then(function(isFailed) {
-            expect(isFailed).to.be(false);
-          })
-          .then(function() {
-            return job.moveToFailed(new Error('test error'), true);
-          })
-          .then(function() {
-            return job
-              .moveToFailed(new Error('test error'), true)
-              .then(function() {
-                return job.isFailed().then(function(isFailed) {
-                  expect(isFailed).to.be(true);
-                  expect(job.stacktrace).not.be(null);
-                  expect(job.stacktrace.length).to.be(stackTraceLimit);
+    it('applies stacktrace limit on failure', () => {
+      const stackTraceLimit = 1;
+      return Job.create(queue, { foo: 'bar' }, { stackTraceLimit }).then(
+        job => {
+          return job
+            .isFailed()
+            .then(isFailed => {
+              expect(isFailed).to.be(false);
+            })
+            .then(() => {
+              return job.moveToFailed(new Error('test error'), true);
+            })
+            .then(() => {
+              return job
+                .moveToFailed(new Error('test error'), true)
+                .then(() => {
+                  return job.isFailed().then(isFailed => {
+                    expect(isFailed).to.be(true);
+                    expect(job.stacktrace).not.be(null);
+                    expect(job.stacktrace.length).to.be(stackTraceLimit);
+                  });
                 });
-              });
-          });
-      });
+            });
+        }
+      );
     });
   });
 
-  describe('.promote', function() {
-    it('can promote a delayed job to be executed immediately', function() {
-      return Job.create(queue, { foo: 'bar' }, { delay: 1500 }).then(function(
-        job
-      ) {
+  describe('.promote', () => {
+    it('can promote a delayed job to be executed immediately', () => {
+      return Job.create(queue, { foo: 'bar' }, { delay: 1500 }).then(job => {
         return job
           .isDelayed()
-          .then(function(isDelayed) {
+          .then(isDelayed => {
             expect(isDelayed).to.be(true);
           })
-          .then(function() {
+          .then(() => {
             return job.promote();
           })
-          .then(function() {
-            return job.isDelayed().then(function(isDelayed) {
+          .then(() => {
+            return job.isDelayed().then(isDelayed => {
               expect(isDelayed).to.be(false);
-              return job.isWaiting().then(function(isWaiting) {
+              return job.isWaiting().then(isWaiting => {
                 expect(isWaiting).to.be(true);
                 return;
               });
@@ -600,20 +591,20 @@ describe('Job', function() {
       });
     });
 
-    it('should not promote a job that is not delayed', function() {
-      return Job.create(queue, { foo: 'bar' }).then(function(job) {
+    it('should not promote a job that is not delayed', () => {
+      return Job.create(queue, { foo: 'bar' }).then(job => {
         return job
           .isDelayed()
-          .then(function(isDelayed) {
+          .then(isDelayed => {
             expect(isDelayed).to.be(false);
           })
-          .then(function() {
+          .then(() => {
             return job.promote();
           })
-          .then(function() {
+          .then(() => {
             throw new Error('Job should not be promoted!');
           })
-          .catch(function(err) {
+          .catch(err => {
             expect(err).to.be.ok();
           });
       });
@@ -623,249 +614,249 @@ describe('Job', function() {
   // TODO:
   // Divide into several tests
   //
-  var scripts = require('../lib/scripts');
+  const scripts = require('../lib/scripts');
   it('get job status', function() {
     this.timeout(12000);
 
-    var client = new redis();
+    const client = new redis();
     return Job.create(queue, { foo: 'baz' })
-      .then(function(job) {
+      .then(job => {
         return job
           .isStuck()
-          .then(function(isStuck) {
+          .then(isStuck => {
             expect(isStuck).to.be(false);
             return job.getState();
           })
-          .then(function(state) {
+          .then(state => {
             expect(state).to.be('waiting');
-            return scripts.moveToActive(queue).then(function() {
+            return scripts.moveToActive(queue).then(() => {
               return job.moveToCompleted();
             });
           })
-          .then(function() {
+          .then(() => {
             return job.isCompleted();
           })
-          .then(function(isCompleted) {
+          .then(isCompleted => {
             expect(isCompleted).to.be(true);
             return job.getState();
           })
-          .then(function(state) {
+          .then(state => {
             expect(state).to.be('completed');
             return client.zrem(queue.toKey('completed'), job.id);
           })
-          .then(function() {
+          .then(() => {
             return job.moveToDelayed(Date.now() + 10000, true);
           })
-          .then(function() {
+          .then(() => {
             return job.isDelayed();
           })
-          .then(function(yes) {
+          .then(yes => {
             expect(yes).to.be(true);
             return job.getState();
           })
-          .then(function(state) {
+          .then(state => {
             expect(state).to.be('delayed');
             return client.zrem(queue.toKey('delayed'), job.id);
           })
-          .then(function() {
+          .then(() => {
             return job.moveToFailed(new Error('test'), true);
           })
-          .then(function() {
+          .then(() => {
             return job.isFailed();
           })
-          .then(function(isFailed) {
+          .then(isFailed => {
             expect(isFailed).to.be(true);
             return job.getState();
           })
-          .then(function(state) {
+          .then(state => {
             expect(state).to.be('failed');
             return client.zrem(queue.toKey('failed'), job.id);
           })
-          .then(function(res) {
+          .then(res => {
             expect(res).to.be(1);
             return job.getState();
           })
-          .then(function(state) {
+          .then(state => {
             expect(state).to.be('stuck');
             return client.rpop(queue.toKey('wait'));
           })
-          .then(function() {
+          .then(() => {
             return client.lpush(queue.toKey('paused'), job.id);
           })
-          .then(function() {
+          .then(() => {
             return job.isPaused();
           })
-          .then(function(isPaused) {
+          .then(isPaused => {
             expect(isPaused).to.be(true);
             return job.getState();
           })
-          .then(function(state) {
+          .then(state => {
             expect(state).to.be('paused');
             return client.rpop(queue.toKey('paused'));
           })
-          .then(function() {
+          .then(() => {
             return client.lpush(queue.toKey('wait'), job.id);
           })
-          .then(function() {
+          .then(() => {
             return job.isWaiting();
           })
-          .then(function(isWaiting) {
+          .then(isWaiting => {
             expect(isWaiting).to.be(true);
             return job.getState();
           })
-          .then(function(state) {
+          .then(state => {
             expect(state).to.be('waiting');
           });
       })
-      .then(function() {
+      .then(() => {
         return client.quit();
       });
   });
 
-  describe('.finished', function() {
-    it('should resolve when the job has been completed', function(done) {
-      queue.process(function() {
+  describe('.finished', () => {
+    it('should resolve when the job has been completed', done => {
+      queue.process(() => {
         return delay(500);
       });
       queue
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           return job.finished();
         })
         .then(done, done);
     });
 
-    it('should resolve when the job has been completed and return object', function(done) {
-      queue.process(function(/*job*/) {
-        return delay(500).then(function() {
+    it('should resolve when the job has been completed and return object', done => {
+      queue.process((/*job*/) => {
+        return delay(500).then(() => {
           return { resultFoo: 'bar' };
         });
       });
       queue
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           return job.finished();
         })
-        .then(function(jobResult) {
+        .then(jobResult => {
           expect(jobResult).to.be.an('object');
           expect(jobResult.resultFoo).equal('bar');
           done();
         });
     });
 
-    it('should resolve when the job has been delayed and completed and return object', function(done) {
-      queue.process(function(/*job*/) {
-        return delay(300).then(function() {
+    it('should resolve when the job has been delayed and completed and return object', done => {
+      queue.process((/*job*/) => {
+        return delay(300).then(() => {
           return { resultFoo: 'bar' };
         });
       });
       queue
         .add({ foo: 'bar' })
-        .then(function(job) {
-          return delay(600).then(function() {
+        .then(job => {
+          return delay(600).then(() => {
             return job.finished();
           });
         })
-        .then(function(jobResult) {
+        .then(jobResult => {
           expect(jobResult).to.be.an('object');
           expect(jobResult.resultFoo).equal('bar');
           done();
         });
     });
 
-    it('should resolve when the job has been completed and return string', function(done) {
-      queue.process(function(/*job*/) {
-        return delay(500).then(function() {
+    it('should resolve when the job has been completed and return string', done => {
+      queue.process((/*job*/) => {
+        return delay(500).then(() => {
           return 'a string';
         });
       });
       queue
         .add({ foo: 'bar' })
-        .then(function(job) {
-          return delay(600).then(function() {
+        .then(job => {
+          return delay(600).then(() => {
             return job.finished();
           });
         })
-        .then(function(jobResult) {
+        .then(jobResult => {
           expect(jobResult).to.be.an('string');
           expect(jobResult).equal('a string');
           done();
         });
     });
 
-    it('should resolve when the job has been delayed and completed and return string', function(done) {
-      queue.process(function(/*job*/) {
-        return delay(300).then(function() {
+    it('should resolve when the job has been delayed and completed and return string', done => {
+      queue.process((/*job*/) => {
+        return delay(300).then(() => {
           return 'a string';
         });
       });
       queue
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           return job.finished();
         })
-        .then(function(jobResult) {
+        .then(jobResult => {
           expect(jobResult).to.be.an('string');
           expect(jobResult).equal('a string');
           done();
         });
     });
 
-    it('should reject when the job has been failed', function(done) {
-      queue.process(function() {
-        return delay(500).then(function() {
+    it('should reject when the job has been failed', done => {
+      queue.process(() => {
+        return delay(500).then(() => {
           return Promise.reject(new Error('test error'));
         });
       });
 
       queue
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           return job.finished();
         })
         .then(
-          function() {
+          () => {
             done(Error('should have been rejected'));
           },
-          function(err) {
+          err => {
             expect(err.message).equal('test error');
             done();
           }
         );
     });
 
-    it('should resolve directly if already processed', function(done) {
-      queue.process(function() {
+    it('should resolve directly if already processed', done => {
+      queue.process(() => {
         return Promise.resolve();
       });
       queue
         .add({ foo: 'bar' })
-        .then(function(job) {
-          return delay(500).then(function() {
+        .then(job => {
+          return delay(500).then(() => {
             return job.finished();
           });
         })
-        .then(function() {
+        .then(() => {
           done();
         }, done);
     });
 
-    it('should reject directly if already processed', function(done) {
-      queue.process(function() {
+    it('should reject directly if already processed', done => {
+      queue.process(() => {
         return Promise.reject(Error('test error'));
       });
       queue
         .add({ foo: 'bar' })
-        .then(function(job) {
-          return delay(500).then(function() {
+        .then(job => {
+          return delay(500).then(() => {
             return job.finished();
           });
         })
         .then(
-          function() {
+          () => {
             done(Error('should have been rejected'));
           },
-          function(err) {
+          err => {
             expect(err.message).equal('test error');
             done();
           }

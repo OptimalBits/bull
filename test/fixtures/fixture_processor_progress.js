@@ -2,27 +2,28 @@
  * A processor file to be used in tests.
  *
  */
+'use strict';
 
-var delay = require('delay');
+const delay = require('delay');
 
 module.exports = function(job) {
   return delay(50)
-    .then(function() {
+    .then(() => {
       job.progress(10);
       return delay(100);
     })
-    .then(function() {
+    .then(() => {
       job.progress(27);
       return delay(150);
     })
-    .then(function() {
+    .then(() => {
       job.progress(78);
       return delay(100);
     })
-    .then(function() {
+    .then(() => {
       return job.progress(100);
     })
-    .then(function() {
+    .then(() => {
       return 37;
     });
 };
