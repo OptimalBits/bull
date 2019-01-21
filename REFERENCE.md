@@ -96,7 +96,7 @@ interface AdvancedSettings {
   retryProcessDelay: number = 5000; // delay before processing next job in case of internal error.
   backoffStrategies: {}; // A set of custom backoff strategies keyed by name.
   drainDelay: number = 5; // A timeout for when the queue is in drained state (empty waiting for jobs).
-  keepProcesses: boolean = true; // Flag if true then child processes are kept for each processor, false kills child processes after finish
+  reuseProcesses: boolean = true; // Flag if true then child processes are kept for each processor, false kills child processes after finish
 }
 ```
 

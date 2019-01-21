@@ -146,7 +146,7 @@ describe('Child pool', function() {
   it('should kill child after processing is finished and not retain it', function() {
     var processor = __dirname + '/fixtures/fixture_processor_bar.js';
 
-    pool.setKeepProcesses(false);
+    pool.setReuseProcesses(false);
 
     return pool.retain(processor).then(function(_child) {
       expect(_child).to.be.ok;
