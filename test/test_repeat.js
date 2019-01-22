@@ -398,6 +398,25 @@ describe('repeat', () => {
     });
   });
 
+  it('should be able to remove repeatable jobs by key', () => {
+    const repeat = { cron: '*/2 * * * * *' };
+
+    return queue.add('remove', { foo: 'bar' }, { repeat }).then(() => {
+      return queue
+        .getRepeatableJobs()
+        .then(repeatableJobs => {
+          expect(repeatableJobs).to.have.length(1);
+          return queue.removeRepeatableByKey(repeatableJobs[0].key);
+        })
+        .then(() => {
+          return queue.getRepeatableJobs();
+        })
+        .then(repeatableJobs => {
+          expect(repeatableJobs).to.have.length(0);
+        });
+    });
+  });
+
   it('should allow removing a customId repeatable job', function(done) {
     const _this = this;
     const date = new Date('2017-02-07 9:24:00');
