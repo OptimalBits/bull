@@ -530,7 +530,7 @@ coveralls@^3.0.0:
     minimist "^1.2.0"
     request "^2.85.0"
 
-cron-parser@^2.5.0:
+cron-parser@^2.7.3:
   version "2.7.3"
   resolved "https://registry.yarnpkg.com/cron-parser/-/cron-parser-2.7.3.tgz#12603f89f5375af353a9357be2543d3172eac651"
   integrity sha512-t9Kc7HWBWPndBzvbdQ1YG9rpPRB37Tb/tTviziUOh1qs3TARGh3b1p+tnkOHNe1K5iI3oheBPgLqwotMM7+lpg==
@@ -787,7 +787,7 @@ eslint-visitor-keys@^1.0.0:
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-1.0.0.tgz#3f3180fb2e291017716acb4c9d6d5b5c34a6a81d"
   integrity sha512-qzm/XxIbxm/FHyH341ZrbnMUpe+5Bocte9xkmFMzPMjRaZMcXww+MpBptFvtU+79L362nqiLhekCxCxDPaUMBQ==
 
-eslint@^5.12.0:
+eslint@^5.12.1:
   version "5.12.1"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-5.12.1.tgz#5ca9931fb9029d04e7be92b03ce3b58edfac7e3b"
   integrity sha512-54NV+JkTpTu0d8+UYSA8mMKAG4XAsaOrozA9rCW7tgneg1mevcL7wIotPC+fZ0SkWwdhNqoXoxnQCTBp7UvTsg==
@@ -2033,10 +2033,15 @@ moment-timezone@^0.5.23:
   dependencies:
     moment ">= 2.9.0"
 
-"moment@>= 2.9.0", moment@^2.23.0:
+"moment@>= 2.9.0":
   version "2.23.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.23.0.tgz#759ea491ac97d54bac5ad776996e2a58cc1bc225"
   integrity sha512-3IE39bHVqFbWWaPOMHZF98Q9c3LDKGTmypMiTM2QygGXXElkFWIH7GxfmlwmY2vwa+wmNsoYZmG2iusf1ZjJoA==
+
+moment@^2.24.0:
+  version "2.24.0"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
+  integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
 
 ms@2.0.0:
   version "2.0.0"
@@ -2380,10 +2385,10 @@ prelude-ls@~1.1.2:
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.1.2.tgz#21932a549f5e52ffd9a827f570e04be62a97da54"
   integrity sha1-IZMqVJ9eUv/ZqCf1cOBL5iqX2lQ=
 
-prettier@^1.15.3:
-  version "1.16.0"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.16.0.tgz#104dd25f5ee3d0c9d0a6ce4bb40ced8481d51219"
-  integrity sha512-MCBCYeAuZfejUPdEpkleLWvpRBwLii/Sp5jQs0eb8Ul/drGIDjkL6tAU24tk6yCGf0KPV5rhPPPlczfBmN2pWQ==
+prettier@^1.16.1:
+  version "1.16.1"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.16.1.tgz#534c2c9d7853f8845e5e078384e71973bd74089f"
+  integrity sha512-XXUITwIkGb3CPJ2hforHah/zTINRyie5006Jd2HKy2qz7snEJXl0KLfsJZW/wst9g6R2rFvqba3VpNYdu1hDcA==
 
 pretty-format@^23.6.0:
   version "23.6.0"
