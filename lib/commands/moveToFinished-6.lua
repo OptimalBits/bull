@@ -20,6 +20,7 @@
       ARGV[5]  token
       ARGV[6]  shouldRemove
       ARGV[7]  event data (? maybe just send jobid).
+      ARGV[8]  should fetch next job
 
      Output:
       0 OK
