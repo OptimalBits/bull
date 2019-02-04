@@ -605,12 +605,16 @@ describe('Job', () => {
           done();
         }
       });
+      const processStarted = new Promise(resolve =>
+        queue.once('active', resolve)
+      );
 
       const add = (id, ms) =>
         queue.add({}, { jobId: id, delay: ms, priority: 1 });
 
       add('1')
         .then(() => add('2', 1))
+        .then(() => processStarted)
         .then(() => add('3', 5000))
         .then(job => {
           job.promote();
