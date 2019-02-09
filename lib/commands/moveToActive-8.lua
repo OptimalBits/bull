@@ -50,15 +50,17 @@ if jobId then
 
   if(maxJobs) then
     local rateLimiterKey = KEYS[6];
-    local jobCounter = tonumber(rcall("GET", rateLimiterKey))
+    -- local jobCounter = tonumber(rcall("GET", rateLimiterKey))
+    local jobCounter = tonumber(rcall("INCR", rateLimiterKey))
     local bounceBack = ARGV[8]
     
-    -- rate limit hit
-    if jobCounter ~= nil and jobCounter >= maxJobs then
-      local delay = tonumber(rcall("PTTL", rateLimiterKey))
-      local timestamp = delay + tonumber(ARGV[4])
-
+    -- check if rate limit hit
+    if jobCounter > maxJobs then
       if bounceBack == 'false' then
+        local exceedingJobs = jobCounter - maxJobs
+        local delay = tonumber(rcall("PTTL", rateLimiterKey)) + ((exceedingJobs - 1) * ARGV[7]) / maxJobs
+        local timestamp = delay + tonumber(ARGV[4])
+        
         -- put job into delayed queue
         rcall("ZADD", KEYS[7], timestamp * 0x1000 + bit.band(jobCounter, 0xfff), jobId)
         rcall("PUBLISH", KEYS[7], timestamp)
@@ -67,8 +69,7 @@ if jobId then
       rcall("LREM", KEYS[2], 1, jobId)
       return
     else
-      jobCounter = rcall("INCR", rateLimiterKey)
-      if tonumber(jobCounter) == 1 then
+      if jobCounter == 1 then
         rcall("PEXPIRE", rateLimiterKey, ARGV[7])
       end
     end
