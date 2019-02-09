@@ -591,6 +591,37 @@ describe('Job', () => {
       });
     });
 
+    it('should process a promoted job according to its priority', done => {
+      queue.process(() => {
+        return delay(100);
+      });
+
+      const completed = [];
+
+      queue.on('completed', job => {
+        completed.push(job.id);
+        if (completed.length > 3) {
+          expect(completed).to.be.eql(['1', '2', '3', '4']);
+          done();
+        }
+      });
+      const processStarted = new Promise(resolve =>
+        queue.once('active', resolve)
+      );
+
+      const add = (id, ms) =>
+        queue.add({}, { jobId: id, delay: ms, priority: 1 });
+
+      add('1')
+        .then(() => add('2', 1))
+        .then(() => processStarted)
+        .then(() => add('3', 5000))
+        .then(job => {
+          job.promote();
+        })
+        .then(() => add('4', 1));
+    });
+
     it('should not promote a job that is not delayed', () => {
       return Job.create(queue, { foo: 'bar' }).then(job => {
         return job
