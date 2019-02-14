@@ -19,14 +19,14 @@
   "dependencies": {
     "cron-parser": "^2.7.3",
     "debuglog": "^1.0.0",
+    "get-port": "latest",
     "ioredis": "^4.5.1",
     "lodash": "^4.17.11",
     "p-timeout": "^2.0.1",
     "promise.prototype.finally": "^3.1.0",
     "semver": "^5.6.0",
     "util.promisify": "^1.0.0",
-    "uuid": "^3.2.1",
-    "get-port": "latest"
+    "uuid": "^3.2.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",
