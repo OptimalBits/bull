@@ -25,7 +25,8 @@
     "promise.prototype.finally": "^3.1.0",
     "semver": "^5.6.0",
     "util.promisify": "^1.0.0",
-    "uuid": "^3.2.1"
+    "uuid": "^3.2.1",
+    "get-port": "latest"
   },
   "devDependencies": {
     "chai": "^4.2.0",
