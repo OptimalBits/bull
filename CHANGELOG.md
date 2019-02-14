@@ -1,5 +1,23 @@
 # Changelog
 
+## v.3.6.0
+
+- feat: add function to remove repeatable jobs by key.
+- fix: properly remove sandbox events. Fixes #1179.
+- fix: make progress functions in sandbox consistently return a promise.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.5.3...v3.6.0)
+
+## v.3.5.3
+
+- chore: upgrade ioredis to ^4.5.1.
+- fix: fix #1044 support for typescript processors.
+- chore: remove bluebird.
+- chore: use lockKey method instead of private property.
+- fix(queue): convert delay setting to number.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.5.2...v3.5.3)
+
 ## v.3.5.2
 
 - chore(queue): remove bluebird config from the codebase.
