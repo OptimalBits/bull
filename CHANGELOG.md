@@ -1,5 +1,14 @@
 # Changelog
 
+## v.3.7.0
+
+- perf: improve update delay set logic.
+- feat: consider priority when promoting a job #1205.
+- fix: better delay for rate limited jobs.
+- feat: update port selection mechanism for child node process inspect flag.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.6.0...v3.7.0)
+
 ## v.3.6.0
 
 - feat: add function to remove repeatable jobs by key.
