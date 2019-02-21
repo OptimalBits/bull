@@ -327,7 +327,7 @@ A queue emits also some useful events, for example...
 
 For more information on events, including the full list of events that are fired, check out the [Events reference](./REFERENCE.md#events)
 
-#### Queues performace
+#### Queues performance
 
 Queues are cheap, so if you need many of them just create new ones with different
 names:
