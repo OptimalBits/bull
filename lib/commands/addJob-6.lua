@@ -47,7 +47,7 @@ else
   jobId = ARGV[2]
   jobIdKey = ARGV[1] .. jobId
   if rcall("EXISTS", jobIdKey) == 1 then
-    return jobId .. "" -- convert to string
+    error("A job with ID " .. jobId .. " already exists")
   end
 end
 
