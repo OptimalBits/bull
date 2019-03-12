@@ -4,8 +4,7 @@ const myFirstQueue = new Queue('delayedJobs', 'redis://127.0.0.1:6379');
 const minProgressUpdatePeriodMs = 1000;
 
 myFirstQueue.process('delayedJobRunner', (job, done) => {
-  // console.log("Obtained job is:",job);
-  // console.log('Obtained data is:', job.data);
+  // console.log(`Obtained job's ID is: ${job.id} with data as: ${job.data}`);
   return randomDelayedGreeting(job, done);
 });
 
@@ -24,11 +23,13 @@ function getRandomInt(max) {
 }
 
 function randomDelayedGreeting(mjob, done) {
-  // console.log(`from randomDelayed Greeting No: ${mjob.id}, data sent was ${mjob.data}`);
   const mydelay = getRandomInt(20);
   // console.log(`random delay selected: ${mydelay}`);
+  let progPercent = 100 / mydelay;
+  // console.log(`random delay selected: ${mydelay}`);
   const progressUpdater = setInterval(() => {
-    const progPercent = 100 / mydelay;
+    progPercent += 100 / mydelay;
+    // console.log(`    sending progress udpate => ${progPercent}`);
     mjob.progress(progPercent);
   }, minProgressUpdatePeriodMs);
 
