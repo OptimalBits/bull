@@ -1,8 +1,8 @@
 'use strict';
-var Queue = require('../../');
+const Queue = require('../../');
 const myFirstQueue = new Queue('delayedJobs', 'redis://127.0.0.1:6379');
 
-var mytasklist = [
+const mytasklist = [
   { a: 'apple' },
   { b: 'boy' },
   { c: 'cat' },
@@ -10,9 +10,9 @@ var mytasklist = [
   { e: 'elephant' }
 ];
 
-mytasklist.forEach(function(obj) {
-  console.log('adding job for: ', obj);
-  const job = myFirstQueue.add('delayedJobRunner', obj);
+mytasklist.forEach(obj => {
+  // console.log('adding job for: ', obj);
+  myFirstQueue.add('delayedJobRunner', obj);
 });
 
-console.log('following up random things to print');
+// console.log('following up random things to print');
