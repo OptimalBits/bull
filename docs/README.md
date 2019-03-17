@@ -71,8 +71,8 @@ that defines a process function like so:
 ```js
 const myFirstQueue = new Bull('my-first-queue');
 
-myFirstQueue.process(async (job, data) => {
-  return doSomething(data);
+myFirstQueue.process(async (job) => {
+  return doSomething(job.data);
 });
 ```
 
@@ -90,10 +90,10 @@ Sometimes you need to provide job's _progress_ information to an external listen
 by using the `progress` method on the job object:
 
 ```js
-myFirstQueue.process( async (job, data) => {
+myFirstQueue.process( async (job) => {
   let progress = 0;
   for(i = 0; i < 100; i++){
-    await doSomething(data);
+    await doSomething(job.data);
     progress += 10;
     job.progress(progress);
   }
