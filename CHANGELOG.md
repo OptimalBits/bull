@@ -1,5 +1,65 @@
 # Changelog
 
+## v.3.7.0
+
+- perf: improve update delay set logic.
+- feat: consider priority when promoting a job #1205.
+- fix: better delay for rate limited jobs.
+- feat: update port selection mechanism for child node process inspect flag.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.6.0...v3.7.0)
+
+## v.3.6.0
+
+- feat: add function to remove repeatable jobs by key.
+- fix: properly remove sandbox events. Fixes #1179.
+- fix: make progress functions in sandbox consistently return a promise.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.5.3...v3.6.0)
+
+## v.3.5.3
+
+- chore: upgrade ioredis to ^4.5.1.
+- fix: fix #1044 support for typescript processors.
+- chore: remove bluebird.
+- chore: use lockKey method instead of private property.
+- fix(queue): convert delay setting to number.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.5.2...v3.5.3)
+
+## v.3.5.2
+
+- chore(queue): remove bluebird config from the codebase.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.5.1...v3.5.2)
+
+## v.3.5.1
+
+- chore(yarn): updated yarn.lock
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.5.0...v3.5.1)
+
+## v.3.5.0
+
+- fix(delayed): pause delayed jobs #1087
+- fix(lua): correct numJobs fetch in moveToActive
+- perf(moveToActive): used local var for rate limiter
+- perf(queue): replace bluebird by native promises where possible
+- chore(queue): fix typo in forcedReconnection variable
+- feat(child-processes): catch sub process crashes
+- fix(jobs): reset 'failedReason', 'finishedOn' and 'processedOn' fields on job retry
+- fix(queue): fix Warning: cancellation is disabled
+- fix(queue): remove the correct listener in isRedisReady
+- feat(jobs): allow cancelling of retries when using custom backoff strategy
+- feat(rate-limiter): add discard config for rate-limiter
+- feat(jobs): make job progress accepts variant types
+- fix(repeatable): Fixed wrong repeatable count updates
+- fix(jobs): fix copy paste mistake for stacktrace in job toData
+- feat(child-processes): Propagate stack traces
+- feat(repeatable): add ability for cron repeatable job with startDate
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.4.8...v3.5.0)
+
 ## v.3.4.8
 
 - emit waiting event when waking up sleep jobs fixing #792

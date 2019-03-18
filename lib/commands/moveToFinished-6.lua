@@ -69,7 +69,7 @@ if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
 
       rcall("ZREM", KEYS[5], jobId) -- remove from priority
       rcall("PUBLISH", KEYS[6], jobId)
-      rcall("HSET", jobKey, "processedOn", ARGV[2])
+      rcall("HSET", jobKey, "processedOn", ARGV[2]) 
 
       return {rcall("HGETALL", jobKey), jobId} -- get job data
     end

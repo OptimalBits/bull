@@ -1,19 +1,19 @@
-/*eslint-env node */
 'use strict';
 
-var Promise = require('bluebird');
-var expect = require('chai').expect;
-var utils = require('./utils');
-var redis = require('ioredis');
-var _ = require('lodash');
+const expect = require('chai').expect;
+const utils = require('./utils');
+const redis = require('ioredis');
+const _ = require('lodash');
+const delay = require('delay');
+const pReflect = require('p-reflect');
 
-describe('sandboxed process', function() {
-  var queue;
-  var client;
+describe('sandboxed process', () => {
+  let queue;
+  let client;
 
-  beforeEach(function() {
+  beforeEach(() => {
     client = new redis();
-    return client.flushdb().then(function() {
+    return client.flushdb().then(() => {
       queue = utils.buildQueue('test process', {
         settings: {
           guardInterval: 300000,
@@ -24,22 +24,22 @@ describe('sandboxed process', function() {
     });
   });
 
-  afterEach(function() {
+  afterEach(() => {
     return queue
       .close()
-      .then(function() {
+      .then(() => {
         return client.flushall();
       })
-      .then(function() {
+      .then(() => {
         return client.quit();
       });
   });
 
-  it('should process and complete', function(done) {
-    var processFile = __dirname + '/fixtures/fixture_processor.js';
+  it('should process and complete', done => {
+    const processFile = __dirname + '/fixtures/fixture_processor.js';
     queue.process(processFile);
 
-    queue.on('completed', function(job, value) {
+    queue.on('completed', (job, value) => {
       try {
         expect(job.data).to.be.eql({ foo: 'bar' });
         expect(value).to.be.eql(42);
@@ -54,11 +54,11 @@ describe('sandboxed process', function() {
     queue.add({ foo: 'bar' });
   });
 
-  it('should process with named processor', function(done) {
-    var processFile = __dirname + '/fixtures/fixture_processor.js';
+  it('should process with named processor', done => {
+    const processFile = __dirname + '/fixtures/fixture_processor.js';
     queue.process('foobar', processFile);
 
-    queue.on('completed', function(job, value) {
+    queue.on('completed', (job, value) => {
       try {
         expect(job.data).to.be.eql({ foo: 'bar' });
         expect(value).to.be.eql(42);
@@ -73,16 +73,16 @@ describe('sandboxed process', function() {
     queue.add('foobar', { foo: 'bar' });
   });
 
-  it('should process with several named processors', function(done) {
-    var processFileFoo = __dirname + '/fixtures/fixture_processor_foo.js';
-    var processFileBar = __dirname + '/fixtures/fixture_processor_bar.js';
+  it('should process with several named processors', done => {
+    const processFileFoo = __dirname + '/fixtures/fixture_processor_foo.js';
+    const processFileBar = __dirname + '/fixtures/fixture_processor_bar.js';
 
     queue.process('foo', processFileFoo);
     queue.process('bar', processFileBar);
 
-    var count = 0;
-    queue.on('completed', function(job, value) {
-      var data, result, processFile, retainedLength;
+    let count = 0;
+    queue.on('completed', (job, value) => {
+      let data, result, processFile, retainedLength;
       count++;
       if (count == 1) {
         data = { foo: 'bar' };
@@ -112,23 +112,23 @@ describe('sandboxed process', function() {
       }
     });
 
-    queue.add('foo', { foo: 'bar' }).then(function() {
-      Promise.delay(500).then(function() {
+    queue.add('foo', { foo: 'bar' }).then(() => {
+      delay(500).then(() => {
         queue.add('bar', { bar: 'qux' });
       });
     });
 
-    queue.on('error', function(err) {
+    queue.on('error', err => {
       console.error(err);
     });
   });
 
-  it('should process with concurrent processors', function(done) {
-    var after = _.after(4, function() {
+  it('should process with concurrent processors', done => {
+    const after = _.after(4, () => {
       expect(queue.childPool.getAllFree().length).to.eql(4);
       done();
     });
-    queue.on('completed', function(job, value) {
+    queue.on('completed', (job, value) => {
       try {
         expect(value).to.be.eql(42);
         expect(
@@ -146,17 +146,17 @@ describe('sandboxed process', function() {
       queue.add({ foo: 'bar2' }),
       queue.add({ foo: 'bar3' }),
       queue.add({ foo: 'bar4' })
-    ]).then(function() {
+    ]).then(() => {
       queue.process(4, __dirname + '/fixtures/fixture_processor_slow.js');
     });
   });
 
-  it('should reuse process with single processors', function(done) {
-    var after = _.after(4, function() {
+  it('should reuse process with single processors', done => {
+    const after = _.after(4, () => {
       expect(queue.childPool.getAllFree().length).to.eql(1);
       done();
     });
-    queue.on('completed', function(job, value) {
+    queue.on('completed', (job, value) => {
       try {
         expect(value).to.be.eql(42);
         expect(
@@ -174,15 +174,15 @@ describe('sandboxed process', function() {
       queue.add({ foo: 'bar2' }),
       queue.add({ foo: 'bar3' }),
       queue.add({ foo: 'bar4' })
-    ]).then(function() {
+    ]).then(() => {
       queue.process(__dirname + '/fixtures/fixture_processor_slow.js');
     });
   });
 
-  it('should process and complete using done', function(done) {
+  it('should process and complete using done', done => {
     queue.process(__dirname + '/fixtures/fixture_processor_callback.js');
 
-    queue.on('completed', function(job, value) {
+    queue.on('completed', (job, value) => {
       try {
         expect(job.data).to.be.eql({ foo: 'bar' });
         expect(value).to.be.eql(42);
@@ -197,10 +197,10 @@ describe('sandboxed process', function() {
     queue.add({ foo: 'bar' });
   });
 
-  it('should process and update progress', function(done) {
+  it('should process and update progress', done => {
     queue.process(__dirname + '/fixtures/fixture_processor_progress.js');
 
-    queue.on('completed', function(job, value) {
+    queue.on('completed', (job, value) => {
       try {
         expect(job.data).to.be.eql({ foo: 'bar' });
         expect(value).to.be.eql(37);
@@ -214,22 +214,23 @@ describe('sandboxed process', function() {
       }
     });
 
-    var progresses = [];
-    queue.on('progress', function(job, progress) {
+    const progresses = [];
+    queue.on('progress', (job, progress) => {
       progresses.push(progress);
     });
 
     queue.add({ foo: 'bar' });
   });
 
-  it('should process and fail', function(done) {
+  it('should process and fail', done => {
     queue.process(__dirname + '/fixtures/fixture_processor_fail.js');
 
-    queue.on('failed', function(job, err) {
+    queue.on('failed', (job, err) => {
       try {
         expect(job.data).eql({ foo: 'bar' });
         expect(job.failedReason).eql('Manually failed processor');
         expect(err.message).eql('Manually failed processor');
+        expect(err.stack).include('fixture_processor_fail.js');
         expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
         expect(queue.childPool.getAllFree()).to.have.lengthOf(1);
         done();
@@ -241,7 +242,7 @@ describe('sandboxed process', function() {
     queue.add({ foo: 'bar' });
   });
 
-  it('should error if processor file is missing', function(done) {
+  it('should error if processor file is missing', done => {
     try {
       queue.process(__dirname + '/fixtures/missing_processor.js');
       done(new Error('did not throw error'));
@@ -250,10 +251,10 @@ describe('sandboxed process', function() {
     }
   });
 
-  it('should process and fail using callback', function(done) {
+  it('should process and fail using callback', done => {
     queue.process(__dirname + '/fixtures/fixture_processor_callback_fail.js');
 
-    queue.on('failed', function(job, err) {
+    queue.on('failed', (job, err) => {
       try {
         expect(job.data).eql({ foo: 'bar' });
         expect(job.failedReason).eql('Manually failed processor');
@@ -269,19 +270,63 @@ describe('sandboxed process', function() {
     queue.add({ foo: 'bar' });
   });
 
-  it('should remove exited process', function(done) {
+  it('should fail if the process crashes', () => {
+    queue.process(__dirname + '/fixtures/fixture_processor_crash.js');
+
+    return queue
+      .add({})
+      .then(job => {
+        return pReflect(Promise.resolve(job.finished()));
+      })
+      .then(inspection => {
+        expect(inspection.isRejected).to.be.eql(true);
+        expect(inspection.reason.message).to.be.eql('boom!');
+      });
+  });
+
+  it('should fail if the process exits 0', () => {
+    queue.process(__dirname + '/fixtures/fixture_processor_crash.js');
+
+    return queue
+      .add({ exitCode: 0 })
+      .then(job => {
+        return pReflect(Promise.resolve(job.finished()));
+      })
+      .then(inspection => {
+        expect(inspection.isRejected).to.be.eql(true);
+        expect(inspection.reason.message).to.be.eql('Unexpected exit code: 0');
+      });
+  });
+
+  it('should fail if the process exits non-0', () => {
+    queue.process(__dirname + '/fixtures/fixture_processor_crash.js');
+
+    return queue
+      .add({ exitCode: 1 })
+      .then(job => {
+        return pReflect(Promise.resolve(job.finished()));
+      })
+      .then(inspection => {
+        expect(inspection.isRejected).to.be.eql(true);
+        expect(inspection.reason.message).to.be.eql('Unexpected exit code: 1');
+      });
+  });
+
+  it('should remove exited process', done => {
     queue.process(__dirname + '/fixtures/fixture_processor_exit.js');
 
-    queue.on('completed', function() {
+    queue.on('completed', () => {
       try {
         expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
         expect(queue.childPool.getAllFree()).to.have.lengthOf(1);
-        Promise.delay(500)
-          .then(function() {
+        delay(500)
+          .then(() => {
             expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
             expect(queue.childPool.getAllFree()).to.have.lengthOf(0);
           })
-          .asCallback(done);
+          .then(() => {
+            done();
+          }, done);
       } catch (err) {
         done(err);
       }

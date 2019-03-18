@@ -48,7 +48,7 @@ Message.prototype.toData = function() {
     name: this.name,
     data: JSON.stringify(this.data || {}),
     opts: JSON.stringify(this.opts || {}),
-    progress: this._progress
+    progress: JSON.stringify(this._progress || 0)
   };
 };
 
@@ -59,7 +59,7 @@ Message.prototype.progress = function(progress) {
     this.queue.client.hset(
       this.queue.toKey(this.msgId),
       'progress',
-      progress,
+      JSON.stringify(progress),
       function(err) {
         if (err) {
           deferred.reject(err);
@@ -127,7 +127,7 @@ Job.prototype._done = function(list) {
  */
 Job.fromData = function(queue, jobId, data) {
   var job = new Job(queue, jobId, data.name, JSON.parse(data.data), data.opts);
-  job._progress = parseInt(data.progress);
+  job._progress = JSON.parse(data.progress);
   return job;
 };
 

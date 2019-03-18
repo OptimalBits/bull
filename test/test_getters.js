@@ -1,25 +1,23 @@
-/*eslint-env node */
 'use strict';
 
-var redis = require('ioredis');
+const redis = require('ioredis');
 
-var utils = require('./utils');
-var expect = require('chai').expect;
-var Promise = require('bluebird');
+const utils = require('./utils');
+const expect = require('chai').expect;
 
-var _ = require('lodash');
+const _ = require('lodash');
 
 describe('Jobs getters', function() {
   this.timeout(12000);
-  var queue;
-  var client;
+  let queue;
+  let client;
 
-  beforeEach(function() {
+  beforeEach(() => {
     client = new redis();
     return client.flushdb();
   });
 
-  beforeEach(function() {
+  beforeEach(() => {
     queue = utils.buildQueue();
   });
 
@@ -29,20 +27,20 @@ describe('Jobs getters', function() {
     );
     return queue
       .clean(1000)
-      .then(function() {
+      .then(() => {
         return queue.close();
       })
-      .then(function() {
+      .then(() => {
         return client.quit();
       });
   });
 
-  it('should get waiting jobs', function() {
-    return Promise.join(
+  it('should get waiting jobs', () => {
+    return Promise.all([
       queue.add({ foo: 'bar' }),
       queue.add({ baz: 'qux' })
-    ).then(function() {
-      return queue.getWaiting().then(function(jobs) {
+    ]).then(() => {
+      return queue.getWaiting().then(jobs => {
         expect(jobs).to.be.a('array');
         expect(jobs.length).to.be.equal(2);
         expect(jobs[0].data.foo).to.be.equal('bar');
@@ -51,13 +49,13 @@ describe('Jobs getters', function() {
     });
   });
 
-  it('should get paused jobs', function() {
-    return queue.pause().then(function() {
-      return Promise.join(
+  it('should get paused jobs', () => {
+    return queue.pause().then(() => {
+      return Promise.all([
         queue.add({ foo: 'bar' }),
         queue.add({ baz: 'qux' })
-      ).then(function() {
-        return queue.getWaiting().then(function(jobs) {
+      ]).then(() => {
+        return queue.getWaiting().then(jobs => {
           expect(jobs).to.be.a('array');
           expect(jobs.length).to.be.equal(2);
           expect(jobs[0].data.foo).to.be.equal('bar');
@@ -67,9 +65,9 @@ describe('Jobs getters', function() {
     });
   });
 
-  it('should get active jobs', function(done) {
-    queue.process(function(job, jobDone) {
-      queue.getActive().then(function(jobs) {
+  it('should get active jobs', done => {
+    queue.process((job, jobDone) => {
+      queue.getActive().then(jobs => {
         expect(jobs).to.be.a('array');
         expect(jobs.length).to.be.equal(1);
         expect(jobs[0].data.foo).to.be.equal('bar');
@@ -81,10 +79,10 @@ describe('Jobs getters', function() {
     queue.add({ foo: 'bar' });
   });
 
-  it('should get a specific job', function(done) {
-    var data = { foo: 'sup!' };
-    queue.add(data).then(function(job) {
-      queue.getJob(job.id).then(function(returnedJob) {
+  it('should get a specific job', done => {
+    const data = { foo: 'sup!' };
+    queue.add(data).then(job => {
+      queue.getJob(job.id).then(returnedJob => {
         expect(returnedJob.data).to.eql(data);
         expect(returnedJob.id).to.be.eql(job.id);
         done();
@@ -92,18 +90,18 @@ describe('Jobs getters', function() {
     });
   });
 
-  it('should get completed jobs', function(done) {
-    var counter = 2;
+  it('should get completed jobs', done => {
+    let counter = 2;
 
-    queue.process(function(job, jobDone) {
+    queue.process((job, jobDone) => {
       jobDone();
     });
 
-    queue.on('completed', function() {
+    queue.on('completed', () => {
       counter--;
 
       if (counter === 0) {
-        queue.getCompleted().then(function(jobs) {
+        queue.getCompleted().then(jobs => {
           expect(jobs).to.be.a('array');
           // We need a "empty completed" kind of function.
           //expect(jobs.length).to.be.equal(2);
@@ -116,18 +114,18 @@ describe('Jobs getters', function() {
     queue.add({ baz: 'qux' });
   });
 
-  it('should get failed jobs', function(done) {
-    var counter = 2;
+  it('should get failed jobs', done => {
+    let counter = 2;
 
-    queue.process(function(job, jobDone) {
+    queue.process((job, jobDone) => {
       jobDone(new Error('Forced error'));
     });
 
-    queue.on('failed', function() {
+    queue.on('failed', () => {
       counter--;
 
       if (counter === 0) {
-        queue.getFailed().then(function(jobs) {
+        queue.getFailed().then(jobs => {
           expect(jobs).to.be.a('array');
           done();
         });
@@ -138,18 +136,18 @@ describe('Jobs getters', function() {
     queue.add({ baz: 'qux' });
   });
 
-  it('fails jobs that exceed their specified timeout', function(done) {
-    queue.process(function(job, jobDone) {
-      setTimeout(jobDone, 150);
+  it('fails jobs that exceed their specified timeout', done => {
+    queue.process((job, jobDone) => {
+      setTimeout(jobDone, 200);
     });
 
-    queue.on('failed', function(job, error) {
-      expect(error.message).to.be.eql('operation timed out');
+    queue.on('failed', (job, error) => {
+      expect(error.message).to.contain('timed out');
       done();
     });
 
-    queue.on('completed', function() {
-      var error = new Error('The job should have timed out');
+    queue.on('completed', () => {
+      const error = new Error('The job should have timed out');
       done(error);
     });
 
@@ -161,17 +159,17 @@ describe('Jobs getters', function() {
     );
   });
 
-  it('should return all completed jobs when not setting start/end', function(done) {
-    queue.process(function(job, completed) {
+  it('should return all completed jobs when not setting start/end', done => {
+    queue.process((job, completed) => {
       completed();
     });
 
     queue.on(
       'completed',
-      _.after(3, function() {
+      _.after(3, () => {
         queue
           .getJobs('completed')
-          .then(function(jobs) {
+          .then(jobs => {
             expect(jobs)
               .to.be.an('array')
               .that.have.length(3);
@@ -193,17 +191,17 @@ describe('Jobs getters', function() {
     queue.add({ foo: 3 });
   });
 
-  it('should return all failed jobs when not setting start/end', function(done) {
-    queue.process(function(job, completed) {
+  it('should return all failed jobs when not setting start/end', done => {
+    queue.process((job, completed) => {
       completed(new Error('error'));
     });
 
     queue.on(
       'failed',
-      _.after(3, function() {
+      _.after(3, () => {
         queue
           .getJobs('failed')
-          .then(function(jobs) {
+          .then(jobs => {
             expect(jobs)
               .to.be.an('array')
               .that.has.length(3);
@@ -225,17 +223,17 @@ describe('Jobs getters', function() {
     queue.add({ foo: 3 });
   });
 
-  it('should return subset of jobs when setting positive range', function(done) {
-    queue.process(function(job, completed) {
+  it('should return subset of jobs when setting positive range', done => {
+    queue.process((job, completed) => {
       completed();
     });
 
     queue.on(
       'completed',
-      _.after(3, function() {
+      _.after(3, () => {
         queue
           .getJobs('completed', 1, 2, true)
-          .then(function(jobs) {
+          .then(jobs => {
             expect(jobs)
               .to.be.an('array')
               .that.has.length(2);
@@ -253,25 +251,25 @@ describe('Jobs getters', function() {
 
     queue
       .add({ foo: 1 })
-      .then(function() {
+      .then(() => {
         return queue.add({ foo: 2 });
       })
-      .then(function() {
+      .then(() => {
         return queue.add({ foo: 3 });
       });
   });
 
-  it('should return subset of jobs when setting a negative range', function(done) {
-    queue.process(function(job, completed) {
+  it('should return subset of jobs when setting a negative range', done => {
+    queue.process((job, completed) => {
       completed();
     });
 
     queue.on(
       'completed',
-      _.after(3, function() {
+      _.after(3, () => {
         queue
           .getJobs('completed', -3, -1, true)
-          .then(function(jobs) {
+          .then(jobs => {
             expect(jobs)
               .to.be.an('array')
               .that.has.length(3);
@@ -289,17 +287,17 @@ describe('Jobs getters', function() {
     queue.add({ foo: 3 });
   });
 
-  it('should return subset of jobs when range overflows', function(done) {
-    queue.process(function(job, completed) {
+  it('should return subset of jobs when range overflows', done => {
+    queue.process((job, completed) => {
       completed();
     });
 
     queue.on(
       'completed',
-      _.after(3, function() {
+      _.after(3, () => {
         queue
           .getJobs('completed', -300, 99999, true)
-          .then(function(jobs) {
+          .then(jobs => {
             expect(jobs)
               .to.be.an('array')
               .that.has.length(3);
@@ -317,9 +315,9 @@ describe('Jobs getters', function() {
     queue.add({ foo: 3 });
   });
 
-  it('should return jobs for multiple types', function(done) {
-    var counter = 0;
-    queue.process(function(job) {
+  it('should return jobs for multiple types', done => {
+    let counter = 0;
+    queue.process((/*job*/) => {
       counter++;
       if (counter == 2) {
         return queue.pause();
@@ -328,10 +326,10 @@ describe('Jobs getters', function() {
 
     queue.on(
       'completed',
-      _.after(2, function() {
+      _.after(2, () => {
         queue
           .getJobs(['completed', 'paused'])
-          .then(function(jobs) {
+          .then(jobs => {
             expect(jobs).to.be.an('array');
             expect(jobs).to.have.length(3);
             done();

@@ -1,27 +1,25 @@
-/*eslint-env node */
 'use strict';
 
-var expect = require('chai').expect;
-var redis = require('ioredis');
-var childPool = require('../lib/process/child-pool');
+const expect = require('chai').expect;
+const childPool = require('../lib/process/child-pool');
 
-describe('Child pool', function() {
-  var pool;
+describe('Child pool', () => {
+  let pool;
 
-  beforeEach(function() {
+  beforeEach(() => {
     pool = new childPool();
   });
 
-  afterEach(function() {
+  afterEach(() => {
     pool.clean();
   });
 
-  it('should return same child if free', function() {
-    var processor = __dirname + '/fixtures/fixture_processor_bar.js';
-    var child;
+  it('should return same child if free', () => {
+    const processor = __dirname + '/fixtures/fixture_processor_bar.js';
+    let child;
     return pool
       .retain(processor)
-      .then(function(_child) {
+      .then(_child => {
         expect(_child).to.be.ok;
         child = _child;
         pool.release(child);
@@ -30,17 +28,17 @@ describe('Child pool', function() {
 
         return pool.retain(processor);
       })
-      .then(function(newChild) {
+      .then(newChild => {
         expect(child).to.be.eql(newChild);
       });
   });
 
-  it('should return a new child if reused the last free one', function() {
-    var processor = __dirname + '/fixtures/fixture_processor_bar.js';
-    var child;
+  it('should return a new child if reused the last free one', () => {
+    const processor = __dirname + '/fixtures/fixture_processor_bar.js';
+    let child;
     return pool
       .retain(processor)
-      .then(function(_child) {
+      .then(_child => {
         expect(_child).to.be.ok;
         child = _child;
         pool.release(child);
@@ -49,22 +47,22 @@ describe('Child pool', function() {
 
         return pool.retain(processor);
       })
-      .then(function(newChild) {
+      .then(newChild => {
         expect(child).to.be.eql(newChild);
         child = newChild;
         return pool.retain(processor);
       })
-      .then(function(newChild) {
+      .then(newChild => {
         expect(child).not.to.be.eql(newChild);
       });
   });
 
-  it('should return a new child if none free', function() {
-    var processor = __dirname + '/fixtures/fixture_processor_bar.js';
-    var child;
+  it('should return a new child if none free', () => {
+    const processor = __dirname + '/fixtures/fixture_processor_bar.js';
+    let child;
     return pool
       .retain(processor)
-      .then(function(_child) {
+      .then(_child => {
         expect(_child).to.be.ok;
         child = _child;
 
@@ -72,17 +70,17 @@ describe('Child pool', function() {
 
         return pool.retain(processor);
       })
-      .then(function(newChild) {
+      .then(newChild => {
         expect(child).to.not.be.eql(newChild);
       });
   });
 
-  it('should return a new child if killed', function() {
-    var processor = __dirname + '/fixtures/fixture_processor_bar.js';
-    var child;
+  it('should return a new child if killed', () => {
+    const processor = __dirname + '/fixtures/fixture_processor_bar.js';
+    let child;
     return pool
       .retain(processor)
-      .then(function(_child) {
+      .then(_child => {
         expect(_child).to.be.ok;
         child = _child;
 
@@ -92,14 +90,14 @@ describe('Child pool', function() {
 
         return pool.retain(processor);
       })
-      .then(function(newChild) {
+      .then(newChild => {
         expect(child).to.not.be.eql(newChild);
       });
   });
 
-  it('should return a new child if many retained and none free', function() {
-    var processor = __dirname + '/fixtures/fixture_processor_bar.js';
-    var children;
+  it('should return a new child if many retained and none free', () => {
+    const processor = __dirname + '/fixtures/fixture_processor_bar.js';
+    let children;
 
     return Promise.all([
       pool.retain(processor),
@@ -109,19 +107,19 @@ describe('Child pool', function() {
       pool.retain(processor),
       pool.retain(processor)
     ])
-      .then(function(_children) {
+      .then(_children => {
         children = _children;
         expect(children).to.have.length(6);
         return pool.retain(processor);
       })
-      .then(function(child) {
+      .then(child => {
         expect(children).not.to.include(child);
       });
   });
 
-  it('should return an old child if many retained and one free', function() {
-    var processor = __dirname + '/fixtures/fixture_processor_bar.js';
-    var children;
+  it('should return an old child if many retained and one free', () => {
+    const processor = __dirname + '/fixtures/fixture_processor_bar.js';
+    let children;
 
     return Promise.all([
       pool.retain(processor),
@@ -131,7 +129,7 @@ describe('Child pool', function() {
       pool.retain(processor),
       pool.retain(processor)
     ])
-      .then(function(_children) {
+      .then(_children => {
         children = _children;
         expect(children).to.have.length(6);
 
@@ -139,7 +137,7 @@ describe('Child pool', function() {
 
         return pool.retain(processor);
       })
-      .then(function(child) {
+      .then(child => {
         expect(children).to.include(child);
       });
   });

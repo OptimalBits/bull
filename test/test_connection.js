@@ -1,44 +1,43 @@
-/*eslint-env node */
 'use strict';
 
-var expect = require('expect.js');
-var utils = require('./utils');
-var redis = require('ioredis');
+const expect = require('expect.js');
+const utils = require('./utils');
+const redis = require('ioredis');
 
-describe('connection', function() {
-  var queue;
-  var client;
+describe('connection', () => {
+  let queue;
+  let client;
 
-  beforeEach(function() {
+  beforeEach(() => {
     client = new redis();
-    return client.flushdb().then(function() {
+    return client.flushdb().then(() => {
       queue = utils.buildQueue();
       return queue;
     });
   });
 
-  afterEach(function() {
+  afterEach(() => {
     return client.quit();
   });
 
-  it('should recover from a connection loss', function(done) {
-    queue.on('error', function() {
+  it('should recover from a connection loss', done => {
+    queue.on('error', () => {
       // error event has to be observed or the exception will bubble up
     });
 
     queue
-      .process(function(job, jobDone) {
+      .process((job, jobDone) => {
         expect(job.data.foo).to.be.equal('bar');
         jobDone();
         queue.close();
       })
-      .then(function() {
+      .then(() => {
         done();
       })
       .catch(done);
 
     // Simulate disconnect
-    queue.isReady().then(function() {
+    queue.isReady().then(() => {
       queue.client.stream.end();
       queue.client.emit('error', new Error('ECONNRESET'));
 
@@ -47,10 +46,10 @@ describe('connection', function() {
     });
   });
 
-  it('should handle jobs added before and after a redis disconnect', function(done) {
-    var count = 0;
+  it('should handle jobs added before and after a redis disconnect', done => {
+    let count = 0;
     queue
-      .process(function(job, jobDone) {
+      .process((job, jobDone) => {
         if (count == 0) {
           expect(job.data.foo).to.be.equal('bar');
           jobDone();
@@ -62,30 +61,30 @@ describe('connection', function() {
       })
       .catch(done);
 
-    queue.on('completed', function() {
+    queue.on('completed', () => {
       if (count === 1) {
         queue.client.stream.end();
         queue.client.emit('error', new Error('ECONNRESET'));
       }
     });
 
-    queue.isReady().then(function() {
+    queue.isReady().then(() => {
       queue.add({ foo: 'bar' });
     });
 
-    queue.on('error', function(/*err*/) {
+    queue.on('error', (/*err*/) => {
       if (count === 1) {
         queue.add({ foo: 'bar' });
       }
     });
   });
 
-  it('should not close external connections', function() {
-    var client = new redis();
-    var subscriber = new redis();
+  it('should not close external connections', () => {
+    const client = new redis();
+    const subscriber = new redis();
 
-    var opts = {
-      createClient: function(type) {
+    const opts = {
+      createClient(type) {
         switch (type) {
           case 'client':
             return client;
@@ -97,27 +96,27 @@ describe('connection', function() {
       }
     };
 
-    var testQueue = utils.buildQueue('external connections', opts);
+    const testQueue = utils.buildQueue('external connections', opts);
 
     return testQueue
       .isReady()
-      .then(function() {
+      .then(() => {
         return testQueue.add({ foo: 'bar' });
       })
-      .then(function() {
+      .then(() => {
         expect(testQueue.client).to.be.eql(client);
         expect(testQueue.eclient).to.be.eql(subscriber);
 
         return testQueue.close();
       })
-      .then(function() {
+      .then(() => {
         expect(client.status).to.be.eql('ready');
         expect(subscriber.status).to.be.eql('ready');
         return Promise.all([client.quit(), subscriber.quit()]);
       });
   });
 
-  it('should fail if redis connection fails', function(done) {
+  it('should fail if redis connection fails', done => {
     queue = utils.buildQueue('connection fail', {
       redis: {
         host: 'localhost',
@@ -126,10 +125,10 @@ describe('connection', function() {
     });
 
     queue.isReady().then(
-      function() {
+      () => {
         done(new Error('Did not fail connecting to invalid redis instance'));
       },
-      function(err) {
+      err => {
         expect(err.code).to.be.eql('ECONNREFUSED');
         queue.close().then(done, done);
       }

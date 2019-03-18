@@ -19,8 +19,6 @@
   </p>
   <p>Check the new <a href="https://optimalbits.github.io/bull/"><strong>Guide!</strong></p>
   <br/>
-  <br/>
-  <br/>
   <p>
     <a href="https://gitter.im/OptimalBits/bull">
       <img src="https://badges.gitter.im/Join%20Chat.svg"/>
@@ -60,15 +58,12 @@ Please visit our sponsors!:
   <a href="https://getstream.io/winds?utm_source=bull&utm_medium=banner&utm_campaign=github" >
     <img src="https://getstream.imgix.net/images/winds/winds-word-logo.svg" alt="Winds" width="200" style="padding: 10px"/>
   </a>
-  <a href="http://mixmax.com">
-    <img src="https://mixmax.com/images/logo_confirmation.png" alt="Mixmax, Inc" width="75" style="padding: 10px"/>
-  </a>
-  <a href="http://taskforce.sh"  style="margin-left: 50px;">
-    <img src="http://taskforce.sh/assets/logo_square.png" width="160" alt="Taskforce.sh, Inc" style="padding: 10px"/>
-  </a>
 </div>
 
-Do you want to sponsor bull development? Please, let us know!
+
+If you find Bull a valued library, please consider sponsoring it's development by using its front-end &nbsp; [<img src="http://taskforce.sh/assets/logo_square.png" width="100" alt="Taskforce.sh, Inc" style="padding: 100px"/>](https://taskforce.sh). 
+
+Besides helping in developing Bull you will also get a nice UI for managing all your queues and jobs that will also be improved overtime.
 
 
 ---
@@ -101,7 +96,7 @@ There are a few third-party UIs that you can use for monitoring:
 
 **Bull v3**
 
-- [NEW (Preview) Taskforce](https://taskforce.sh)
+- [Taskforce](https://taskforce.sh)
 - [Arena](https://github.com/mixmaxhq/arena)
 
 **Bull <= v2**
@@ -332,7 +327,7 @@ A queue emits also some useful events, for example...
 
 For more information on events, including the full list of events that are fired, check out the [Events reference](./REFERENCE.md#events)
 
-#### Queues performace
+#### Queues performance
 
 Queues are cheap, so if you need many of them just create new ones with different
 names:
