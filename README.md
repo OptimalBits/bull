@@ -52,15 +52,6 @@
 
 ### Sponsors
 
-Please visit our sponsors!:
-
-<div style="display:flex; align-items: center;" valign="middle">
-  <a href="https://getstream.io/winds?utm_source=bull&utm_medium=banner&utm_campaign=github" >
-    <img src="https://getstream.imgix.net/images/winds/winds-word-logo.svg" alt="Winds" width="200" style="padding: 10px"/>
-  </a>
-</div>
-
-
 If you find Bull a valued library, please consider sponsoring it's development by using its front-end &nbsp; [<img src="http://taskforce.sh/assets/logo_square.png" width="100" alt="Taskforce.sh, Inc" style="padding: 100px"/>](https://taskforce.sh). 
 
 Besides helping in developing Bull you will also get a nice UI for managing all your queues and jobs that will also be improved overtime.
