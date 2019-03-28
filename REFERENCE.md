@@ -90,6 +90,7 @@ interface RedisOpts {
 ```typescript
 interface AdvancedSettings {
   lockDuration: number = 30000; // Key expiration time for job locks.
+  lockRenewTime: number = 15000; // Interval on which to acquire the job lock
   stalledInterval: number = 30000; // How often check for stalled jobs (use 0 for never checking).
   maxStalledCount: number = 1; // Max amount of times a stalled job will be re-processed.
   guardInterval: number = 5000; // Poll interval for delayed jobs and added jobs.
