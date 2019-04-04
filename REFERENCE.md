@@ -614,10 +614,11 @@ The most important property for the user is `Job#data` that includes the object 
 ### Job#progress
 
 ```ts
-progress(progress: number): Promise
+progress(progress?: number): Promise
 ```
 
-Updates a job progress.
+Updates a job progress if called with an argument.
+Return a promise resolving to the current job's progress if called without argument.
 
 **Arguments**
 
