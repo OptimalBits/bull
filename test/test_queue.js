@@ -2252,13 +2252,18 @@ describe('Queue', () => {
     });
 
     it('should clean an empty queue', done => {
-      queue.clean(0);
-      queue.on('error', err => {
+      const testQueue = utils.buildQueue('cleaner' + uuid());
+      testQueue.isReady().then(() => {
+        return testQueue.clean(0);
+      });
+      testQueue.on('error', err => {
+        utils.cleanupQueue(testQueue);
         done(err);
       });
-      queue.on('cleaned', (jobs, type) => {
+      testQueue.on('cleaned', (jobs, type) => {
         expect(type).to.be.eql('completed');
         expect(jobs.length).to.be.eql(0);
+        utils.cleanupQueue(testQueue);
         done();
       });
     });
