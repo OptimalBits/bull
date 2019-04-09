@@ -98,6 +98,12 @@ There are a few third-party UIs that you can use for monitoring:
 
 ---
 
+### Monitoring & Alerting
+
+- With Prometheus [Bull Queue Exporter](https://github.com/UpHabit/bull_exporter)
+
+---
+
 ### Feature Comparison
 
 Since there are a few job queue solutions, here a table comparing them to help you use the one that
