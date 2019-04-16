@@ -90,6 +90,7 @@ interface RedisOpts {
 ```typescript
 interface AdvancedSettings {
   lockDuration: number = 30000; // Key expiration time for job locks.
+  lockRenewTime: number = 15000; // Interval on which to acquire the job lock
   stalledInterval: number = 30000; // How often check for stalled jobs (use 0 for never checking).
   maxStalledCount: number = 1; // Max amount of times a stalled job will be re-processed.
   guardInterval: number = 5000; // Poll interval for delayed jobs and added jobs.
@@ -613,10 +614,11 @@ The most important property for the user is `Job#data` that includes the object 
 ### Job#progress
 
 ```ts
-progress(progress: number): Promise
+progress(progress?: number): Promise
 ```
 
-Updates a job progress.
+Updates a job progress if called with an argument.
+Return a promise resolving to the current job's progress if called without argument.
 
 **Arguments**
 
