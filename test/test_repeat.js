@@ -77,13 +77,14 @@ describe('repeat', () => {
         'fourth',
         {},
         { repeat: { cron: crons[3], tz: 'Africa/Accra' } }
-      )
+      ),
+      queue.add('fifth', {}, { repeat: { every: 7563 } })
     ])
       .then(() => {
         return queue.getRepeatableCount();
       })
       .then(count => {
-        expect(count).to.be.eql(4);
+        expect(count).to.be.eql(5);
         return queue.getRepeatableJobs(0, -1, true);
       })
       .then(jobs => {
@@ -94,7 +95,7 @@ describe('repeat', () => {
       .then(jobs => {
         expect(jobs)
           .to.be.and.an('array')
-          .and.have.length(4)
+          .and.have.length(5)
           .and.to.deep.include({
             key: 'first::12345::10 * * * * *',
             name: 'first',
@@ -102,6 +103,7 @@ describe('repeat', () => {
             endDate: 12345,
             tz: null,
             cron: '10 * * * * *',
+            every: null,
             next: 10000
           })
           .and.to.deep.include({
@@ -111,6 +113,7 @@ describe('repeat', () => {
             endDate: 610000,
             tz: null,
             cron: '2 10 * * * *',
+            every: null,
             next: 602000
           })
           .and.to.deep.include({
@@ -120,6 +123,7 @@ describe('repeat', () => {
             endDate: null,
             tz: 'Africa/Accra',
             cron: '2 * * 4 * *',
+            every: null,
             next: 259202000
           })
           .and.to.deep.include({
@@ -129,7 +133,18 @@ describe('repeat', () => {
             endDate: null,
             tz: 'Africa/Abidjan',
             cron: '1 * * 5 * *',
+            every: null,
             next: 345601000
+          })
+          .and.to.deep.include({
+            key: 'fifth:::7563',
+            name: 'fifth',
+            id: null,
+            tz: null,
+            endDate: null,
+            cron: null,
+            every: 7563,
+            next: 7563
           });
         done();
       })
