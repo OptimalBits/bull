@@ -52,9 +52,9 @@
 
 ### Sponsors
 
-If you find Bull a valued library, please consider sponsoring it's development by using its front-end &nbsp; [<img src="http://taskforce.sh/assets/logo_square.png" width="100" alt="Taskforce.sh, Inc" style="padding: 100px"/>](https://taskforce.sh). 
+If you find Bull valuable, please consider sponsoring its development by using the Taskforce front-end &nbsp; [<img src="http://taskforce.sh/assets/logo_square.png" width="100" alt="Taskforce.sh, Inc" style="padding: 100px"/>](https://taskforce.sh). 
 
-Besides helping in developing Bull you will also get a nice UI for managing all your queues and jobs that will also be improved overtime.
+Besides helping Bull's development, you will also benefit from a constantly-improving UI for managing all of your queues and jobs.
 
 
 ---
@@ -106,8 +106,7 @@ There are a few third-party UIs that you can use for monitoring:
 
 ### Feature Comparison
 
-Since there are a few job queue solutions, here a table comparing them to help you use the one that
-better suits your needs.
+Since there are a few job queue solutions, here is a table comparing them:
 
 | Feature         | Bull          | Kue   | Bee | Agenda |
 | :-------------  |:-------------:|:-----:|:---:|:------:|
@@ -304,7 +303,7 @@ A job can be added to a queue and processed repeatedly according to a cron speci
 
 ```
 
-As a tip, check your expressions here to verify they are as you expect them:
+As a tip, check your expressions here to verify they are correct:
 [cron expression descriptor](http://cronexpressiondescriptor.azurewebsites.net/)
 
 #### Pause / Resume
@@ -323,7 +322,7 @@ queue.resume().then(function(){
 
 #### Events
 
-A queue emits also some useful events, for example...
+A queue emits some useful events, for example...
 ```js
 .on('completed', function(job, result){
   // Job completed with output result!
@@ -391,7 +390,7 @@ if(cluster.isMaster){
 
 For the full documentation, check out the reference and common patterns:
 
-- [Guide](https://optimalbits.github.io/bull/) — Your startpoint for developing with Bull.
+- [Guide](https://optimalbits.github.io/bull/) — Your starting point for developing with Bull.
 - [Reference](./REFERENCE.md) — Reference document with all objects and methods available.
 - [Patterns](./PATTERNS.md) — a set of examples for common patterns.
 - [License](./LICENSE.md) — the Bull license—it's MIT.
@@ -404,7 +403,7 @@ If you see anything that could use more docs, please submit a pull request!
 
 ### Important Notes
 
-The queue aims for "at least once" working strategy. It means that in some situations a job
+The queue aims for an "at least once" working strategy. This means that in some situations, a job
 could be processed more than once. This mostly happens when a worker fails to keep a lock
 for a given job during the total duration of the processing.
 
