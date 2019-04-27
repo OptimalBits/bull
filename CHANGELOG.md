@@ -1,5 +1,16 @@
 # Changelog
 
+## v.3.8.0
+
+- fix: improve delay logic fixing #1226, #1222
+- feat: store finishedOn on the job instance
+- fix: return every in getRepeatableJobs #1284
+- fix: remove broken child processes #1098
+- feat: update sandbox exit handler to log signals #1252
+- fix: Ignore unknown command client error #1240
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.7.0...v3.8.0)
+
 ## v.3.7.0
 
 - perf: improve update delay set logic.
