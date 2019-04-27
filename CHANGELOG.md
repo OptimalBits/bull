@@ -1,5 +1,10 @@
 # Changelog
 
+## v.3.8.1
+ - fix: wait for ready in cleanJobsInSet fixes #1298
+ 
+ [Changes](https://github.com/OptimalBits/bull/compare/v3.8.0...v3.8.1)
+
 ## v.3.8.0
 
 - fix: improve delay logic fixing #1226, #1222
