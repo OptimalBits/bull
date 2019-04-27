@@ -151,6 +151,14 @@ yarn add --dev @types/bull
 
 Definitions are currently maintained in the [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bull) repo.
 
+
+## Contributing
+
+We welcome all types of contributions, either code fixes, new features or doc improvements.
+Code formatting is enforced by [prettier](https://prettier.io/)
+For commits please follow conventional [commits convention](https://www.conventionalcommits.org/en/v1.0.0-beta.2/)
+All code must pass lint rules and test suites before it can be merged into develop.
+
 ---
 
 ### Quick Guide
