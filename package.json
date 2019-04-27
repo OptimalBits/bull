@@ -29,6 +29,8 @@
     "uuid": "^3.2.1"
   },
   "devDependencies": {
+    "@commitlint/cli": "^7.5.2",
+    "@commitlint/config-conventional": "^7.5.0",
     "chai": "^4.2.0",
     "coveralls": "^3.0.0",
     "delay": "^4.1.0",
@@ -63,6 +65,11 @@
   },
   "prettier": {
     "singleQuote": true
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
   },
   "engines": {
     "node": ">= 6"
