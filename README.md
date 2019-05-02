@@ -88,7 +88,7 @@ There are a few third-party UIs that you can use for monitoring:
 **Bull v3**
 
 - [Taskforce](https://taskforce.sh)
-- [Arena](https://github.com/mixmaxhq/arena)
+- [Arena](https://github.com/bee-queue/arena)
 
 **Bull <= v2**
 
@@ -113,15 +113,15 @@ Since there are a few job queue solutions, here is a table comparing them:
 | Backend         | redis         | redis |redis| mongo  |
 | Priorities      | ✓             |  ✓    |     |   ✓    |
 | Concurrency     | ✓             |  ✓    |  ✓  |   ✓    |
-| Delayed jobs    | ✓             |  ✓    |     |   ✓    |
-| Global events   | ✓             |  ✓    |     |        |
+| Delayed jobs    | ✓             |  ✓    |  ✓  |   ✓    |
+| Global events   | ✓             |  ✓    |  ✓  |        |
 | Rate Limiter    | ✓             |       |     |        |
 | Pause/Resume    | ✓             |  ✓    |     |        |
 | Sandboxed worker| ✓             |       |     |        |
 | Repeatable jobs | ✓             |       |     |   ✓    |
 | Atomic ops      | ✓             |       |  ✓  |        |
 | Persistence     | ✓             |   ✓   |  ✓  |   ✓    |
-| UI              | ✓             |   ✓   |     |   ✓    |
+| UI              | ✓             |   ✓   |  ✓  |   ✓    |
 | Optimized for   | Jobs / Messages | Jobs | Messages | Jobs |
 
 
