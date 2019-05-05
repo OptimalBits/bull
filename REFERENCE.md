@@ -12,6 +12,7 @@
   - [Queue#close](#queueclose)
   - [Queue#getJob](#queuegetjob)
   - [Queue#getJobs](#queuegetjobs)
+  - [Queue#getJobLogs](#queuegetjoblogs)
   - [Queue#getRepeatableJobs](#queuegetrepeatablejobs)
   - [Queue#removeRepeatable](#queueremoverepeatable)
   - [Queue#removeRepeatableByKey](#queueremoverepeatablebykey)
@@ -31,6 +32,7 @@
 - [Job](#job)
 
   - [Job#progress](#jobprogress)
+  - [Job#log](#joblog)
   - [Job#getState](#jobgetstate)
   - [Job#update](#jobupdate)
   - [Job#remove](#jobremove)
@@ -414,6 +416,20 @@ Returns a promise that will return an array of job instances of the given types.
 
 ---
 
+### Queue#getJobLogs
+
+```ts
+getJobLogs(jobId: string, start?: number, end?: number): Promise<{
+  logs: string[],
+  count: number
+}>
+```
+
+Returns a object with the logs according to the stard and end arguments. The returned count
+value is the total amount of logs, useful for implementing pagination.
+
+---
+
 ### Queue#getRepeatableJobs
 
 ```ts
@@ -633,6 +649,23 @@ progress(progress?: number): Promise
 
 Updates a job progress if called with an argument.
 Return a promise resolving to the current job's progress if called without argument.
+
+**Arguments**
+
+```js
+  progress: number; Job progress between 0 and 100.
+```
+
+---
+
+### Job#log
+
+```ts
+log(row: string): Promise
+```
+
+Adds a log row to this job specific job. Logs can be retrieved using [Queue#getJobLogs](#queuegetjoblogs).
+
 
 **Arguments**
 

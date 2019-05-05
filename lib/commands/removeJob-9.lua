@@ -11,6 +11,7 @@
       KEYS[6] 'failed',
       KEYS[7] 'priority',
       KEYS[8] jobId
+      KEYS[9] job logs
 
       ARGV[1]  jobId
       ARGV[2]  lock token
@@ -32,6 +33,7 @@ if not lock then             -- or (lock == ARGV[2])) then
   redis.call("ZREM", KEYS[6], ARGV[1])
   redis.call("ZREM", KEYS[7], ARGV[1])
   redis.call("DEL", KEYS[8])
+  redis.call("DEL", KEYS[9])
   return 1
 else
   return 0

@@ -425,6 +425,25 @@ describe('Job', () => {
     });
   });
 
+  describe('.log', () => {
+    it('can log two rows with text', () => {
+      const firstLog = 'some log text 1';
+      const secondLog = 'some log text 2';
+      return Job.create(queue, { foo: 'bar' }).then(job =>
+        job
+          .log(firstLog)
+          .then(() => job.log(secondLog))
+          .then(() => queue.getJobLogs(job.id))
+          .then(logs =>
+            expect(logs).to.be.eql({ logs: [firstLog, secondLog], count: 2 })
+          )
+          .then(() => job.remove())
+          .then(() => queue.getJobLogs(job.id))
+          .then(logs => expect(logs).to.be.eql({ logs: [], count: 0 }))
+      );
+    });
+  });
+
   describe('.moveToCompleted', () => {
     it('marks the job as completed and returns new job', () => {
       return Job.create(queue, { foo: 'bar' }).then(job1 => {
