@@ -609,8 +609,8 @@ Tells the queue remove jobs of a specific type created outside of a grace period
 queue.clean(5000);
 //clean all jobs that failed over 10 seconds ago.
 queue.clean(10000, 'failed');
-queue.on('cleaned', function(job, type) {
-  console.log('Cleaned %s %s jobs', job.length, type);
+queue.on('cleaned', function(jobs, type) {
+  console.log('Cleaned %s %s jobs', jobs.length, type);
 });
 ```
 
