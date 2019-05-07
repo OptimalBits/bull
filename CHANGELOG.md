@@ -1,5 +1,11 @@
 # Changelog
 
+## v.3.9.1
+ 
+ - fix: add log to job wrapper
+ 
+ [Changes](https://github.com/OptimalBits/bull/compare/v3.9.0...v3.9.1)
+
 ## v.3.9.0
  
  - feat: add job.log #1165
