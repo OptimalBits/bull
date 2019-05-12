@@ -281,6 +281,7 @@ interface RepeatOpts {
   tz?: string; // Timezone
   startDate?: Date | string | number; // Start date when the repeat job should start repeating (only with cron).
   endDate?: Date | string | number; // End date when the repeat job should stop repeating.
+  skipImmediate?: boolean; // the repeat job should start right now or wait for the time
   limit?: number; // Number of times the job should repeat at max.
   every?: number; // Repeat every millis (cron setting cannot be used together with this setting.)
   count?: number; // The start value for the repeat iteration count.
