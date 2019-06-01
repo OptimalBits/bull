@@ -266,10 +266,10 @@ interface JobOpts {
   // jobId is unique. If you attempt to add a job with an id that
   // already exists, it will not be added.
 
-  removeOnComplete: boolean; // If true, removes the job when it successfully
-  // completes. Default behavior is to keep the job in the completed set.
+  removeOnComplete: boolean | number; // If true, removes the job when it successfully
+  // completes. A number specified the amount of jobs to keep. Default behavior is to keep the job in the completed set.
 
-  removeOnFail: boolean; // If true, removes the job when it fails after all attempts.
+  removeOnFail: boolean | number; // If true, removes the job when it fails after all attempts. A number specified the amount of jobs to keep
   // Default behavior is to keep the job in the failed set.
   stackTraceLimit: number; // Limits the amount of stack trace lines that will be recorded in the stacktrace.
 }
@@ -665,7 +665,6 @@ log(row: string): Promise
 ```
 
 Adds a log row to this job specific job. Logs can be retrieved using [Queue#getJobLogs](#queuegetjoblogs).
-
 
 **Arguments**
 
