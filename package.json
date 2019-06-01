@@ -22,10 +22,10 @@
   "dependencies": {
     "cron-parser": "^2.7.3",
     "debuglog": "^1.0.0",
-    "get-port": "^4.2.0",
+    "get-port": "^5.0.0",
     "ioredis": "^4.5.1",
     "lodash": "^4.17.11",
-    "p-timeout": "^2.0.1",
+    "p-timeout": "^3.1.0",
     "promise.prototype.finally": "^3.1.0",
     "semver": "^6.1.1",
     "util.promisify": "^1.0.0",
