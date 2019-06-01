@@ -1,5 +1,15 @@
 # Changelog
 
+## v.3.10.0
+
+- fix: remove logs automtically when using autoremove fixes #1330
+- feat: add support for keeping a specified number of jobs when using auto-remove.
+- feat: add support for node 12
+- fix: fix check for supported file types in sandboxed processors #1311 
+- ci: drop support for node 6
+
+ [Changes](https://github.com/OptimalBits/bull/compare/v3.9.1...v3.10.0)
+
 ## v.3.9.1
  
  - fix: add log to job wrapper
