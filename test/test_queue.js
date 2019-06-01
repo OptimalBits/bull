@@ -459,7 +459,9 @@ describe('Queue', () => {
 
       it('should keep specified number of jobs after completed with removeOnComplete', async () => {
         const keepJobs = 3;
-        queue.process(() => {});
+        queue.process(async job => {
+          await job.log('test log');
+        });
 
         const datas = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -479,14 +481,16 @@ describe('Queue', () => {
               await Promise.all(
                 jobIds.map(async (jobId, index) => {
                   const job = await queue.getJob(jobId);
+                  const logs = await queue.getJobLogs(jobId);
                   if (index >= datas.length - keepJobs) {
                     expect(job).to.not.be.equal(null);
+                    expect(logs.logs).to.not.be.empty;
                   } else {
                     expect(job).to.be.equal(null);
+                    expect(logs.logs).to.be.empty;
                   }
                 })
               );
-
               resolve();
             }
           });

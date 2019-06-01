@@ -59,12 +59,14 @@ if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
       local jobIds = rcall("ZREVRANGE", KEYS[2], start, -1)
       for i, jobId in ipairs(jobIds) do
         local jobKey = ARGV[9] .. jobId
-        rcall("DEL", jobKey)
+        local jobLogKey = jobKey .. ':logs'
+        rcall("DEL", jobKey, jobLogKey)
       end
       rcall("ZREMRANGEBYRANK", KEYS[2], 0, -removeJobs);
     end
   else
-    rcall("DEL", KEYS[3])
+    local jobLogKey = KEYS[3] .. ':logs'
+    rcall("DEL", KEYS[3], jobLogKey)
   end
 
   rcall("PUBLISH", KEYS[2], ARGV[7])
