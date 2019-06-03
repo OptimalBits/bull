@@ -156,7 +156,7 @@ queue.on('completed', job => {
 Whereas the global version of the event can be listen to with:
 
 ```js
-queue.on('global: completed', jobId => {
+queue.on('global:completed', jobId => {
   console.log(`Job with id ${jobId} has been completed```);
   )
 })
