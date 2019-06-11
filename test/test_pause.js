@@ -6,6 +6,7 @@ const expect = require('chai').expect;
 const redis = require('ioredis');
 const utils = require('./utils');
 const delay = require('delay');
+const sinon = require('sinon');
 
 describe('.pause', () => {
   let client;
@@ -15,6 +16,7 @@ describe('.pause', () => {
   });
 
   afterEach(() => {
+    sinon.restore();
     return client.quit();
   });
 
@@ -282,6 +284,17 @@ describe('.pause', () => {
           return queue.close();
         });
       });
+  });
+
+  it('should not initialize blocking client if not already initialized', async () => {
+    const createClient = sinon.spy(() => client);
+    const queue = utils.buildQueue('pause-queue', { createClient });
+
+    await queue.pause(true);
+    const bClientCalls = createClient
+      .getCalls()
+      .filter(c => c.args[0] === 'bclient');
+    expect(bClientCalls).to.have.lengthOf(0);
   });
 
   it('pauses fast when queue is drained', function(done) {
