@@ -666,12 +666,6 @@ log(row: string): Promise
 
 Adds a log row to this job specific job. Logs can be retrieved using [Queue#getJobLogs](#queuegetjoblogs).
 
-**Arguments**
-
-```js
-  progress: number; Job progress between 0 and 100.
-```
-
 ---
 
 ### Job#getState
