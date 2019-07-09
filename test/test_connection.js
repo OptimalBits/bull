@@ -98,8 +98,15 @@ describe('connection', () => {
 
     const testQueue = utils.buildQueue('external connections', opts);
 
-    return testQueue
-      .isReady()
+    return new Promise(resolve => {
+      if (subscriber.status === 'ready') {
+        return resolve();
+      }
+      subscriber.once('ready', resolve);
+    })
+      .then(() => {
+        return testQueue.isReady();
+      })
       .then(() => {
         return testQueue.add({ foo: 'bar' });
       })
