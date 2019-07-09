@@ -74,6 +74,58 @@ describe('Job', () => {
       );
     });
 
+    it('should set default size limit and succeed in creating job', () => {
+      const data = { foo: 'bar' }; // 13 bytes
+      const opts = { sizeLimit: '1mb' };
+      return Job.create(queue, data, opts).then(createdJob => {
+        expect(createdJob).to.not.be.null;
+        expect(createdJob).to.have.property('opts');
+        expect(createdJob.opts).to.be.a(Object);
+        expect(createdJob.opts.sizeLimit).to.be(1048576);
+      });
+    });
+
+    it('should set default size limit and fail due to size limit exception', () => {
+      const data = { foo: 'bar' }; // 13 bytes
+      const opts = { sizeLimit: 12 };
+      return Job.create(queue, data, opts).catch(err => {
+        expect(err).to.not.be.null;
+        expect(err.message).to.eql(
+          'The size of job ' +
+            Job.DEFAULT_JOB_NAME +
+            ' exceeds the limit ' +
+            opts.sizeLimit +
+            ' bytes'
+        );
+      });
+    });
+
+    it('should set default size limit with non-ascii data and fail due to size limit exception', () => {
+      const data = { foo: 'βÅ®' }; // 16 bytes
+      const opts = { sizeLimit: '15b' };
+      return Job.create(queue, data, opts).catch(err => {
+        expect(err).to.not.be.null;
+        expect(err.message).to.contain(
+          'The size of job ' + Job.DEFAULT_JOB_NAME + ' exceeds the limit'
+        );
+      });
+    });
+
+    it('should set custom job id and default size limit and fail due to size limit exception', () => {
+      const data = { foo: 'bar' }; // 13 bytes
+      const opts = { sizeLimit: 12, jobId: 'customJobId' };
+      return Job.create(queue, data, opts).catch(err => {
+        expect(err).to.not.be.null;
+        expect(err.message).to.eql(
+          'The size of job ' +
+            opts.jobId +
+            ' exceeds the limit ' +
+            opts.sizeLimit +
+            ' bytes'
+        );
+      });
+    });
+
     it('should process jobs with custom jobIds', done => {
       const customJobId = 'customjob';
       queue.process(() => {
