@@ -1,5 +1,71 @@
 # Changelog
 
+## v.3.10.0
+
+- fix: remove logs automtically when using autoremove fixes #1330
+- feat: add support for keeping a specified number of jobs when using auto-remove.
+- feat: add support for node 12
+- fix: fix check for supported file types in sandboxed processors #1311 
+- ci: drop support for node 6
+
+ [Changes](https://github.com/OptimalBits/bull/compare/v3.9.1...v3.10.0)
+
+## v.3.9.1
+ 
+ - fix: add log to job wrapper
+ 
+ [Changes](https://github.com/OptimalBits/bull/compare/v3.9.0...v3.9.1)
+
+## v.3.9.0
+ 
+ - feat: add job.log #1165
+ 
+ [Changes](https://github.com/OptimalBits/bull/compare/v3.8.1...v3.9.0)
+
+## v.3.8.1
+ 
+ - fix: wait for ready in cleanJobsInSet fixes #1298
+ 
+ [Changes](https://github.com/OptimalBits/bull/compare/v3.8.0...v3.8.1)
+
+## v.3.8.0
+
+- fix: improve delay logic fixing #1226, #1222
+- feat: store finishedOn on the job instance
+- fix: return every in getRepeatableJobs #1284
+- fix: remove broken child processes #1098
+- feat: update sandbox exit handler to log signals #1252
+- fix: Ignore unknown command client error #1240
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.7.0...v3.8.0)
+
+## v.3.7.0
+
+- perf: improve update delay set logic.
+- feat: consider priority when promoting a job #1205.
+- fix: better delay for rate limited jobs.
+- feat: update port selection mechanism for child node process inspect flag.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.6.0...v3.7.0)
+
+## v.3.6.0
+
+- feat: add function to remove repeatable jobs by key.
+- fix: properly remove sandbox events. Fixes #1179.
+- fix: make progress functions in sandbox consistently return a promise.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.5.3...v3.6.0)
+
+## v.3.5.3
+
+- chore: upgrade ioredis to ^4.5.1.
+- fix: fix #1044 support for typescript processors.
+- chore: remove bluebird.
+- chore: use lockKey method instead of private property.
+- fix(queue): convert delay setting to number.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.5.2...v3.5.3)
+
 ## v.3.5.2
 
 - chore(queue): remove bluebird config from the codebase.

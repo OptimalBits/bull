@@ -1,8 +1,7 @@
-
-Reference
-=========
+# Reference
 
 - [Queue](#queue)
+
   - [Queue#process](#queueprocess)
   - [Queue#add](#queueadd)
   - [Queue#pause](#queuepause)
@@ -13,8 +12,10 @@ Reference
   - [Queue#close](#queueclose)
   - [Queue#getJob](#queuegetjob)
   - [Queue#getJobs](#queuegetjobs)
+  - [Queue#getJobLogs](#queuegetjoblogs)
   - [Queue#getRepeatableJobs](#queuegetrepeatablejobs)
   - [Queue#removeRepeatable](#queueremoverepeatable)
+  - [Queue#removeRepeatableByKey](#queueremoverepeatablebykey)
   - [Queue#getJobCounts](#queuegetjobcounts)
   - [Queue#getCompletedCount](#queuegetcompletedcount)
   - [Queue#getFailedCount](#queuegetfailedcount)
@@ -29,7 +30,9 @@ Reference
   - [Queue#getFailed](#queuegetfailed)
 
 - [Job](#job)
+
   - [Job#progress](#jobprogress)
+  - [Job#log](#joblog)
   - [Job#getState](#jobgetstate)
   - [Job#update](#jobupdate)
   - [Job#remove](#jobremove)
@@ -43,9 +46,7 @@ Reference
 - [Events](#events)
   - [Global events](#global-events)
 
-
-Queue
------
+## Queue
 
 ```ts
 Queue(queueName: string, url?: string, opts?: QueueOptions): Queue
@@ -55,8 +56,8 @@ This is the Queue constructor. It creates a new Queue that is persisted in
 Redis. Everytime the same queue is instantiated it tries to process all the
 old jobs that may exist from a previous unfinished session.
 
-The optional ```url``` argument, allows to specify a redis connection string such as for example:
-```redis://mypassword@myredis.server.com:1234```
+The optional `url` argument, allows to specify a redis connection string such as for example:
+`redis://mypassword@myredis.server.com:1234`
 
 ```typescript
 interface QueueOptions {
@@ -75,7 +76,7 @@ interface RateLimiter {
   bounceBack: boolean = false; // When jobs get rate limited, they stay in the waiting queue and are not moved to the delayed queue
 ```
 
-```RedisOpts``` are passed directly to ioredis constructor, check [ioredis](https://github.com/luin/ioredis/blob/master/API.md)
+`RedisOpts` are passed directly to ioredis constructor, check [ioredis](https://github.com/luin/ioredis/blob/master/API.md)
 for details. We document here just the most important ones.
 
 ```typescript
@@ -90,6 +91,7 @@ interface RedisOpts {
 ```typescript
 interface AdvancedSettings {
   lockDuration: number = 30000; // Key expiration time for job locks.
+  lockRenewTime: number = 15000; // Interval on which to acquire the job lock
   stalledInterval: number = 30000; // How often check for stalled jobs (use 0 for never checking).
   maxStalledCount: number = 1; // Max amount of times a stalled job will be re-processed.
   guardInterval: number = 5000; // Poll interval for delayed jobs and added jobs.
@@ -99,9 +101,9 @@ interface AdvancedSettings {
 }
 ```
 
-__Advanced Settings__
+**Advanced Settings**
 
-__Warning:__ Do not override these advanced settings unless you understand the internals of the queue.
+**Warning:** Do not override these advanced settings unless you understand the internals of the queue.
 
 `lockDuration`: Time in milliseconds to acquire the job lock. Set this to a higher value if you find that your jobs are being stalled because your job processor is CPU-intensive and blocking the event loop (see note below about stalled jobs). Set this to a lower value if your jobs are extremely time-sensitive and it might be OK if they get double-processed (due to them be falsly considered stalled).
 
@@ -111,7 +113,7 @@ __Warning:__ Do not override these advanced settings unless you understand the i
 
 `maxStalledCount`: The maximum number of times a job can be restarted before it will be permamently failed with the error `job stalled more than allowable limit`. This is set to a default of `1` with the assumption that stalled jobs should be very rare (only due to process crashes) and you want to be on the safer side of not restarting jobs. Set this higher if stalled jobs are common (e.g. processes crash a lot) and it's generally OK to double process jobs.
 
-`guardInterval`: Interval in milliseconds on which the delayed job watchdog will run. This watchdog is only in place for unstable Redis connections which can caused delayed jobs to not be processed. Set to a lower value if your Redis connection is unstable and delayed jobs aren't being processed in time.
+`guardInterval`: Interval in milliseconds on which the delayed job watchdog will run. When running multiple concurrent workers with delayed tasks, the default value of `guardInterval` will cause spikes on network bandwidth, cpu usage and memory usage. Each concurrent worker will run the delayed job watchdog. In this case set this value to something much higher, e.g. `guardInterval = numberOfWorkers*5000`. Set to a lower value if your Redis connection is unstable and delayed jobs aren't being processed in time.
 
 `retryProcessDelay`: Time in milliseconds in which to wait before trying to process jobs, in case of a Redis error. Set to a lower value on an unstable Redis connection.
 
@@ -160,45 +162,48 @@ You can specify a `concurrency` argument. Bull will then call your handler in pa
 A process function can also be declared as a separate process. This will make a better use of the available CPU cores
 and run the jobs in parallel. This is a perfect way to run blocking code. Just specify an absolute path to a processor module.
 i.e. a file exporting the process function like this:
+
 ```js
 // my-processor.js
-module.exports = function(job){
+module.exports = function(job) {
   // do some job
 
   return value;
-}
+};
 ```
+
 You can return a value or a promise to signal that the job has been completed.
 
-
 A `name` argument can be provided so that multiple process functions can be defined per queue. A named process will only process jobs that matches the given name. However, if you define multiple named process functions in one Queue, the defined concurrency for each process function stacks up for the Queue. See the following examples:
+
 ```js
 /***
  * For each named processor, concurrency stacks up, so any of these three process functions
  * can run with a concurrency of 125. To avoid this behaviour you need to create an own queue
  * for each process function.
  */
-const loadBalancerQueue = new Queue('loadbalancer')
-loadBalancerQueue.process('requestProfile', 100, requestProfile)
-loadBalancerQueue.process('sendEmail', 25, sendEmail)
-loadBalancerQueue.process('sendInvitation', 0, sendInvite)
+const loadBalancerQueue = new Queue('loadbalancer');
+loadBalancerQueue.process('requestProfile', 100, requestProfile);
+loadBalancerQueue.process('sendEmail', 25, sendEmail);
+loadBalancerQueue.process('sendInvitation', 0, sendInvite);
 
-const profileQueue = new Queue('profile')
+const profileQueue = new Queue('profile');
 // Max concurrency for requestProfile is 100
-profileQueue.process('requestProfile', 100, requestProfile)
+profileQueue.process('requestProfile', 100, requestProfile);
 
-const emailQueue = new Queue('email')
+const emailQueue = new Queue('email');
 // Max concurrency for sendEmail is 25
-emailQueue.process('sendEmail', 25, sendEmail)
+emailQueue.process('sendEmail', 25, sendEmail);
 ```
 
 Specifying `*` as the process name will make it the default processor for all named jobs.  
 It is frequently used to process all named jobs from one process function:
+
 ```js
-const differentJobsQueue = new Queue('differentJobsQueue')
-differentJobsQueue.process('*', processFunction)
-differentJobsQueue.add('jobA', data, opts)
-differentJobsQueue.add('jobB', data, opts)
+const differentJobsQueue = new Queue('differentJobsQueue');
+differentJobsQueue.process('*', processFunction);
+differentJobsQueue.add('jobA', data, opts);
+differentJobsQueue.add('jobB', data, opts);
 ```
 
 **Note:** in order to determine whether job completion is signaled by
@@ -208,7 +213,8 @@ So watch out, as the following won't work:
 
 ```js
 // THIS WON'T WORK!!
-queue.process(function(job, done) { // Oops! done callback here!
+queue.process(function(job, done) {
+  // Oops! done callback here!
   return Promise.resolve();
 });
 ```
@@ -216,7 +222,8 @@ queue.process(function(job, done) { // Oops! done callback here!
 This, however, will:
 
 ```js
-queue.process(function(job) { // No done callback here :)
+queue.process(function(job) {
+  // No done callback here :)
   return Promise.resolve();
 });
 ```
@@ -234,15 +241,15 @@ Creates a new job and adds it to the queue. If the queue is empty the job will b
 An optional name can be added, so that only process functions defined for that name (also called job type) will process the job.
 
 **Note:**
-You need to define *processors* for all the named jobs that you add to your queue or the queue will complain that you are missing a processor for the given job, unless you use the ```*``` as job name when defining the processor.
+You need to define _processors_ for all the named jobs that you add to your queue or the queue will complain that you are missing a processor for the given job, unless you use the `*` as job name when defining the processor.
 
 ```typescript
-interface JobOpts{
+interface JobOpts {
   priority: number; // Optional priority value. ranges from 1 (highest priority) to MAX_INT  (lowest priority). Note that
-                    // using priorities has a slight impact on performance, so do not use it if not required.
+  // using priorities has a slight impact on performance, so do not use it if not required.
 
   delay: number; // An amount of miliseconds to wait until this job can be processed. Note that for accurate delays, both
-                 // server and clients should have their clocks synchronized. [optional].
+  // server and clients should have their clocks synchronized. [optional].
 
   attempts: number; // The total number of attempts to try the job until it completes.
 
@@ -254,26 +261,26 @@ interface JobOpts{
   timeout: number; // The number of milliseconds after which the job should be fail with a timeout error [optional]
 
   jobId: number | string; // Override the job ID - by default, the job ID is a unique
-                          // integer, but you can use this setting to override it.
-                          // If you use this option, it is up to you to ensure the
-                          // jobId is unique. If you attempt to add a job with an id that
-                          // already exists, it will not be added.
+  // integer, but you can use this setting to override it.
+  // If you use this option, it is up to you to ensure the
+  // jobId is unique. If you attempt to add a job with an id that
+  // already exists, it will not be added.
 
-  removeOnComplete: boolean; // If true, removes the job when it successfully
-                            // completes. Default behavior is to keep the job in the completed set.
+  removeOnComplete: boolean | number; // If true, removes the job when it successfully
+  // completes. A number specified the amount of jobs to keep. Default behavior is to keep the job in the completed set.
 
-  removeOnFail: boolean; // If true, removes the job when it fails after all attempts.
-                         // Default behavior is to keep the job in the failed set.
+  removeOnFail: boolean | number; // If true, removes the job when it fails after all attempts. A number specified the amount of jobs to keep
+  // Default behavior is to keep the job in the failed set.
   stackTraceLimit: number; // Limits the amount of stack trace lines that will be recorded in the stacktrace.
 }
 ```
 
 ```typescript
-interface RepeatOpts{
+interface RepeatOpts {
   cron?: string; // Cron string
-  tz?: string, // Timezone
-  startDate?: Date | string | number; // Start date when the repeat job should start repeating (only with cron).
-  endDate?: Date | string | number; // End date when the repeat job should stop repeating.
+  tz?: string; // Timezone
+  startDate?: Date | string | number; // Start date when the repeat job should start repeating (only with cron).
+  endDate?: Date | string | number; // End date when the repeat job should stop repeating.
   limit?: number; // Number of times the job should repeat at max.
   every?: number; // Repeat every millis (cron setting cannot be used together with this setting.)
   count?: number; // The start value for the repeat iteration count.
@@ -282,9 +289,8 @@ interface RepeatOpts{
 
 More information regarding the [cron expression](https://github.com/harrisiirak/cron-parser)
 
-
 ```typescript
-interface BackoffOpts{
+interface BackoffOpts {
   type: string; // Backoff type, which can be either `fixed` or `exponential`. A custom backoff strategy can also be specified in `backoffStrategies` on the queue settings.
   delay: number; // Backoff delay, in milliseconds.
 }
@@ -310,7 +316,7 @@ Pausing a queue that is already paused does nothing.
 resume(isLocal?: boolean): Promise
 ```
 
-Returns a promise that resolves when the queue is resumed after being paused. The resume can be either local or global. If global, all workers in all queue instances for a given queue will be resumed. If local, only this worker will be resumed. Note that resuming a queue globally will *not* resume workers that have been paused locally; for those, `resume(true)` must be called directly on their instances.
+Returns a promise that resolves when the queue is resumed after being paused. The resume can be either local or global. If global, all workers in all queue instances for a given queue will be resumed. If local, only this worker will be resumed. Note that resuming a queue globally will _not_ resume workers that have been paused locally; for those, `resume(true)` must be called directly on their instances.
 
 Resuming a queue that is not paused does nothing.
 
@@ -348,19 +354,21 @@ Closes the underlying Redis client. Use this to perform a graceful shutdown.
 var Queue = require('bull');
 var queue = Queue('example');
 
-var after100 = _.after(100, function () {
-  queue.close().then(function () { console.log('done') })
+var after100 = _.after(100, function() {
+  queue.close().then(function() {
+    console.log('done');
+  });
 });
 
 queue.on('completed', after100);
 ```
 
 `close` can be called from anywhere, with one caveat: if called
-from within a job handler the queue won't close until *after*
+from within a job handler the queue won't close until _after_
 the job has been processed, so the following won't work:
 
 ```js
-queue.process(function (job, jobDone) {
+queue.process(function(job, jobDone) {
   handle(job);
   queue.close().then(jobDone);
 });
@@ -369,7 +377,7 @@ queue.process(function (job, jobDone) {
 Instead, do this:
 
 ```js
-queue.process(function (job, jobDone) {
+queue.process(function(job, jobDone) {
   handle(job);
   queue.close();
   jobDone();
@@ -408,7 +416,22 @@ Returns a promise that will return an array of job instances of the given types.
 
 ---
 
+### Queue#getJobLogs
+
+```ts
+getJobLogs(jobId: string, start?: number, end?: number): Promise<{
+  logs: string[],
+  count: number
+}>
+```
+
+Returns a object with the logs according to the stard and end arguments. The returned count
+value is the total amount of logs, useful for implementing pagination.
+
+---
+
 ### Queue#getRepeatableJobs
+
 ```ts
 getRepeatableJobs(start?: number, end?: number, asc?: boolean): Promise <Job[]>
 ```
@@ -425,6 +448,18 @@ removeRepeatable(name?: string, repeat: RepeatOpts): Promise<void>
 
 Removes a given repeatable job. The RepeatOpts needs to be the same as the ones used
 for the job when it was added.
+
+---
+
+---
+
+### Queue#removeRepeatableByKey
+
+```ts
+removeRepeatableByKey(key: string): Promise<void>
+```
+
+Removes a given repeatable job by its key.
 
 ---
 
@@ -489,7 +524,6 @@ Returns a promise that will return the active job counts for the given queue.
 
 ---
 
-
 ### Queue#getWaitingCount
 
 ```ts
@@ -540,7 +574,6 @@ Returns a promise that will return an array with the delayed jobs between start 
 
 ---
 
-
 ### Queue#getCompleted
 
 ```ts
@@ -576,8 +609,8 @@ Tells the queue remove jobs of a specific type created outside of a grace period
 queue.clean(5000);
 //clean all jobs that failed over 10 seconds ago.
 queue.clean(10000, 'failed');
-queue.on('cleaned', function (job, type) {
-  console.log('Cleaned %s %s jobs', job.length, type);
+queue.on('cleaned', function(jobs, type) {
+  console.log('Cleaned %s %s jobs', jobs.length, type);
 });
 ```
 
@@ -602,9 +635,7 @@ The cleaner emits the `cleaned` event anytime the queue is cleaned.
 
 ---
 
-
-Job
----
+## Job
 
 A job includes all data needed to perform its execution, as well as the progress method needed to update its progress.
 
@@ -613,16 +644,27 @@ The most important property for the user is `Job#data` that includes the object 
 ### Job#progress
 
 ```ts
-progress(progress: number): Promise
+progress(progress?: number): Promise
 ```
 
-Updates a job progress.
+Updates a job progress if called with an argument.
+Return a promise resolving to the current job's progress if called without argument.
 
 **Arguments**
 
 ```js
   progress: number; Job progress between 0 and 100.
 ```
+
+---
+
+### Job#log
+
+```ts
+log(row: string): Promise
+```
+
+Adds a log row to this job specific job. Logs can be retrieved using [Queue#getJobLogs](#queuegetjoblogs).
 
 ---
 
@@ -701,10 +743,10 @@ Returns a promise that resolves or rejects when the job completes or fails.
 ### Job#moveToCompleted
 
 ```ts
-moveToCompleted(returnValue, ignoreLock): Promise<string[Jobdata, JobId] | null>
+moveToCompleted(returnValue: any, ignoreLock: boolean, notFetch?: boolean): Promise<string[Jobdata, JobId] | null>
 ```
 
-Moves a job to the `completed` queue. Pulls a job from 'waiting' to 'active' and returns a tuple containing the next jobs data and id. If no job is in the `waiting` queue, returns null.
+Moves a job to the `completed` queue. Pulls a job from 'waiting' to 'active' and returns a tuple containing the next jobs data and id. If no job is in the `waiting` queue, returns null. Set `notFetch` to true to avoid prefetching the next job in the queue.
 
 ---
 
@@ -718,9 +760,7 @@ Moves a job to the `failed` queue. Pulls a job from 'waiting' to 'active' and re
 
 ---
 
-
-Events
-------
+## Events
 
 A queue emits also some useful events:
 
@@ -794,7 +834,6 @@ When working with global events whose local counterparts pass a `Job` instance t
 If you need to access the `Job` instance in a global listener, use [Queue#getJob](#queuegetjob) to retrieve it. However, remember that if `removeOnComplete` is enabled when adding the job, the job will no longer be available after completion. Should you need to both access the job and remove it after completion, you can use [Job#remove](#jobremove) to remove it in the listener.
 
 ```js
-
 // Local events pass the job instance...
 queue.on('progress', function(job, progress) {
   console.log(`Job ${job.id} is ${progress * 100}% ready!`);
