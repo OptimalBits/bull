@@ -127,6 +127,7 @@ describe('Job', function() {
       return Job.create(queue, { foo: 'bar' })
         .then(function(job) {
           return job.update({ baz: 'qux' }).then(function() {
+            expect(job.data).to.be.eql({ baz: 'qux' });
             return job;
           });
         })
