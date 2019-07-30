@@ -273,6 +273,6 @@ paymentsQueue.add(paymentsData, { repeat: { cron: '15 3 * * *' } });
 
 There are some important considerations regarding repeatable jobs:
 
-- Bull is smart enough not to add the same repeatable job if the repeat options are the same.
+- Bull is smart enough not to add the same repeatable job if the repeat options are the same. (CAUTION: A job id is part of the repeat options since: https://github.com/OptimalBits/bull/pull/603, therefore passing job ids will allow jobs with the same cron to be inserted in the queue)
 - If there are no workers running, repeatable jobs will not accumulate next time a worker is online.
 - repeatable jobs can be removed using the [removeRepeatable](https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queueremoverepeatable) method.
