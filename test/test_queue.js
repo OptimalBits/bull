@@ -2552,6 +2552,28 @@ describe('Queue', () => {
         });
     });
 
+    it('should properly clean jobs from the priority set', done => {
+      const client = new redis(6379, '127.0.0.1', {});
+      queue.add({ some: 'data' }, { priority: 5 });
+      queue.add({ some: 'data' }, { priority: 5 });
+      delay(100)
+        .then(() => {
+          return queue.clean(0, 'wait', 1);
+        })
+        .then(() => {
+          return new Promise((resolve, reject) => {
+            client.zcount(queue.toKey('priority'), '5', '5', (err, res) => {
+              if (err) reject(err);
+              else resolve(res);
+            });
+          });
+        })
+        .then(priority => {
+          expect(priority).to.be.eql(1);
+          done();
+        });
+    });
+
     it('should clean a job without a timestamp', done => {
       const client = new redis(6379, '127.0.0.1', {});
 

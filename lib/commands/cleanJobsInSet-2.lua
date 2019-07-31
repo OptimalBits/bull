@@ -36,6 +36,7 @@ for _, job in ipairs(jobs) do
       else
         redis.call("ZREM", KEYS[1], job)
       end
+      redis.call("ZREM", KEYS[2], job)
       redis.call("DEL", jobKey)
       deletedCount = deletedCount + 1
       table.insert(deleted, job)
