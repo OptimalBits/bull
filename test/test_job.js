@@ -90,6 +90,71 @@ describe('Job', () => {
     });
   });
 
+  describe('.createBulk', () => {
+    let jobs;
+    let inputJobs;
+
+    beforeEach(() => {
+      inputJobs = [
+        {
+          name: 'jobA',
+          data: {
+            foo: 'bar'
+          },
+          opts: {
+            testOpt: 'enabled'
+          }
+        },
+        {
+          name: 'jobB',
+          data: {
+            foo: 'baz'
+          },
+          opts: {
+            testOpt: 'disabled'
+          }
+        }
+      ];
+
+      return Job.createBulk(queue, inputJobs).then(createdJobs => {
+        jobs = createdJobs;
+      });
+    });
+
+    it('returns a promise for the jobs', () => {
+      expect(jobs).to.have.length(2);
+
+      expect(jobs[0]).to.have.property('id');
+      expect(jobs[0]).to.have.property('data');
+    });
+
+    it('should not modify input options', () => {
+      expect(inputJobs[0].opts).not.to.have.property('jobId');
+    });
+
+    it('saves the first job in redis', () => {
+      return Job.fromId(queue, jobs[0].id).then(storedJob => {
+        expect(storedJob).to.have.property('id');
+        expect(storedJob).to.have.property('data');
+
+        expect(storedJob.data.foo).to.be.equal('bar');
+        expect(storedJob.opts).to.be.a(Object);
+        expect(storedJob.opts.testOpt).to.be('enabled');
+      });
+    });
+
+    it('saves the second job in redis', () => {
+      return Job.fromId(queue, jobs[1].id).then(storedJob => {
+        expect(storedJob).to.have.property('id');
+        expect(storedJob).to.have.property('data');
+
+        expect(storedJob.data.foo).to.be.equal('baz');
+        expect(storedJob.opts).to.be.a(Object);
+        expect(storedJob.opts.testOpt).to.be('disabled');
+      });
+    });
+  });
+
   describe('.add jobs on priority queues', () => {
     it('add 4 jobs with different priorities', () => {
       return queue
