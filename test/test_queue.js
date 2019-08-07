@@ -347,6 +347,31 @@ describe('Queue', () => {
 
       queue.close().then(done, done);
     });
+
+    describe('bulk jobs', () => {
+      it('should default name of job', () => {
+        const queue = new Queue('custom');
+
+        return queue.addBulk([{ name: 'specified' }, {}]).then(jobs => {
+          expect(jobs).to.have.length(2);
+
+          expect(jobs[0].name).to.equal('specified');
+          expect(jobs[1].name).to.equal('__default__');
+        });
+      });
+
+      it('should default options from queue', () => {
+        const queue = new Queue('custom', {
+          defaultJobOptions: {
+            removeOnComplete: true
+          }
+        });
+
+        return queue.addBulk([{}]).then(jobs => {
+          expect(jobs[0].opts.removeOnComplete).to.equal(true);
+        });
+      });
+    });
   });
 
   describe(' a worker', () => {
@@ -384,6 +409,38 @@ describe('Queue', () => {
         expect(job.id).to.be.ok;
         expect(job.data.foo).to.be.eql('bar');
       }, done);
+    });
+
+    describe('bulk jobs', () => {
+      it('should process jobs', done => {
+        queue
+          .process((job, jobDone) => {
+            if (job.data.idx === 0) {
+              expect(job.data.foo).to.be.equal('bar');
+              jobDone();
+            } else {
+              expect(job.data.idx).to.be.equal(1);
+              expect(job.data.foo).to.be.equal('baz');
+              jobDone();
+              done();
+            }
+          })
+          .catch(done);
+
+        queue
+          .addBulk([
+            { data: { idx: 0, foo: 'bar' } },
+            { data: { idx: 1, foo: 'baz' } }
+          ])
+          .then(jobs => {
+            expect(jobs).to.have.length(2);
+
+            expect(jobs[0].id).to.be.ok;
+            expect(jobs[0].data.foo).to.be.eql('bar');
+            expect(jobs[1].id).to.be.ok;
+            expect(jobs[1].data.foo).to.be.eql('baz');
+          }, done);
+      });
     });
 
     describe('auto job removal', () => {
