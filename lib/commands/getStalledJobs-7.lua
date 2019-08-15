@@ -1,5 +1,5 @@
 --[[
-  Move stalled jobs to wait.
+  get stalled jobs.
 
     Input:
       KEYS[1] 'stalled' (SET)
@@ -21,13 +21,6 @@
 ]]
 
 local rcall = redis.call
-
--- Check if we need to check for stalled jobs now.
--- if rcall("EXISTS", KEYS[5]) == 1 then
---   return {{}, {}}
--- end
-
--- rcall("SET", KEYS[5], ARGV[3], "PX", ARGV[4])
 
 -- Move all stalled jobs to wait
 local stalling = rcall('SMEMBERS', KEYS[1])
@@ -65,9 +58,7 @@ if(#stalling > 0) then
           rcall("HSET", jobKey, "failedReason", "job stalled more than allowable limit")
           table.insert(failed, jobId)
         else
-          -- Move the job back to the wait queue, to immediately be picked up by a waiting worker.
-          -- rcall("RPUSH", dst, jobId)
-          -- rcall('PUBLISH', KEYS[1] .. '@', jobId)
+          -- Do not Move the job back to the wait queue, so it wouldn't be picked up by a waiting worker.
           table.insert(stalled, jobId)
         end
       end

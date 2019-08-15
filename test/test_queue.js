@@ -1413,33 +1413,35 @@ describe('Queue', () => {
     });
 
     it('should get empty stalled jobs', function(done) {
-      var type = 'empty-stalled-queue-job';
-      var producer = new Queue(type);
+      this.timeout(3000);
+      const type = 'empty-stalled-queue-job';
+      const producer = new Queue(type);
 
       producer.close();
-      producer.getStalledJobs().then(function(jobs) {
+      producer.getStalledJobs().then(jobs => {
         expect(jobs).to.eql([]);
         done();
       });
     });
 
     it('should failed to get stalled jobs', function(done) {
-      var type = 'failed-stalled-queue-job';
-      var data = { foo: 'bar', stalled: 'ok' };
-      var jobError = new Error(
+      this.timeout(3000);
+      const type = 'failed-stalled-queue-job';
+      const data = { foo: 'bar', stalled: 'ok' };
+      const jobError = new Error(
         'Failed to get stalled jobs, Connection is closed.'
       );
-      var producer = new Queue(type);
+      const producer = new Queue(type);
 
-      var stalledJobs = function() {
+      const stalledJobs = function() {
         producer.disconnect();
-        producer.getStalledJobs().catch(function(error) {
+        producer.getStalledJobs().catch(error => {
           expect(error.message).to.be.eql(jobError.message);
           done();
         });
       };
 
-      producer.add(type, data).then(function() {
+      producer.add(type, data).then(() => {
         stalledJobs();
       });
     });
@@ -1447,22 +1449,22 @@ describe('Queue', () => {
     it('should get stalled jobs', function(done) {
       this.timeout(5000);
 
-      var type = 'stalled-queue-job';
-      var data = { foo: 'bar', stalled: 'ok' };
-      var setting = {
+      const type = 'stalled-queue-job';
+      const data = { foo: 'bar', stalled: 'ok' };
+      const setting = {
         settings: {
           lockRenewTime: 5000,
           lockDuration: 500,
           stalledInterval: 100000
         }
       };
-      var producer = new Queue(type);
-      var consumer = new Queue(type, setting);
+      const producer = new Queue(type);
+      const consumer = new Queue(type, setting);
 
-      var stalledJobs = function() {
-        producer.getStalledJobs().then(function() {
-          producer.getStalledJobs().then(function(jobs) {
-            var job = jobs[0];
+      const stalledJobs = function() {
+        producer.getStalledJobs().then(() => {
+          producer.getStalledJobs().then(jobs => {
+            const job = jobs[0];
             expect(job.id).to.eql('1');
             expect(job.data).to.eql(data);
             done();
@@ -1470,16 +1472,16 @@ describe('Queue', () => {
         });
       };
 
-      consumer.process(type, function() {
+      consumer.process(type, () => {
         consumer.close();
         consumer.disconnect();
 
-        setTimeout(function() {
+        setTimeout(() => {
           stalledJobs();
         }, 2000);
       });
 
-      producer.add(type, data).then(function(job) {
+      producer.add(type, data).then(job => {
         expect(job.id).to.be.ok;
         expect(job.data.foo).to.be.eql('bar');
       });
