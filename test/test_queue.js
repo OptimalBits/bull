@@ -1412,6 +1412,79 @@ describe('Queue', () => {
         .catch(done);
     });
 
+    it('should get empty stalled jobs', function(done) {
+      var type = 'empty-stalled-queue-job';
+      var producer = new Queue(type);
+
+      producer.close();
+      producer.getStalledJobs().then(function(jobs) {
+        expect(jobs).to.eql([]);
+        done();
+      });
+    });
+
+    it('should failed to get stalled jobs', function(done) {
+      var type = 'failed-stalled-queue-job';
+      var data = { foo: 'bar', stalled: 'ok' };
+      var jobError = new Error(
+        'Failed to get stalled jobs, Connection is closed.'
+      );
+      var producer = new Queue(type);
+
+      var stalledJobs = function() {
+        producer.disconnect();
+        producer.getStalledJobs().catch(function(error) {
+          expect(error.message).to.be.eql(jobError.message);
+          done();
+        });
+      };
+
+      producer.add(type, data).then(function() {
+        stalledJobs();
+      });
+    });
+
+    it('should get stalled jobs', function(done) {
+      this.timeout(5000);
+
+      var type = 'stalled-queue-job';
+      var data = { foo: 'bar', stalled: 'ok' };
+      var setting = {
+        settings: {
+          lockRenewTime: 5000,
+          lockDuration: 500,
+          stalledInterval: 100000
+        }
+      };
+      var producer = new Queue(type);
+      var consumer = new Queue(type, setting);
+
+      var stalledJobs = function() {
+        producer.getStalledJobs().then(function() {
+          producer.getStalledJobs().then(function(jobs) {
+            var job = jobs[0];
+            expect(job.id).to.eql('1');
+            expect(job.data).to.eql(data);
+            done();
+          });
+        });
+      };
+
+      consumer.process(type, function() {
+        consumer.close();
+        consumer.disconnect();
+
+        setTimeout(function() {
+          stalledJobs();
+        }, 2000);
+      });
+
+      producer.add(type, data).then(function(job) {
+        expect(job.id).to.be.ok;
+        expect(job.data.foo).to.be.eql('bar');
+      });
+    });
+
     it('process a job that fails', done => {
       const jobError = new Error('Job Failed');
 

@@ -28,6 +28,7 @@
   - [Queue#getDelayed](#queuegetdelayed)
   - [Queue#getCompleted](#queuegetcompleted)
   - [Queue#getFailed](#queuegetfailed)
+  - [Queue#getStalled](#queuegetstalled)
 
 - [Job](#job)
 
@@ -591,6 +592,18 @@ getFailed(start?: number, end?: number) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the failed jobs between start and end.
+
+---
+
+### Queue#getStalled
+
+```ts
+getStalled() : Promise<Array<Job>>
+```
+
+Returns a promise that will return an array of stalled jobs.
+
+> This will work only if you disable the consumer stalled check by setting the `stalledInterval` to zero.
 
 ---
 
