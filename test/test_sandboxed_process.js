@@ -294,7 +294,9 @@ describe('sandboxed process', () => {
       })
       .then(inspection => {
         expect(inspection.isRejected).to.be.eql(true);
-        expect(inspection.reason.message).to.be.eql('Unexpected exit code: 0');
+        expect(inspection.reason.message).to.be.eql(
+          'Unexpected exit code: 0 signal: null'
+        );
       });
   });
 
@@ -308,7 +310,9 @@ describe('sandboxed process', () => {
       })
       .then(inspection => {
         expect(inspection.isRejected).to.be.eql(true);
-        expect(inspection.reason.message).to.be.eql('Unexpected exit code: 1');
+        expect(inspection.reason.message).to.be.eql(
+          'Unexpected exit code: 1 signal: null'
+        );
       });
   });
 

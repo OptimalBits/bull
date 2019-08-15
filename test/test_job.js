@@ -90,6 +90,71 @@ describe('Job', () => {
     });
   });
 
+  describe('.createBulk', () => {
+    let jobs;
+    let inputJobs;
+
+    beforeEach(() => {
+      inputJobs = [
+        {
+          name: 'jobA',
+          data: {
+            foo: 'bar'
+          },
+          opts: {
+            testOpt: 'enabled'
+          }
+        },
+        {
+          name: 'jobB',
+          data: {
+            foo: 'baz'
+          },
+          opts: {
+            testOpt: 'disabled'
+          }
+        }
+      ];
+
+      return Job.createBulk(queue, inputJobs).then(createdJobs => {
+        jobs = createdJobs;
+      });
+    });
+
+    it('returns a promise for the jobs', () => {
+      expect(jobs).to.have.length(2);
+
+      expect(jobs[0]).to.have.property('id');
+      expect(jobs[0]).to.have.property('data');
+    });
+
+    it('should not modify input options', () => {
+      expect(inputJobs[0].opts).not.to.have.property('jobId');
+    });
+
+    it('saves the first job in redis', () => {
+      return Job.fromId(queue, jobs[0].id).then(storedJob => {
+        expect(storedJob).to.have.property('id');
+        expect(storedJob).to.have.property('data');
+
+        expect(storedJob.data.foo).to.be.equal('bar');
+        expect(storedJob.opts).to.be.a(Object);
+        expect(storedJob.opts.testOpt).to.be('enabled');
+      });
+    });
+
+    it('saves the second job in redis', () => {
+      return Job.fromId(queue, jobs[1].id).then(storedJob => {
+        expect(storedJob).to.have.property('id');
+        expect(storedJob).to.have.property('data');
+
+        expect(storedJob.data.foo).to.be.equal('baz');
+        expect(storedJob.opts).to.be.a(Object);
+        expect(storedJob.opts.testOpt).to.be('disabled');
+      });
+    });
+  });
+
   describe('.add jobs on priority queues', () => {
     it('add 4 jobs with different priorities', () => {
       return queue
@@ -425,6 +490,25 @@ describe('Job', () => {
     });
   });
 
+  describe('.log', () => {
+    it('can log two rows with text', () => {
+      const firstLog = 'some log text 1';
+      const secondLog = 'some log text 2';
+      return Job.create(queue, { foo: 'bar' }).then(job =>
+        job
+          .log(firstLog)
+          .then(() => job.log(secondLog))
+          .then(() => queue.getJobLogs(job.id))
+          .then(logs =>
+            expect(logs).to.be.eql({ logs: [firstLog, secondLog], count: 2 })
+          )
+          .then(() => job.remove())
+          .then(() => queue.getJobLogs(job.id))
+          .then(logs => expect(logs).to.be.eql({ logs: [], count: 0 }))
+      );
+    });
+  });
+
   describe('.moveToCompleted', () => {
     it('marks the job as completed and returns new job', () => {
       return Job.create(queue, { foo: 'bar' }).then(job1 => {
@@ -589,6 +673,37 @@ describe('Job', () => {
             });
           });
       });
+    });
+
+    it('should process a promoted job according to its priority', done => {
+      queue.process(() => {
+        return delay(100);
+      });
+
+      const completed = [];
+
+      queue.on('completed', job => {
+        completed.push(job.id);
+        if (completed.length > 3) {
+          expect(completed).to.be.eql(['1', '2', '3', '4']);
+          done();
+        }
+      });
+      const processStarted = new Promise(resolve =>
+        queue.once('active', resolve)
+      );
+
+      const add = (id, ms) =>
+        queue.add({}, { jobId: id, delay: ms, priority: 1 });
+
+      add('1')
+        .then(() => add('2', 1))
+        .then(() => processStarted)
+        .then(() => add('3', 5000))
+        .then(job => {
+          job.promote();
+        })
+        .then(() => add('4', 1));
     });
 
     it('should not promote a job that is not delayed', () => {

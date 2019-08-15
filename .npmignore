@@ -1,3 +1,15 @@
 node_modules
 tmp
 test
+bugs
+docs
+examples
+support
+typings
+.github
+.editorconfig
+.eslintrc.yml
+.travis.yml
+.gitignore
+*.md
+commitlint.config.js

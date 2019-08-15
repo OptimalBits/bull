@@ -347,6 +347,31 @@ describe('Queue', () => {
 
       queue.close().then(done, done);
     });
+
+    describe('bulk jobs', () => {
+      it('should default name of job', () => {
+        const queue = new Queue('custom');
+
+        return queue.addBulk([{ name: 'specified' }, {}]).then(jobs => {
+          expect(jobs).to.have.length(2);
+
+          expect(jobs[0].name).to.equal('specified');
+          expect(jobs[1].name).to.equal('__default__');
+        });
+      });
+
+      it('should default options from queue', () => {
+        const queue = new Queue('custom', {
+          defaultJobOptions: {
+            removeOnComplete: true
+          }
+        });
+
+        return queue.addBulk([{}]).then(jobs => {
+          expect(jobs[0].opts.removeOnComplete).to.equal(true);
+        });
+      });
+    });
   });
 
   describe(' a worker', () => {
@@ -386,144 +411,343 @@ describe('Queue', () => {
       }, done);
     });
 
-    it('should remove job after completed if removeOnComplete', done => {
-      queue
-        .process((job, jobDone) => {
-          expect(job.data.foo).to.be.equal('bar');
-          jobDone();
-        })
-        .catch(done);
-
-      queue.add({ foo: 'bar' }, { removeOnComplete: true }).then(job => {
-        expect(job.id).to.be.ok;
-        expect(job.data.foo).to.be.eql('bar');
-      }, done);
-
-      queue.on('completed', job => {
+    describe('bulk jobs', () => {
+      it('should process jobs', done => {
         queue
-          .getJob(job.id)
-          .then(job => {
-            expect(job).to.be.equal(null);
-          })
-          .then(() => {
-            queue.getJobCounts().then(counts => {
-              expect(counts.completed).to.be.equal(0);
+          .process((job, jobDone) => {
+            if (job.data.idx === 0) {
+              expect(job.data.foo).to.be.equal('bar');
+              jobDone();
+            } else {
+              expect(job.data.idx).to.be.equal(1);
+              expect(job.data.foo).to.be.equal('baz');
+              jobDone();
               done();
-            });
-          });
-      });
-    });
+            }
+          })
+          .catch(done);
 
-    it('should remove a job after completed if the default job options specify removeOnComplete', done => {
-      utils
-        .newQueue('test-' + uuid(), {
-          defaultJobOptions: {
-            removeOnComplete: true
-          }
-        })
-        .then(myQueue => {
-          myQueue.process(job => {
-            expect(job.data.foo).to.be.equal('bar');
-          });
-
-          myQueue
-            .add({ foo: 'bar' })
-            .then(job => {
-              expect(job.id).to.be.ok;
-              expect(job.data.foo).to.be.eql('bar');
-            }, done)
-            .catch(done);
-
-          myQueue.on('completed', job => {
-            myQueue
-              .getJob(job.id)
-              .then(job => {
-                expect(job).to.be.equal(null);
-              })
-              .then(() => {
-                return myQueue.getJobCounts();
-              })
-              .then(counts => {
-                expect(counts.completed).to.be.equal(0);
-
-                return utils.cleanupQueues();
-              })
-              .then(done)
-              .catch(done);
-          });
-          return null;
-        })
-        .catch(done);
-    });
-
-    it('should remove job after failed if removeOnFail', done => {
-      queue.process(job => {
-        expect(job.data.foo).to.be.equal('bar');
-        throw Error('error');
-      });
-
-      queue.add({ foo: 'bar' }, { removeOnFail: true }).then(job => {
-        expect(job.id).to.be.ok;
-        expect(job.data.foo).to.be.eql('bar');
-      }, done);
-
-      queue.on('failed', jobId => {
         queue
-          .getJob(jobId)
-          .then(job => {
-            expect(job).to.be.equal(null);
+          .addBulk([
+            { data: { idx: 0, foo: 'bar' } },
+            { data: { idx: 1, foo: 'baz' } }
+          ])
+          .then(jobs => {
+            expect(jobs).to.have.length(2);
+
+            expect(jobs[0].id).to.be.ok;
+            expect(jobs[0].data.foo).to.be.eql('bar');
+            expect(jobs[1].id).to.be.ok;
+            expect(jobs[1].data.foo).to.be.eql('baz');
+          }, done);
+      });
+    });
+
+    describe('auto job removal', () => {
+      it('should remove job after completed if removeOnComplete', done => {
+        queue
+          .process((job, jobDone) => {
+            expect(job.data.foo).to.be.equal('bar');
+            jobDone();
+          })
+          .catch(done);
+
+        queue.add({ foo: 'bar' }, { removeOnComplete: true }).then(job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        }, done);
+
+        queue.on('completed', job => {
+          queue
+            .getJob(job.id)
+            .then(job => {
+              expect(job).to.be.equal(null);
+            })
+            .then(() => {
+              queue.getJobCounts().then(counts => {
+                expect(counts.completed).to.be.equal(0);
+                done();
+              });
+            });
+        });
+      });
+
+      it('should remove a job after completed if the default job options specify removeOnComplete', done => {
+        utils
+          .newQueue('test-' + uuid(), {
+            defaultJobOptions: {
+              removeOnComplete: true
+            }
+          })
+          .then(myQueue => {
+            myQueue.process(job => {
+              expect(job.data.foo).to.be.equal('bar');
+            });
+
+            myQueue
+              .add({ foo: 'bar' })
+              .then(job => {
+                expect(job.id).to.be.ok;
+                expect(job.data.foo).to.be.eql('bar');
+              }, done)
+              .catch(done);
+
+            myQueue.on('completed', job => {
+              myQueue
+                .getJob(job.id)
+                .then(job => {
+                  expect(job).to.be.equal(null);
+                })
+                .then(() => {
+                  return myQueue.getJobCounts();
+                })
+                .then(counts => {
+                  expect(counts.completed).to.be.equal(0);
+
+                  return utils.cleanupQueues();
+                })
+                .then(done)
+                .catch(done);
+            });
             return null;
           })
-          .then(() => {
-            return queue.getJobCounts().then(counts => {
-              expect(counts.failed).to.be.equal(0);
-              done();
-            });
-          });
+          .catch(done);
       });
-    });
 
-    it('should remove a job after fail if the default job options specify removeOnFail', done => {
-      utils
-        .newQueue('test-' + uuid(), {
+      it('should keep specified number of jobs after completed with removeOnComplete', async () => {
+        const keepJobs = 3;
+        queue.process(async job => {
+          await job.log('test log');
+        });
+
+        const datas = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+        const jobIds = await Promise.all(
+          datas.map(
+            async data =>
+              (await queue.add(data, { removeOnComplete: keepJobs })).id
+          )
+        );
+
+        return new Promise(resolve => {
+          queue.on('completed', async job => {
+            if (job.data == 8) {
+              const counts = await queue.getJobCounts();
+              expect(counts.completed).to.be.equal(keepJobs);
+
+              await Promise.all(
+                jobIds.map(async (jobId, index) => {
+                  const job = await queue.getJob(jobId);
+                  const logs = await queue.getJobLogs(jobId);
+                  if (index >= datas.length - keepJobs) {
+                    expect(job).to.not.be.equal(null);
+                    expect(logs.logs).to.not.be.empty;
+                  } else {
+                    expect(job).to.be.equal(null);
+                    expect(logs.logs).to.be.empty;
+                  }
+                })
+              );
+              resolve();
+            }
+          });
+        });
+      });
+
+      it('should keep specified number of jobs after completed with global removeOnComplete', async () => {
+        const keepJobs = 3;
+
+        const localQueue = await utils.newQueue('test-' + uuid(), {
           defaultJobOptions: {
-            removeOnFail: true
+            removeOnComplete: keepJobs
           }
-        })
-        .then(myQueue => {
-          myQueue.process(job => {
-            expect(job.data.foo).to.be.equal('bar');
-            throw Error('error');
-          });
+        });
+        localQueue.process(() => {});
 
-          myQueue
-            .add({ foo: 'bar' })
+        const datas = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+        const jobIds = await Promise.all(
+          datas.map(async data => (await localQueue.add(data)).id)
+        );
+
+        return new Promise((resolve, reject) => {
+          localQueue.on('completed', async job => {
+            if (job.data == 8) {
+              try {
+                const counts = await localQueue.getJobCounts();
+                expect(counts.completed).to.be.equal(keepJobs);
+
+                await Promise.all(
+                  jobIds.map(async (jobId, index) => {
+                    const job = await localQueue.getJob(jobId);
+                    if (index >= datas.length - keepJobs) {
+                      expect(job).to.not.be.equal(null);
+                    } else {
+                      expect(job).to.be.equal(null);
+                    }
+                  })
+                );
+              } catch (err) {
+                reject(err);
+              }
+
+              resolve();
+            }
+          });
+        });
+      });
+
+      it('should remove job after failed if removeOnFail', done => {
+        queue.process(job => {
+          expect(job.data.foo).to.be.equal('bar');
+          throw Error('error');
+        });
+
+        queue.add({ foo: 'bar' }, { removeOnFail: true }).then(job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        }, done);
+
+        queue.on('failed', jobId => {
+          queue
+            .getJob(jobId)
             .then(job => {
-              expect(job.id).to.be.ok;
-              expect(job.data.foo).to.be.eql('bar');
-            }, done)
-            .catch(done);
+              expect(job).to.be.equal(null);
+              return null;
+            })
+            .then(() => {
+              return queue.getJobCounts().then(counts => {
+                expect(counts.failed).to.be.equal(0);
+                done();
+              });
+            });
+        });
+      });
 
-          myQueue.on('failed', jobId => {
+      it('should remove a job after fail if the default job options specify removeOnFail', done => {
+        utils
+          .newQueue('test-' + uuid(), {
+            defaultJobOptions: {
+              removeOnFail: true
+            }
+          })
+          .then(myQueue => {
+            myQueue.process(job => {
+              expect(job.data.foo).to.be.equal('bar');
+              throw Error('error');
+            });
+
             myQueue
-              .getJob(jobId)
+              .add({ foo: 'bar' })
               .then(job => {
-                expect(job).to.be.equal(null);
-              })
-              .then(() => {
-                return myQueue.getJobCounts();
-              })
-              .then(counts => {
-                expect(counts.completed).to.be.equal(0);
-
-                return utils.cleanupQueues();
-              })
-              .then(done)
+                expect(job.id).to.be.ok;
+                expect(job.data.foo).to.be.eql('bar');
+              }, done)
               .catch(done);
+
+            myQueue.on('failed', jobId => {
+              myQueue
+                .getJob(jobId)
+                .then(job => {
+                  expect(job).to.be.equal(null);
+                })
+                .then(() => {
+                  return myQueue.getJobCounts();
+                })
+                .then(counts => {
+                  expect(counts.completed).to.be.equal(0);
+
+                  return utils.cleanupQueues();
+                })
+                .then(done)
+                .catch(done);
+            });
+            return null;
+          })
+          .catch(done);
+      });
+
+      it('should keep specified number of jobs after completed with removeOnFail', async () => {
+        const keepJobs = 3;
+        queue.process(() => {
+          throw Error('error');
+        });
+
+        const datas = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+        const jobIds = await Promise.all(
+          datas.map(
+            async data => (await queue.add(data, { removeOnFail: keepJobs })).id
+          )
+        );
+
+        return new Promise(resolve => {
+          queue.on('failed', async job => {
+            if (job.data == 8) {
+              const counts = await queue.getJobCounts();
+              expect(counts.failed).to.be.equal(keepJobs);
+
+              await Promise.all(
+                jobIds.map(async (jobId, index) => {
+                  const job = await queue.getJob(jobId);
+                  if (index >= datas.length - keepJobs) {
+                    expect(job).to.not.be.equal(null);
+                  } else {
+                    expect(job).to.be.equal(null);
+                  }
+                })
+              );
+
+              resolve();
+            }
           });
-          return null;
-        })
-        .catch(done);
+        });
+      });
+
+      it('should keep specified number of jobs after completed with global removeOnFail', async () => {
+        const keepJobs = 3;
+
+        const localQueue = await utils.newQueue('test-' + uuid(), {
+          defaultJobOptions: {
+            removeOnFail: keepJobs
+          }
+        });
+        localQueue.process(() => {
+          throw Error('error');
+        });
+
+        const datas = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+        const jobIds = await Promise.all(
+          datas.map(async data => (await localQueue.add(data)).id)
+        );
+
+        return new Promise((resolve, reject) => {
+          localQueue.on('failed', async job => {
+            if (job.data == 8) {
+              try {
+                const counts = await localQueue.getJobCounts();
+                expect(counts.failed).to.be.equal(keepJobs);
+
+                await Promise.all(
+                  jobIds.map(async (jobId, index) => {
+                    const job = await localQueue.getJob(jobId);
+                    if (index >= datas.length - keepJobs) {
+                      expect(job).to.not.be.equal(null);
+                    } else {
+                      expect(job).to.be.equal(null);
+                    }
+                  })
+                );
+              } catch (err) {
+                reject(err);
+              }
+
+              resolve();
+            }
+          });
+        });
+      });
     });
 
     it('process a lifo queue', function(done) {
@@ -2325,13 +2549,18 @@ describe('Queue', () => {
     });
 
     it('should clean an empty queue', done => {
-      queue.clean(0);
-      queue.on('error', err => {
+      const testQueue = utils.buildQueue('cleaner' + uuid());
+      testQueue.isReady().then(() => {
+        return testQueue.clean(0);
+      });
+      testQueue.on('error', err => {
+        utils.cleanupQueue(testQueue);
         done(err);
       });
-      queue.on('cleaned', (jobs, type) => {
+      testQueue.on('cleaned', (jobs, type) => {
         expect(type).to.be.eql('completed');
         expect(jobs.length).to.be.eql(0);
+        utils.cleanupQueue(testQueue);
         done();
       });
     });

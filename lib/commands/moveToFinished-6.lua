@@ -20,6 +20,8 @@
       ARGV[5]  token
       ARGV[6]  shouldRemove
       ARGV[7]  event data (? maybe just send jobid).
+      ARGV[8]  should fetch next job
+      ARGV[9]  base key
 
      Output:
       0 OK
@@ -45,12 +47,26 @@ if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
   rcall("LREM", KEYS[1], -1, ARGV[1])
 
   -- Remove job?
-  if ARGV[6] == "1" then
-    rcall("DEL", KEYS[3])
-  else
+  local removeJobs = tonumber(ARGV[6])
+  if removeJobs ~= 1 then
     -- Add to complete/failed set
     rcall("ZADD", KEYS[2], ARGV[2], ARGV[1])
     rcall("HMSET", KEYS[3], ARGV[3], ARGV[4], "finishedOn", ARGV[2]) -- "returnvalue" / "failedReason" and "finishedOn"
+
+    -- Remove old jobs?
+    if removeJobs and removeJobs > 1 then
+      local start = removeJobs - 1
+      local jobIds = rcall("ZREVRANGE", KEYS[2], start, -1)
+      for i, jobId in ipairs(jobIds) do
+        local jobKey = ARGV[9] .. jobId
+        local jobLogKey = jobKey .. ':logs'
+        rcall("DEL", jobKey, jobLogKey)
+      end
+      rcall("ZREMRANGEBYRANK", KEYS[2], 0, -removeJobs);
+    end
+  else
+    local jobLogKey = KEYS[3] .. ':logs'
+    rcall("DEL", KEYS[3], jobLogKey)
   end
 
   rcall("PUBLISH", KEYS[2], ARGV[7])

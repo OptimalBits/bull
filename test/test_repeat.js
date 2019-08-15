@@ -77,13 +77,14 @@ describe('repeat', () => {
         'fourth',
         {},
         { repeat: { cron: crons[3], tz: 'Africa/Accra' } }
-      )
+      ),
+      queue.add('fifth', {}, { repeat: { every: 7563 } })
     ])
       .then(() => {
         return queue.getRepeatableCount();
       })
       .then(count => {
-        expect(count).to.be.eql(4);
+        expect(count).to.be.eql(5);
         return queue.getRepeatableJobs(0, -1, true);
       })
       .then(jobs => {
@@ -94,7 +95,7 @@ describe('repeat', () => {
       .then(jobs => {
         expect(jobs)
           .to.be.and.an('array')
-          .and.have.length(4)
+          .and.have.length(5)
           .and.to.deep.include({
             key: 'first::12345::10 * * * * *',
             name: 'first',
@@ -102,6 +103,7 @@ describe('repeat', () => {
             endDate: 12345,
             tz: null,
             cron: '10 * * * * *',
+            every: null,
             next: 10000
           })
           .and.to.deep.include({
@@ -111,6 +113,7 @@ describe('repeat', () => {
             endDate: 610000,
             tz: null,
             cron: '2 10 * * * *',
+            every: null,
             next: 602000
           })
           .and.to.deep.include({
@@ -120,6 +123,7 @@ describe('repeat', () => {
             endDate: null,
             tz: 'Africa/Accra',
             cron: '2 * * 4 * *',
+            every: null,
             next: 259202000
           })
           .and.to.deep.include({
@@ -129,7 +133,18 @@ describe('repeat', () => {
             endDate: null,
             tz: 'Africa/Abidjan',
             cron: '1 * * 5 * *',
+            every: null,
             next: 345601000
+          })
+          .and.to.deep.include({
+            key: 'fifth:::7563',
+            name: 'fifth',
+            id: null,
+            tz: null,
+            endDate: null,
+            cron: null,
+            every: 7563,
+            next: 7563
           });
         done();
       })
@@ -137,6 +152,7 @@ describe('repeat', () => {
   });
 
   it('should repeat every 2 seconds', function(done) {
+    this.timeout(20000);
     const _this = this;
     const date = new Date('2017-02-07 9:24:00');
     this.clock.tick(date.getTime());
@@ -363,7 +379,7 @@ describe('repeat', () => {
     const date = new Date('2017-02-07 9:24:00');
     this.clock.tick(date.getTime());
 
-    const nextTick = 2 * ONE_SECOND;
+    const nextTick = 2 * ONE_SECOND + 250;
     const repeat = { cron: '*/2 * * * * *' };
 
     queue.add('remove', { foo: 'bar' }, { repeat }).then(() => {
@@ -422,7 +438,7 @@ describe('repeat', () => {
     const date = new Date('2017-02-07 9:24:00');
     this.clock.tick(date.getTime());
 
-    const nextTick = 2 * ONE_SECOND;
+    const nextTick = 2 * ONE_SECOND + 250;
     const repeat = { cron: '*/2 * * * * *' };
 
     queue.add({ foo: 'bar' }, { repeat: repeat, jobId: 'xxxx' }).then(() => {
@@ -462,7 +478,7 @@ describe('repeat', () => {
   it('should not re-add a repeatable job after it has been removed', function() {
     const _this = this;
     const date = new Date('2017-02-07 9:24:00');
-    const nextTick = 2 * ONE_SECOND;
+    const nextTick = 2 * ONE_SECOND + 250;
     const repeat = { cron: '*/2 * * * * *' };
     const nextRepeatableJob = queue.nextRepeatableJob;
     this.clock.tick(date.getTime());
@@ -596,13 +612,16 @@ describe('repeat', () => {
     let currentPriority = 1;
     const nextTick = 1000;
 
-    jobAdds.push(queue.add({ p: 1 }, { priority: 1, delay: nextTick * 3 }));
-    jobAdds.push(queue.add({ p: 2 }, { priority: 2, delay: nextTick * 2 }));
-    jobAdds.push(queue.add({ p: 3 }, { priority: 3, delay: nextTick }));
+    const date = new Date('2017-02-07 9:24:00');
+    this.clock.tick(date.getTime());
 
-    _this.clock.tick(nextTick * 3);
+    jobAdds.push(queue.add({ p: 1 }, { priority: 1, delay: nextTick * 2 }));
+    jobAdds.push(queue.add({ p: 3 }, { priority: 3, delay: nextTick * 2 }));
+    jobAdds.push(queue.add({ p: 2 }, { priority: 2, delay: nextTick * 2 }));
 
     Promise.all(jobAdds).then(() => {
+      _this.clock.tick(nextTick * 3);
+
       queue.process((job, jobDone) => {
         try {
           expect(job.id).to.be.ok;
@@ -620,7 +639,7 @@ describe('repeat', () => {
   });
 
   // Skip test that only fails on travis
-  it.skip('should use ".every" as a valid interval', function(done) {
+  it('should use ".every" as a valid interval', function(done) {
     const _this = this;
     const interval = ONE_SECOND * 2;
     const date = new Date('2017-02-07 9:24:00');
@@ -688,7 +707,7 @@ describe('repeat', () => {
   });
 
   // This tests works well locally but fails in travis for some unknown reason.
-  it.skip('should emit a waiting event when adding a repeatable job to the waiting list', function(done) {
+  it('should emit a waiting event when adding a repeatable job to the waiting list', function(done) {
     const _this = this;
     const date = new Date('2017-02-07 9:24:00');
     this.clock.tick(date.getTime());
@@ -715,7 +734,7 @@ describe('repeat', () => {
     const _this = this;
 
     queue.add({ foo: 'bar' }, { repeat: { every: 1000 } }).then(() => {
-      _this.clock.tick(ONE_SECOND);
+      _this.clock.tick(ONE_SECOND + 10);
     });
 
     queue.process(job => {
