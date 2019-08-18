@@ -1,5 +1,5 @@
 {
-  "name": "bull",
+  "name": "@hkube/bull",
   "version": "3.10.1",
   "description": "Job manager",
   "engines": {
