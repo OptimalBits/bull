@@ -1,6 +1,6 @@
 {
   "name": "@hkube/bull",
-  "version": "3.10.1",
+  "version": "3.10.2",
   "description": "Job manager",
   "engines": {
     "node": ">=8"
