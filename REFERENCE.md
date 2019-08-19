@@ -28,6 +28,7 @@
   - [Queue#getDelayed](#queuegetdelayed)
   - [Queue#getCompleted](#queuegetcompleted)
   - [Queue#getFailed](#queuegetfailed)
+  - [Queue#getStalled](#queuegetstalled)
 
 - [Job](#job)
 
@@ -93,6 +94,7 @@ interface AdvancedSettings {
   lockDuration: number = 30000; // Key expiration time for job locks.
   lockRenewTime: number = 15000; // Interval on which to acquire the job lock
   stalledInterval: number = 30000; // How often check for stalled jobs (use 0 for never checking).
+  stalledCheck: boolean = true, // enable or disable stalled check on consumer process function.
   maxStalledCount: number = 1; // Max amount of times a stalled job will be re-processed.
   guardInterval: number = 5000; // Poll interval for delayed jobs and added jobs.
   retryProcessDelay: number = 5000; // delay before processing next job in case of internal error.
@@ -593,6 +595,18 @@ getFailed(start?: number, end?: number) : Promise<Array<Job>>
 Returns a promise that will return an array with the failed jobs between start and end.
 
 ---
+
+### Queue#getStalled
+
+ ```ts
+getStalledJobs() : Promise<Array<Job>>
+```
+
+ Returns a promise that will return an array of stalled jobs.
+
+ > This will work only if you disable the consumer stalled check by setting the `stalledCheck` to `false`.
+ ---
+
 
 ### Queue#clean
 
