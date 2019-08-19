@@ -16,25 +16,15 @@
       ARGV[3]  timestamp
       ARGV[4]  max check time
 
-    Events:
-      'stalled' with stalled job id.
 ]]
 
 local rcall = redis.call
 
--- Move all stalled jobs to wait
+-- Find all stalled jobs
 local stalling = rcall('SMEMBERS', KEYS[1])
 local stalled = {}
 local failed = {}
 if(#stalling > 0) then
-
-  local dst
-  -- wait or paused destination
-  if rcall("EXISTS", KEYS[6]) ~= 1 then
-    dst = KEYS[2]
-  else
-    dst = KEYS[7]
-  end
 
   rcall('DEL', KEYS[1])
 
