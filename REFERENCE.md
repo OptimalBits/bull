@@ -35,6 +35,7 @@
   - [Job#log](#joblog)
   - [Job#getState](#jobgetstate)
   - [Job#update](#jobupdate)
+  - [Job#asyncData](#jobasyncdata)
   - [Job#remove](#jobremove)
   - [Job#retry](#jobretry)
   - [Job#discard](#jobdiscard)
