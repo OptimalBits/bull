@@ -202,6 +202,24 @@ describe('Job', () => {
     });
   });
 
+  describe('.syncData', () => {
+    it('should allow updating job data', () => {
+      return Job.create(queue, { foo: 'bar' })
+        .then(job => {
+          job.data.baz = 'qux';
+          return job.syncData().then(() => {
+            return job;
+          });
+        })
+        .then(job => {
+          expect(job.data).to.be.eql({ foo: 'bar', baz: 'qux' });
+          return Job.fromId(queue, job.id).then(job => {
+            expect(job.data).to.be.eql({ foo: 'bar', baz: 'qux' });
+          });
+        });
+    });
+  });
+
   describe('.remove', () => {
     it('removes the job from redis', () => {
       return Job.create(queue, { foo: 'bar' })
