@@ -110,9 +110,14 @@ describe('Rate limiter', () => {
         newQueue.getNextJob({}),
         newQueue.getNextJob({})
       ]).then(() => {
-        return queue.getDelayedCount().then(delayedCount => {
-          expect(delayedCount).to.eq(3);
-        });
+        return queue.getDelayedCount().then(
+          delayedCount => {
+            expect(delayedCount).to.eq(3);
+          },
+          () => {
+            /*ignore error*/
+          }
+        );
       });
     });
   });
