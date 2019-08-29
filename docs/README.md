@@ -148,8 +148,7 @@ Events can be local for a given queue instance (a worker), for example, if a job
 A local complete event:
 ```js
 queue.on('completed', job => {
-  console.log(`Job with id ${job.id} has been completed```);
-  )
+  console.log(`Job with id ${job.id} has been completed`);
 })
 ```
 
@@ -157,8 +156,7 @@ Whereas the global version of the event can be listen to with:
 
 ```js
 queue.on('global:completed', jobId => {
-  console.log(`Job with id ${jobId} has been completed```);
-  )
+  console.log(`Job with id ${jobId} has been completed`);
 })
 ```
 
