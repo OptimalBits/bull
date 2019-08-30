@@ -138,7 +138,7 @@ the worker is not able to tell the queue that it is still working on the job.
 
 When a job stalls, depending on the job settings the job can be retried by another idle worker or it can just move to the failed status.
 
-Stalled jobs can be avoided by either making sure that the process function does not keep Node event loop busy for too long (we are talking several seconds with Bull default options), or by using a separate [sandboxed processor](link).
+Stalled jobs can be avoided by either making sure that the process function does not keep Node event loop busy for too long (we are talking several seconds with Bull default options), or by using a separate [sandboxed processor](#sandboxed-processors).
 
 # Events
 
