@@ -412,7 +412,9 @@ parameter. If the specified job cannot be located, the promise will be resolved 
 getJobs(types: string[], start?: number, end?: number, asc?: boolean): Promise<Job[]>
 ```
 
-Returns a promise that will return an array of job instances of the given types. Optional parameters for range and ordering are provided.
+Returns a promise that will return an array of job instances of the given types. Optional parameters for range and ordering are provided. 
+
+Note: The `start` and `end` options are applied **per job type**. For example, if there are 10 jobs in state `completed` and 10 jobs in state `active`, `getJobs(['completed', 'active'], 0, 4)` will yield an array with 10 entries, representing the first 5 completed jobs (0 - 4) and the first 5 waiting jobs (0 - 4).
 
 ---
 
@@ -425,7 +427,7 @@ getJobLogs(jobId: string, start?: number, end?: number): Promise<{
 }>
 ```
 
-Returns a object with the logs according to the stard and end arguments. The returned count
+Returns a object with the logs according to the start and end arguments. The returned count
 value is the total amount of logs, useful for implementing pagination.
 
 ---
