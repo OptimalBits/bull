@@ -425,7 +425,7 @@ getJobLogs(jobId: string, start?: number, end?: number): Promise<{
 }>
 ```
 
-Returns a object with the logs according to the stard and end arguments. The returned count
+Returns a object with the logs according to the start and end arguments. The returned count
 value is the total amount of logs, useful for implementing pagination.
 
 ---
