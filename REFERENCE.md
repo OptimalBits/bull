@@ -753,7 +753,7 @@ Moves a job to the `completed` queue. Pulls a job from 'waiting' to 'active' and
 ### Job#moveToFailed
 
 ```ts
-moveToFailed(errorInfo, ignoreLock): Promise<string[Jobdata, JobId] | null>
+moveToFailed(errorInfo:{ message: string; }, ignoreLock?:boolean): Promise<string[Jobdata, JobId] | null>
 ```
 
 Moves a job to the `failed` queue. Pulls a job from 'waiting' to 'active' and returns a tuple containing the next jobs data and id. If no job is in the `waiting` queue, returns null.
