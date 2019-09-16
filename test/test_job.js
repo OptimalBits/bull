@@ -479,14 +479,12 @@ describe('Job', () => {
         });
       });
     });
-    it('can set and get progress as object', () => {
-      return Job.create(queue, { foo: 'bar' }).then(job => {
-        return job.progress({ total: 120, completed: 40 }).then(() => {
-          return Job.fromId(queue, job.id).then(storedJob => {
-            expect(storedJob.progress()).to.eql({ total: 120, completed: 40 });
-          });
-        });
-      });
+    it('can set and get progress as object', async () => {
+      const job = await Job.create(queue, { foo: 'bar' });
+      await job.progress({ total: 120, completed: 40 });
+      const storedJob = await Job.fromId(queue, job.id);
+      console.error(storedJob);
+      expect(storedJob.progress()).to.eql({ total: 120, completed: 40 });
     });
   });
 
