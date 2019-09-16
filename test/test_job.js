@@ -191,6 +191,7 @@ describe('Job', () => {
       return Job.create(queue, { foo: 'bar' })
         .then(job => {
           return job.update({ baz: 'qux' }).then(() => {
+            expect(job.data).to.be.eql({ baz: 'qux' });
             return job;
           });
         })

@@ -425,7 +425,7 @@ getJobLogs(jobId: string, start?: number, end?: number): Promise<{
 }>
 ```
 
-Returns a object with the logs according to the stard and end arguments. The returned count
+Returns a object with the logs according to the start and end arguments. The returned count
 value is the total amount of logs, useful for implementing pagination.
 
 ---
@@ -753,7 +753,7 @@ Moves a job to the `completed` queue. Pulls a job from 'waiting' to 'active' and
 ### Job#moveToFailed
 
 ```ts
-moveToFailed(errorInfo, ignoreLock): Promise<string[Jobdata, JobId] | null>
+moveToFailed(errorInfo:{ message: string; }, ignoreLock?:boolean): Promise<string[Jobdata, JobId] | null>
 ```
 
 Moves a job to the `failed` queue. Pulls a job from 'waiting' to 'active' and returns a tuple containing the next jobs data and id. If no job is in the `waiting` queue, returns null.
