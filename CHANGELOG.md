@@ -1,5 +1,16 @@
 # Changelog
 
+## v.3.11.0
+
+- feat(queue): basic support for bulk adding jobs.
+- feat(job): save data on job instance when updated.
+
+- fix(queue): whenCurrentJobsFinished shouldn't initialize bclient. Fixes #1346.
+- fix(queue): unhandled promise warning in updateDelayTimer.
+- fix(sandbox): if the child process is killed, remove it from the pool.
+
+ [Changes](https://github.com/OptimalBits/bull/compare/v3.10.0...v3.11.0)
+
 ## v.3.10.0
 
 - fix: remove logs automtically when using autoremove fixes #1330
