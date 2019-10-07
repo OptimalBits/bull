@@ -282,7 +282,8 @@ interface RepeatOpts {
   startDate?: Date | string | number; // Start date when the repeat job should start repeating (only with cron).
   endDate?: Date | string | number; // End date when the repeat job should stop repeating.
   limit?: number; // Number of times the job should repeat at max.
-  every?: number; // Repeat every millis (cron setting cannot be used together with this setting.)
+  every?: number; // Repeat every milliseconds within the nearest interval of length "every" (cron setting cannot be used together with this setting.)
+  exactRecurrence?: boolean; // repeat job every n milliseconds regardless the interval of every (only with every.)
   count?: number; // The start value for the repeat iteration count.
 }
 ```
