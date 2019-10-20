@@ -2,27 +2,28 @@
  * A processor file to be used in tests.
  *
  */
+'use strict';
 
-var Promise = require('bluebird');
+const delay = require('delay');
 
 module.exports = function(job) {
-  return Promise.delay(50)
-    .then(function() {
+  return delay(50)
+    .then(() => {
       job.progress(10);
-      return Promise.delay(100);
+      return delay(100);
     })
-    .then(function() {
+    .then(() => {
       job.progress(27);
-      return Promise.delay(150);
+      return delay(150);
     })
-    .then(function() {
+    .then(() => {
       job.progress(78);
-      return Promise.delay(100);
+      return delay(100);
     })
-    .then(function() {
+    .then(() => {
       return job.progress(100);
     })
-    .then(function() {
+    .then(() => {
       return 37;
     });
 };

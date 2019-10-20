@@ -1,63 +1,51 @@
-/*eslint-env node */
 'use strict';
 
-var Queue = require('../');
-var expect = require('chai').expect;
-var Bluebird = require('bluebird');
-var redis = require('ioredis');
-var sinon = require('sinon');
-var _ = require('lodash');
-var uuid = require('uuid');
-var utils = require('./utils');
+const Queue = require('../');
+const expect = require('chai').expect;
+const redis = require('ioredis');
+const sinon = require('sinon');
+const _ = require('lodash');
+const uuid = require('uuid');
+const utils = require('./utils');
+const delay = require('delay');
 
-Bluebird.config({ warnings: true });
+describe('Queue', () => {
+  const sandbox = sinon.createSandbox();
+  let client;
 
-Bluebird.config({
-  // Enable warnings.
-  // warnings: true,
-  // Enable long stack traces.
-  longStackTraces: process.env.NODE_ENV !== 'production',
-  // Enable cancellation.
-  cancellation: true
-});
-
-describe('Queue', function() {
-  var sandbox = sinon.createSandbox();
-  var client;
-
-  beforeEach(function() {
+  beforeEach(() => {
     client = new redis();
     return client.flushdb();
   });
 
-  afterEach(function() {
+  afterEach(() => {
     sandbox.restore();
     return client.quit();
   });
 
-  describe('.close', function() {
-    var testQueue;
-    beforeEach(function() {
-      return utils.newQueue('test').then(function(queue) {
+  describe('.close', () => {
+    let testQueue;
+    beforeEach(() => {
+      return utils.newQueue('test').then(queue => {
         testQueue = queue;
       });
     });
 
-    it('should call end on the client', function(done) {
-      testQueue.client.once('end', function() {
+    it('should call end on the client', done => {
+      testQueue.client.once('end', () => {
         done();
       });
       testQueue.close();
     });
 
-    it('should call end on the event subscriber client', function(done) {
-      testQueue.eclient.once('end', function() {
+    it('should call end on the event subscriber client', done => {
+      testQueue.eclient.once('end', () => {
         done();
       });
       testQueue.close();
     });
 
-    it('should resolve the promise when each client has disconnected', function() {
+    it('should resolve the promise when each client has disconnected', () => {
       function checkStatus(status) {
         return (
           status === 'ready' || status === 'connecting' || status === 'connect'
@@ -66,14 +54,14 @@ describe('Queue', function() {
       expect(testQueue.client.status).to.satisfy(checkStatus);
       expect(testQueue.eclient.status).to.satisfy(checkStatus);
 
-      return testQueue.close().then(function() {
+      return testQueue.close().then(() => {
         expect(testQueue.client.status).to.be.eql('end');
         expect(testQueue.eclient.status).to.be.eql('end');
       });
     });
 
-    it('should return a promise', function() {
-      var closePromise = testQueue.close().then(function() {
+    it('should return a promise', () => {
+      const closePromise = testQueue.close().then(() => {
         expect(closePromise.then).to.be.a('function');
       });
       return closePromise;
@@ -87,43 +75,43 @@ describe('Queue', function() {
         }
       });
 
-      testQueue.process(function() {
-        return Bluebird.delay(100);
+      testQueue.process(() => {
+        return delay(100);
       });
 
-      testQueue.on('completed', function() {
+      testQueue.on('completed', () => {
         testQueue.close().then(done);
       });
       testQueue.add({ foo: 'bar' });
     });
 
-    describe('should be callable from within', function() {
+    describe('should be callable from within', () => {
       it('a job handler that takes a callback', function(done) {
         this.timeout(12000); // Close can be a slow operation
 
-        testQueue.process(function(job, jobDone) {
+        testQueue.process((job, jobDone) => {
           expect(job.data.foo).to.be.eql('bar');
           jobDone();
           testQueue.close().then(done);
         });
 
-        testQueue.add({ foo: 'bar' }).then(function(job) {
+        testQueue.add({ foo: 'bar' }).then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         });
       });
 
-      it('a job handler that returns a promise', function(done) {
-        testQueue.process(function(job) {
+      it('a job handler that returns a promise', done => {
+        testQueue.process(job => {
           expect(job.data.foo).to.be.eql('bar');
           return Promise.resolve();
         });
 
-        testQueue.on('completed', function() {
+        testQueue.on('completed', () => {
           testQueue.close().then(done);
         });
 
-        testQueue.add({ foo: 'bar' }).then(function(job) {
+        testQueue.add({ foo: 'bar' }).then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         });
@@ -131,9 +119,9 @@ describe('Queue', function() {
     });
   });
 
-  describe('instantiation', function() {
-    it('should create a queue with standard redis opts', function(done) {
-      var queue = new Queue('standard');
+  describe('instantiation', () => {
+    it('should create a queue with standard redis opts', done => {
+      const queue = new Queue('standard');
 
       expect(queue.client.options.host).to.be.eql('127.0.0.1');
       expect(queue.eclient.options.host).to.be.eql('127.0.0.1');
@@ -147,8 +135,8 @@ describe('Queue', function() {
       queue.close().then(done, done);
     });
 
-    it('should create a queue with a redis connection string', function() {
-      var queue = new Queue('connstring', 'redis://123.4.5.67:1234/2');
+    it('should create a queue with a redis connection string', () => {
+      const queue = new Queue('connstring', 'redis://123.4.5.67:1234/2');
 
       expect(queue.client.options.host).to.be.eql('123.4.5.67');
       expect(queue.eclient.options.host).to.be.eql('123.4.5.67');
@@ -162,8 +150,8 @@ describe('Queue', function() {
       queue.close();
     });
 
-    it('should create a queue with only a hostname', function() {
-      var queue = new Queue('connstring', 'redis://127.2.3.4');
+    it('should create a queue with only a hostname', () => {
+      const queue = new Queue('connstring', 'redis://127.2.3.4');
 
       expect(queue.client.options.host).to.be.eql('127.2.3.4');
       expect(queue.eclient.options.host).to.be.eql('127.2.3.4');
@@ -174,13 +162,13 @@ describe('Queue', function() {
       expect(queue.client.condition.select).to.be.eql(0);
       expect(queue.eclient.condition.select).to.be.eql(0);
 
-      queue.close().catch(function(/*err*/) {
+      queue.close().catch((/*err*/) => {
         // Swallow error.
       });
     });
 
-    it('should create a queue with connection string and password', function() {
-      var queue = new Queue('connstring', 'redis://:123@127.2.3.4:6379');
+    it('should create a queue with connection string and password', () => {
+      const queue = new Queue('connstring', 'redis://:123@127.2.3.4:6379');
 
       expect(queue.client.options.host).to.be.eql('127.2.3.4');
       expect(queue.eclient.options.host).to.be.eql('127.2.3.4');
@@ -194,13 +182,13 @@ describe('Queue', function() {
       expect(queue.client.options.password).to.be.eql('123');
       expect(queue.eclient.options.password).to.be.eql('123');
 
-      queue.close().catch(function(/*err*/) {
+      queue.close().catch((/*err*/) => {
         // Swallow error.
       });
     });
 
-    it('creates a queue using the supplied redis DB', function(done) {
-      var queue = new Queue('custom', { redis: { DB: 1 } });
+    it('creates a queue using the supplied redis DB', done => {
+      const queue = new Queue('custom', { redis: { DB: 1 } });
 
       expect(queue.client.options.host).to.be.eql('127.0.0.1');
       expect(queue.eclient.options.host).to.be.eql('127.0.0.1');
@@ -214,8 +202,8 @@ describe('Queue', function() {
       queue.close().then(done, done);
     });
 
-    it('creates a queue using the supplied redis host', function(done) {
-      var queue = new Queue('custom', { redis: { host: 'localhost' } });
+    it('creates a queue using the supplied redis host', done => {
+      const queue = new Queue('custom', { redis: { host: 'localhost' } });
 
       expect(queue.client.options.host).to.be.eql('localhost');
       expect(queue.eclient.options.host).to.be.eql('localhost');
@@ -226,74 +214,73 @@ describe('Queue', function() {
       queue.close().then(done, done);
     });
 
-    it('creates a queue with dots in its name', function() {
-      var queue = new Queue('using. dots. in.name.');
+    it('creates a queue with dots in its name', () => {
+      const queue = new Queue('using. dots. in.name.');
 
       return queue
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
-        .then(function() {
-          queue.process(function(job, jobDone) {
+        .then(() => {
+          queue.process((job, jobDone) => {
             expect(job.data.foo).to.be.equal('bar');
             jobDone();
           });
           return null;
         })
-        .then(function() {
+        .then(() => {
           return queue.close();
         });
     });
 
-    it('creates a queue accepting port as a string', function() {
-      var queue = new Queue('foobar', '6379', 'localhost');
+    it('creates a queue accepting port as a string', () => {
+      const queue = new Queue('foobar', '6379', 'localhost');
 
       return queue
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
-        .then(function() {
-          queue.process(function(job, jobDone) {
+        .then(() => {
+          queue.process((job, jobDone) => {
             expect(job.data.foo).to.be.equal('bar');
             jobDone();
           });
           return null;
         })
-        .then(function() {
+        .then(() => {
           return queue.close();
         });
     });
 
-    it('should create a queue with a prefix option', function() {
-      var queue = new Queue('q', 'redis://127.0.0.1', { keyPrefix: 'myQ' });
+    it('should create a queue with a prefix option', () => {
+      const queue = new Queue('q', 'redis://127.0.0.1', { keyPrefix: 'myQ' });
 
       return queue
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
-          var client = new redis();
-          return client.hgetall('myQ:q:' + job.id).then(function(result) {
+          const client = new redis();
+          return client.hgetall('myQ:q:' + job.id).then(result => {
             expect(result).to.not.be.null;
             return client.quit();
           });
         })
-        .then(function() {
+        .then(() => {
           return queue.close();
         });
     });
 
-    it('should allow reuse redis connections', function(done) {
-      var client, subscriber;
-      client = new redis();
-      subscriber = new redis();
+    it('should allow reuse redis connections', done => {
+      const client = new redis();
+      const subscriber = new redis();
 
-      var opts = {
-        createClient: function(type, opts) {
+      const opts = {
+        createClient(type, opts) {
           switch (type) {
             case 'client':
               return client;
@@ -304,8 +291,8 @@ describe('Queue', function() {
           }
         }
       };
-      var queueFoo = new Queue('foobar', opts);
-      var queueQux = new Queue('quxbaz', opts);
+      const queueFoo = new Queue('foobar', opts);
+      const queueQux = new Queue('quxbaz', opts);
 
       expect(queueFoo.client).to.be.equal(client);
       expect(queueFoo.eclient).to.be.equal(subscriber);
@@ -315,32 +302,32 @@ describe('Queue', function() {
 
       queueFoo
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
-        .then(function() {
-          return queueQux.add({ qux: 'baz' }).then(function(job) {
+        .then(() => {
+          return queueQux.add({ qux: 'baz' }).then(job => {
             expect(job.id).to.be.ok;
             expect(job.data.qux).to.be.eql('baz');
-            var completed = 0;
+            let completed = 0;
 
-            queueFoo.process(function(job, jobDone) {
+            queueFoo.process((job, jobDone) => {
               jobDone();
             });
 
-            queueQux.process(function(job, jobDone) {
+            queueQux.process((job, jobDone) => {
               jobDone();
             });
 
-            queueFoo.on('completed', function() {
+            queueFoo.on('completed', () => {
               completed++;
               if (completed == 2) {
                 done();
               }
             });
 
-            queueQux.on('completed', function() {
+            queueQux.on('completed', () => {
               completed++;
               if (completed == 2) {
                 done();
@@ -350,27 +337,54 @@ describe('Queue', function() {
         }, done);
     });
 
-    it('creates a queue with default job options', function(done) {
-      var defaultJobOptions = { removeOnComplete: true };
-      var queue = new Queue('custom', { defaultJobOptions: defaultJobOptions });
+    it('creates a queue with default job options', done => {
+      const defaultJobOptions = { removeOnComplete: true };
+      const queue = new Queue('custom', {
+        defaultJobOptions
+      });
 
       expect(queue.defaultJobOptions).to.be.eql(defaultJobOptions);
 
       queue.close().then(done, done);
     });
+
+    describe('bulk jobs', () => {
+      it('should default name of job', () => {
+        const queue = new Queue('custom');
+
+        return queue.addBulk([{ name: 'specified' }, {}]).then(jobs => {
+          expect(jobs).to.have.length(2);
+
+          expect(jobs[0].name).to.equal('specified');
+          expect(jobs[1].name).to.equal('__default__');
+        });
+      });
+
+      it('should default options from queue', () => {
+        const queue = new Queue('custom', {
+          defaultJobOptions: {
+            removeOnComplete: true
+          }
+        });
+
+        return queue.addBulk([{}]).then(jobs => {
+          expect(jobs[0].opts.removeOnComplete).to.equal(true);
+        });
+      });
+    });
   });
 
-  describe(' a worker', function() {
-    var queue;
+  describe(' a worker', () => {
+    let queue;
 
-    beforeEach(function() {
-      var client = new redis();
+    beforeEach(() => {
+      const client = new redis();
       return client
         .flushdb()
-        .then(function() {
+        .then(() => {
           return utils.newQueue();
         })
-        .then(function(_queue) {
+        .then(_queue => {
           queue = _queue;
         });
     });
@@ -382,168 +396,366 @@ describe('Queue', function() {
       return utils.cleanupQueues();
     });
 
-    it('should process a job', function(done) {
+    it('should process a job', done => {
       queue
-        .process(function(job, jobDone) {
+        .process((job, jobDone) => {
           expect(job.data.foo).to.be.equal('bar');
           jobDone();
           done();
         })
         .catch(done);
 
-      queue.add({ foo: 'bar' }).then(function(job) {
+      queue.add({ foo: 'bar' }).then(job => {
         expect(job.id).to.be.ok;
         expect(job.data.foo).to.be.eql('bar');
       }, done);
     });
 
-    it('should remove job after completed if removeOnComplete', function(done) {
-      queue
-        .process(function(job, jobDone) {
+    describe('bulk jobs', () => {
+      it('should process jobs', done => {
+        queue
+          .process((job, jobDone) => {
+            if (job.data.idx === 0) {
+              expect(job.data.foo).to.be.equal('bar');
+              jobDone();
+            } else {
+              expect(job.data.idx).to.be.equal(1);
+              expect(job.data.foo).to.be.equal('baz');
+              jobDone();
+              done();
+            }
+          })
+          .catch(done);
+
+        queue
+          .addBulk([
+            { data: { idx: 0, foo: 'bar' } },
+            { data: { idx: 1, foo: 'baz' } }
+          ])
+          .then(jobs => {
+            expect(jobs).to.have.length(2);
+
+            expect(jobs[0].id).to.be.ok;
+            expect(jobs[0].data.foo).to.be.eql('bar');
+            expect(jobs[1].id).to.be.ok;
+            expect(jobs[1].data.foo).to.be.eql('baz');
+          }, done);
+      });
+    });
+
+    describe('auto job removal', () => {
+      it('should remove job after completed if removeOnComplete', done => {
+        queue
+          .process((job, jobDone) => {
+            expect(job.data.foo).to.be.equal('bar');
+            jobDone();
+          })
+          .catch(done);
+
+        queue.add({ foo: 'bar' }, { removeOnComplete: true }).then(job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        }, done);
+
+        queue.on('completed', job => {
+          queue
+            .getJob(job.id)
+            .then(job => {
+              expect(job).to.be.equal(null);
+            })
+            .then(() => {
+              queue.getJobCounts().then(counts => {
+                expect(counts.completed).to.be.equal(0);
+                done();
+              });
+            });
+        });
+      });
+
+      it('should remove a job after completed if the default job options specify removeOnComplete', done => {
+        utils
+          .newQueue('test-' + uuid(), {
+            defaultJobOptions: {
+              removeOnComplete: true
+            }
+          })
+          .then(myQueue => {
+            myQueue.process(job => {
+              expect(job.data.foo).to.be.equal('bar');
+            });
+
+            myQueue
+              .add({ foo: 'bar' })
+              .then(job => {
+                expect(job.id).to.be.ok;
+                expect(job.data.foo).to.be.eql('bar');
+              }, done)
+              .catch(done);
+
+            myQueue.on('completed', job => {
+              myQueue
+                .getJob(job.id)
+                .then(job => {
+                  expect(job).to.be.equal(null);
+                })
+                .then(() => {
+                  return myQueue.getJobCounts();
+                })
+                .then(counts => {
+                  expect(counts.completed).to.be.equal(0);
+
+                  return utils.cleanupQueues();
+                })
+                .then(done)
+                .catch(done);
+            });
+            return null;
+          })
+          .catch(done);
+      });
+
+      it('should keep specified number of jobs after completed with removeOnComplete', async () => {
+        const keepJobs = 3;
+        queue.process(async job => {
+          await job.log('test log');
+        });
+
+        const datas = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+        const jobIds = await Promise.all(
+          datas.map(
+            async data =>
+              (await queue.add(data, { removeOnComplete: keepJobs })).id
+          )
+        );
+
+        return new Promise(resolve => {
+          queue.on('completed', async job => {
+            if (job.data == 8) {
+              const counts = await queue.getJobCounts();
+              expect(counts.completed).to.be.equal(keepJobs);
+
+              await Promise.all(
+                jobIds.map(async (jobId, index) => {
+                  const job = await queue.getJob(jobId);
+                  const logs = await queue.getJobLogs(jobId);
+                  if (index >= datas.length - keepJobs) {
+                    expect(job).to.not.be.equal(null);
+                    expect(logs.logs).to.not.be.empty;
+                  } else {
+                    expect(job).to.be.equal(null);
+                    expect(logs.logs).to.be.empty;
+                  }
+                })
+              );
+              resolve();
+            }
+          });
+        });
+      });
+
+      it('should keep specified number of jobs after completed with global removeOnComplete', async () => {
+        const keepJobs = 3;
+
+        const localQueue = await utils.newQueue('test-' + uuid(), {
+          defaultJobOptions: {
+            removeOnComplete: keepJobs
+          }
+        });
+        localQueue.process(() => {});
+
+        const datas = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+        const jobIds = await Promise.all(
+          datas.map(async data => (await localQueue.add(data)).id)
+        );
+
+        return new Promise((resolve, reject) => {
+          localQueue.on('completed', async job => {
+            if (job.data == 8) {
+              try {
+                const counts = await localQueue.getJobCounts();
+                expect(counts.completed).to.be.equal(keepJobs);
+
+                await Promise.all(
+                  jobIds.map(async (jobId, index) => {
+                    const job = await localQueue.getJob(jobId);
+                    if (index >= datas.length - keepJobs) {
+                      expect(job).to.not.be.equal(null);
+                    } else {
+                      expect(job).to.be.equal(null);
+                    }
+                  })
+                );
+              } catch (err) {
+                reject(err);
+              }
+
+              resolve();
+            }
+          });
+        });
+      });
+
+      it('should remove job after failed if removeOnFail', done => {
+        queue.process(job => {
           expect(job.data.foo).to.be.equal('bar');
-          jobDone();
-        })
-        .catch(done);
+          throw Error('error');
+        });
 
-      queue.add({ foo: 'bar' }, { removeOnComplete: true }).then(function(job) {
-        expect(job.id).to.be.ok;
-        expect(job.data.foo).to.be.eql('bar');
-      }, done);
+        queue.add({ foo: 'bar' }, { removeOnFail: true }).then(job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        }, done);
 
-      queue.on('completed', function(job) {
-        queue
-          .getJob(job.id)
-          .then(function(job) {
-            expect(job).to.be.equal(null);
-          })
-          .then(function() {
-            queue.getJobCounts().then(function(counts) {
-              expect(counts.completed).to.be.equal(0);
-              done();
+        queue.on('failed', jobId => {
+          queue
+            .getJob(jobId)
+            .then(job => {
+              expect(job).to.be.equal(null);
+              return null;
+            })
+            .then(() => {
+              return queue.getJobCounts().then(counts => {
+                expect(counts.failed).to.be.equal(0);
+                done();
+              });
             });
-          });
-      });
-    });
-
-    it('should remove a job after completed if the default job options specify removeOnComplete', function(done) {
-      utils
-        .newQueue('test-' + uuid(), {
-          defaultJobOptions: {
-            removeOnComplete: true
-          }
-        })
-        .then(function(myQueue) {
-          myQueue.process(function(job) {
-            expect(job.data.foo).to.be.equal('bar');
-          });
-
-          myQueue
-            .add({ foo: 'bar' })
-            .then(function(job) {
-              expect(job.id).to.be.ok;
-              expect(job.data.foo).to.be.eql('bar');
-            }, done)
-            .catch(done);
-
-          myQueue.on('completed', function(job) {
-            myQueue
-              .getJob(job.id)
-              .then(function(job) {
-                expect(job).to.be.equal(null);
-              })
-              .then(function() {
-                return myQueue.getJobCounts();
-              })
-              .then(function(counts) {
-                expect(counts.completed).to.be.equal(0);
-
-                return utils.cleanupQueues();
-              })
-              .then(done)
-              .catch(done);
-          });
-          return null;
-        })
-        .catch(done);
-    });
-
-    it('should remove job after failed if removeOnFail', function(done) {
-      queue.process(function(job) {
-        expect(job.data.foo).to.be.equal('bar');
-        throw Error('error');
+        });
       });
 
-      queue.add({ foo: 'bar' }, { removeOnFail: true }).then(function(job) {
-        expect(job.id).to.be.ok;
-        expect(job.data.foo).to.be.eql('bar');
-      }, done);
-
-      queue.on('failed', function(jobId) {
-        queue
-          .getJob(jobId)
-          .then(function(job) {
-            expect(job).to.be.equal(null);
-            return null;
+      it('should remove a job after fail if the default job options specify removeOnFail', done => {
+        utils
+          .newQueue('test-' + uuid(), {
+            defaultJobOptions: {
+              removeOnFail: true
+            }
           })
-          .then(function() {
-            return queue.getJobCounts().then(function(counts) {
-              expect(counts.failed).to.be.equal(0);
-              done();
+          .then(myQueue => {
+            myQueue.process(job => {
+              expect(job.data.foo).to.be.equal('bar');
+              throw Error('error');
+            });
+
+            myQueue
+              .add({ foo: 'bar' })
+              .then(job => {
+                expect(job.id).to.be.ok;
+                expect(job.data.foo).to.be.eql('bar');
+              }, done)
+              .catch(done);
+
+            myQueue.on('failed', jobId => {
+              myQueue
+                .getJob(jobId)
+                .then(job => {
+                  expect(job).to.be.equal(null);
+                })
+                .then(() => {
+                  return myQueue.getJobCounts();
+                })
+                .then(counts => {
+                  expect(counts.completed).to.be.equal(0);
+
+                  return utils.cleanupQueues();
+                })
+                .then(done)
+                .catch(done);
             });
             return null;
-          });
+          })
+          .catch(done);
       });
-    });
 
-    it('should remove a job after fail if the default job options specify removeOnFail', function(done) {
-      utils
-        .newQueue('test-' + uuid(), {
+      it('should keep specified number of jobs after completed with removeOnFail', async () => {
+        const keepJobs = 3;
+        queue.process(() => {
+          throw Error('error');
+        });
+
+        const datas = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+        const jobIds = await Promise.all(
+          datas.map(
+            async data => (await queue.add(data, { removeOnFail: keepJobs })).id
+          )
+        );
+
+        return new Promise(resolve => {
+          queue.on('failed', async job => {
+            if (job.data == 8) {
+              const counts = await queue.getJobCounts();
+              expect(counts.failed).to.be.equal(keepJobs);
+
+              await Promise.all(
+                jobIds.map(async (jobId, index) => {
+                  const job = await queue.getJob(jobId);
+                  if (index >= datas.length - keepJobs) {
+                    expect(job).to.not.be.equal(null);
+                  } else {
+                    expect(job).to.be.equal(null);
+                  }
+                })
+              );
+
+              resolve();
+            }
+          });
+        });
+      });
+
+      it('should keep specified number of jobs after completed with global removeOnFail', async () => {
+        const keepJobs = 3;
+
+        const localQueue = await utils.newQueue('test-' + uuid(), {
           defaultJobOptions: {
-            removeOnFail: true
+            removeOnFail: keepJobs
           }
-        })
-        .then(function(myQueue) {
-          myQueue.process(function(job) {
-            expect(job.data.foo).to.be.equal('bar');
-            throw Error('error');
+        });
+        localQueue.process(() => {
+          throw Error('error');
+        });
+
+        const datas = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+        const jobIds = await Promise.all(
+          datas.map(async data => (await localQueue.add(data)).id)
+        );
+
+        return new Promise((resolve, reject) => {
+          localQueue.on('failed', async job => {
+            if (job.data == 8) {
+              try {
+                const counts = await localQueue.getJobCounts();
+                expect(counts.failed).to.be.equal(keepJobs);
+
+                await Promise.all(
+                  jobIds.map(async (jobId, index) => {
+                    const job = await localQueue.getJob(jobId);
+                    if (index >= datas.length - keepJobs) {
+                      expect(job).to.not.be.equal(null);
+                    } else {
+                      expect(job).to.be.equal(null);
+                    }
+                  })
+                );
+              } catch (err) {
+                reject(err);
+              }
+
+              resolve();
+            }
           });
-
-          myQueue
-            .add({ foo: 'bar' })
-            .then(function(job) {
-              expect(job.id).to.be.ok;
-              expect(job.data.foo).to.be.eql('bar');
-            }, done)
-            .catch(done);
-
-          myQueue.on('failed', function(jobId) {
-            myQueue
-              .getJob(jobId)
-              .then(function(job) {
-                expect(job).to.be.equal(null);
-              })
-              .then(function() {
-                return myQueue.getJobCounts();
-              })
-              .then(function(counts) {
-                expect(counts.completed).to.be.equal(0);
-
-                return utils.cleanupQueues();
-              })
-              .then(done)
-              .catch(done);
-          });
-          return null;
-        })
-        .catch(done);
+        });
+      });
     });
 
     it('process a lifo queue', function(done) {
       this.timeout(3000);
-      var currentValue = 0,
+      let currentValue = 0,
         first = true;
-      utils.newQueue('test lifo').then(function(queue2) {
-        queue2.process(function(job, jobDone) {
+      utils.newQueue('test lifo').then(queue2 => {
+        queue2.process((job, jobDone) => {
           // Catching the job before the pause
           expect(job.data.count).to.be.equal(currentValue--);
           jobDone();
@@ -554,71 +766,70 @@ describe('Queue', function() {
           }
         });
 
-        queue2.pause().then(function() {
+        queue2.pause().then(() => {
           // Add a series of jobs in a predictable order
-          var jobs = [
+          const jobs = [
             { count: ++currentValue },
             { count: ++currentValue },
             { count: ++currentValue },
             { count: ++currentValue }
           ];
-          return Bluebird.each(jobs, function(jobData) {
-            return queue2.add(jobData, { lifo: true });
-          }).then(function() {
+          return Promise.all(
+            jobs.map(jobData => {
+              return queue2.add(jobData, { lifo: true });
+            })
+          ).then(() => {
             queue2.resume();
           });
         });
       });
     });
 
-    it('should processes jobs by priority', function(done) {
-      var normalPriority = [],
-        mediumPriority = [],
-        highPriority = [];
+    it('should processes jobs by priority', done => {
+      const normalPriority = [];
+      const mediumPriority = [];
+      const highPriority = [];
 
       // for the current strategy this number should not exceed 8 (2^2*2)
       // this is done to maitain a deterministic output.
-      var numJobsPerPriority = 6;
+      const numJobsPerPriority = 6;
 
-      for (var i = 0; i < numJobsPerPriority; i++) {
+      for (let i = 0; i < numJobsPerPriority; i++) {
         normalPriority.push(queue.add({ p: 2 }, { priority: 2 }));
         mediumPriority.push(queue.add({ p: 3 }, { priority: 3 }));
         highPriority.push(queue.add({ p: 1 }, { priority: 1 }));
       }
 
       // wait for all jobs to enter the queue and then start processing
-      Promise.all(normalPriority, mediumPriority, highPriority).then(
-        function() {
-          var currentPriority = 1;
-          var counter = 0;
-          var total = 0;
+      Promise.all(normalPriority, mediumPriority, highPriority).then(() => {
+        let currentPriority = 1;
+        let counter = 0;
+        let total = 0;
 
-          queue.process(function(job, jobDone) {
-            expect(job.id).to.be.ok;
-            expect(job.data.p).to.be.eql(currentPriority);
-            jobDone();
+        queue.process((job, jobDone) => {
+          expect(job.id).to.be.ok;
+          expect(job.data.p).to.be.eql(currentPriority);
+          jobDone();
 
-            total++;
-            if (++counter === numJobsPerPriority) {
-              currentPriority++;
-              counter = 0;
+          total++;
+          if (++counter === numJobsPerPriority) {
+            currentPriority++;
+            counter = 0;
 
-              if (currentPriority === 4 && total === numJobsPerPriority * 3) {
-                done();
-              }
+            if (currentPriority === 4 && total === numJobsPerPriority * 3) {
+              done();
             }
-          });
-        },
-        done
-      );
+          }
+        });
+      }, done);
     });
 
     it('process several jobs serially', function(done) {
       this.timeout(12000);
-      var counter = 1;
-      var maxJobs = 35;
+      let counter = 1;
+      const maxJobs = 35;
 
-      queue.process(function(job, jobDone) {
+      queue.process((job, jobDone) => {
         expect(job.data.num).to.be.equal(counter);
         expect(job.data.foo).to.be.equal('bar');
         jobDone();
@@ -628,13 +839,13 @@ describe('Queue', function() {
         counter++;
       });
 
-      for (var i = 1; i <= maxJobs; i++) {
+      for (let i = 1; i <= maxJobs; i++) {
         queue.add({ foo: 'bar', num: i });
       }
     });
 
-    it('process a job that updates progress', function(done) {
-      queue.process(function(job, jobDone) {
+    it('process a job that updates progress', done => {
+      queue.process((job, jobDone) => {
         expect(job.data.foo).to.be.equal('bar');
         job.progress(42);
         jobDone();
@@ -642,52 +853,52 @@ describe('Queue', function() {
 
       queue
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
         .catch(done);
 
-      queue.on('progress', function(job, progress) {
+      queue.on('progress', (job, progress) => {
         expect(job).to.be.ok;
         expect(progress).to.be.eql(42);
         done();
       });
     });
 
-    it('process a job that returns data in the process handler', function(done) {
-      queue.process(function(job, jobDone) {
+    it('process a job that returns data in the process handler', done => {
+      queue.process((job, jobDone) => {
         expect(job.data.foo).to.be.equal('bar');
         jobDone(null, 37);
       });
 
       queue
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
         .catch(done);
 
-      queue.on('completed', function(job, data) {
+      queue.on('completed', (job, data) => {
         expect(job).to.be.ok;
         expect(data).to.be.eql(37);
-        queue.getJob(job.id).then(function(job) {
+        queue.getJob(job.id).then(job => {
           expect(job.returnvalue).to.be.eql(37);
           done();
         });
       });
     });
 
-    it('process a job that returns a string in the process handler', function(done) {
-      var testString = 'a very dignified string';
-      queue.on('completed', function(job /*, data*/) {
+    it('process a job that returns a string in the process handler', done => {
+      const testString = 'a very dignified string';
+      queue.on('completed', (job /*, data*/) => {
         expect(job).to.be.ok;
         expect(job.returnvalue).to.be.equal(testString);
-        setTimeout(function() {
+        setTimeout(() => {
           queue
             .getJob(job.id)
-            .then(function(job) {
+            .then(job => {
               expect(job).to.be.ok;
               expect(job.returnvalue).to.be.equal(testString);
               done();
@@ -696,100 +907,98 @@ describe('Queue', function() {
         }, 100);
       });
 
-      queue.process(function(/*job*/) {
+      queue.process((/*job*/) => {
         return Promise.resolve(testString);
       });
 
       queue.add({ testing: true });
     });
 
-    it('process a job that returns data in the process handler and the returnvalue gets stored in the database', function(done) {
-      queue.process(function(job, jobDone) {
+    it('process a job that returns data in the process handler and the returnvalue gets stored in the database', done => {
+      queue.process((job, jobDone) => {
         expect(job.data.foo).to.be.equal('bar');
         jobDone(null, 37);
       });
 
       queue
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
         .catch(done);
 
-      queue.on('completed', function(job, data) {
+      queue.on('completed', (job, data) => {
         expect(job).to.be.ok;
         expect(data).to.be.eql(37);
-        queue.getJob(job.id).then(function(job) {
+        queue.getJob(job.id).then(job => {
           expect(job.returnvalue).to.be.eql(37);
-          queue.client
-            .hget(queue.toKey(job.id), 'returnvalue')
-            .then(function(retval) {
-              expect(JSON.parse(retval)).to.be.eql(37);
-              done();
-            });
+          queue.client.hget(queue.toKey(job.id), 'returnvalue').then(retval => {
+            expect(JSON.parse(retval)).to.be.eql(37);
+            done();
+          });
         });
       });
     });
 
-    it('process a job that returns a promise', function(done) {
-      queue.process(function(job) {
+    it('process a job that returns a promise', done => {
+      queue.process(job => {
         expect(job.data.foo).to.be.equal('bar');
-        return Bluebird.delay(250).then(function() {
+        return delay(250).then(() => {
           return 'my data';
         });
       });
 
       queue
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
         .catch(done);
 
-      queue.on('completed', function(job, data) {
+      queue.on('completed', (job, data) => {
         expect(job).to.be.ok;
         expect(data).to.be.eql('my data');
         done();
       });
     });
 
-    it('process a job that returns data in a promise', function(done) {
-      queue.process(function(job) {
+    it('process a job that returns data in a promise', done => {
+      queue.process(job => {
         expect(job.data.foo).to.be.equal('bar');
-        return Bluebird.delay(250, 42);
+        return delay(250, { value: 42 });
       });
 
       queue
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
         .catch(done);
 
-      queue.on('completed', function(job, data) {
+      queue.on('completed', (job, data) => {
         expect(job).to.be.ok;
         expect(data).to.be.eql(42);
         done();
       });
     });
 
-    it('process a synchronous job', function(done) {
-      queue.process(function(job) {
+    it('process a synchronous job', done => {
+      queue.process(job => {
         expect(job.data.foo).to.be.equal('bar');
       });
 
       queue
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
         .catch(done);
 
-      queue.on('completed', function(job) {
+      queue.on('completed', job => {
         expect(job).to.be.ok;
         done();
       });
@@ -805,33 +1014,33 @@ describe('Queue', function() {
             stalledInterval: 100
           }
         })
-        .then(function(queueStalled) {
-          var jobs = [
+        .then(queueStalled => {
+          const jobs = [
             queueStalled.add({ bar: 'baz' }),
             queueStalled.add({ bar1: 'baz1' }),
             queueStalled.add({ bar2: 'baz2' }),
             queueStalled.add({ bar3: 'baz3' })
           ];
-          Promise.all(jobs).then(function() {
-            var afterJobsRunning = function() {
-              var stalledCallback = sandbox.spy();
+          Promise.all(jobs).then(() => {
+            const afterJobsRunning = function() {
+              const stalledCallback = sandbox.spy();
               return queueStalled
                 .close(true)
-                .then(function() {
-                  return new Promise(function(resolve, reject) {
+                .then(() => {
+                  return new Promise((resolve, reject) => {
                     utils
                       .newQueue('test queue stalled', {
                         settings: {
                           stalledInterval: 100
                         }
                       })
-                      .then(function(queue2) {
-                        var doneAfterFour = _.after(4, function() {
+                      .then(queue2 => {
+                        const doneAfterFour = _.after(4, () => {
                           try {
                             expect(stalledCallback.calledOnce).to.be.eql(true);
                             queue.close().then(resolve);
                           } catch (e) {
-                            queue.close().then(function() {
+                            queue.close().then(() => {
                               reject(e);
                             });
                           }
@@ -839,7 +1048,7 @@ describe('Queue', function() {
                         queue2.on('completed', doneAfterFour);
                         queue2.on('stalled', stalledCallback);
 
-                        queue2.process(function(job, jobDone2) {
+                        queue2.process((job, jobDone2) => {
                           jobDone2();
                         });
                       });
@@ -848,24 +1057,24 @@ describe('Queue', function() {
                 .then(done, done);
             };
 
-            var onceRunning = _.once(afterJobsRunning);
-            queueStalled.process(function() {
+            const onceRunning = _.once(afterJobsRunning);
+            queueStalled.process(() => {
               onceRunning();
-              return Bluebird.delay(150);
+              return delay(150);
             });
           });
         });
     });
 
-    it('processes jobs that were added before the queue backend started', function() {
+    it('processes jobs that were added before the queue backend started', () => {
       return utils
         .newQueue('test queue added before', {
           settings: {
             lockRenewTime: 10
           }
         })
-        .then(function(queueStalled) {
-          var jobs = [
+        .then(queueStalled => {
+          const jobs = [
             queueStalled.add({ bar: 'baz' }),
             queueStalled.add({ bar1: 'baz1' }),
             queueStalled.add({ bar2: 'baz2' }),
@@ -874,74 +1083,72 @@ describe('Queue', function() {
 
           return Promise.all(jobs)
             .then(queueStalled.close.bind(queueStalled))
-            .then(function() {
-              return utils
-                .newQueue('test queue added before')
-                .then(function(queue2) {
-                  queue2.process(function(job, jobDone) {
-                    jobDone();
-                  });
-
-                  return new Promise(function(resolve) {
-                    var resolveAfterAllJobs = _.after(jobs.length, resolve);
-                    queue2.on('completed', resolveAfterAllJobs);
-                  });
+            .then(() => {
+              return utils.newQueue('test queue added before').then(queue2 => {
+                queue2.process((job, jobDone) => {
+                  jobDone();
                 });
+
+                return new Promise(resolve => {
+                  const resolveAfterAllJobs = _.after(jobs.length, resolve);
+                  queue2.on('completed', resolveAfterAllJobs);
+                });
+              });
             });
         });
     });
 
-    it('process a named job that returns a promise', function(done) {
-      queue.process('myname', function(job) {
+    it('process a named job that returns a promise', done => {
+      queue.process('myname', job => {
         expect(job.data.foo).to.be.equal('bar');
-        return Bluebird.delay(250).then(function() {
+        return delay(250).then(() => {
           return 'my data';
         });
       });
 
       queue
         .add('myname', { foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
         .catch(done);
 
-      queue.on('completed', function(job, data) {
+      queue.on('completed', (job, data) => {
         expect(job).to.be.ok;
         expect(data).to.be.eql('my data');
         done();
       });
     });
 
-    it('process a two named jobs that returns a promise', function(done) {
-      queue.process('myname', function(job) {
+    it('process a two named jobs that returns a promise', done => {
+      queue.process('myname', job => {
         expect(job.data.foo).to.be.equal('bar');
-        return Bluebird.delay(250).then(function() {
+        return delay(250).then(() => {
           return 'my data';
         });
       });
 
-      queue.process('myname2', function(job) {
+      queue.process('myname2', job => {
         expect(job.data.baz).to.be.equal('qux');
-        return Bluebird.delay(250).then(function() {
+        return delay(250).then(() => {
           return 'my data 2';
         });
       });
 
       queue
         .add('myname', { foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
-        .then(function() {
+        .then(() => {
           return queue.add('myname2', { baz: 'qux' });
         })
         .catch(done);
 
-      var one, two;
-      queue.on('completed', function(job, data) {
+      let one, two;
+      queue.on('completed', (job, data) => {
         expect(job).to.be.ok;
         if (job.data.foo) {
           one = true;
@@ -957,26 +1164,26 @@ describe('Queue', function() {
       });
     });
 
-    it('process all named jobs from one process function', function(done) {
-      queue.process('*', function(job) {
+    it('process all named jobs from one process function', done => {
+      queue.process('*', job => {
         expect(job.data).to.be.ok;
-        return Bluebird.delay(250).then(function() {
+        return delay(250).then(() => {
           return 'my data';
         });
       });
 
-      queue.add('job_a', { foo: 'bar' }).then(function(job) {
+      queue.add('job_a', { foo: 'bar' }).then(job => {
         expect(job.id).to.be.ok;
         expect(job.data.foo).to.be.eql('bar');
       });
 
-      queue.add('job_b', { baz: 'qux' }).then(function(job) {
+      queue.add('job_b', { baz: 'qux' }).then(job => {
         expect(job.id).to.be.ok;
         expect(job.data.baz).to.be.eql('qux');
       });
 
-      var one, two;
-      queue.on('completed', function(job, data) {
+      let one, two;
+      queue.on('completed', (job, data) => {
         expect(job).to.be.ok;
         if (job.data.foo) {
           one = true;
@@ -992,16 +1199,16 @@ describe('Queue', function() {
       });
     });
 
-    it('fails job if missing named process', function(done) {
-      queue.process(function(/*job*/) {
+    it('fails job if missing named process', done => {
+      queue.process((/*job*/) => {
         done(Error('should not process this job'));
       });
 
-      queue.once('failed', function(/*err*/) {
+      queue.once('failed', (/*err*/) => {
         done();
       });
 
-      queue.add('myname', { foo: 'bar' }).then(function(job) {
+      queue.add('myname', { foo: 'bar' }).then(job => {
         expect(job.id).to.be.ok;
         expect(job.data.foo).to.be.eql('bar');
       });
@@ -1010,14 +1217,14 @@ describe('Queue', function() {
     it('processes several stalled jobs when starting several queues', function(done) {
       this.timeout(50000);
 
-      var NUM_QUEUES = 10;
-      var NUM_JOBS_PER_QUEUE = 10;
-      var stalledQueues = [];
-      var jobs = [];
-      var redisOpts = { port: 6379, host: '127.0.0.1' };
+      const NUM_QUEUES = 10;
+      const NUM_JOBS_PER_QUEUE = 10;
+      const stalledQueues = [];
+      const jobs = [];
+      const redisOpts = { port: 6379, host: '127.0.0.1' };
 
-      for (var i = 0; i < NUM_QUEUES; i++) {
-        var queueStalled2 = new Queue('test queue stalled 2', {
+      for (let i = 0; i < NUM_QUEUES; i++) {
+        const queueStalled2 = new Queue('test queue stalled 2', {
           redis: redisOpts,
           settings: {
             lockDuration: 30,
@@ -1026,47 +1233,47 @@ describe('Queue', function() {
           }
         });
 
-        for (var j = 0; j < NUM_JOBS_PER_QUEUE; j++) {
+        for (let j = 0; j < NUM_JOBS_PER_QUEUE; j++) {
           jobs.push(queueStalled2.add({ job: j }));
         }
 
         stalledQueues.push(queueStalled2);
       }
 
-      var closeStalledQueues = function() {
+      const closeStalledQueues = function() {
         return Promise.all(
-          stalledQueues.map(function(queue) {
+          stalledQueues.map(queue => {
             return queue.close(true);
           })
         );
       };
 
-      Promise.all(jobs).then(function() {
-        var processed = 0;
-        var procFn = function() {
+      Promise.all(jobs).then(() => {
+        let processed = 0;
+        const procFn = function() {
           // instead of completing we just close the queue to simulate a crash.
           utils.simulateDisconnect(this);
           processed++;
           if (processed === stalledQueues.length) {
-            setTimeout(function() {
-              var queue2 = new Queue('test queue stalled 2', {
+            setTimeout(() => {
+              const queue2 = new Queue('test queue stalled 2', {
                 redis: redisOpts,
                 settings: { stalledInterval: 100 }
               });
-              queue2.on('error', function(err) {
+              queue2.on('error', err => {
                 done(err);
               });
-              queue2.process(function(job2, jobDone) {
+              queue2.process((job2, jobDone) => {
                 jobDone();
               });
 
-              var counter = 0;
-              queue2.on('completed', function() {
+              let counter = 0;
+              queue2.on('completed', () => {
                 counter++;
                 if (counter === NUM_QUEUES * NUM_JOBS_PER_QUEUE) {
                   queue2.close().then(done);
 
-                  closeStalledQueues().then(function() {
+                  closeStalledQueues().then(() => {
                     // This can take long time since queues are disconnected.
                   });
                 }
@@ -1075,9 +1282,9 @@ describe('Queue', function() {
           }
         };
 
-        var processes = [];
-        stalledQueues.forEach(function(queue) {
-          queue.on('error', function(/*err*/) {
+        const processes = [];
+        stalledQueues.forEach(queue => {
+          queue.on('error', (/*err*/) => {
             //
             // Swallow errors produced by the disconnect
             //
@@ -1090,16 +1297,16 @@ describe('Queue', function() {
 
     it('does not process a job that is being processed when a new queue starts', function(done) {
       this.timeout(12000);
-      var err = null;
-      var anotherQueue;
+      let err = null;
+      let anotherQueue;
 
-      queue.on('completed', function() {
+      queue.on('completed', () => {
         utils.cleanupQueue(anotherQueue).then(done.bind(null, err));
       });
 
-      queue.add({ foo: 'bar' }).then(function(addedJob) {
+      queue.add({ foo: 'bar' }).then(addedJob => {
         queue
-          .process(function(job, jobDone) {
+          .process((job, jobDone) => {
             expect(job.data.foo).to.be.equal('bar');
 
             if (addedJob.id !== job.id) {
@@ -1111,10 +1318,10 @@ describe('Queue', function() {
           })
           .catch(done);
 
-        utils.newQueue().then(function(_anotherQueue) {
+        utils.newQueue().then(_anotherQueue => {
           anotherQueue = _anotherQueue;
-          setTimeout(function() {
-            anotherQueue.process(function(job, jobDone) {
+          setTimeout(() => {
+            anotherQueue.process((job, jobDone) => {
               err = new Error(
                 'The second queue should not have received a job to process'
               );
@@ -1128,7 +1335,7 @@ describe('Queue', function() {
     it('process stalled jobs without requiring a queue restart', function(done) {
       this.timeout(12000);
 
-      var queue2 = utils.buildQueue('running-stalled-job-' + uuid(), {
+      const queue2 = utils.buildQueue('running-stalled-job-' + uuid(), {
         settings: {
           lockRenewTime: 5000,
           lockDuration: 500,
@@ -1136,12 +1343,12 @@ describe('Queue', function() {
         }
       });
 
-      var collect = _.after(2, function() {
+      const collect = _.after(2, () => {
         queue2.close().then(done);
       });
 
-      queue2.on('completed', function() {
-        var client = new redis();
+      queue2.on('completed', () => {
+        const client = new redis();
         client
           .multi()
           .zrem(queue2.toKey('completed'), 1)
@@ -1151,14 +1358,14 @@ describe('Queue', function() {
         collect();
       });
 
-      queue2.process(function(job, jobDone) {
+      queue2.process((job, jobDone) => {
         expect(job.data.foo).to.be.equal('bar');
         jobDone();
       });
 
       queue2
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
@@ -1166,10 +1373,10 @@ describe('Queue', function() {
     });
 
     it('failed stalled jobs that stall more than allowable stalled limit', function(done) {
-      var FAILED_MESSAGE = 'job stalled more than allowable limit';
+      const FAILED_MESSAGE = 'job stalled more than allowable limit';
       this.timeout(10000);
 
-      var queue2 = utils.buildQueue('running-stalled-job-' + uuid(), {
+      const queue2 = utils.buildQueue('running-stalled-job-' + uuid(), {
         settings: {
           lockRenewTime: 2500,
           lockDuration: 250,
@@ -1178,18 +1385,18 @@ describe('Queue', function() {
         }
       });
 
-      var processedCount = 0;
-      queue2.process(function(job) {
+      let processedCount = 0;
+      queue2.process(job => {
         processedCount++;
         expect(job.data.foo).to.be.equal('bar');
-        return Bluebird.delay(1500);
+        return delay(1500);
       });
 
-      queue2.on('completed', function() {
+      queue2.on('completed', () => {
         done(new Error('should not complete'));
       });
 
-      queue2.on('failed', function(job, err) {
+      queue2.on('failed', (job, err) => {
         expect(processedCount).to.be.eql(2);
         expect(job.failedReason).to.be.eql(FAILED_MESSAGE);
         expect(err.message).to.be.eql(FAILED_MESSAGE);
@@ -1198,32 +1405,32 @@ describe('Queue', function() {
 
       queue2
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
         .catch(done);
     });
 
-    it('process a job that fails', function(done) {
-      var jobError = new Error('Job Failed');
+    it('process a job that fails', done => {
+      const jobError = new Error('Job Failed');
 
-      queue.process(function(job, jobDone) {
+      queue.process((job, jobDone) => {
         expect(job.data.foo).to.be.equal('bar');
         jobDone(jobError);
       });
 
       queue.add({ foo: 'bar' }).then(
-        function(job) {
+        job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         },
-        function(err) {
+        err => {
           done(err);
         }
       );
 
-      queue.once('failed', function(job, err) {
+      queue.once('failed', (job, err) => {
         expect(job.id).to.be.ok;
         expect(job.data.foo).to.be.eql('bar');
         expect(err).to.be.eql(jobError);
@@ -1231,25 +1438,25 @@ describe('Queue', function() {
       });
     });
 
-    it('process a job that throws an exception', function(done) {
-      var jobError = new Error('Job Failed');
+    it('process a job that throws an exception', done => {
+      const jobError = new Error('Job Failed');
 
-      queue.process(function(job) {
+      queue.process(job => {
         expect(job.data.foo).to.be.equal('bar');
         throw jobError;
       });
 
       queue.add({ foo: 'bar' }).then(
-        function(job) {
+        job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         },
-        function(err) {
+        err => {
           done(err);
         }
       );
 
-      queue.once('failed', function(job, err) {
+      queue.once('failed', (job, err) => {
         expect(job).to.be.ok;
         expect(job.data.foo).to.be.eql('bar');
         expect(err).to.be.eql(jobError);
@@ -1257,15 +1464,15 @@ describe('Queue', function() {
       });
     });
 
-    it('process a job that returns data with a circular dependency', function(done) {
-      queue.on('failed', function() {
+    it('process a job that returns data with a circular dependency', done => {
+      queue.on('failed', () => {
         done();
       });
-      queue.on('completed', function() {
+      queue.on('completed', () => {
         done(Error('Should not complete'));
       });
-      queue.process(function() {
-        var circular = {};
+      queue.process(() => {
+        const circular = {};
         circular.x = circular;
         return Promise.resolve(circular);
       });
@@ -1273,25 +1480,25 @@ describe('Queue', function() {
       queue.add({ foo: 'bar' });
     });
 
-    it('process a job that returns a rejected promise', function(done) {
-      var jobError = new Error('Job Failed');
+    it('process a job that returns a rejected promise', done => {
+      const jobError = new Error('Job Failed');
 
-      queue.process(function(job) {
+      queue.process(job => {
         expect(job.data.foo).to.be.equal('bar');
         return Promise.reject(jobError);
       });
 
       queue.add({ foo: 'bar' }).then(
-        function(job) {
+        job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         },
-        function(err) {
+        err => {
           done(err);
         }
       );
 
-      queue.once('failed', function(job, err) {
+      queue.once('failed', (job, err) => {
         expect(job.id).to.be.ok;
         expect(job.data.foo).to.be.eql('bar');
         expect(err).to.be.eql(jobError);
@@ -1299,29 +1506,29 @@ describe('Queue', function() {
       });
     });
 
-    it('process a job that rejects with a nested error', function(done) {
-      var cause = new Error('cause');
-      var jobError = new Error('wrapper');
+    it('process a job that rejects with a nested error', done => {
+      const cause = new Error('cause');
+      const jobError = new Error('wrapper');
       jobError.cause = function() {
         return cause;
       };
 
-      queue.process(function(job) {
+      queue.process(job => {
         expect(job.data.foo).to.be.equal('bar');
         return Promise.reject(jobError);
       });
 
       queue.add({ foo: 'bar' }).then(
-        function(job) {
+        job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         },
-        function(err) {
+        err => {
           done(err);
         }
       );
 
-      queue.once('failed', function(job, err) {
+      queue.once('failed', (job, err) => {
         expect(job.id).to.be.ok;
         expect(job.data.foo).to.be.eql('bar');
         expect(err).to.be.eql(jobError);
@@ -1334,15 +1541,15 @@ describe('Queue', function() {
     it.skip('does not renew a job lock after the lock has been released [#397]', function() {
       this.timeout(queue.LOCK_RENEW_TIME * 4);
 
-      var processing = queue.process(function(job) {
+      const processing = queue.process(job => {
         expect(job.data.foo).to.be.equal('bar');
         return Promise.resolve();
       });
 
-      var emit = queue.emit.bind(queue);
+      const emit = queue.emit.bind(queue);
       queue.emit = function() {
-        var args = arguments;
-        return Bluebird.delay(queue.LOCK_RENEW_TIME * 2).then(function() {
+        const args = arguments;
+        return delay(queue.LOCK_RENEW_TIME * 2).then(() => {
           return emit.apply(null, args);
         });
       };
@@ -1351,28 +1558,28 @@ describe('Queue', function() {
 
       return queue
         .add({ foo: 'bar' })
-        .then(function(job) {
+        .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
-        .then(function() {
+        .then(() => {
           return processing;
         });
     });
 
-    it('retry a job that fails', function(done) {
-      var called = 0;
-      var failedOnce = false;
-      var notEvenErr = new Error('Not even!');
+    it('retry a job that fails', done => {
+      let called = 0;
+      let failedOnce = false;
+      const notEvenErr = new Error('Not even!');
 
-      var retryQueue = utils.buildQueue('retry-test-queue');
+      const retryQueue = utils.buildQueue('retry-test-queue');
 
-      retryQueue.add({ foo: 'bar' }).then(function(job) {
+      retryQueue.add({ foo: 'bar' }).then(job => {
         expect(job.id).to.be.ok;
         expect(job.data.foo).to.be.eql('bar');
       });
 
-      retryQueue.process(function(job, jobDone) {
+      retryQueue.process((job, jobDone) => {
         called++;
         if (called % 2 !== 0) {
           throw notEvenErr;
@@ -1380,7 +1587,7 @@ describe('Queue', function() {
         jobDone();
       });
 
-      retryQueue.once('failed', function(job, err) {
+      retryQueue.once('failed', (job, err) => {
         expect(job).to.be.ok;
         expect(job.data.foo).to.be.eql('bar');
         expect(err).to.be.eql(notEvenErr);
@@ -1388,25 +1595,25 @@ describe('Queue', function() {
         retryQueue.retryJob(job);
       });
 
-      retryQueue.once('completed', function() {
+      retryQueue.once('completed', () => {
         expect(failedOnce).to.be.eql(true);
         retryQueue.close().then(done);
       });
     });
 
-    it('retry a job that fails using job retry method', function(done) {
-      var called = 0;
-      var failedOnce = false;
-      var notEvenErr = new Error('Not even!');
+    it('retry a job that fails using job retry method', done => {
+      let called = 0;
+      let failedOnce = false;
+      const notEvenErr = new Error('Not even!');
 
-      var retryQueue = utils.buildQueue('retry-test-queue');
+      const retryQueue = utils.buildQueue('retry-test-queue');
 
-      retryQueue.add({ foo: 'bar' }).then(function(job) {
+      retryQueue.add({ foo: 'bar' }).then(job => {
         expect(job.id).to.be.ok;
         expect(job.data.foo).to.be.eql('bar');
       });
 
-      retryQueue.process(function(job, jobDone) {
+      retryQueue.process((job, jobDone) => {
         called++;
         if (called % 2 !== 0) {
           throw notEvenErr;
@@ -1414,17 +1621,17 @@ describe('Queue', function() {
         jobDone();
       });
 
-      retryQueue.once('failed', function(job, err) {
+      retryQueue.once('failed', (job, err) => {
         expect(job).to.be.ok;
         expect(job.data.foo).to.be.eql('bar');
         expect(err).to.be.eql(notEvenErr);
         failedOnce = true;
-        job.retry().then(function() {
+        job.retry().then(() => {
           expect(job.failedReason).to.be.null;
           expect(job.processedOn).to.be.null;
           expect(job.finishedOn).to.be.null;
 
-          retryQueue.getJob(job.id).then(function(updatedJob) {
+          retryQueue.getJob(job.id).then(updatedJob => {
             expect(updatedJob.failedReason).to.be.undefined;
             expect(updatedJob.processedOn).to.be.undefined;
             expect(updatedJob.finishedOn).to.be.undefined;
@@ -1432,82 +1639,82 @@ describe('Queue', function() {
         });
       });
 
-      retryQueue.once('completed', function() {
+      retryQueue.once('completed', () => {
         expect(failedOnce).to.be.eql(true);
         retryQueue.close().then(done);
       });
     });
   });
 
-  it('count added, unprocessed jobs', function() {
-    var maxJobs = 100;
-    var added = [];
+  it('count added, unprocessed jobs', () => {
+    const maxJobs = 100;
+    const added = [];
 
-    var queue = utils.buildQueue();
+    const queue = utils.buildQueue();
 
-    for (var i = 1; i <= maxJobs; i++) {
+    for (let i = 1; i <= maxJobs; i++) {
       added.push(queue.add({ foo: 'bar', num: i }));
     }
 
     return Promise.all(added)
       .then(queue.count.bind(queue))
-      .then(function(count) {
+      .then(count => {
         expect(count).to.be.eql(maxJobs);
       })
       .then(queue.empty.bind(queue))
       .then(queue.count.bind(queue))
-      .then(function(count) {
+      .then(count => {
         expect(count).to.be.eql(0);
         return queue.close();
       });
   });
 
-  describe('Delayed jobs', function() {
-    var queue;
+  describe('Delayed jobs', () => {
+    let queue;
 
-    beforeEach(function() {
-      var client = new redis();
+    beforeEach(() => {
+      const client = new redis();
       return client.flushdb();
     });
 
-    it('should process a delayed job only after delayed time', function(done) {
-      var delay = 500;
+    it('should process a delayed job only after delayed time', done => {
+      const delay = 500;
       queue = new Queue('delayed queue simple');
-      var client = new redis(6379, '127.0.0.1', {});
-      var timestamp = Date.now();
-      var publishHappened = false;
-      client.on('ready', function() {
-        client.on('message', function(channel, message) {
+      const client = new redis(6379, '127.0.0.1', {});
+      const timestamp = Date.now();
+      let publishHappened = false;
+      client.on('ready', () => {
+        client.on('message', (channel, message) => {
           expect(parseInt(message, 10)).to.be.a('number');
           publishHappened = true;
         });
         client.subscribe(queue.toKey('delayed'));
       });
 
-      queue.process(function(job, jobDone) {
+      queue.process((job, jobDone) => {
         jobDone();
       });
 
-      queue.on('completed', function() {
+      queue.on('completed', () => {
         expect(Date.now() > timestamp + delay);
         queue
           .getWaiting()
-          .then(function(jobs) {
+          .then(jobs => {
             expect(jobs.length).to.be.equal(0);
           })
-          .then(function() {
-            return queue.getDelayed().then(function(jobs) {
+          .then(() => {
+            return queue.getDelayed().then(jobs => {
               expect(jobs.length).to.be.equal(0);
             });
           })
-          .then(function() {
+          .then(() => {
             expect(publishHappened).to.be.eql(true);
             queue.close(true).then(done, done);
           });
       });
 
-      queue._initializingProcess.then(function() {
-        queue.add({ delayed: 'foobar' }, { delay: delay }).then(function(job) {
+      queue._initializingProcess.then(() => {
+        queue.add({ delayed: 'foobar' }, { delay }).then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.delayed).to.be.eql('foobar');
           expect(job.delay).to.be.eql(delay);
@@ -1515,16 +1722,16 @@ describe('Queue', function() {
       });
     });
 
-    it('should process delayed jobs in correct order', function(done) {
-      var order = 0;
+    it('should process delayed jobs in correct order', done => {
+      let order = 0;
       queue = new Queue('delayed queue multiple');
 
-      queue.on('failed', function(job, err) {
+      queue.on('failed', (job, err) => {
         err.job = job;
         done(err);
       });
 
-      queue.process(function(job, jobDone) {
+      queue.process((job, jobDone) => {
         order++;
         expect(order).to.be.equal(job.data.order);
         jobDone();
@@ -1548,12 +1755,12 @@ describe('Queue', function() {
     it('should process delayed jobs in correct order even in case of restart', function(done) {
       this.timeout(15000);
 
-      var QUEUE_NAME = 'delayed queue multiple' + uuid();
-      var order = 1;
+      const QUEUE_NAME = 'delayed queue multiple' + uuid();
+      let order = 1;
 
       queue = new Queue(QUEUE_NAME);
 
-      var fn = function(job, jobDone) {
+      const fn = function(job, jobDone) {
         expect(order).to.be.equal(job.data.order);
         jobDone();
 
@@ -1564,26 +1771,26 @@ describe('Queue', function() {
         order++;
       };
 
-      Bluebird.join(
+      Promise.all([
         queue.add({ order: 2 }, { delay: 300 }),
         queue.add({ order: 4 }, { delay: 500 }),
         queue.add({ order: 1 }, { delay: 200 }),
         queue.add({ order: 3 }, { delay: 400 })
-      )
-        .then(function() {
+      ])
+        .then(() => {
           //
           // Start processing so that jobs get into the delay set.
           //
           queue.process(fn);
-          return Bluebird.delay(20);
+          return delay(20);
         })
-        .then(function() {
+        .then(() => {
           /*
         //We simulate a restart
         console.log('RESTART');
         return queue.close().then(function () {
           console.log('CLOSED');
-          return Promise.delay(100).then(function () {
+          return delay(100).then(function () {
             queue = new Queue(QUEUE_NAME);
             queue.process(fn);
           });
@@ -1592,12 +1799,12 @@ describe('Queue', function() {
         });
     });
 
-    it('should process delayed jobs with exact same timestamps in correct order (FIFO)', function(done) {
-      var QUEUE_NAME = 'delayed queue multiple' + uuid();
+    it('should process delayed jobs with exact same timestamps in correct order (FIFO)', done => {
+      const QUEUE_NAME = 'delayed queue multiple' + uuid();
       queue = new Queue(QUEUE_NAME);
-      var order = 1;
+      let order = 1;
 
-      var fn = function(job, jobDone) {
+      const fn = function(job, jobDone) {
         expect(order).to.be.equal(job.data.order);
         jobDone();
 
@@ -1608,10 +1815,10 @@ describe('Queue', function() {
         order++;
       };
 
-      queue.isReady().then(function() {
-        var now = Date.now();
-        var _promises = [];
-        var _i = 1;
+      queue.isReady().then(() => {
+        const now = Date.now();
+        const _promises = [];
+        let _i = 1;
         for (_i; _i <= 12; _i++) {
           _promises.push(
             queue.add(
@@ -1623,27 +1830,27 @@ describe('Queue', function() {
             )
           );
         }
-        Bluebird.join.apply(null, _promises).then(function() {
+        Promise.all(_promises).then(() => {
           queue.process(fn);
         });
       });
     });
 
-    it('an unlocked job should not be moved to delayed', function(done) {
-      var queue = new Queue('delayed queue');
-      var job;
+    it('an unlocked job should not be moved to delayed', done => {
+      const queue = new Queue('delayed queue');
+      let job;
 
-      queue.process(function(_job, callback) {
+      queue.process((_job, callback) => {
         // Release the lock to simulate the event loop stalling (so failure to renew the lock).
         job = _job;
-        job.releaseLock().then(function() {
+        job.releaseLock().then(() => {
           // Once it's failed, it should NOT be moved to delayed since this worker lost the lock.
           callback(new Error('retry this job'));
         });
       });
 
-      queue.on('error', function(/*err*/) {
-        job.isDelayed().then(function(isDelayed) {
+      queue.on('error', (/*err*/) => {
+        job.isDelayed().then(isDelayed => {
           expect(isDelayed).to.be.equal(false);
           queue.close().then(done, done);
         });
@@ -1652,21 +1859,21 @@ describe('Queue', function() {
       queue.add({ foo: 'bar' }, { backoff: 1000, attempts: 2 });
     });
 
-    it('an unlocked job should not be moved to waiting', function(done) {
-      var queue = new Queue('delayed queue');
-      var job;
+    it('an unlocked job should not be moved to waiting', done => {
+      const queue = new Queue('delayed queue');
+      let job;
 
-      queue.process(function(_job, callback) {
+      queue.process((_job, callback) => {
         job = _job;
         // Release the lock to simulate the event loop stalling (so failure to renew the lock).
-        job.releaseLock().then(function() {
+        job.releaseLock().then(() => {
           // Once it's failed, it should NOT be moved to waiting since this worker lost the lock.
           callback(new Error('retry this job'));
         });
       });
 
-      queue.on('error', function(/*err*/) {
-        job.isWaiting().then(function(isWaiting) {
+      queue.on('error', (/*err*/) => {
+        job.isWaiting().then(isWaiting => {
           expect(isWaiting).to.be.equal(false);
           queue.close().then(done, done);
         });
@@ -1677,11 +1884,11 @@ describe('Queue', function() {
     });
   });
 
-  describe('Concurrency process', function() {
-    var queue;
+  describe('Concurrency process', () => {
+    let queue;
 
-    beforeEach(function() {
-      var client = new redis();
+    beforeEach(() => {
+      const client = new redis();
       queue = utils.buildQueue();
       return client.flushdb();
     });
@@ -1693,13 +1900,13 @@ describe('Queue', function() {
       return queue.close();
     });
 
-    it('should run job in sequence if I specify a concurrency of 1', function(done) {
-      var processing = false;
+    it('should run job in sequence if I specify a concurrency of 1', done => {
+      let processing = false;
 
-      queue.process(1, function(job, jobDone) {
+      queue.process(1, (job, jobDone) => {
         expect(processing).to.be.equal(false);
         processing = true;
-        Bluebird.delay(50).then(function() {
+        delay(50).then(() => {
           processing = false;
           jobDone();
         });
@@ -1713,19 +1920,19 @@ describe('Queue', function() {
 
     //This job use delay to check that at any time we have 4 process in parallel.
     //Due to time to get new jobs and call process, false negative can appear.
-    it('should process job respecting the concurrency set', function(done) {
-      var nbProcessing = 0;
-      var pendingMessageToProcess = 8;
-      var wait = 100;
+    it('should process job respecting the concurrency set', done => {
+      let nbProcessing = 0;
+      let pendingMessageToProcess = 8;
+      let wait = 100;
 
       queue
-        .process(4, function() {
+        .process(4, () => {
           nbProcessing++;
           expect(nbProcessing).to.be.lessThan(5);
 
           wait += 100;
 
-          return Bluebird.delay(wait).then(function() {
+          return delay(wait).then(() => {
             //We should not have 4 more in parallel.
             //At the end, due to empty list, no new job will process, so nbProcessing will decrease.
             expect(nbProcessing).to.be.eql(
@@ -1750,17 +1957,17 @@ describe('Queue', function() {
       queue.on('failed', done);
     });
 
-    it('should wait for all concurrent processing in case of pause', function(done) {
-      var i = 0;
-      var nbJobFinish = 0;
+    it('should wait for all concurrent processing in case of pause', done => {
+      let i = 0;
+      let nbJobFinish = 0;
 
       queue
-        .process(3, function(job, jobDone) {
-          var error = null;
+        .process(3, (job, jobDone) => {
+          let error = null;
 
           if (++i === 4) {
-            queue.pause().then(function() {
-              Bluebird.delay(500).then(function() {
+            queue.pause().then(() => {
+              delay(500).then(() => {
                 // Wait for all the active jobs to finalize.
                 expect(nbJobFinish).to.be.above(3);
                 queue.resume();
@@ -1775,7 +1982,7 @@ describe('Queue', function() {
           }
 
           //100 - i*20 is to force to finish job n°4 before lower job that will wait longer
-          Bluebird.delay(100 - i * 10).then(function() {
+          delay(100 - i * 10).then(() => {
             nbJobFinish++;
             jobDone(error);
           });
@@ -1791,15 +1998,15 @@ describe('Queue', function() {
       queue.add({});
       queue.add({});
 
-      var cb = _.after(8, done.bind(null, null));
+      const cb = _.after(8, done.bind(null, null));
       queue.on('completed', cb);
       queue.on('failed', cb);
       queue.on('error', done);
     });
   });
 
-  describe('Retries and backoffs', function() {
-    var queue;
+  describe('Retries and backoffs', () => {
+    let queue;
 
     afterEach(function() {
       this.timeout(
@@ -1808,11 +2015,11 @@ describe('Queue', function() {
       return queue.close();
     });
 
-    it('should not retry a job if it has been marked as unrecoverable', function(done) {
-      var tries = 0;
+    it('should not retry a job if it has been marked as unrecoverable', done => {
+      let tries = 0;
       queue = utils.buildQueue('test retries and backoffs');
-      queue.isReady().then(function() {
-        queue.process(function(job, jobDone) {
+      queue.isReady().then(() => {
+        queue.process((job, jobDone) => {
           tries++;
           expect(tries).to.equal(1);
           job.discard();
@@ -1826,16 +2033,16 @@ describe('Queue', function() {
           }
         );
       });
-      queue.on('failed', function() {
+      queue.on('failed', () => {
         done();
       });
     });
 
-    it('should automatically retry a failed job if attempts is bigger than 1', function(done) {
+    it('should automatically retry a failed job if attempts is bigger than 1', done => {
       queue = utils.buildQueue('test retries and backoffs');
-      queue.isReady().then(function() {
-        var tries = 0;
-        queue.process(function(job, jobDone) {
+      queue.isReady().then(() => {
+        let tries = 0;
+        queue.process((job, jobDone) => {
           expect(job.attemptsMade).to.be.eql(tries);
           tries++;
           if (job.attemptsMade < 2) {
@@ -1852,16 +2059,16 @@ describe('Queue', function() {
           }
         );
       });
-      queue.on('completed', function() {
+      queue.on('completed', () => {
         done();
       });
     });
 
-    it('should not retry a failed job more than the number of given attempts times', function(done) {
+    it('should not retry a failed job more than the number of given attempts times', done => {
       queue = utils.buildQueue('test retries and backoffs');
-      var tries = 0;
-      queue.isReady().then(function() {
-        queue.process(function(job, jobDone) {
+      let tries = 0;
+      queue.isReady().then(() => {
+        queue.process((job, jobDone) => {
           tries++;
           if (job.attemptsMade < 3) {
             throw new Error('Not yet!');
@@ -1877,10 +2084,10 @@ describe('Queue', function() {
           }
         );
       });
-      queue.on('completed', function() {
+      queue.on('completed', () => {
         done(new Error('Failed job was retried more than it should be!'));
       });
-      queue.on('failed', function() {
+      queue.on('failed', () => {
         if (tries === 3) {
           done();
         }
@@ -1890,9 +2097,9 @@ describe('Queue', function() {
     it('should retry a job after a delay if a fixed backoff is given', function(done) {
       this.timeout(12000);
       queue = utils.buildQueue('test retries and backoffs');
-      var start;
-      queue.isReady().then(function() {
-        queue.process(function(job, jobDone) {
+      let start;
+      queue.isReady().then(() => {
+        queue.process((job, jobDone) => {
           if (job.attemptsMade < 2) {
             throw new Error('Not yet!');
           }
@@ -1908,8 +2115,8 @@ describe('Queue', function() {
           }
         );
       });
-      queue.on('completed', function() {
-        var elapse = Date.now() - start;
+      queue.on('completed', () => {
+        const elapse = Date.now() - start;
         expect(elapse).to.be.greaterThan(2000);
         done();
       });
@@ -1918,9 +2125,9 @@ describe('Queue', function() {
     it('should retry a job after a delay if an exponential backoff is given', function(done) {
       this.timeout(12000);
       queue = utils.buildQueue('test retries and backoffs');
-      var start;
-      queue.isReady().then(function() {
-        queue.process(function(job, jobDone) {
+      let start;
+      queue.isReady().then(() => {
+        queue.process((job, jobDone) => {
           if (job.attemptsMade < 2) {
             throw new Error('Not yet!');
           }
@@ -1939,9 +2146,9 @@ describe('Queue', function() {
           }
         );
       });
-      queue.on('completed', function() {
-        var elapse = Date.now() - start;
-        var expected = 1000 * (Math.pow(2, 2) - 1);
+      queue.on('completed', () => {
+        const elapse = Date.now() - start;
+        const expected = 1000 * (Math.pow(2, 2) - 1);
         expect(elapse).to.be.greaterThan(expected);
         done();
       });
@@ -1952,15 +2159,15 @@ describe('Queue', function() {
       queue = utils.buildQueue('test retries and backoffs', {
         settings: {
           backoffStrategies: {
-            custom: function(attemptsMade) {
+            custom(attemptsMade) {
               return attemptsMade * 1000;
             }
           }
         }
       });
-      var start;
-      queue.isReady().then(function() {
-        queue.process(function(job, jobDone) {
+      let start;
+      queue.isReady().then(() => {
+        queue.process((job, jobDone) => {
           if (job.attemptsMade < 2) {
             throw new Error('Not yet!');
           }
@@ -1978,25 +2185,25 @@ describe('Queue', function() {
           }
         );
       });
-      queue.on('completed', function() {
-        var elapse = Date.now() - start;
+      queue.on('completed', () => {
+        const elapse = Date.now() - start;
         expect(elapse).to.be.greaterThan(3000);
         done();
       });
     });
 
-    it('should not retry a job if the custom backoff returns -1', function(done) {
+    it('should not retry a job if the custom backoff returns -1', done => {
       queue = utils.buildQueue('test retries and backoffs', {
         settings: {
           backoffStrategies: {
-            custom: function() {
+            custom() {
               return -1;
             }
           }
         }
       });
-      var tries = 0;
-      queue.process(function(job, jobDone) {
+      let tries = 0;
+      queue.process((job, jobDone) => {
         tries++;
         if (job.attemptsMade < 3) {
           throw new Error('Not yet!');
@@ -2013,10 +2220,10 @@ describe('Queue', function() {
           }
         }
       );
-      queue.on('completed', function() {
+      queue.on('completed', () => {
         done(new Error('Failed job was retried more than it should be!'));
       });
-      queue.on('failed', function() {
+      queue.on('failed', () => {
         if (tries === 1) {
           done();
         }
@@ -2030,7 +2237,7 @@ describe('Queue', function() {
       queue = utils.buildQueue('test retries and backoffs', {
         settings: {
           backoffStrategies: {
-            custom: function(attemptsMade, err) {
+            custom(attemptsMade, err) {
               if (err instanceof CustomError) {
                 return 1500;
               }
@@ -2039,9 +2246,9 @@ describe('Queue', function() {
           }
         }
       });
-      var start;
-      queue.isReady().then(function() {
-        queue.process(function(job, jobDone) {
+      let start;
+      queue.isReady().then(() => {
+        queue.process((job, jobDone) => {
           if (job.attemptsMade < 2) {
             throw new CustomError('Hey, custom error!');
           }
@@ -2059,18 +2266,61 @@ describe('Queue', function() {
           }
         );
       });
-      queue.on('completed', function() {
-        var elapse = Date.now() - start;
+      queue.on('completed', () => {
+        const elapse = Date.now() - start;
         expect(elapse).to.be.greaterThan(3000);
         done();
       });
     });
 
-    it('should not retry a job that has been removed', function(done) {
+    it('should be able to handle a custom backoff if it returns a promise', function(done) {
+      this.timeout(12000);
+
+      queue = utils.buildQueue('test retries and backoffs', {
+        settings: {
+          backoffStrategies: {
+            async custom() {
+              return new Promise(resolve => {
+                setTimeout(() => {
+                  resolve(500);
+                }, 500);
+              });
+            }
+          }
+        }
+      });
+      let start;
+      queue.isReady().then(() => {
+        queue.process((job, jobDone) => {
+          if (job.attemptsMade < 2) {
+            throw new Error('some error');
+          }
+          jobDone();
+        });
+
+        start = Date.now();
+        queue.add(
+          { foo: 'bar' },
+          {
+            attempts: 3,
+            backoff: {
+              type: 'custom'
+            }
+          }
+        );
+      });
+      queue.on('completed', () => {
+        const elapse = Date.now() - start;
+        expect(elapse).to.be.greaterThan(2000);
+        done();
+      });
+    });
+
+    it('should not retry a job that has been removed', done => {
       queue = utils.buildQueue('retry a removed job');
-      var attempts = 0;
-      var failedError = new Error('failed');
-      queue.process(function(job, jobDone) {
+      let attempts = 0;
+      const failedError = new Error('failed');
+      queue.process((job, jobDone) => {
         if (attempts === 0) {
           attempts++;
           throw failedError;
@@ -2080,7 +2330,7 @@ describe('Queue', function() {
       });
       queue.add({ foo: 'bar' });
 
-      var failedHandler = _.once(function(job, err) {
+      const failedHandler = _.once((job, err) => {
         expect(job.data.foo).to.equal('bar');
         expect(err).to.equal(failedError);
         expect(job.failedReason).to.equal(failedError.message);
@@ -2088,33 +2338,33 @@ describe('Queue', function() {
         try {
           job
             .retry()
-            .then(function() {
-              return Bluebird.delay(100).then(function() {
-                return queue.getCompletedCount().then(function(count) {
+            .then(() => {
+              return delay(100).then(() => {
+                return queue.getCompletedCount().then(count => {
                   return expect(count).to.equal(1);
                 });
               });
             })
-            .then(function() {
-              return queue.clean(0).then(function() {
-                return job.retry().catch(function(err) {
+            .then(() => {
+              return queue.clean(0).then(() => {
+                return job.retry().catch(err => {
                   expect(err.message).to.equal(
                     Queue.ErrorMessages.RETRY_JOB_NOT_EXIST
                   );
                 });
               });
             })
-            .then(function() {
+            .then(() => {
               return Promise.all([
-                queue.getCompletedCount().then(function(count) {
+                queue.getCompletedCount().then(count => {
                   return expect(count).to.equal(0);
                 }),
-                queue.getFailedCount().then(function(count) {
+                queue.getFailedCount().then(count => {
                   return expect(count).to.equal(0);
                 })
               ]);
             })
-            .then(function() {
+            .then(() => {
               done();
             }, done);
         } catch (err) {
@@ -2125,12 +2375,12 @@ describe('Queue', function() {
       queue.on('failed', failedHandler);
     });
 
-    it('should not retry a job that has been retried already', function(done) {
+    it('should not retry a job that has been retried already', done => {
       queue = utils.buildQueue('retry already retried job');
-      var failedError = new Error('failed');
-      queue.isReady().then(function() {
-        var attempts = 0;
-        queue.process(function(job, jobDone) {
+      const failedError = new Error('failed');
+      queue.isReady().then(() => {
+        let attempts = 0;
+        queue.process((job, jobDone) => {
           if (attempts === 0) {
             attempts++;
             throw failedError;
@@ -2142,37 +2392,37 @@ describe('Queue', function() {
         queue.add({ foo: 'bar' });
       });
 
-      var failedHandler = _.once(function(job, err) {
+      const failedHandler = _.once((job, err) => {
         expect(job.data.foo).to.equal('bar');
         expect(err).to.equal(failedError);
 
         job
           .retry()
-          .then(function() {
-            return Bluebird.delay(100).then(function() {
-              return queue.getCompletedCount().then(function(count) {
+          .then(() => {
+            return delay(100).then(() => {
+              return queue.getCompletedCount().then(count => {
                 return expect(count).to.equal(1);
               });
             });
           })
-          .then(function() {
-            return job.retry().catch(function(err) {
+          .then(() => {
+            return job.retry().catch(err => {
               expect(err.message).to.equal(
                 Queue.ErrorMessages.RETRY_JOB_NOT_FAILED
               );
             });
           })
-          .then(function() {
+          .then(() => {
             return Promise.all([
-              queue.getCompletedCount().then(function(count) {
+              queue.getCompletedCount().then(count => {
                 return expect(count).to.equal(1);
               }),
-              queue.getFailedCount().then(function(count) {
+              queue.getFailedCount().then(count => {
                 return expect(count).to.equal(0);
               })
             ]);
           })
-          .then(function() {
+          .then(() => {
             done();
           }, done);
       });
@@ -2180,15 +2430,15 @@ describe('Queue', function() {
       queue.on('failed', failedHandler);
     });
 
-    it('should not retry a job that is locked', function(done) {
+    it('should not retry a job that is locked', done => {
       queue = utils.buildQueue('retry a locked job');
-      var addedHandler = _.once(function(job) {
+      const addedHandler = _.once(job => {
         expect(job.data.foo).to.equal('bar');
 
-        Bluebird.delay(100).then(function() {
+        delay(100).then(() => {
           job
             .retry()
-            .catch(function(err) {
+            .catch(err => {
               expect(err.message).to.equal(
                 Queue.ErrorMessages.RETRY_JOB_IS_LOCKED
               );
@@ -2198,30 +2448,30 @@ describe('Queue', function() {
         });
       });
 
-      queue.process(function(/*job*/) {
-        return Bluebird.delay(300);
+      queue.process((/*job*/) => {
+        return delay(300);
       });
       queue.add({ foo: 'bar' }).then(addedHandler);
     });
 
-    it('an unlocked job should not be moved to failed', function(done) {
+    it('an unlocked job should not be moved to failed', done => {
       queue = utils.buildQueue('test unlocked failed');
 
-      queue.process(function(job, callback) {
+      queue.process((job, callback) => {
         // Release the lock to simulate the event loop stalling (so failure to renew the lock).
-        job.releaseLock().then(function() {
+        job.releaseLock().then(() => {
           // Once it's failed, it should NOT be moved to failed since this worker lost the lock.
           callback(new Error('retry this job'));
         });
       });
 
-      queue.on('failed', function(job) {
-        job.isFailed().then(function(isFailed) {
+      queue.on('failed', job => {
+        job.isFailed().then(isFailed => {
           expect(isFailed).to.be.equal(false);
         });
       });
 
-      queue.on('error', function(/*err*/) {
+      queue.on('error', (/*err*/) => {
         queue.close().then(done, done);
       });
 
@@ -2230,10 +2480,10 @@ describe('Queue', function() {
     });
   });
 
-  describe('Cleaner', function() {
-    var queue;
+  describe('Cleaner', () => {
+    let queue;
 
-    beforeEach(function() {
+    beforeEach(() => {
       queue = utils.buildQueue('cleaner' + uuid());
     });
 
@@ -2244,53 +2494,58 @@ describe('Queue', function() {
       return queue.close();
     });
 
-    it('should reject the cleaner with no grace', function(done) {
+    it('should reject the cleaner with no grace', done => {
       queue.clean().then(
-        function() {
+        () => {
           done(new Error('Promise should not resolve'));
         },
-        function(err) {
+        err => {
           expect(err).to.be.instanceof(Error);
           done();
         }
       );
     });
 
-    it('should reject the cleaner an unknown type', function(done) {
+    it('should reject the cleaner an unknown type', done => {
       queue.clean(0, 'bad').then(
-        function() {
+        () => {
           done(new Error('Promise should not resolve'));
         },
-        function(e) {
+        e => {
           expect(e).to.be.instanceof(Error);
           done();
         }
       );
     });
 
-    it('should clean an empty queue', function(done) {
-      queue.clean(0);
-      queue.on('error', function(err) {
+    it('should clean an empty queue', done => {
+      const testQueue = utils.buildQueue('cleaner' + uuid());
+      testQueue.isReady().then(() => {
+        return testQueue.clean(0);
+      });
+      testQueue.on('error', err => {
+        utils.cleanupQueue(testQueue);
         done(err);
       });
-      queue.on('cleaned', function(jobs, type) {
+      testQueue.on('cleaned', (jobs, type) => {
         expect(type).to.be.eql('completed');
         expect(jobs.length).to.be.eql(0);
+        utils.cleanupQueue(testQueue);
         done();
       });
     });
 
-    it('should clean two jobs from the queue', function(done) {
+    it('should clean two jobs from the queue', done => {
       queue.add({ some: 'data' });
       queue.add({ some: 'data' });
-      queue.process(function(job, jobDone) {
+      queue.process((job, jobDone) => {
         jobDone();
       });
 
       queue.on(
         'completed',
-        _.after(2, function() {
-          queue.clean(0).then(function(jobs) {
+        _.after(2, () => {
+          queue.clean(0).then(jobs => {
             expect(jobs.length).to.be.eql(2);
             done();
           }, done);
@@ -2298,126 +2553,128 @@ describe('Queue', function() {
       );
     });
 
-    it('should only remove a job outside of the grace period', function(done) {
-      queue.process(function(job, jobDone) {
+    it('should only remove a job outside of the grace period', done => {
+      queue.process((job, jobDone) => {
         jobDone();
       });
       queue.add({ some: 'data' });
       queue.add({ some: 'data' });
-      Bluebird.delay(200)
-        .then(function() {
+      delay(200)
+        .then(() => {
           queue.add({ some: 'data' });
           queue.clean(100);
           return null;
         })
-        .delay(100)
-        .then(function() {
+        .then(() => {
+          return delay(100);
+        })
+        .then(() => {
           return queue.getCompleted();
         })
-        .then(function(jobs) {
+        .then(jobs => {
           expect(jobs.length).to.be.eql(1);
           return queue.empty();
         })
-        .then(function() {
+        .then(() => {
           done();
         });
     });
 
-    it('should clean all failed jobs', function(done) {
+    it('should clean all failed jobs', done => {
       queue.add({ some: 'data' });
       queue.add({ some: 'data' });
-      queue.process(function(job, jobDone) {
+      queue.process((job, jobDone) => {
         jobDone(new Error('It failed'));
       });
-      Bluebird.delay(100)
-        .then(function() {
+      delay(100)
+        .then(() => {
           return queue.clean(0, 'failed');
         })
-        .then(function(jobs) {
+        .then(jobs => {
           expect(jobs.length).to.be.eql(2);
           return queue.count();
         })
-        .then(function(len) {
+        .then(len => {
           expect(len).to.be.eql(0);
           done();
         });
     });
 
-    it('should clean all waiting jobs', function(done) {
+    it('should clean all waiting jobs', done => {
       queue.add({ some: 'data' });
       queue.add({ some: 'data' });
-      Bluebird.delay(100)
-        .then(function() {
+      delay(100)
+        .then(() => {
           return queue.clean(0, 'wait');
         })
-        .then(function(jobs) {
+        .then(jobs => {
           expect(jobs.length).to.be.eql(2);
           return queue.count();
         })
-        .then(function(len) {
+        .then(len => {
           expect(len).to.be.eql(0);
           done();
         });
     });
 
-    it('should clean all delayed jobs', function(done) {
+    it('should clean all delayed jobs', done => {
       queue.add({ some: 'data' }, { delay: 5000 });
       queue.add({ some: 'data' }, { delay: 5000 });
-      Bluebird.delay(100)
-        .then(function() {
+      delay(100)
+        .then(() => {
           return queue.clean(0, 'delayed');
         })
-        .then(function(jobs) {
+        .then(jobs => {
           expect(jobs.length).to.be.eql(2);
           return queue.count();
         })
-        .then(function(len) {
+        .then(len => {
           expect(len).to.be.eql(0);
           done();
         });
     });
 
-    it('should clean the number of jobs requested', function(done) {
+    it('should clean the number of jobs requested', done => {
       queue.add({ some: 'data' });
       queue.add({ some: 'data' });
       queue.add({ some: 'data' });
-      Bluebird.delay(100)
-        .then(function() {
+      delay(100)
+        .then(() => {
           return queue.clean(0, 'wait', 1);
         })
-        .then(function(jobs) {
+        .then(jobs => {
           expect(jobs.length).to.be.eql(1);
           return queue.count();
         })
-        .then(function(len) {
+        .then(len => {
           expect(len).to.be.eql(2);
           done();
         });
     });
 
-    it('should clean a job without a timestamp', function(done) {
-      var client = new redis(6379, '127.0.0.1', {});
+    it('should clean a job without a timestamp', done => {
+      const client = new redis(6379, '127.0.0.1', {});
 
       queue.add({ some: 'data' });
       queue.add({ some: 'data' });
-      queue.process(function(job, jobDone) {
+      queue.process((job, jobDone) => {
         jobDone(new Error('It failed'));
       });
 
-      Bluebird.delay(100)
-        .then(function() {
-          return new Promise(function(resolve) {
+      delay(100)
+        .then(() => {
+          return new Promise(resolve => {
             client.hdel('bull:' + queue.name + ':1', 'timestamp', resolve);
           });
         })
-        .then(function() {
+        .then(() => {
           return queue.clean(0, 'failed');
         })
-        .then(function(jobs) {
+        .then(jobs => {
           expect(jobs.length).to.be.eql(2);
           return queue.getFailed();
         })
-        .then(function(failed) {
+        .then(failed => {
           expect(failed.length).to.be.eql(0);
           done();
         });

@@ -1,18 +1,18 @@
-/*eslint-env node */
 'use strict';
 
-var expect = require('chai').expect;
-var utils = require('./utils');
-var redis = require('ioredis');
-var _ = require('lodash');
+const expect = require('chai').expect;
+const utils = require('./utils');
+const redis = require('ioredis');
+const _ = require('lodash');
+const assert = require('assert');
 
-describe('Rate limiter', function() {
-  var queue;
-  var client;
+describe('Rate limiter', () => {
+  let queue;
+  let client;
 
-  beforeEach(function() {
+  beforeEach(() => {
     client = new redis();
-    return client.flushdb().then(function() {
+    return client.flushdb().then(() => {
       queue = utils.buildQueue('test rate limiter', {
         limiter: {
           max: 1,
@@ -23,13 +23,13 @@ describe('Rate limiter', function() {
     });
   });
 
-  afterEach(function() {
-    return queue.close().then(function() {
+  afterEach(() => {
+    return queue.close().then(() => {
       return client.quit();
     });
   });
 
-  it('should throw exception if missing duration option', function(done) {
+  it('should throw exception if missing duration option', done => {
     try {
       utils.buildQueue('rate limiter fail', {
         limiter: {
@@ -42,7 +42,7 @@ describe('Rate limiter', function() {
     }
   });
 
-  it('should throw exception if missing max option', function(done) {
+  it('should throw exception if missing max option', done => {
     try {
       utils.buildQueue('rate limiter fail', {
         limiter: {
@@ -55,24 +55,24 @@ describe('Rate limiter', function() {
     }
   });
 
-  it('should obey the rate limit', function(done) {
-    var startTime = new Date().getTime();
-    var numJobs = 4;
+  it('should obey the rate limit', done => {
+    const startTime = new Date().getTime();
+    const numJobs = 4;
 
-    queue.process(function() {
+    queue.process(() => {
       return Promise.resolve();
     });
 
-    for (var i = 0; i < numJobs; i++) {
+    for (let i = 0; i < numJobs; i++) {
       queue.add({});
     }
 
     queue.on(
       'completed',
       // after every job has been completed
-      _.after(numJobs, function() {
+      _.after(numJobs, () => {
         try {
-          var timeDiff = new Date().getTime() - startTime;
+          const timeDiff = new Date().getTime() - startTime;
           expect(timeDiff).to.be.above((numJobs - 1) * 1000);
           done();
         } catch (err) {
@@ -81,20 +81,20 @@ describe('Rate limiter', function() {
       })
     );
 
-    queue.on('failed', function(err) {
+    queue.on('failed', err => {
       done(err);
     });
   });
 
-  it('should put a job into the delayed queue when limit is hit', function() {
-    var newQueue = utils.buildQueue('test rate limiter', {
+  it('should put a job into the delayed queue when limit is hit', () => {
+    const newQueue = utils.buildQueue('test rate limiter', {
       limiter: {
         max: 1,
         duration: 1000
       }
     });
 
-    queue.on('failed', function(e) {
+    queue.on('failed', e => {
       assert.fail(e);
     });
 
@@ -103,22 +103,27 @@ describe('Rate limiter', function() {
       newQueue.add({}),
       newQueue.add({}),
       newQueue.add({})
-    ]).then(function() {
+    ]).then(() => {
       Promise.all([
         newQueue.getNextJob({}),
         newQueue.getNextJob({}),
         newQueue.getNextJob({}),
         newQueue.getNextJob({})
-      ]).then(function() {
-        return queue.getDelayedCount().then(function(delayedCount) {
-          expect(delayedCount).to.eq(3);
-        });
+      ]).then(() => {
+        return queue.getDelayedCount().then(
+          delayedCount => {
+            expect(delayedCount).to.eq(3);
+          },
+          () => {
+            /*ignore error*/
+          }
+        );
       });
     });
   });
 
-  it('should not put a job into the delayed queue when discard is true', function() {
-    var newQueue = utils.buildQueue('test rate limiter', {
+  it('should not put a job into the delayed queue when discard is true', () => {
+    const newQueue = utils.buildQueue('test rate limiter', {
       limiter: {
         max: 1,
         duration: 1000,
@@ -126,7 +131,7 @@ describe('Rate limiter', function() {
       }
     });
 
-    newQueue.on('failed', function(e) {
+    newQueue.on('failed', e => {
       assert.fail(e);
     });
     return Promise.all([
@@ -134,16 +139,16 @@ describe('Rate limiter', function() {
       newQueue.add({}),
       newQueue.add({}),
       newQueue.add({})
-    ]).then(function() {
+    ]).then(() => {
       Promise.all([
         newQueue.getNextJob({}),
         newQueue.getNextJob({}),
         newQueue.getNextJob({}),
         newQueue.getNextJob({})
-      ]).then(function() {
-        return newQueue.getDelayedCount().then(function(delayedCount) {
+      ]).then(() => {
+        return newQueue.getDelayedCount().then(delayedCount => {
           expect(delayedCount).to.eq(0);
-          return newQueue.getActiveCount().then(function(waitingCount) {
+          return newQueue.getActiveCount().then(waitingCount => {
             expect(waitingCount).to.eq(1);
           });
         });

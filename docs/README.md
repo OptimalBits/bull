@@ -71,8 +71,8 @@ that defines a process function like so:
 ```js
 const myFirstQueue = new Bull('my-first-queue');
 
-myFirstQueue.process(async (job, data) => {
-  return doSomething(data);
+myFirstQueue.process(async (job) => {
+  return doSomething(job.data);
 });
 ```
 
@@ -90,10 +90,10 @@ Sometimes you need to provide job's _progress_ information to an external listen
 by using the `progress` method on the job object:
 
 ```js
-myFirstQueue.process( async (job, data) => {
+myFirstQueue.process( async (job) => {
   let progress = 0;
   for(i = 0; i < 100; i++){
-    await doSomething(data);
+    await doSomething(job.data);
     progress += 10;
     job.progress(progress);
   }
@@ -138,7 +138,7 @@ the worker is not able to tell the queue that it is still working on the job.
 
 When a job stalls, depending on the job settings the job can be retried by another idle worker or it can just move to the failed status.
 
-Stalled jobs can be avoided by either making sure that the process function does not keep Node event loop busy for too long (we are talking several seconds with Bull default options), or by using a separate [sandboxed processor](link).
+Stalled jobs can be avoided by either making sure that the process function does not keep Node event loop busy for too long (we are talking several seconds with Bull default options), or by using a separate [sandboxed processor](#sandboxed-processors).
 
 # Events
 
@@ -148,17 +148,15 @@ Events can be local for a given queue instance (a worker), for example, if a job
 A local complete event:
 ```js
 queue.on('completed', job => {
-  console.log(`Job with id ${job.id} has been completed```);
-  )
+  console.log(`Job with id ${job.id} has been completed`);
 })
 ```
 
 Whereas the global version of the event can be listen to with:
 
 ```js
-queue.on('global: completed', jobId => {
-  console.log(`Job with id ${jobId} has been completed```);
-  )
+queue.on('global:completed', jobId => {
+  console.log(`Job with id ${jobId} has been completed`);
 })
 ```
 
@@ -273,6 +271,7 @@ paymentsQueue.add(paymentsData, { repeat: { cron: '15 3 * * *' } });
 
 There are some important considerations regarding repeatable jobs:
 
-- Bull is smart enough not to add the same repeatable job if the repeat options are the same.
+- Bull is smart enough not to add the same repeatable job if the repeat options are the same. (CAUTION: A job id is part of the repeat options since: https://github.com/OptimalBits/bull/pull/603, therefore passing job ids will allow jobs with the same cron to be inserted in the queue)
 - If there are no workers running, repeatable jobs will not accumulate next time a worker is online.
 - repeatable jobs can be removed using the [removeRepeatable](https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queueremoverepeatable) method.
+
