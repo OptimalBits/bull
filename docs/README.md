@@ -126,7 +126,7 @@ be in different states, until its completion or failure (although technically a 
 
 When a job is added to a queue it can be in one of two states, it can either be in the "wait" status, which is, in fact, a waiting list, where all jobs must enter before they can be processed, or it can be in a "delayed" status: a delayed status implies that the job is waiting for some timeout or to be promoted for being processed, however, a delayed job will not be processed directly, instead it will be placed at the beginning of the waiting list and processed as soon as a worker is idle.
 
-The next state for a job I the "active" state. The active state is represented by a set, and are jobs that are currently being
+The next state for a job is the "active" state. The active state is represented by a set, and are jobs that are currently being
 processed, i.e. they are running in the `process` function explained in the previous chapter. A job can be in the active state for an unlimited amount of time until the process is completed or an exception is thrown so that the job will end in
 either the "completed" or the "failed" status.
 
@@ -212,7 +212,7 @@ As explained above, when defining a process function, it is also possible to pro
 jobs in parallel. The jobs are still processed in the same Node process,
 and if the jobs are very IO intensive they will be handled just fine.
 
-Sometimes jobs are more CPU intensive which will could lock the Node event loop
+Sometimes jobs are more CPU intensive which could lock the Node event loop
 for too long and Bull could decide the job has been stalled. To avoid this situation, it is possible to run the process functions in separate Node processes. In this case, the concurrency parameter will decide the maximum number of concurrent processes that are allowed to run.
 
 We call this kind of processes for "sandboxed" processes, and they also have the property that if the crash they will not affect any other process, and a new
