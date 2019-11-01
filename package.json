@@ -53,7 +53,7 @@
   "scripts": {
     "lint": "eslint lib test",
     "pretest": "npm run lint",
-    "test": "NODE_ENV=test mocha --exit",
+    "test": "NODE_ENV=test mocha 'test/test_*'",
     "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- --exit -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "postpublish": "git push && git push --tags",
     "prettier": "prettier --config package.json --write '**/*.js'",
