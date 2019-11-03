@@ -208,6 +208,12 @@ describe('sandboxed process', () => {
         expect(progresses).to.be.eql([10, 27, 78, 100]);
         expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
         expect(queue.childPool.getAllFree()).to.have.lengthOf(1);
+        queue.getJobLogs(job.id).then(logs =>
+          expect(logs).to.be.eql({
+            logs: ['10', '27', '78', '100'],
+            count: 4
+          })
+        );
         done();
       } catch (err) {
         done(err);
