@@ -484,7 +484,6 @@ describe('Job', () => {
       const job = await Job.create(queue, { foo: 'bar' });
       await job.progress({ total: 120, completed: 40 });
       const storedJob = await Job.fromId(queue, job.id);
-      console.error(storedJob);
       expect(storedJob.progress()).to.eql({ total: 120, completed: 40 });
     });
   });
