@@ -3,3 +3,4 @@ tmp
 coverage
 *.rdb
 .vscode
+package-lock.json
