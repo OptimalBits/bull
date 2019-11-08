@@ -6,6 +6,7 @@
   - [Queue#add](#queueadd)
   - [Queue#pause](#queuepause)
   - [Queue#resume](#queueresume)
+  - [Queue#whenCurrentJobsFinished](#queuewhencurrentjobsfinished)
   - [Queue#count](#queuecount)
   - [Queue#empty](#queueempty)
   - [Queue#clean](#queueclean)
@@ -149,7 +150,7 @@ process(name: string, concurrency: number, processor: ((job, done?) => Promise<a
 
 Defines a processing function for the jobs in a given Queue.
 
-The callback is called everytime a job is placed in the queue. It is passed an instance of the job as first argument.
+The callback is called every time a job is placed in the queue. It is passed an instance of the job as first argument.
 
 If the callback signature contains the second optional `done` argument, the callback will be passed a `done` callback to be called after the job has been completed. The `done` callback can be called with an Error instance, to signal that the job did not complete successfully, or with a result as second argument (e.g.: `done(null, result);`) when the job is successful. Errors will be passed as a second argument to the "failed" event;
 results, as a second argument to the "completed" event.
@@ -301,10 +302,12 @@ interface BackoffOpts {
 ### Queue#pause
 
 ```ts
-pause(isLocal?: boolean): Promise
+pause(isLocal?: boolean, doNotWaitActive?: boolean): Promise
 ```
 
 Returns a promise that resolves when the queue is paused. A paused queue will not process new jobs until resumed, but current jobs being processed will continue until they are finalized. The pause can be either global or local. If global, all workers in all queue instances for a given queue will be paused. If local, just this worker will stop processing new jobs after the current lock expires. This can be useful to stop a worker from taking new jobs prior to shutting down.
+
+If `doNotWaitActive` is `true`, `pause` will *not* wait for any active jobs to finish before resolving. Otherwise, `pause` *will* wait for active jobs to finish. See [Queue#whenCurrentJobsFinished](#queuewhencurrentjobsfinished) for more information.
 
 Pausing a queue that is already paused does nothing.
 
@@ -319,6 +322,16 @@ resume(isLocal?: boolean): Promise
 Returns a promise that resolves when the queue is resumed after being paused. The resume can be either local or global. If global, all workers in all queue instances for a given queue will be resumed. If local, only this worker will be resumed. Note that resuming a queue globally will _not_ resume workers that have been paused locally; for those, `resume(true)` must be called directly on their instances.
 
 Resuming a queue that is not paused does nothing.
+
+---
+
+### Queue#whenCurrentJobsFinished
+
+```ts
+whenCurrentJobsFinished(): Promise<Void>
+```
+
+Returns a promise that resolves when all jobs currently being processed by this worker have finished.
 
 ---
 
