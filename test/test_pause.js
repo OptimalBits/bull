@@ -399,6 +399,17 @@ describe('.pause', () => {
           'getNextJob should return without getting job'
         );
       });
+
+      it('should not initialize blocking client if not already initialized', async () => {
+        const createClient = sinon.spy(() => client);
+        const queue = utils.buildQueue('pause-queue', { createClient });
+
+        await queue.pause(true, true);
+        const bClientCalls = createClient
+          .getCalls()
+          .filter(c => c.args[0] === 'bclient');
+        expect(bClientCalls).to.have.lengthOf(0);
+      });
     });
   });
 });
