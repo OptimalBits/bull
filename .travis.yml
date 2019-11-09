@@ -2,6 +2,9 @@ language: node_js
 
 sudo: false
 
+cache:
+  yarn: true
+
 # test on node.js versions
 node_js:
   - '12'
@@ -10,6 +13,15 @@ node_js:
 
 services:
   - redis-server
+
+before_install:
+  # Use a specific version of yarn in CI. This ensures yarn.lock format doesn't change.
+  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.19.1
+  - export PATH="$HOME/.yarn/bin:$PATH"
+
+install:
+  # ensure unexpected changes to yarn.lock break the build
+  - yarn install --frozen-lockfile --non-interactive
 
 script:
   - npm run prettier -- --list-different
