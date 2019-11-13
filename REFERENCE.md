@@ -746,7 +746,7 @@ Returns a promise that resolves or rejects when the job completes or fails.
 moveToCompleted(returnValue: any, ignoreLock: boolean, notFetch?: boolean): Promise<string[Jobdata, JobId] | null>
 ```
 
-Moves a job to the `completed` queue. Pulls a job from 'waiting' to 'active' and returns a tuple containing the next jobs data and id. If no job is in the `waiting` queue, returns null. Set `notFetch` to true to avoid prefetching the next job in the queue.
+Moves a job to the `completed` queue. Pulls a job from 'waiting' to 'complete' and returns a tuple containing the next jobs data and id. If no job is in the `waiting` queue, returns null. Set `notFetch` to true to avoid prefetching the next job in the queue.
 
 ---
 
@@ -756,7 +756,7 @@ Moves a job to the `completed` queue. Pulls a job from 'waiting' to 'active' and
 moveToFailed(errorInfo:{ message: string; }, ignoreLock?:boolean): Promise<string[Jobdata, JobId] | null>
 ```
 
-Moves a job to the `failed` queue. Pulls a job from 'waiting' to 'active' and returns a tuple containing the next jobs data and id. If no job is in the `waiting` queue, returns null.
+Moves a job to the `failed` queue. Pulls a job from 'waiting' to 'failed' and returns a tuple containing the next jobs data and id. If no job is in the `waiting` queue, returns null.
 
 ---
 
