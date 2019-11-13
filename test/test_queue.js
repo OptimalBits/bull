@@ -1915,7 +1915,7 @@ describe('Queue', () => {
       queue.add({});
       queue.add({});
 
-      queue.on('completed', _.after(2, done.bind(null, null)));
+      queue.on('completed', _.after(2, () => done()));
     });
 
     //This job use delay to check that at any time we have 4 process in parallel.
