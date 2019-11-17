@@ -6,7 +6,12 @@ parserOptions:
 
 extends:
   - eslint:recommended
+  - plugin:mocha/recommended
   - plugin:node/recommended
+
+plugins:
+  - mocha
+  - node
 
 rules:
   valid-jsdoc: 0
@@ -25,5 +30,12 @@ rules:
   no-inner-declarations: 0
   object-shorthand: [2, 'consistent-as-needed']
   newline-per-chained-call: 2
+
+  mocha/no-exclusive-tests: 2
+  mocha/no-hooks-for-single-case: 0
+  mocha/no-mocha-arrows: 0
+  mocha/no-setup-in-describe: 0
+  mocha/no-sibling-hooks: 0
+  mocha/no-skipped-tests: 0
 
   node/no-deprecated-api: 0

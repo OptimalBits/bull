@@ -1,3 +1,3 @@
 --reporter spec
 --timeout 5000
-test/test_*
+--exit
