@@ -1,5 +1,12 @@
 # Changelog
 
+## v.3.12.1
+
+- fix: catch errors parsing invalid progress data
+- fix(pause): don't initialize bclient if not waiting for jobs to finish
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.12.0...v3.12.1)
+
 ## v.3.12.0
 
 - feat: support async custom backoffs.
