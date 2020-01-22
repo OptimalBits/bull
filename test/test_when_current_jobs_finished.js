@@ -63,6 +63,55 @@ describe('.whenCurrentJobsFinished', () => {
     );
   });
 
+  it('should wait for all jobs to complete', async () => {
+    const queue = await utils.newQueue();
+
+    // add multiple jobs to queue
+    await queue.add({});
+    await queue.add({});
+
+    let finishJob1;
+    let finishJob2;
+
+    // wait for all jobs to be active
+    await new Promise(resolve => {
+      let callCount = 0;
+      queue.process(2, () => {
+        callCount++;
+        if (callCount === 1) {
+          return new Promise(resolve => {
+            finishJob1 = resolve;
+          });
+        }
+
+        resolve();
+        return new Promise(resolve => {
+          finishJob2 = resolve;
+        });
+      });
+    });
+
+    let isFulfilled = false;
+    const finished = queue.whenCurrentJobsFinished().then(() => {
+      isFulfilled = true;
+    });
+
+    finishJob2();
+    await delay(100);
+
+    expect(isFulfilled).to.equal(
+      false,
+      'should not fulfill until all jobs are finished'
+    );
+
+    finishJob1();
+    await delay(100);
+    expect(await finished).to.equal(
+      undefined,
+      'whenCurrentJobsFinished should resolve once all jobs are finished'
+    );
+  });
+
   it('should wait for job to fail', async () => {
     const queue = await utils.newQueue();
     await queue.add({});
