@@ -92,9 +92,8 @@ There are a few third-party UIs that you can use for monitoring:
 **Bull v3**
 
 - [Taskforce](https://taskforce.sh)
-- [Arena](https://github.com/mixmaxhq/arena)
-- [bull-repl](https://github.com/darky/bull-repl)
 - [bull-board](https://github.com/vcapretz/bull-board)
+- [bull-repl](https://github.com/darky/bull-repl)
 
 **Bull <= v2**
 
