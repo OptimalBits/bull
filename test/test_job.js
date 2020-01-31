@@ -976,4 +976,27 @@ describe('Job', () => {
         );
     });
   });
+
+  describe('.fromJSON', () => {
+    let data;
+
+    beforeEach(() => {
+      data = { foo: 'bar' };
+    });
+
+    it('should parse JSON data by default', async () => {
+      const job = await Job.create(queue, data, {});
+      const jobParsed = Job.fromJSON(queue, job.toData());
+
+      expect(jobParsed.data).to.eql(data);
+    });
+
+    it('should not parse JSON data if "preventParsingData" option is specified', async () => {
+      const job = await Job.create(queue, data, { preventParsingData: true });
+      const jobParsed = Job.fromJSON(queue, job.toData());
+      const expectedData = JSON.stringify(data);
+
+      expect(jobParsed.data).to.be(expectedData);
+    });
+  });
 });
