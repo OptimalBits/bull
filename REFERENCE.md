@@ -42,7 +42,7 @@
   - [Job#promote](#jobpromote)
   - [Job#finished](#jobfinished)
   - [Job#moveToCompleted](#jobMoveToCompleted)
-  - [Job#moveToFailed](#moveToFailed)
+  - [Job#moveToFailed](#jobMoveToFailed)
 
 - [Events](#events)
   - [Global events](#global-events)
