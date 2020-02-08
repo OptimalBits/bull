@@ -95,15 +95,15 @@ var queueQux = new Queue('quxbaz', opts);
 Redis cluster
 -------------
 
-Bull internals requires atomic operations that spans different keys. This fact breaks Redis'
-rules for cluster configurations. However it is still possible to use a cluster environment
+Bull internals require atomic operations that span different keys. This behavior breaks Redis's
+rules for cluster configurations. However, it is still possible to use a cluster environment
 by using the proper bull prefix option as a cluster "hash tag". Hash tags are used to guarantee
 that certain keys are placed in the same hash slot, read more about hash tags in the [redis cluster
-tutorial](https://redis.io/topics/cluster-tutorial).
+tutorial](https://redis.io/topics/cluster-tutorial). A hash tag is defined with brackets. I.e. a key that has a substring inside brackets will use that
+substring to determine in which hash slot the key will be placed.
 
-A hash tag is defined with brackets. I.e. a key that has a substring inside brackets will use that
-substring to determine in which hash slot the key will be placed. So to make bull compatible with
-cluster, just use a queue prefix inside brackets, for example:
+In summary, to make bull compatible with Redis cluster, use a queue prefix inside brackets.
+For example:
 
 ```js
   var queue = new Queue('cluster', {
