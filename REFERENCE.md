@@ -197,7 +197,7 @@ const emailQueue = new Queue('email');
 emailQueue.process('sendEmail', 25, sendEmail);
 ```
 
-Specifying `*` as the process name will make it the default processor for all named jobs.  
+Specifying `*` as the process name will make it the default processor for all named jobs.
 It is frequently used to process all named jobs from one process function:
 
 ```js
@@ -260,6 +260,7 @@ interface JobOpts {
 
   lifo: boolean; // if true, adds the job to the right of the queue instead of the left (default false)
   timeout: number; // The number of milliseconds after which the job should be fail with a timeout error [optional]
+  timeoutFallback: string | Error; // Fallback passed to p-timeout when timeout is specified [optional]
 
   jobId: number | string; // Override the job ID - by default, the job ID is a unique
   // integer, but you can use this setting to override it.
