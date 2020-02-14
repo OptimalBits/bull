@@ -42,7 +42,7 @@
   - [Job#promote](#jobpromote)
   - [Job#finished](#jobfinished)
   - [Job#moveToCompleted](#jobMoveToCompleted)
-  - [Job#moveToFailed](#moveToFailed)
+  - [Job#moveToFailed](#jobMoveToFailed)
 
 - [Events](#events)
   - [Global events](#global-events)
@@ -197,7 +197,7 @@ const emailQueue = new Queue('email');
 emailQueue.process('sendEmail', 25, sendEmail);
 ```
 
-Specifying `*` as the process name will make it the default processor for all named jobs.  
+Specifying `*` as the process name will make it the default processor for all named jobs.
 It is frequently used to process all named jobs from one process function:
 
 ```js
