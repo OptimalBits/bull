@@ -1,32 +1,67 @@
 # Changelog
 
+## v.3.13.0
+
+feat: add "preventParsingData" job option to prevent data parsing
+fix: queue.clean clean job logs as well
+fix: whenCurrentJobsFinished should wait for all jobs
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.12.1...v3.13.0)
+
+## v.3.12.1
+
+- fix: catch errors parsing invalid progress data
+- fix(pause): don't initialize bclient if not waiting for jobs to finish
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.12.0...v3.12.1)
+
+## v.3.12.0
+
+- feat: support async custom backoffs.
+- feat(sandbox): emulate job.progress function.
+
+- fix: queue.pause(true, true) doesn't pause queue.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.11.0...v3.12.0)
+
+## v.3.11.0
+
+- feat(queue): basic support for bulk adding jobs.
+- feat(job): save data on job instance when updated.
+
+- fix(queue): whenCurrentJobsFinished shouldn't initialize bclient. Fixes #1346.
+- fix(queue): unhandled promise warning in updateDelayTimer.
+- fix(sandbox): if the child process is killed, remove it from the pool.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.10.0...v3.11.0)
+
 ## v.3.10.0
 
 - fix: remove logs automtically when using autoremove fixes #1330
 - feat: add support for keeping a specified number of jobs when using auto-remove.
 - feat: add support for node 12
-- fix: fix check for supported file types in sandboxed processors #1311 
+- fix: fix check for supported file types in sandboxed processors #1311
 - ci: drop support for node 6
 
- [Changes](https://github.com/OptimalBits/bull/compare/v3.9.1...v3.10.0)
+[Changes](https://github.com/OptimalBits/bull/compare/v3.9.1...v3.10.0)
 
 ## v.3.9.1
- 
- - fix: add log to job wrapper
- 
- [Changes](https://github.com/OptimalBits/bull/compare/v3.9.0...v3.9.1)
+
+- fix: add log to job wrapper
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.9.0...v3.9.1)
 
 ## v.3.9.0
- 
- - feat: add job.log #1165
- 
- [Changes](https://github.com/OptimalBits/bull/compare/v3.8.1...v3.9.0)
+
+- feat: add job.log #1165
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.8.1...v3.9.0)
 
 ## v.3.8.1
- 
- - fix: wait for ready in cleanJobsInSet fixes #1298
- 
- [Changes](https://github.com/OptimalBits/bull/compare/v3.8.0...v3.8.1)
+
+- fix: wait for ready in cleanJobsInSet fixes #1298
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.8.0...v3.8.1)
 
 ## v.3.8.0
 

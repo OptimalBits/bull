@@ -47,6 +47,11 @@
   </p>
 </div>
 
+---
+
+### BullMQ 4 Beta
+
+If you want to start using the next major version of Bull you are welcome to the new repo [here](https://github.com/taskforcesh/bullmq)
 
 ---
 
@@ -55,7 +60,6 @@
 If you find Bull valuable, please consider sponsoring its development by using the Taskforce front-end &nbsp; [<img src="http://taskforce.sh/assets/logo_square.png" width="100" alt="Taskforce.sh, Inc" style="padding: 100px"/>](https://taskforce.sh). 
 
 Besides helping Bull's development, you will also benefit from a constantly-improving UI for managing all of your queues and jobs.
-
 
 ---
 
@@ -90,6 +94,7 @@ There are a few third-party UIs that you can use for monitoring:
 - [Taskforce](https://taskforce.sh)
 - [Arena](https://github.com/mixmaxhq/arena)
 - [bull-repl](https://github.com/darky/bull-repl)
+- [bull-board](https://github.com/vcapretz/bull-board)
 
 **Bull <= v2**
 
@@ -419,4 +424,4 @@ the job will be considered stalled and is automatically restarted; it will be __
 
 As such, you should always listen for the `stalled` event and log this to your error monitoring system, as this means your jobs are likely getting double-processed.
 
-As a safeguard so problematic jobs won't get restarted indefinitely (e.g. if the job processor aways crashes its Node process), jobs will be recovered from a stalled state a maximum of `maxStalledCount` times (default: `1`).
+As a safeguard so problematic jobs won't get restarted indefinitely (e.g. if the job processor always crashes its Node process), jobs will be recovered from a stalled state a maximum of `maxStalledCount` times (default: `1`).

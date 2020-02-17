@@ -126,7 +126,7 @@ be in different states, until its completion or failure (although technically a 
 
 When a job is added to a queue it can be in one of two states, it can either be in the "wait" status, which is, in fact, a waiting list, where all jobs must enter before they can be processed, or it can be in a "delayed" status: a delayed status implies that the job is waiting for some timeout or to be promoted for being processed, however, a delayed job will not be processed directly, instead it will be placed at the beginning of the waiting list and processed as soon as a worker is idle.
 
-The next state for a job I the "active" state. The active state is represented by a set, and are jobs that are currently being
+The next state for a job is the "active" state. The active state is represented by a set, and are jobs that are currently being
 processed, i.e. they are running in the `process` function explained in the previous chapter. A job can be in the active state for an unlimited amount of time until the process is completed or an exception is thrown so that the job will end in
 either the "completed" or the "failed" status.
 
@@ -138,7 +138,7 @@ the worker is not able to tell the queue that it is still working on the job.
 
 When a job stalls, depending on the job settings the job can be retried by another idle worker or it can just move to the failed status.
 
-Stalled jobs can be avoided by either making sure that the process function does not keep Node event loop busy for too long (we are talking several seconds with Bull default options), or by using a separate [sandboxed processor](link).
+Stalled jobs can be avoided by either making sure that the process function does not keep Node event loop busy for too long (we are talking several seconds with Bull default options), or by using a separate [sandboxed processor](#sandboxed-processors).
 
 # Events
 
@@ -148,8 +148,7 @@ Events can be local for a given queue instance (a worker), for example, if a job
 A local complete event:
 ```js
 queue.on('completed', job => {
-  console.log(`Job with id ${job.id} has been completed```);
-  )
+  console.log(`Job with id ${job.id} has been completed`);
 })
 ```
 
@@ -157,8 +156,7 @@ Whereas the global version of the event can be listen to with:
 
 ```js
 queue.on('global:completed', jobId => {
-  console.log(`Job with id ${jobId} has been completed```);
-  )
+  console.log(`Job with id ${jobId} has been completed`);
 })
 ```
 
@@ -214,7 +212,7 @@ As explained above, when defining a process function, it is also possible to pro
 jobs in parallel. The jobs are still processed in the same Node process,
 and if the jobs are very IO intensive they will be handled just fine.
 
-Sometimes jobs are more CPU intensive which will could lock the Node event loop
+Sometimes jobs are more CPU intensive which could lock the Node event loop
 for too long and Bull could decide the job has been stalled. To avoid this situation, it is possible to run the process functions in separate Node processes. In this case, the concurrency parameter will decide the maximum number of concurrent processes that are allowed to run.
 
 We call this kind of processes for "sandboxed" processes, and they also have the property that if the crash they will not affect any other process, and a new
@@ -273,6 +271,7 @@ paymentsQueue.add(paymentsData, { repeat: { cron: '15 3 * * *' } });
 
 There are some important considerations regarding repeatable jobs:
 
-- Bull is smart enough not to add the same repeatable job if the repeat options are the same.
+- Bull is smart enough not to add the same repeatable job if the repeat options are the same. (CAUTION: A job id is part of the repeat options since: https://github.com/OptimalBits/bull/pull/603, therefore passing job ids will allow jobs with the same cron to be inserted in the queue)
 - If there are no workers running, repeatable jobs will not accumulate next time a worker is online.
 - repeatable jobs can be removed using the [removeRepeatable](https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queueremoverepeatable) method.
+

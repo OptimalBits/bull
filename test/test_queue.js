@@ -1990,7 +1990,7 @@ describe('Queue', () => {
       queue.add({});
       queue.add({});
 
-      queue.on('completed', _.after(2, done.bind(null, null)));
+      queue.on('completed', _.after(2, () => done()));
     });
 
     //This job use delay to check that at any time we have 4 process in parallel.
@@ -2344,6 +2344,49 @@ describe('Queue', () => {
       queue.on('completed', () => {
         const elapse = Date.now() - start;
         expect(elapse).to.be.greaterThan(3000);
+        done();
+      });
+    });
+
+    it('should be able to handle a custom backoff if it returns a promise', function(done) {
+      this.timeout(12000);
+
+      queue = utils.buildQueue('test retries and backoffs', {
+        settings: {
+          backoffStrategies: {
+            async custom() {
+              return new Promise(resolve => {
+                setTimeout(() => {
+                  resolve(500);
+                }, 500);
+              });
+            }
+          }
+        }
+      });
+      let start;
+      queue.isReady().then(() => {
+        queue.process((job, jobDone) => {
+          if (job.attemptsMade < 2) {
+            throw new Error('some error');
+          }
+          jobDone();
+        });
+
+        start = Date.now();
+        queue.add(
+          { foo: 'bar' },
+          {
+            attempts: 3,
+            backoff: {
+              type: 'custom'
+            }
+          }
+        );
+      });
+      queue.on('completed', () => {
+        const elapse = Date.now() - start;
+        expect(elapse).to.be.greaterThan(2000);
         done();
       });
     });
