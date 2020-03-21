@@ -2,9 +2,9 @@
 
 ## v.3.13.0
 
-feat: add "preventParsingData" job option to prevent data parsing
-fix: queue.clean clean job logs as well
-fix: whenCurrentJobsFinished should wait for all jobs
+- feat: add "preventParsingData" job option to prevent data parsing
+- fix: queue.clean clean job logs as well
+- fix: whenCurrentJobsFinished should wait for all jobs
 
 [Changes](https://github.com/OptimalBits/bull/compare/v3.12.1...v3.13.0)
 
