@@ -65,8 +65,8 @@ If you want to start using the next major version of Bull written entirely in Ty
 
 [<img src="https://www.redisgreen.com/images/rglogo/redisgreen_transparent_240x48.png" width="150" alt="RedisGreen" style="padding: 100px"/>](https://dashboard.redisgreen.net/new?utm_campaign=BULLMQ)
 
-If you need high quality production Redis instances for your Bull projects, please consider subscribing 
-to [RedisGreen](https://dashboard.redisgreen.net/new?utm_campaign=BULLMQ), 
+If you need high quality production Redis instances for your Bull projects, please consider subscribing
+to [RedisGreen](https://dashboard.redisgreen.net/new?utm_campaign=BULLMQ),
 leaders in Redis hosting that works perfectly with Bull. Use the promo code "BULLMQ" when signing up to help us
 sponsor the development of Bull!
 
@@ -121,6 +121,7 @@ There are a few third-party UIs that you can use for monitoring:
 - [Taskforce](https://taskforce.sh)
 - [bull-board](https://github.com/vcapretz/bull-board)
 - [bull-repl](https://github.com/darky/bull-repl)
+- [bull-master](https://github.com/hans-lizihan/bull-master)
 - [bull-monitor](https://github.com/s-r-x/bull-monitor)
 - [Monitoro](https://github.com/AbhilashJN/monitoro)
 
