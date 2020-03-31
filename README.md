@@ -103,7 +103,7 @@ Sign up at [Taskforce.sh](https://taskforce.sh)
 
 And coming up on the roadmap...
 
-- [ ] Job completion acknowledgement.
+- [ ] Job completion acknowledgement (you can use the message queue [pattern](https://github.com/OptimalBits/bull/blob/develop/PATTERNS.md#returning-job-completions) in the meantime).
 - [ ] Parent-child jobs relationships.
 
 ---
