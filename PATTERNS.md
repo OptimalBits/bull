@@ -76,14 +76,15 @@ var client = new Redis(REDIS_URL);
 var subscriber = new Redis(REDIS_URL);
 
 var opts = {
-  createClient: function (type) {
+  // redisOpts here will contain at least a property of connectionName which will identify the queue based on its name
+  createClient: function (type, redisOpts) {
     switch (type) {
       case 'client':
         return client;
       case 'subscriber':
         return subscriber;
       default:
-        return new Redis(REDIS_URL);
+        return new Redis(REDIS_URL, redisOpts);
     }
   }
 }

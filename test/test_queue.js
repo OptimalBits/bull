@@ -306,6 +306,11 @@ describe('Queue', () => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
+        .then(
+          queueFoo.bclient.client('GETNAME').then(name => {
+            expect(name).to.be.eql(queueFoo.clientName());
+          })
+        )
         .then(() => {
           return queueQux.add({ qux: 'baz' }).then(job => {
             expect(job.id).to.be.ok;
@@ -1915,7 +1920,10 @@ describe('Queue', () => {
       queue.add({});
       queue.add({});
 
-      queue.on('completed', _.after(2, () => done()));
+      queue.on(
+        'completed',
+        _.after(2, () => done())
+      );
     });
 
     //This job use delay to check that at any time we have 4 process in parallel.
