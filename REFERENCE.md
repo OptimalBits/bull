@@ -43,7 +43,7 @@
   - [Job#promote](#jobpromote)
   - [Job#finished](#jobfinished)
   - [Job#moveToCompleted](#jobMoveToCompleted)
-  - [Job#moveToFailed](#moveToFailed)
+  - [Job#moveToFailed](#jobMoveToFailed)
 
 - [Events](#events)
   - [Global events](#global-events)
@@ -76,6 +76,7 @@ interface RateLimiter {
   max: number,      // Max number of jobs processed
   duration: number, // per duration in milliseconds
   bounceBack: boolean = false; // When jobs get rate limited, they stay in the waiting queue and are not moved to the delayed queue
+}
 ```
 
 `RedisOpts` are passed directly to ioredis constructor, check [ioredis](https://github.com/luin/ioredis/blob/master/API.md)
@@ -198,7 +199,7 @@ const emailQueue = new Queue('email');
 emailQueue.process('sendEmail', 25, sendEmail);
 ```
 
-Specifying `*` as the process name will make it the default processor for all named jobs.  
+Specifying `*` as the process name will make it the default processor for all named jobs.
 It is frequently used to process all named jobs from one process function:
 
 ```js
@@ -250,7 +251,7 @@ interface JobOpts {
   priority: number; // Optional priority value. ranges from 1 (highest priority) to MAX_INT  (lowest priority). Note that
   // using priorities has a slight impact on performance, so do not use it if not required.
 
-  delay: number; // An amount of miliseconds to wait until this job can be processed. Note that for accurate delays, both
+  delay: number; // An amount of milliseconds to wait until this job can be processed. Note that for accurate delays, both
   // server and clients should have their clocks synchronized. [optional].
 
   attempts: number; // The total number of attempts to try the job until it completes.
@@ -445,7 +446,9 @@ parameter. If the specified job cannot be located, the promise will be resolved 
 getJobs(types: string[], start?: number, end?: number, asc?: boolean): Promise<Job[]>
 ```
 
-Returns a promise that will return an array of job instances of the given types. Optional parameters for range and ordering are provided.
+Returns a promise that will return an array of job instances of the given types. Optional parameters for range and ordering are provided. 
+
+Note: The `start` and `end` options are applied **per job type**. For example, if there are 10 jobs in state `completed` and 10 jobs in state `active`, `getJobs(['completed', 'active'], 0, 4)` will yield an array with 10 entries, representing the first 5 completed jobs (0 - 4) and the first 5 active jobs (0 - 4).
 
 ---
 
