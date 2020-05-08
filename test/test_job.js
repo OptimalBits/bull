@@ -312,6 +312,26 @@ describe('Job', () => {
     });
   });
 
+  describe('.removeFromPattern', () => {
+    it('remove jobs matching pattern', async () => {
+      const jobIds = ['foo', 'foo1', 'foo2', 'foo3', 'foo4', 'bar', 'baz'];
+      await Promise.all(
+        jobIds.map(jobId => Job.create(queue, { foo: 'bar' }, { jobId }))
+      );
+
+      await queue.removeJobs('foo*');
+
+      for (let i = 0; i < jobIds.length; i++) {
+        const storedJob = await Job.fromId(queue, jobIds[i]);
+        if (jobIds[i].startsWith('foo')) {
+          expect(storedJob).to.be(null);
+        } else {
+          expect(storedJob).to.not.be(null);
+        }
+      }
+    });
+  });
+
   describe('.remove on priority queues', () => {
     it('remove a job with jobID 1 and priority 3 and check the new order in the queue', () => {
       return queue
