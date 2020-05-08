@@ -1,5 +1,15 @@
 # Changelog
 
+## v.3.14.0
+
+ - feat(queue): add removeJobs function
+ - fix: clamp negative job delay values to 0 to prevent thrashing
+ - fix: use DEFAULT_JOB_NAME (#1585)
+ - fix: remove the lazy client error handler on close (#1605)
+ - fix: prevent exceeding the maximum stack call size when emptying large queues (#1660)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.13.0...v3.14.0)
+
 ## v.3.13.0
 
 - feat: add "preventParsingData" job option to prevent data parsing
