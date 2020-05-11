@@ -66,7 +66,7 @@ The most robust and scalable way to accomplish this is by combining the standard
 Reusing Redis Connections
 -------------------------
 
-A standard queue requires **3 connections** to the Redis server. In some situations you might want to re-use connections—for example on Heroku where the connection count is restricted. You can do this with the `createClient` option in the `Queue` constructor:
+A standard queue requires **3 connections** to the Redis server. In some situations you might want to re-use connections—for example on Heroku where the connection count is restricted. You can do this with the `createClient` option in the `Queue` constructor (note: bclient connections [cannot be re-used](https://github.com/OptimalBits/bull/issues/880)):
 
 ```js
 var {REDIS_URL} = process.env
@@ -82,8 +82,10 @@ var opts = {
         return client;
       case 'subscriber':
         return subscriber;
-      default:
+      case 'bclient':
         return new Redis(REDIS_URL);
+      default:
+        throw new Error('Unexpected connection type: ', type);
     }
   }
 }
