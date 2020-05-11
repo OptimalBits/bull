@@ -443,12 +443,12 @@ parameter. If the specified job cannot be located, the promise will be resolved 
 ### Queue#getJobs
 
 ```ts
-getJobs(types: string[], start?: number, end?: number, asc?: boolean): Promise<Job[]>
+getJobs(types: JobStatus[], start?: number, end?: number, asc?: boolean): Promise<Job[]>
 ```
 
-Returns a promise that will return an array of job instances of the given types. Optional parameters for range and ordering are provided. 
+Returns a promise that will return an array of job instances of the given job statuses. Optional parameters for range and ordering are provided. 
 
-Note: The `start` and `end` options are applied **per job type**. For example, if there are 10 jobs in state `completed` and 10 jobs in state `active`, `getJobs(['completed', 'active'], 0, 4)` will yield an array with 10 entries, representing the first 5 completed jobs (0 - 4) and the first 5 active jobs (0 - 4).
+Note: The `start` and `end` options are applied **per job statuses**. For example, if there are 10 jobs in state `completed` and 10 jobs in state `active`, `getJobs(['completed', 'active'], 0, 4)` will yield an array with 10 entries, representing the first 5 completed jobs (0 - 4) and the first 5 active jobs (0 - 4).
 
 ---
 
