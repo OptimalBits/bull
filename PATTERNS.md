@@ -66,7 +66,11 @@ The most robust and scalable way to accomplish this is by combining the standard
 Reusing Redis Connections
 -------------------------
 
-A standard queue requires **3 connections** to the Redis server. In some situations you might want to re-use connections—for example on Heroku where the connection count is restricted. You can do this with the `createClient` option in the `Queue` constructor (note: bclient connections [cannot be re-used](https://github.com/OptimalBits/bull/issues/880)):
+A standard queue requires **3 connections** to the Redis server. In some situations you might want to re-use connections—for example on Heroku where the connection count is restricted. You can do this with the `createClient` option in the `Queue` constructor (note: bclient connections [cannot be re-used](https://github.com/OptimalBits/bull/issues/880)).  If you do this, the redis connections will
+not be disconnected for you when you call `close` on the queue.  If you need a graceful shutdown you will have to keep a list of
+all the redis connections you have created and disconnect them yourself when you close the queue.
+
+Example:
 
 ```js
 var {REDIS_URL} = process.env
