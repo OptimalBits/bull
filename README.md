@@ -127,7 +127,7 @@ Since there are a few job queue solutions, here is a table comparing them:
 | Atomic ops      | ✓             |  ✓         |      |  ✓  |        |
 | Persistence     | ✓             |  ✓         |  ✓   |  ✓  |   ✓    |
 | UI              | ✓             |            |  ✓   |     |   ✓    |
-| Optimized for   | Jobs / Messages | Jobs / Message | Jobs | Messages | Jobs |
+| Optimized for   | Jobs / Messages | Jobs / Messages | Jobs | Messages | Jobs |
 
 
 ### Install
