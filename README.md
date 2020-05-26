@@ -113,21 +113,21 @@ There are a few third-party UIs that you can use for monitoring:
 
 Since there are a few job queue solutions, here is a table comparing them:
 
-| Feature         | Bull          | Kue   | Bee | Agenda |
-| :-------------  |:-------------:|:-----:|:---:|:------:|
-| Backend         | redis         | redis |redis| mongo  |
-| Priorities      | ✓             |  ✓    |     |   ✓    |
-| Concurrency     | ✓             |  ✓    |  ✓  |   ✓    |
-| Delayed jobs    | ✓             |  ✓    |     |   ✓    |
-| Global events   | ✓             |  ✓    |     |        |
-| Rate Limiter    | ✓             |       |     |        |
-| Pause/Resume    | ✓             |  ✓    |     |        |
-| Sandboxed worker| ✓             |       |     |        |
-| Repeatable jobs | ✓             |       |     |   ✓    |
-| Atomic ops      | ✓             |       |  ✓  |        |
-| Persistence     | ✓             |   ✓   |  ✓  |   ✓    |
-| UI              | ✓             |   ✓   |     |   ✓    |
-| Optimized for   | Jobs / Messages | Jobs | Messages | Jobs |
+| Feature         | Bull          |[Conveyor MQ](https://github.com/conveyor-mq/conveyor-mq) | Kue   | Bee | Agenda |
+| :-------------  |:-------------:|:----------:|:-----:|:---:|:------:|
+| Backend         | redis         | redis      |redis |redis| mongo  |
+| Priorities      | ✓             |            |  ✓   |     |   ✓    |
+| Concurrency     | ✓             |  ✓         |  ✓   |  ✓  |   ✓    |
+| Delayed jobs    | ✓             |  ✓         |  ✓   |     |   ✓    |
+| Global events   | ✓             |  ✓         |  ✓   |     |        |
+| Rate Limiter    | ✓             |            |      |     |        |
+| Pause/Resume    | ✓             |  ✓         |  ✓   |     |        |
+| Sandboxed worker| ✓             |            |      |     |        |
+| Repeatable jobs | ✓             |            |      |     |   ✓    |
+| Atomic ops      | ✓             |  ✓         |      |  ✓  |        |
+| Persistence     | ✓             |  ✓         |  ✓   |  ✓  |   ✓    |
+| UI              | ✓             |            |  ✓   |     |   ✓    |
+| Optimized for   | Jobs / Messages | Jobs / Message | Jobs | Messages | Jobs |
 
 
 ### Install
