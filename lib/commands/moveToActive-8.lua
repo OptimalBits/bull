@@ -29,6 +29,7 @@
       ARGV[6] optional jobs per time unit (rate limiter)
       ARGV[7] optional time unit (rate limiter)
       ARGV[8] optional do not do anything with job if rate limit hit
+      ARGV[9] optional specifies the key to limit by
 ]]
 
 local jobId
@@ -50,17 +51,22 @@ if jobId then
 
   if(maxJobs) then
     local rateLimiterKey = KEYS[6];
+
     -- local jobCounter = tonumber(rcall("GET", rateLimiterKey))
-    local jobCounter = tonumber(rcall("INCR", rateLimiterKey))
+    if(ARGV[9]) then
+      local handle = string.match(jobId, "[^:]+$");
+      rateLimiterKey = KEYS[6] .. ":" .. handle;
+    end
+    local jobCounter = tonumber(rcall("INCR", rateLimiterKey));
     local bounceBack = ARGV[8]
-    
+
     -- check if rate limit hit
     if jobCounter > maxJobs then
       if bounceBack == 'false' then
         local exceedingJobs = jobCounter - maxJobs
         local delay = tonumber(rcall("PTTL", rateLimiterKey)) + ((exceedingJobs - 1) * ARGV[7]) / maxJobs
         local timestamp = delay + tonumber(ARGV[4])
-        
+
         -- put job into delayed queue
         rcall("ZADD", KEYS[7], timestamp * 0x1000 + bit.band(jobCounter, 0xfff), jobId)
         rcall("PUBLISH", KEYS[7], timestamp)
