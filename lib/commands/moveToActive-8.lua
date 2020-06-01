@@ -55,6 +55,9 @@ if jobId then
     -- local jobCounter = tonumber(rcall("GET", rateLimiterKey))
     if(ARGV[9]) then
       local handle = string.match(jobId, "[^:]+$");
+      if(handle == nil) then
+        return
+      end
       rateLimiterKey = KEYS[6] .. ":" .. handle;
     end
     local jobCounter = tonumber(rcall("INCR", rateLimiterKey));
