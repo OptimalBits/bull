@@ -508,13 +508,12 @@ getJobCounts() : Promise<JobCounts>
 Returns a promise that will return the job counts for the given queue.
 
 ```typescript{
-  interface JobCounts {
-    waiting: number,
-    active: number,
-    completed: number,
-    failed: number,
-    delayed: number
-  }
+interface JobCounts {
+  waiting: number,
+  active: number,
+  completed: number,
+  failed: number,
+  delayed: number
 }
 ```
 
