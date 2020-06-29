@@ -42,14 +42,22 @@ describe('.pause', () => {
           .pause()
           .then(() => {
             ispaused = true;
-            return queue.add({ foo: 'paused' });
+
+            return queue.isPaused().then(paused => {
+              expect(paused).to.be.equal(true);
+              return queue.add({ foo: 'paused' });
+            });
           })
           .then(() => {
             return queue.add({ foo: 'paused' });
           })
           .then(() => {
             ispaused = false;
-            return queue.resume();
+            return queue.resume().then(() => {
+              return queue.isPaused().then(paused => {
+                expect(paused).to.be.equal(false);
+              });
+            });
           }),
         resultPromise
       ]);
@@ -100,12 +108,18 @@ describe('.pause', () => {
     queue
       .pause(true /* Local */)
       .then(() => {
+        return queue.isPaused(true).then(paused => {
+          expect(paused).to.be.equal(true);
+        });
+      })
+      .then(() => {
         // Add the worker after the queue is in paused mode since the normal behavior is to pause
         // it after the current lock expires. This way, we can ensure there isn't a lock already
         // to test that pausing behavior works.
         queue
           .process((job, jobDone) => {
             expect(queue.paused).not.to.be.ok;
+
             jobDone();
             counter--;
             if (counter === 0) {
@@ -124,6 +138,11 @@ describe('.pause', () => {
         expect(counter).to.be.eql(2);
         expect(queue.paused).to.be.ok; // Parameter should exist.
         return queue.resume(true /* Local */);
+      })
+      .then(() => {
+        return queue.isPaused(true).then(paused => {
+          expect(paused).to.be.equal(false);
+        });
       })
       .catch(done);
   });
