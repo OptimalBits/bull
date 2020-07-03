@@ -371,6 +371,43 @@ describe('Queue', () => {
           expect(jobs[0].opts.removeOnComplete).to.equal(true);
         });
       });
+
+      it('should refuse repeatable jobs', () => {
+        const queue = new Queue('custom', {
+          defaultJobOptions: {
+            removeOnComplete: true
+          }
+        });
+
+        expect(() =>
+          queue.addBulk([
+            {
+              opts: {
+                repeat: {
+                  cron: '0 1 * * *'
+                }
+              }
+            }
+          ])
+        ).to.throw(/addBulk can not be invoked on repeatable jobs/);
+      });
+
+      it('should refuse jobs if the queue has repeatable default options', () => {
+        const queue = new Queue('custom', {
+          defaultJobOptions: {
+            removeOnComplete: true,
+            repeat: {
+              cron: '0 1 * * *'
+            }
+          }
+        });
+
+        expect(() =>
+          queue.addBulk([{}]).catch(error => {
+            expect(error).to.be.equal('plouf');
+          })
+        ).to.throw(/addBulk can not be invoked on repeatable jobs/);
+      });
     });
   });
 
@@ -1915,7 +1952,10 @@ describe('Queue', () => {
       queue.add({});
       queue.add({});
 
-      queue.on('completed', _.after(2, () => done()));
+      queue.on(
+        'completed',
+        _.after(2, () => done())
+      );
     });
 
     //This job use delay to check that at any time we have 4 process in parallel.

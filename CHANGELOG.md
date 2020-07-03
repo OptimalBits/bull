@@ -1,5 +1,9 @@
 # Changelog
 
+## v.3.16.0
+
+- fix: forbid usage of addBulk for repeatable jobs (#1731)
+
 ## v.3.15.0
 
 - feat: add isPaused fixes #1274
