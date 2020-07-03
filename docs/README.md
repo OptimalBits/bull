@@ -94,7 +94,7 @@ myFirstQueue.process( async (job) => {
   let progress = 0;
   for(i = 0; i < 100; i++){
     await doSomething(job.data);
-    progress += 10;
+    progress += 1;
     job.progress(progress);
   }
 });
