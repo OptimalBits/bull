@@ -129,6 +129,7 @@ Since there are a few job queue solutions, here is a table comparing them:
 | UI              | ✓             |   ✓   |     |   ✓    |
 | Optimized for   | Jobs / Messages | Jobs | Messages | Jobs |
 
+**If you need a simpler alternative to Bull, then try out [Bree](https://jobscheduler.net).  It is made by a [past core maintainer](https://github.com/niftylettuce) of Agenda.**
 
 ### Install
 
