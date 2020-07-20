@@ -1,5 +1,11 @@
 # Changelog
 
+## v.3.16.0
+
+- feat(rate-limiter): add grouping support.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.15.0...v3.16.0)
+
 ## v.3.15.0
 
 - feat: add isPaused fixes #1274

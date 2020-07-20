@@ -7,9 +7,9 @@ cache:
 
 # test on node.js versions
 node_js:
+  - '14'
   - '12'
   - '10'
-  - '8'
 
 services:
   - redis-server
