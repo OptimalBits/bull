@@ -374,7 +374,8 @@ Will remove jobs with ids such as: "boo", "foofighter", etc.
 empty(): Promise
 ```
 
-Empties a queue deleting all the input lists and associated jobs.
+Drains a queue deleting all the *input* lists and associated jobs. Note, this function only remove the jobs that are
+*waiting" to be processed by the queue or *delayed*.
 
 ---
 
