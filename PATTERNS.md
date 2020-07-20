@@ -70,7 +70,8 @@ A standard queue requires **3 connections** to the Redis server. In some situati
 
 Notes:
 - bclient connections [cannot be re-used](https://github.com/OptimalBits/bull/issues/880), so you should return a new connection each time this is called.
-- client and subscriber connections can be shared and will not be closed when the queue is closed.  When you are shutting down the process, first close the queues, then the shared connections (if they are shared).  If you are not sharing client and subscriber connections but using `createClient` to do some custom connection logic, you will need to keep a list of all the connections you created so you can manually close them later when the queue shuts down
+- client and subscriber connections can be shared and will not be closed when the queue is closed.  When you are shutting down the process, first close the queues, then the shared connections (if they are shared).
+- if you are not sharing connections but still using `createClient` to do some custom connection logic, you may still need to keep a list of all the connections you created so you can manually close them later when the queue shuts down, if you need a graceful shutdown for your process
 - do not set a `keyPrefix` on the connection you create, use bull's built-in prefix feature if you need a key prefix
 
 ```js
