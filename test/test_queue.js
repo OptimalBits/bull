@@ -511,7 +511,7 @@ describe('Queue', () => {
 
       it('should remove a job after completed if the default job options specify removeOnComplete', done => {
         utils
-          .newQueue('test-' + uuid(), {
+          .newQueue('test-' + uuid.v4(), {
             defaultJobOptions: {
               removeOnComplete: true
             }
@@ -594,7 +594,7 @@ describe('Queue', () => {
       it('should keep specified number of jobs after completed with global removeOnComplete', async () => {
         const keepJobs = 3;
 
-        const localQueue = await utils.newQueue('test-' + uuid(), {
+        const localQueue = await utils.newQueue('test-' + uuid.v4(), {
           defaultJobOptions: {
             removeOnComplete: keepJobs
           }
@@ -663,7 +663,7 @@ describe('Queue', () => {
 
       it('should remove a job after fail if the default job options specify removeOnFail', done => {
         utils
-          .newQueue('test-' + uuid(), {
+          .newQueue('test-' + uuid.v4(), {
             defaultJobOptions: {
               removeOnFail: true
             }
@@ -744,7 +744,7 @@ describe('Queue', () => {
       it('should keep specified number of jobs after completed with global removeOnFail', async () => {
         const keepJobs = 3;
 
-        const localQueue = await utils.newQueue('test-' + uuid(), {
+        const localQueue = await utils.newQueue('test-' + uuid.v4(), {
           defaultJobOptions: {
             removeOnFail: keepJobs
           }
@@ -1372,7 +1372,7 @@ describe('Queue', () => {
     it('process stalled jobs without requiring a queue restart', function(done) {
       this.timeout(12000);
 
-      const queue2 = utils.buildQueue('running-stalled-job-' + uuid(), {
+      const queue2 = utils.buildQueue('running-stalled-job-' + uuid.v4(), {
         settings: {
           lockRenewTime: 5000,
           lockDuration: 500,
@@ -1413,7 +1413,7 @@ describe('Queue', () => {
       const FAILED_MESSAGE = 'job stalled more than allowable limit';
       this.timeout(10000);
 
-      const queue2 = utils.buildQueue('running-stalled-job-' + uuid(), {
+      const queue2 = utils.buildQueue('running-stalled-job-' + uuid.v4(), {
         settings: {
           lockRenewTime: 2500,
           lockDuration: 250,
@@ -1792,7 +1792,7 @@ describe('Queue', () => {
     it('should process delayed jobs in correct order even in case of restart', function(done) {
       this.timeout(15000);
 
-      const QUEUE_NAME = 'delayed queue multiple' + uuid();
+      const QUEUE_NAME = 'delayed queue multiple' + uuid.v4();
       let order = 1;
 
       queue = new Queue(QUEUE_NAME);
@@ -1837,7 +1837,7 @@ describe('Queue', () => {
     });
 
     it('should process delayed jobs with exact same timestamps in correct order (FIFO)', done => {
-      const QUEUE_NAME = 'delayed queue multiple' + uuid();
+      const QUEUE_NAME = 'delayed queue multiple' + uuid.v4();
       queue = new Queue(QUEUE_NAME);
       let order = 1;
 
@@ -2524,7 +2524,7 @@ describe('Queue', () => {
     let queue;
 
     beforeEach(() => {
-      queue = utils.buildQueue('cleaner' + uuid());
+      queue = utils.buildQueue('cleaner' + uuid.v4());
     });
 
     afterEach(function() {
@@ -2559,7 +2559,7 @@ describe('Queue', () => {
     });
 
     it('should clean an empty queue', done => {
-      const testQueue = utils.buildQueue('cleaner' + uuid());
+      const testQueue = utils.buildQueue('cleaner' + uuid.v4());
       testQueue.isReady().then(() => {
         return testQueue.clean(0);
       });

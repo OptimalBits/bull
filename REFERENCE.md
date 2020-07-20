@@ -73,9 +73,10 @@ interface QueueOptions {
 
 ```typescript
 interface RateLimiter {
-  max: number,      // Max number of jobs processed
-  duration: number, // per duration in milliseconds
-  bounceBack: boolean = false; // When jobs get rate limited, they stay in the waiting queue and are not moved to the delayed queue
+  max: number; // Max number of jobs processed
+  duration: number; // per duration in milliseconds
+  bounceBack?: boolean = false; // When jobs get rate limited, they stay in the waiting queue and are not moved to the delayed queue
+  groupKey?: string; // allows grouping of jobs with the specified key from the data object passed to the Queue#add (ex. "network.handle")
 }
 ```
 
@@ -356,6 +357,7 @@ removeJobs(pattern: string): Promise<void>
 Removes all the jobs which jobId matches the given pattern. The pattern must follow redis glob-style pattern (syntax)[https://redis.io/commands/keys]
 
 Example:
+
 ```js
 myQueue.removeJobs('?oo*').then(function() {
   console.log('done removing jobs');
@@ -372,7 +374,8 @@ Will remove jobs with ids such as: "boo", "foofighter", etc.
 empty(): Promise
 ```
 
-Empties a queue deleting all the input lists and associated jobs.
+Drains a queue deleting all the *input* lists and associated jobs. Note, this function only remove the jobs that are
+*waiting" to be processed by the queue or *delayed*.
 
 ---
 
@@ -446,7 +449,7 @@ parameter. If the specified job cannot be located, the promise will be resolved 
 getJobs(types: JobStatus[], start?: number, end?: number, asc?: boolean): Promise<Job[]>
 ```
 
-Returns a promise that will return an array of job instances of the given job statuses. Optional parameters for range and ordering are provided. 
+Returns a promise that will return an array of job instances of the given job statuses. Optional parameters for range and ordering are provided.
 
 Note: The `start` and `end` options are applied **per job statuses**. For example, if there are 10 jobs in state `completed` and 10 jobs in state `active`, `getJobs(['completed', 'active'], 0, 4)` will yield an array with 10 entries, representing the first 5 completed jobs (0 - 4) and the first 5 active jobs (0 - 4).
 
