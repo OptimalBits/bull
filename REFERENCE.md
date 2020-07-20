@@ -117,7 +117,7 @@ does not close or disconnect these connections when queues are closed, so if you
 Redis connections somewhere and disconnect them after you shut down all the queues.
 
 The `bclient` connection however is a "blocking client" and is used to wait for new jobs on a single queue at a time.  For this reason it cannot be shared and a
-fresh new connection should be returned each time.  Bull will disconnect this client itself when the queue is closed.
+new connection should be returned each time.
 
 **Advanced Settings**
 
