@@ -63,7 +63,7 @@ The optional `url` argument, allows to specify a redis connection string such as
 
 ```typescript
 interface QueueOptions {
-  createClient?(type: 'client' | 'subscriber' | 'bclient', redisOpts?: Redis.RedisOptions): Redis.Redis | Redis.Cluster;
+  createClient?(type: 'client' | 'subscriber' | 'bclient', config?: Redis.RedisOptions): Redis.Redis | Redis.Cluster;
   limiter?: RateLimiter;
   redis?: RedisOpts;
   prefix?: string = 'bull'; // prefix for all queue keys.
