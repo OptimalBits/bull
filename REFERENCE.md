@@ -116,7 +116,7 @@ When type is `client` or `subscriber` you can return the same connection for mul
 does not close or disconnect these connections when queues are closed, so if you need to have your app do a graceful shutdown, you will need to keep references to these
 Redis connections somewhere and disconnect them after you shut down all the queues.
 
-The `bclient` connection however is a "blocking client" and is used to wait for new events on a single queue at a time.  For this reason it cannot be shared and a
+The `bclient` connection however is a "blocking client" and is used to wait for new jobs on a single queue at a time.  For this reason it cannot be shared and a
 fresh new connection should be returned each time.  Bull will disconnect this client itself when the queue is closed.
 
 **Advanced Settings**
