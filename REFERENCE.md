@@ -63,6 +63,7 @@ The optional `url` argument, allows to specify a redis connection string such as
 
 ```typescript
 interface QueueOptions {
+  createClient?(type: 'client' | 'subscriber' | 'bclient', config?: Redis.RedisOptions): Redis.Redis | Redis.Cluster;
   limiter?: RateLimiter;
   redis?: RedisOpts;
   prefix?: string = 'bull'; // prefix for all queue keys.
@@ -104,6 +105,19 @@ interface AdvancedSettings {
   drainDelay: number = 5; // A timeout for when the queue is in drained state (empty waiting for jobs).
 }
 ```
+
+**Custom or Shared IORedis Connections**
+
+`createClient` is passed a `type` to specify the type of connection that Bull is trying to create, and some options that `bull` would like to set for that connection.
+
+You can merge the provided options with some of your own and create an `ioredis` connection.
+
+When type is `client` or `subscriber` you can return the same connection for multiple queues, which can reduce the number of connections you open to the redis server.  Bull
+does not close or disconnect these connections when queues are closed, so if you need to have your app do a graceful shutdown, you will need to keep references to these
+Redis connections somewhere and disconnect them after you shut down all the queues.
+
+The `bclient` connection however is a "blocking client" and is used to wait for new jobs on a single queue at a time.  For this reason it cannot be shared and a
+new connection should be returned each time.
 
 **Advanced Settings**
 
