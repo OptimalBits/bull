@@ -17,7 +17,7 @@ describe('Job', () => {
   });
 
   beforeEach(() => {
-    queue = new Queue('test-' + uuid(), {
+    queue = new Queue('test-' + uuid.v4(), {
       redis: { port: 6379, host: '127.0.0.1' }
     });
   });
@@ -309,6 +309,26 @@ describe('Job', () => {
           .then(done)
           .catch(done);
       });
+    });
+  });
+
+  describe('.removeFromPattern', () => {
+    it('remove jobs matching pattern', async () => {
+      const jobIds = ['foo', 'foo1', 'foo2', 'foo3', 'foo4', 'bar', 'baz'];
+      await Promise.all(
+        jobIds.map(jobId => Job.create(queue, { foo: 'bar' }, { jobId }))
+      );
+
+      await queue.removeJobs('foo*');
+
+      for (let i = 0; i < jobIds.length; i++) {
+        const storedJob = await Job.fromId(queue, jobIds[i]);
+        if (jobIds[i].startsWith('foo')) {
+          expect(storedJob).to.be(null);
+        } else {
+          expect(storedJob).to.not.be(null);
+        }
+      }
     });
   });
 

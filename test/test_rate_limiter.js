@@ -55,7 +55,7 @@ describe('Rate limiter', () => {
     }
   });
 
-  it('should obey the rate limit', done => {
+  it.skip('should obey the rate limit', done => {
     const startTime = new Date().getTime();
     const numJobs = 4;
 
@@ -154,5 +154,69 @@ describe('Rate limiter', () => {
         });
       });
     });
+  });
+
+  it('should rate limit by grouping', async function() {
+    this.timeout(20000);
+    const numGroups = 4;
+    const numJobs = 20;
+    const startTime = Date.now();
+
+    const rateLimitedQueue = utils.buildQueue('test rate limiter with group', {
+      limiter: {
+        max: 1,
+        duration: 1000,
+        groupKey: 'accountId'
+      }
+    });
+
+    rateLimitedQueue.process(() => {
+      return Promise.resolve();
+    });
+
+    const completed = {};
+
+    const running = new Promise((resolve, reject) => {
+      const afterJobs = _.after(numJobs, () => {
+        try {
+          const timeDiff = Date.now() - startTime;
+          expect(timeDiff).to.be.gte(numGroups * 1000);
+          expect(timeDiff).to.be.below((numGroups + 1) * 1500);
+
+          for (const group in completed) {
+            let prevTime = completed[group][0];
+            for (let i = 1; i < completed[group].length; i++) {
+              const diff = completed[group][i] - prevTime;
+              expect(diff).to.be.below(2100);
+              expect(diff).to.be.gte(900);
+              prevTime = completed[group][i];
+            }
+          }
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      });
+
+      rateLimitedQueue.on('completed', ({ id }) => {
+        const group = _.last(id.split(':'));
+        completed[group] = completed[group] || [];
+        completed[group].push(Date.now());
+
+        afterJobs();
+      });
+
+      rateLimitedQueue.on('failed', async err => {
+        await queue.close();
+        reject(err);
+      });
+    });
+
+    for (let i = 0; i < numJobs; i++) {
+      rateLimitedQueue.add({ accountId: i % numGroups });
+    }
+
+    await running;
+    await rateLimitedQueue.close();
   });
 });

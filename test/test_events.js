@@ -154,6 +154,20 @@ describe('events', () => {
     });
   });
 
+  it('should emit an event when a new priority message is added to the queue', done => {
+    const client = new redis(6379, '127.0.0.1', {});
+    client.select(0);
+    const queue = new Queue('test pub sub');
+    queue.on('waiting', jobId => {
+      expect(parseInt(jobId, 10)).to.be.eql(1);
+      client.quit();
+      done();
+    });
+    queue.once('registered:waiting', () => {
+      queue.add({ test: 'stuff' }, { priority: 1 });
+    });
+  });
+
   it('should emit an event when a job becomes active', done => {
     const queue = utils.buildQueue();
     queue.process((job, jobDone) => {

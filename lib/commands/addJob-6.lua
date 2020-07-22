@@ -79,9 +79,6 @@ else
   if priority == 0 then
       -- LIFO or FIFO
     rcall(ARGV[10], target, jobId)
-
-    -- Emit waiting event (wait..ing@token)
-    rcall("PUBLISH", KEYS[1] .. "ing@" .. ARGV[11], jobId)
   else
     -- Priority add
     rcall("ZADD", KEYS[6], priority, jobId)
@@ -96,6 +93,9 @@ else
     end
 
   end
+
+  -- Emit waiting event (wait..ing@token)
+  rcall("PUBLISH", KEYS[1] .. "ing@" .. ARGV[11], jobId)
 end
 
 return jobId .. "" -- convert to string

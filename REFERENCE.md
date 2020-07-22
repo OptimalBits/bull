@@ -8,6 +8,7 @@
   - [Queue#resume](#queueresume)
   - [Queue#whenCurrentJobsFinished](#queuewhencurrentjobsfinished)
   - [Queue#count](#queuecount)
+  - [Queue#removeJobs](#queueremovejobs)
   - [Queue#empty](#queueempty)
   - [Queue#clean](#queueclean)
   - [Queue#close](#queueclose)
@@ -62,6 +63,7 @@ The optional `url` argument, allows to specify a redis connection string such as
 
 ```typescript
 interface QueueOptions {
+  createClient?(type: 'client' | 'subscriber' | 'bclient', config?: Redis.RedisOptions): Redis.Redis | Redis.Cluster;
   limiter?: RateLimiter;
   redis?: RedisOpts;
   prefix?: string = 'bull'; // prefix for all queue keys.
@@ -72,9 +74,10 @@ interface QueueOptions {
 
 ```typescript
 interface RateLimiter {
-  max: number,      // Max number of jobs processed
-  duration: number, // per duration in milliseconds
-  bounceBack: boolean = false; // When jobs get rate limited, they stay in the waiting queue and are not moved to the delayed queue
+  max: number; // Max number of jobs processed
+  duration: number; // per duration in milliseconds
+  bounceBack?: boolean = false; // When jobs get rate limited, they stay in the waiting queue and are not moved to the delayed queue
+  groupKey?: string; // allows grouping of jobs with the specified key from the data object passed to the Queue#add (ex. "network.handle")
 }
 ```
 
@@ -102,6 +105,19 @@ interface AdvancedSettings {
   drainDelay: number = 5; // A timeout for when the queue is in drained state (empty waiting for jobs).
 }
 ```
+
+**Custom or Shared IORedis Connections**
+
+`createClient` is passed a `type` to specify the type of connection that Bull is trying to create, and some options that `bull` would like to set for that connection.
+
+You can merge the provided options with some of your own and create an `ioredis` connection.
+
+When type is `client` or `subscriber` you can return the same connection for multiple queues, which can reduce the number of connections you open to the redis server.  Bull
+does not close or disconnect these connections when queues are closed, so if you need to have your app do a graceful shutdown, you will need to keep references to these
+Redis connections somewhere and disconnect them after you shut down all the queues.
+
+The `bclient` connection however is a "blocking client" and is used to wait for new jobs on a single queue at a time.  For this reason it cannot be shared and a
+new connection should be returned each time.
 
 **Advanced Settings**
 
@@ -308,7 +324,7 @@ pause(isLocal?: boolean, doNotWaitActive?: boolean): Promise
 
 Returns a promise that resolves when the queue is paused. A paused queue will not process new jobs until resumed, but current jobs being processed will continue until they are finalized. The pause can be either global or local. If global, all workers in all queue instances for a given queue will be paused. If local, just this worker will stop processing new jobs after the current lock expires. This can be useful to stop a worker from taking new jobs prior to shutting down.
 
-If `doNotWaitActive` is `true`, `pause` will *not* wait for any active jobs to finish before resolving. Otherwise, `pause` *will* wait for active jobs to finish. See [Queue#whenCurrentJobsFinished](#queuewhencurrentjobsfinished) for more information.
+If `doNotWaitActive` is `true`, `pause` will _not_ wait for any active jobs to finish before resolving. Otherwise, `pause` _will_ wait for active jobs to finish. See [Queue#whenCurrentJobsFinished](#queuewhencurrentjobsfinished) for more information.
 
 Pausing a queue that is already paused does nothing.
 
@@ -346,13 +362,34 @@ Returns a promise that returns the number of jobs in the queue, waiting or delay
 
 ---
 
+### Queue#removeJobs
+
+```ts
+removeJobs(pattern: string): Promise<void>
+```
+
+Removes all the jobs which jobId matches the given pattern. The pattern must follow redis glob-style pattern (syntax)[https://redis.io/commands/keys]
+
+Example:
+
+```js
+myQueue.removeJobs('?oo*').then(function() {
+  console.log('done removing jobs');
+});
+```
+
+Will remove jobs with ids such as: "boo", "foofighter", etc.
+
+---
+
 ### Queue#empty
 
 ```ts
 empty(): Promise
 ```
 
-Empties a queue deleting all the input lists and associated jobs.
+Drains a queue deleting all the *input* lists and associated jobs. Note, this function only remove the jobs that are
+*waiting" to be processed by the queue or *delayed*.
 
 ---
 
@@ -423,12 +460,12 @@ parameter. If the specified job cannot be located, the promise will be resolved 
 ### Queue#getJobs
 
 ```ts
-getJobs(types: string[], start?: number, end?: number, asc?: boolean): Promise<Job[]>
+getJobs(types: JobStatus[], start?: number, end?: number, asc?: boolean): Promise<Job[]>
 ```
 
-Returns a promise that will return an array of job instances of the given types. Optional parameters for range and ordering are provided. 
+Returns a promise that will return an array of job instances of the given job statuses. Optional parameters for range and ordering are provided.
 
-Note: The `start` and `end` options are applied **per job type**. For example, if there are 10 jobs in state `completed` and 10 jobs in state `active`, `getJobs(['completed', 'active'], 0, 4)` will yield an array with 10 entries, representing the first 5 completed jobs (0 - 4) and the first 5 active jobs (0 - 4).
+Note: The `start` and `end` options are applied **per job statuses**. For example, if there are 10 jobs in state `completed` and 10 jobs in state `active`, `getJobs(['completed', 'active'], 0, 4)` will yield an array with 10 entries, representing the first 5 completed jobs (0 - 4) and the first 5 active jobs (0 - 4).
 
 ---
 
