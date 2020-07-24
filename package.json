@@ -1,6 +1,6 @@
 {
   "name": "bull",
-  "version": "3.15.0",
+  "version": "3.16.0",
   "description": "Job manager",
   "engines": {
     "node": ">=10"
@@ -29,7 +29,7 @@
     "promise.prototype.finally": "^3.1.2",
     "semver": "^6.3.0",
     "util.promisify": "^1.0.1",
-    "uuid": "^3.4.0"
+    "uuid": "^8.2.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^7.6.1",
