@@ -177,7 +177,7 @@ describe('sandboxed process', () => {
     ]).then(() => {
       queue.process(__dirname + '/fixtures/fixture_processor_slow.js');
     });
-  });
+  }).timeout(5000);
 
   it('should process and complete using done', done => {
     queue.process(__dirname + '/fixtures/fixture_processor_callback.js');

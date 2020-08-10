@@ -84,7 +84,7 @@ describe('Rate limiter', () => {
     queue.on('failed', err => {
       done(err);
     });
-  });
+  }).timeout(5000);
 
   it('should obey job priority', async () => {
     const newQueue = utils.buildQueue('test rate limiter', {
