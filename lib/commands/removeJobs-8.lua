@@ -44,9 +44,17 @@ for i, jobKey in ipairs(jobKeys) do
             rcall("ZREM", KEYS[7], jobId)
             rcall("DEL", jobKey)
             rcall("DEL", jobKey .. ':logs')
+
+            -- delete keys related to rate limiter
+            local limiterIndexTable = KEYS[8] .. ":index"
+            local limitedSetKey = rcall("HGET", limiterIndexTable, jobId)
+
+            if limitedSetKey then
+                rcall("SREM", limitedSetKey, jobId)
+                rcall("HDEL", limiterIndexTable, jobId)
+            end
             table.insert(removed, jobId)
         end
     end
 end
 return {cursor, removed}
-

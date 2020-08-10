@@ -55,7 +55,7 @@ describe('Rate limiter', () => {
     }
   });
 
-  it.skip('should obey the rate limit', done => {
+  it('should obey the rate limit', done => {
     const startTime = new Date().getTime();
     const numJobs = 4;
 
@@ -85,6 +85,83 @@ describe('Rate limiter', () => {
       done(err);
     });
   });
+
+  it('should obey job priority', async () => {
+    const newQueue = utils.buildQueue('test rate limiter', {
+      limiter: {
+        max: 1,
+        duration: 150
+      }
+    });
+    const numJobs = 20;
+    const priorityBuckets = {
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0
+    };
+
+    const numPriorities = Object.keys(priorityBuckets).length;
+
+    newQueue.process(job => {
+      const priority = job.opts.priority;
+
+      priorityBuckets[priority] = priorityBuckets[priority] - 1;
+
+      for (let p = 1; p < priority; p++) {
+        if (priorityBuckets[p] > 0) {
+          const before = JSON.stringify(priorityBucketsBefore);
+          const after = JSON.stringify(priorityBuckets);
+          throw new Error(
+            `Priority was not enforced, job with priority ${priority} was processed before all jobs with priority ${p} were processed. Bucket counts before: ${before} / after: ${after}`
+          );
+        }
+      }
+    });
+
+    const result = new Promise((resolve, reject) => {
+      newQueue.on('failed', (job, err) => {
+        reject(err);
+      });
+
+      const afterNumJobs = _.after(numJobs, () => {
+        try {
+          expect(_.every(priorityBuckets, value => value === 0)).to.eq(true);
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      });
+
+      newQueue.on('completed', () => {
+        afterNumJobs();
+      });
+    });
+
+    await newQueue.pause();
+    const promises = [];
+
+    for (let i = 0; i < numJobs; i++) {
+      const opts = { priority: (i % numPriorities) + 1 };
+      priorityBuckets[opts.priority] = priorityBuckets[opts.priority] + 1;
+      promises.push(newQueue.add({ id: i }, opts));
+    }
+
+    const priorityBucketsBefore = _.reduce(
+      priorityBuckets,
+      (acc, value, key) => {
+        acc[key] = value;
+        return acc;
+      },
+      {}
+    );
+
+    await Promise.all(promises);
+
+    await newQueue.resume();
+
+    return result;
+  }).timeout(60000);
 
   it('should put a job into the delayed queue when limit is hit', () => {
     const newQueue = utils.buildQueue('test rate limiter', {
