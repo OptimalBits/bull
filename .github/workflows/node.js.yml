@@ -32,4 +32,3 @@ jobs:
       - run: yarn install --frozen-lockfile --non-interactive
       - run: yarn prettier -- --list-different
       - run: yarn test
-      - run: yarn coveralls
