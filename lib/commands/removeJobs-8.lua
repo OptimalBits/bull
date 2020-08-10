@@ -10,6 +10,7 @@
       KEYS[5] 'completed',
       KEYS[6] 'failed',
       KEYS[7] 'priority',
+      KEYS[8] 'rate-limiter'
 
       ARGV[1]  prefix
       ARGV[2]  pattern
