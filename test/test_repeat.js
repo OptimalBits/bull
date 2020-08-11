@@ -604,7 +604,7 @@ describe('repeat', () => {
         done(Error('should not repeat more than 5 times'));
       }
     });
-  });
+  }).timeout(5000);
 
   it('should processes delayed jobs by priority', function(done) {
     const _this = this;
