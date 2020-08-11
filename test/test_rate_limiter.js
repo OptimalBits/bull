@@ -84,7 +84,86 @@ describe('Rate limiter', () => {
     queue.on('failed', err => {
       done(err);
     });
-  });
+  }).timeout(5000);
+
+  // Skip because currently job priority is maintained in a best effort way, but cannot
+  // be guaranteed for rate limited jobs.
+  it.skip('should obey job priority', async () => {
+    const newQueue = utils.buildQueue('test rate limiter', {
+      limiter: {
+        max: 1,
+        duration: 150
+      }
+    });
+    const numJobs = 20;
+    const priorityBuckets = {
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0
+    };
+
+    const numPriorities = Object.keys(priorityBuckets).length;
+
+    newQueue.process(job => {
+      const priority = job.opts.priority;
+
+      priorityBuckets[priority] = priorityBuckets[priority] - 1;
+
+      for (let p = 1; p < priority; p++) {
+        if (priorityBuckets[p] > 0) {
+          const before = JSON.stringify(priorityBucketsBefore);
+          const after = JSON.stringify(priorityBuckets);
+          throw new Error(
+            `Priority was not enforced, job with priority ${priority} was processed before all jobs with priority ${p} were processed. Bucket counts before: ${before} / after: ${after}`
+          );
+        }
+      }
+    });
+
+    const result = new Promise((resolve, reject) => {
+      newQueue.on('failed', (job, err) => {
+        reject(err);
+      });
+
+      const afterNumJobs = _.after(numJobs, () => {
+        try {
+          expect(_.every(priorityBuckets, value => value === 0)).to.eq(true);
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      });
+
+      newQueue.on('completed', () => {
+        afterNumJobs();
+      });
+    });
+
+    await newQueue.pause();
+    const promises = [];
+
+    for (let i = 0; i < numJobs; i++) {
+      const opts = { priority: (i % numPriorities) + 1 };
+      priorityBuckets[opts.priority] = priorityBuckets[opts.priority] + 1;
+      promises.push(newQueue.add({ id: i }, opts));
+    }
+
+    const priorityBucketsBefore = _.reduce(
+      priorityBuckets,
+      (acc, value, key) => {
+        acc[key] = value;
+        return acc;
+      },
+      {}
+    );
+
+    await Promise.all(promises);
+
+    await newQueue.resume();
+
+    return result;
+  }).timeout(60000);
 
   it('should put a job into the delayed queue when limit is hit', () => {
     const newQueue = utils.buildQueue('test rate limiter', {
@@ -154,5 +233,69 @@ describe('Rate limiter', () => {
         });
       });
     });
+  });
+
+  it('should rate limit by grouping', async function() {
+    this.timeout(20000);
+    const numGroups = 4;
+    const numJobs = 20;
+    const startTime = Date.now();
+
+    const rateLimitedQueue = utils.buildQueue('test rate limiter with group', {
+      limiter: {
+        max: 1,
+        duration: 1000,
+        groupKey: 'accountId'
+      }
+    });
+
+    rateLimitedQueue.process(() => {
+      return Promise.resolve();
+    });
+
+    const completed = {};
+
+    const running = new Promise((resolve, reject) => {
+      const afterJobs = _.after(numJobs, () => {
+        try {
+          const timeDiff = Date.now() - startTime;
+          expect(timeDiff).to.be.gte(numGroups * 1000);
+          expect(timeDiff).to.be.below((numGroups + 1) * 1500);
+
+          for (const group in completed) {
+            let prevTime = completed[group][0];
+            for (let i = 1; i < completed[group].length; i++) {
+              const diff = completed[group][i] - prevTime;
+              expect(diff).to.be.below(2100);
+              expect(diff).to.be.gte(900);
+              prevTime = completed[group][i];
+            }
+          }
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      });
+
+      rateLimitedQueue.on('completed', ({ id }) => {
+        const group = _.last(id.split(':'));
+        completed[group] = completed[group] || [];
+        completed[group].push(Date.now());
+
+        afterJobs();
+      });
+
+      rateLimitedQueue.on('failed', async err => {
+        await queue.close();
+        reject(err);
+      });
+    });
+
+    for (let i = 0; i < numJobs; i++) {
+      rateLimitedQueue.add({ accountId: i % numGroups });
+    }
+
+    await running;
+    await rateLimitedQueue.close();
   });
 });
