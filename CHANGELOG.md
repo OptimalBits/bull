@@ -1,5 +1,12 @@
 # Changelog
 
+## v.3.17.0
+
+- feat: better rate limiter (#1816) (@manast)
+- feat(sandbox): kill child workers gracefully (#1802) (@GabrielCastro)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.16.0...v3.17.0)
+
 ## v.3.16.0
 
 - feat(rate-limiter): add grouping support.
