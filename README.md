@@ -94,6 +94,7 @@ There are a few third-party UIs that you can use for monitoring:
 - [Taskforce](https://taskforce.sh)
 - [bull-board](https://github.com/vcapretz/bull-board)
 - [bull-repl](https://github.com/darky/bull-repl)
+- [Monitoro](https://github.com/AbhilashJN/monitoro)
 
 **Bull <= v2**
 
