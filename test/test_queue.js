@@ -136,7 +136,9 @@ describe('Queue', () => {
     });
 
     it('should create a queue with a redis connection string', () => {
-      const queue = new Queue('connstring', 'redis://123.4.5.67:1234/2');
+      const queue = new Queue('connstring', 'redis://123.4.5.67:1234/2', {
+        redis: { connectTimeout: 1000 }
+      });
 
       expect(queue.client.options.host).to.be.eql('123.4.5.67');
       expect(queue.eclient.options.host).to.be.eql('123.4.5.67');
@@ -148,10 +150,12 @@ describe('Queue', () => {
       expect(queue.eclient.options.db).to.be.eql(2);
 
       return queue.close();
-    }).timeout(5000);
+    });
 
     it('should create a queue with only a hostname', () => {
-      const queue = new Queue('connstring', 'redis://127.2.3.4');
+      const queue = new Queue('connstring', 'redis://127.2.3.4', {
+        redis: { connectTimeout: 1000 }
+      });
 
       expect(queue.client.options.host).to.be.eql('127.2.3.4');
       expect(queue.eclient.options.host).to.be.eql('127.2.3.4');
@@ -162,7 +166,7 @@ describe('Queue', () => {
       expect(queue.client.condition.select).to.be.eql(0);
       expect(queue.eclient.condition.select).to.be.eql(0);
 
-      queue.close().catch((/*err*/) => {
+      return queue.close().catch((/*err*/) => {
         // Swallow error.
       });
     });
