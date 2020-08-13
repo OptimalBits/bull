@@ -1,5 +1,11 @@
 # Changelog
 
+## v.3.18.0
+
+- feat: make pause forward compatible with bullmq (#1818) (@manast)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.17.0...v3.18.0)
+
 ## v.3.17.0
 
 - feat: better rate limiter (#1816) (@manast)
