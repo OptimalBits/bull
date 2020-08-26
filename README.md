@@ -309,7 +309,7 @@ A job can be added to a queue and processed repeatedly according to a cron speci
 ```
 
 As a tip, check your expressions here to verify they are correct:
-[cron expression descriptor](http://cronexpressiondescriptor.azurewebsites.net/)
+[cron expression generator](https://crontab.cronhub.io)
 
 #### Pause / Resume
 
