@@ -4,6 +4,7 @@
 
   - [Queue#process](#queueprocess)
   - [Queue#add](#queueadd)
+  - [Queue#addBulk](#queueaddBulk)
   - [Queue#pause](#queuepause)
   - [Queue#resume](#queueresume)
   - [Queue#whenCurrentJobsFinished](#queuewhencurrentjobsfinished)
@@ -313,6 +314,16 @@ interface BackoffOpts {
   delay: number; // Backoff delay, in milliseconds.
 }
 ```
+
+---
+
+### Queue#addBulk
+
+```ts
+addBulk(jobs: { name?: string, data: object, opts?: JobOpts }[]): Promise<Job[]>
+```
+
+Creates array of jobs and adds them to the queue. They follow the same signature as [Queue#add](#queueadd).
 
 ---
 
