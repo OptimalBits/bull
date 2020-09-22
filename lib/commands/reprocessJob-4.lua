@@ -9,6 +9,8 @@
 
     ARGV[1] job.id,
     ARGV[2] (job.opts.lifo ? 'R' : 'L') + 'PUSH'
+    ARGV[3] token
+    ARGV[4] timestamp
 
   Output:
     1 means the operation was a success
@@ -21,6 +23,9 @@
 ]]
 if (redis.call("EXISTS", KEYS[1]) == 1) then
   if (redis.call("EXISTS", KEYS[2]) == 0) then
+    redis.call("HDEL", KEYS[1], "finishedOn", "processedOn", "failedReason")
+    redis.call("HSET", KEYS[1], "retriedOn", ARGV[4])
+
     if (redis.call("ZREM", KEYS[3], ARGV[1]) == 1) then
       redis.call(ARGV[2], KEYS[4], ARGV[1])
       redis.call(ARGV[2], KEYS[4] .. ":added", ARGV[1])
