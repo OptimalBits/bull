@@ -428,40 +428,17 @@ describe('Job', () => {
       });
 
       queue.once('failed', job => {
+        let retryPromise;
         queue.once('global:waiting', jobId2 => {
-          Job.fromId(queue, jobId2).then(job2 => {
-            expect(job2.data.foo).to.be.equal('bar');
-            cb();
+          retryPromise.then(() => {
+            Job.fromId(queue, jobId2).then(job2 => {
+              expect(job2.data.foo).to.be.equal('bar');
+              cb();
+            });
           });
         });
         queue.once('registered:global:waiting', () => {
-          job.retry();
-        });
-      });
-    });
-
-    it('sets retriedOn to a timestamp', cb => {
-      queue.add({ foo: 'bar' });
-      queue.process((job, done) => {
-        done(new Error('the job failed'));
-      });
-
-      queue.once('failed', job => {
-        queue.once('global:waiting', jobId2 => {
-          const now = Date.now();
-          expect(job.retriedOn)
-            .to.be.a('number')
-            .and.to.be.within(now - 1000, now);
-
-          Job.fromId(queue, jobId2).then(job2 => {
-            expect(job2.retriedOn)
-              .to.be.a('number')
-              .and.to.be.within(now - 1000, now);
-            cb();
-          });
-        });
-        queue.once('registered:global:waiting', () => {
-          job.retry();
+          retryPromise = job.retry();
         });
       });
     });
