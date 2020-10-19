@@ -51,7 +51,7 @@
 
 ### Poll
 
-Which other languages yould you like too see Bull ported to? 
+Which other languages would you like to see Bull ported to? 
 
 Please vote here: https://twitter.com/manast/status/1318168684049977345
 
