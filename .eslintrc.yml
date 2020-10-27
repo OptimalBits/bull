@@ -22,13 +22,13 @@ rules:
   no-alert: 2
   no-console: [2, { allow: ['warn', 'error'] }]
   no-underscore-dangle: 0
+  object-shorthand: 0
 
   strict: [2, 'global']
   no-var: 2
   prefer-arrow-callback: 2
   prefer-const: 2
   no-inner-declarations: 0
-  object-shorthand: [2, 'consistent-as-needed']
   newline-per-chained-call: 2
 
   mocha/no-exclusive-tests: 2
