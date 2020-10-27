@@ -49,16 +49,9 @@
 
 ---
 
-### Poll
+### BullMQ
 
-Which other languages would you like to see Bull ported to? 
-
-Please vote here: https://twitter.com/manast/status/1318168684049977345
-
-
-### BullMQ 4 Beta
-
-If you want to start using the next major version of Bull you are welcome to the new repo [here](https://github.com/taskforcesh/bullmq)
+If you want to start using the next major version of Bull written entirely in Typescript you are welcome to the new repo [here](https://github.com/taskforcesh/bullmq). Otherwise you are very welcome to still use Bull, which is a safe, battle tested codebase.
 
 ---
 
