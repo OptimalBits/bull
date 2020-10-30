@@ -57,6 +57,49 @@ describe('repeat', () => {
       .catch(done);
   });
 
+  it('should add a repetable job when using stardDate and endDate', async () => {
+    const job1 = await queue.add(
+      {
+        name: 'job1'
+      },
+      {
+        repeat: {
+          cron: '0 * * * * *',
+          startDate: '2020-09-02T22:29:00Z'
+        }
+      }
+    );
+
+    expect(job1).to.exist;
+    expect(job1.opts).to.have.property('repeat');
+    expect(job1.opts.repeat).to.be.deep.equal({
+      count: 1,
+      cron: '0 * * * * *',
+      startDate: '2020-09-02T22:29:00Z'
+    });
+
+    const job2 = await queue.add(
+      {
+        name: 'job2'
+      },
+      {
+        repeat: {
+          cron: '0 * * * * *',
+          startDate: '2020-09-02T22:29:00Z',
+          endDate: '2020-09-05T01:44:37Z'
+        }
+      }
+    );
+    expect(job2).to.exist;
+    expect(job2.opts).to.have.property('repeat');
+    expect(job2.opts.repeat).to.be.deep.equal({
+      count: 1,
+      cron: '0 * * * * *',
+      startDate: '2020-09-02T22:29:00Z',
+      endDate: '2020-09-05T01:44:37Z'
+    });
+  });
+
   it('should get repeatable jobs with different cron pattern', done => {
     const crons = [
       '10 * * * * *',
@@ -414,23 +457,36 @@ describe('repeat', () => {
     });
   });
 
-  it('should be able to remove repeatable jobs by key', () => {
+  it('should be able to remove repeatable jobs by key', async () => {
     const repeat = { cron: '*/2 * * * * *' };
 
-    return queue.add('remove', { foo: 'bar' }, { repeat }).then(() => {
-      return queue
-        .getRepeatableJobs()
-        .then(repeatableJobs => {
-          expect(repeatableJobs).to.have.length(1);
-          return queue.removeRepeatableByKey(repeatableJobs[0].key);
-        })
-        .then(() => {
-          return queue.getRepeatableJobs();
-        })
-        .then(repeatableJobs => {
-          expect(repeatableJobs).to.have.length(0);
-        });
-    });
+    await queue.add('remove', { foo: 'bar' }, { repeat });
+
+    const repeatableJobs = await queue.getRepeatableJobs();
+    expect(repeatableJobs).to.have.length(1);
+    await queue.removeRepeatableByKey(repeatableJobs[0].key);
+
+    const repeatableJobs2 = await queue.getRepeatableJobs();
+    expect(repeatableJobs2).to.have.length(0);
+
+    const delayedJobs = await queue.getDelayed();
+    expect(delayedJobs).to.have.length(0);
+  });
+
+  it('should be able to remove repeatable jobs by key that has a jobId', async () => {
+    const repeat = { cron: '*/2 * * * * *' };
+
+    await queue.add('remove', { foo: 'bar' }, { jobId: 'qux', repeat });
+
+    const repeatableJobs = await queue.getRepeatableJobs();
+    expect(repeatableJobs).to.have.length(1);
+    await queue.removeRepeatableByKey(repeatableJobs[0].key);
+
+    const repeatableJobs2 = await queue.getRepeatableJobs();
+    expect(repeatableJobs2).to.have.length(0);
+
+    const delayedJobs = await queue.getDelayed();
+    expect(delayedJobs).to.have.length(0);
   });
 
   it('should allow removing a customId repeatable job', function(done) {

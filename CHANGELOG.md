@@ -1,5 +1,13 @@
 # Changelog
 
+## v.3.18.1
+
+- fix(repeat): remove last delayed job.
+- fix(rate-limiter): increment jobCounter only when a job is processed. fixes #1875.
+- fix(sandbox): clear dangling timeout.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.18.0...v3.18.1)
+
 ## v.3.18.0
 
 - feat: make pause forward compatible with bullmq (#1818) (@manast)
