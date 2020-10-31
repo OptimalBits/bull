@@ -125,7 +125,15 @@ if jobId then
 
   if maxJobs then
     if rateLimit(KEYS[2], KEYS[6], KEYS[7], jobId, ARGV[4], maxJobs, ARGV[7], ARGV[8], ARGV[9]) then
-       return
+      -- Check if we can return a delayed job instead
+      jobId = rcall("ZRANGEBYSCORE", KEYS[7], 0, tonumber(ARGV[4]) * 0x1000, "LIMIT", 0, 1)[1]
+      if jobId then
+        if rateLimit(KEYS[2], KEYS[6], KEYS[7], jobId, ARGV[4], maxJobs, ARGV[7], ARGV[8], ARGV[9]) then
+          return
+        end
+      else 
+        return
+      end
     end
   end
 
