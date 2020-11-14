@@ -352,6 +352,18 @@ describe('Queue', () => {
       queue.close().then(done, done);
     });
 
+    it('local options should override defaultJobOptions', done => {
+      const defaultJobOptions = { delay: 0 };
+      const queue = new Queue('custom', {
+        defaultJobOptions
+      });
+
+      queue.add('test', {}, { delay: 1000 }).then(job => {
+        expect(job.delay).to.be.eql(1000);
+      });
+      queue.close().then(done, done);
+    });
+
     describe('bulk jobs', () => {
       it('should default name of job', () => {
         const queue = new Queue('custom');
