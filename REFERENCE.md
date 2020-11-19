@@ -600,6 +600,9 @@ Returns a promise that will return the waiting job counts for the given queue.
 
 ### Queue#getPausedCount
 
+*DEPRECATED* Since only the queue can be paused, getWaitingCount gives the same 
+result.
+
 ```ts
 getPausedCount() : Promise<number>
 ```
@@ -608,10 +611,21 @@ Returns a promise that will return the paused job counts for the given queue.
 
 ---
 
+### Getters
+
+The following methods are used to get the jobs that are in certain states.
+
+The GetterOpts can be used for configure some aspects from the getters.
+
+```ts
+interface GetterOpts
+  excludeData: boolean; // Exclude the data field of the jobs.
+```
+
 ### Queue#getWaiting
 
 ```ts
-getWaiting(start?: number, end?: number) : Promise<Array<Job>>
+getWaiting(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the waiting jobs between start and end.
@@ -621,7 +635,7 @@ Returns a promise that will return an array with the waiting jobs between start 
 ### Queue#getActive
 
 ```ts
-getActive(start?: number, end?: number) : Promise<Array<Job>>
+getActive(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the active jobs between start and end.
@@ -631,7 +645,7 @@ Returns a promise that will return an array with the active jobs between start a
 ### Queue#getDelayed
 
 ```ts
-getDelayed(start?: number, end?: number) : Promise<Array<Job>>
+getDelayed(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the delayed jobs between start and end.
@@ -641,7 +655,7 @@ Returns a promise that will return an array with the delayed jobs between start 
 ### Queue#getCompleted
 
 ```ts
-getCompleted(start?: number, end?: number) : Promise<Array<Job>>
+getCompleted(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the completed jobs between start and end.
@@ -651,7 +665,7 @@ Returns a promise that will return an array with the completed jobs between star
 ### Queue#getFailed
 
 ```ts
-getFailed(start?: number, end?: number) : Promise<Array<Job>>
+getFailed(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the failed jobs between start and end.
