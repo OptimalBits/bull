@@ -114,6 +114,33 @@ describe('Jobs getters', function() {
     queue.add({ baz: 'qux' });
   });
 
+  it('should get completed jobs excluding their data', done => {
+    let counter = 2;
+
+    queue.process((job, jobDone) => {
+      jobDone();
+    });
+
+    queue.on('completed', () => {
+      counter--;
+
+      if (counter === 0) {
+        queue.getCompleted(0, -1, { excludeData: true }).then(jobs => {
+          expect(jobs).to.be.a('array');
+          expect(jobs).to.have.length(2);
+          expect(jobs[0]).to.have.property('data');
+          expect(jobs[0].data).to.be.empty;
+          expect(jobs[1]).to.have.property('data');
+          expect(jobs[1].data).to.be.empty;
+          done();
+        });
+      }
+    });
+
+    queue.add({ foo: 'bar' });
+    queue.add({ baz: 'qux' });
+  });
+
   it('should get failed jobs', done => {
     let counter = 2;
 
