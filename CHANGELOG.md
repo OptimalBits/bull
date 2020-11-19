@@ -1,5 +1,12 @@
 # Changelog
 
+## v.3.19.0
+
+- feat: add option to exclude data on getters (#1910)
+- fix: lock ioredis to 4.18.0 to avoid breakage with newer 4.19.0+.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.18.1...v3.19.0)
+
 ## v.3.18.1
 
 - fix(repeat): remove last delayed job.
