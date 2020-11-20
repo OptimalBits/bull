@@ -116,6 +116,7 @@ describe('Jobs getters', function() {
 
   it('should get completed jobs excluding their data', done => {
     let counter = 2;
+    const timestamp = Date.now();
 
     queue.process((job, jobDone) => {
       jobDone();
@@ -128,10 +129,17 @@ describe('Jobs getters', function() {
         queue.getCompleted(0, -1, { excludeData: true }).then(jobs => {
           expect(jobs).to.be.a('array');
           expect(jobs).to.have.length(2);
-          expect(jobs[0]).to.have.property('data');
-          expect(jobs[0].data).to.be.empty;
-          expect(jobs[1]).to.have.property('data');
-          expect(jobs[1].data).to.be.empty;
+
+          for (let i = 0; i < jobs.length; i++) {
+            expect(jobs[i]).to.have.property('data');
+            expect(jobs[i].data).to.be.empty;
+
+            expect(jobs[i]).to.have.property('timestamp');
+            expect(jobs[i].timestamp).to.be.above(timestamp);
+            expect(jobs[i]).to.have.property('processedOn');
+            expect(jobs[i].timestamp).to.be.above(timestamp);
+          }
+
           done();
         });
       }
