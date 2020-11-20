@@ -1,5 +1,11 @@
 # Changelog
 
+## v.3.19.1
+
+- fix(getters): properly zip hmget result
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.19.0...v3.19.1)
+
 ## v.3.19.0
 
 - feat: add option to exclude data on getters (#1910)
