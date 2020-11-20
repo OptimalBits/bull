@@ -135,9 +135,9 @@ describe('Jobs getters', function() {
             expect(jobs[i].data).to.be.empty;
 
             expect(jobs[i]).to.have.property('timestamp');
-            expect(jobs[i].timestamp).to.be.above(timestamp);
+            expect(jobs[i].timestamp).to.be.gte(timestamp);
             expect(jobs[i]).to.have.property('processedOn');
-            expect(jobs[i].timestamp).to.be.above(timestamp);
+            expect(jobs[i].processedOn).to.be.gte(timestamp);
           }
 
           done();
