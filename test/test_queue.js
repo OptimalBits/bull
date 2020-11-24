@@ -341,15 +341,20 @@ describe('Queue', () => {
         }, done);
     });
 
-    it('creates a queue with default job options', done => {
-      const defaultJobOptions = { removeOnComplete: true };
+    it('creates a queue with default job options', async () => {
+      const defaultJobOptions = { removeOnComplete: true, removeOnFail: false };
       const queue = new Queue('custom', {
         defaultJobOptions
       });
 
       expect(queue.defaultJobOptions).to.be.eql(defaultJobOptions);
 
-      queue.close().then(done, done);
+      const job = await queue.add('test', {}, { removeOnFail: true });
+
+      expect(job.opts).have.property('removeOnComplete', true);
+      expect(job.opts).have.property('removeOnFail', true);
+
+      await queue.close();
     });
 
     describe('bulk jobs', () => {
