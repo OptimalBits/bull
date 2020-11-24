@@ -642,6 +642,10 @@ A job includes all data needed to perform its execution, as well as the progress
 
 The most important property for the user is `Job#data` that includes the object that was passed to [`Queue#add`](#queueadd), and that is normally used to perform the job.
 
+Other useful job properties:
+* `job.attemptsMade`: number of failed attempts.
+* `job.finishedOn`: Unix Timestamp, when job is completed or finally failed after all attempts.
+
 ### Job#progress
 
 ```ts
