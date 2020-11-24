@@ -1,6 +1,6 @@
 {
   "name": "bull",
-  "version": "3.18.1",
+  "version": "3.19.1",
   "description": "Job manager",
   "engines": {
     "node": ">=10"
@@ -23,7 +23,7 @@
     "cron-parser": "^2.13.0",
     "debuglog": "^1.0.0",
     "get-port": "^5.1.1",
-    "ioredis": "^4.14.1",
+    "ioredis": "4.18.0",
     "lodash": "^4.17.19",
     "p-timeout": "^3.2.0",
     "promise.prototype.finally": "^3.1.2",
