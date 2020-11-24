@@ -177,7 +177,7 @@ describe('sandboxed process', () => {
     ]).then(() => {
       queue.process(__dirname + '/fixtures/fixture_processor_slow.js');
     });
-  });
+  }).timeout(5000);
 
   it('should process and complete using done', done => {
     queue.process(__dirname + '/fixtures/fixture_processor_callback.js');
@@ -343,5 +343,40 @@ describe('sandboxed process', () => {
     });
 
     queue.add({ foo: 'bar' });
+  });
+
+  it('should allow the job to complete and then exit on clean', async function() {
+    this.timeout(1500);
+    const processFile = __dirname + '/fixtures/fixture_processor_slow.js';
+    queue.process(processFile);
+
+    // aquire and release a child here so we know it has it's full termination handler setup
+    const expectedChild = await queue.childPool.retain(processFile);
+    queue.childPool.release(expectedChild);
+    const onActive = new Promise(resolve => queue.once('active', resolve));
+    const jobAddPromise = queue.add({ foo: 'bar' });
+
+    await onActive;
+
+    // at this point the job should be active and running on the child
+    expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
+    expect(queue.childPool.getAllFree()).to.have.lengthOf(0);
+    const child = Object.values(queue.childPool.retained)[0];
+    expect(child).to.equal(expectedChild);
+    expect(child.exitCode).to.equal(null);
+    expect(child.finished).to.equal(undefined);
+
+    // trigger a clean while we know it's doing work
+    await queue.childPool.clean();
+
+    // ensure the child did get cleaned up
+    expect(expectedChild.killed).to.eql(true);
+    expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
+    expect(queue.childPool.getAllFree()).to.have.lengthOf(0);
+
+    // make sure the job completed successfully
+    const job = await jobAddPromise;
+    const jobResult = await job.finished();
+    expect(jobResult).to.equal(42);
   });
 });

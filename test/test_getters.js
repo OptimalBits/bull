@@ -114,6 +114,41 @@ describe('Jobs getters', function() {
     queue.add({ baz: 'qux' });
   });
 
+  it('should get completed jobs excluding their data', done => {
+    let counter = 2;
+    const timestamp = Date.now();
+
+    queue.process((job, jobDone) => {
+      jobDone();
+    });
+
+    queue.on('completed', () => {
+      counter--;
+
+      if (counter === 0) {
+        queue.getCompleted(0, -1, { excludeData: true }).then(jobs => {
+          expect(jobs).to.be.a('array');
+          expect(jobs).to.have.length(2);
+
+          for (let i = 0; i < jobs.length; i++) {
+            expect(jobs[i]).to.have.property('data');
+            expect(jobs[i].data).to.be.empty;
+
+            expect(jobs[i]).to.have.property('timestamp');
+            expect(jobs[i].timestamp).to.be.gte(timestamp);
+            expect(jobs[i]).to.have.property('processedOn');
+            expect(jobs[i].processedOn).to.be.gte(timestamp);
+          }
+
+          done();
+        });
+      }
+    });
+
+    queue.add({ foo: 'bar' });
+    queue.add({ baz: 'qux' });
+  });
+
   it('should get failed jobs', done => {
     let counter = 2;
 

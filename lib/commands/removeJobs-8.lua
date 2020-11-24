@@ -10,6 +10,7 @@
       KEYS[5] 'completed',
       KEYS[6] 'failed',
       KEYS[7] 'priority',
+      KEYS[8] 'rate-limiter'
 
       ARGV[1]  prefix
       ARGV[2]  pattern
@@ -44,9 +45,17 @@ for i, jobKey in ipairs(jobKeys) do
             rcall("ZREM", KEYS[7], jobId)
             rcall("DEL", jobKey)
             rcall("DEL", jobKey .. ':logs')
+
+            -- delete keys related to rate limiter
+            local limiterIndexTable = KEYS[8] .. ":index"
+            local limitedSetKey = rcall("HGET", limiterIndexTable, jobId)
+
+            if limitedSetKey then
+                rcall("SREM", limitedSetKey, jobId)
+                rcall("HDEL", limiterIndexTable, jobId)
+            end
             table.insert(removed, jobId)
         end
     end
 end
 return {cursor, removed}
-
