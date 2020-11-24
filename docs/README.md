@@ -204,7 +204,7 @@ transcoderQueue.process('audio', processAudio);
 transcoderQueue.process('video', processVideo);
 ```
 
-Just keep in mind that every queue instance require to provide a processor for *every* named job or you will get an exception.
+Just keep in mind that every queue instance is required to provide a processor for *every* named job or you will get an exception.
 
 ## Sandboxed Processors
 
