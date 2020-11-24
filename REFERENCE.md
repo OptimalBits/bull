@@ -497,7 +497,16 @@ value is the total amount of logs, useful for implementing pagination.
 ### Queue#getRepeatableJobs
 
 ```ts
-getRepeatableJobs(start?: number, end?: number, asc?: boolean): Promise <Job[]>
+getRepeatableJobs(start?: number, end?: number, asc?: boolean): Promise<{
+          key: string,
+          name: string,
+          id: number | string,
+          endDate: Date,
+          tz: string,
+          cron: string,
+          every: number,
+          next: number
+        }[]>
 ```
 
 Returns a promise that will return an array of Repeatable Job configurations. Optional parameters for range and ordering are provided.
