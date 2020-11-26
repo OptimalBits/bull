@@ -1,5 +1,12 @@
 # Changelog
 
+## v.3.20.0
+
+- feat(job): implement Job#retriedOn (#1868)
+- fix: job default opts fixes #1904
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.19.1...v3.20.0)
+
 ## v.3.19.1
 
 - fix(getters): properly zip hmget result
