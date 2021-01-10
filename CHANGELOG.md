@@ -1,5 +1,46 @@
 # Changelog
 
+## v.3.20.0
+
+- feat(job): implement Job#retriedOn (#1868)
+- fix: job default opts fixes #1904
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.19.1...v3.20.0)
+
+## v.3.19.1
+
+- fix(getters): properly zip hmget result
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.19.0...v3.19.1)
+
+## v.3.19.0
+
+- feat: add option to exclude data on getters (#1910)
+- fix: lock ioredis to 4.18.0 to avoid breakage with newer 4.19.0+.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.18.1...v3.19.0)
+
+## v.3.18.1
+
+- fix(repeat): remove last delayed job.
+- fix(rate-limiter): increment jobCounter only when a job is processed. fixes #1875.
+- fix(sandbox): clear dangling timeout.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.18.0...v3.18.1)
+
+## v.3.18.0
+
+- feat: make pause forward compatible with bullmq (#1818) (@manast)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.17.0...v3.18.0)
+
+## v.3.17.0
+
+- feat: better rate limiter (#1816) (@manast)
+- feat(sandbox): kill child workers gracefully (#1802) (@GabrielCastro)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.16.0...v3.17.0)
+
 ## v.3.16.0
 
 - feat(rate-limiter): add grouping support.

@@ -12,6 +12,7 @@
       KEYS[7] 'priority',
       KEYS[8] jobId
       KEYS[9] job logs
+      KEYS[10] rate limiter index table
 
       ARGV[1]  jobId
       ARGV[2]  lock token
@@ -22,18 +23,28 @@
 
 -- TODO PUBLISH global event 'removed'
 
+local rcall = redis.call
 local lockKey = KEYS[8] .. ':lock'
 local lock = redis.call("GET", lockKey)
 if not lock then             -- or (lock == ARGV[2])) then
-  redis.call("LREM", KEYS[1], 0, ARGV[1])
-  redis.call("LREM", KEYS[2], 0, ARGV[1])
-  redis.call("ZREM", KEYS[3], ARGV[1])
-  redis.call("LREM", KEYS[4], 0, ARGV[1])
-  redis.call("ZREM", KEYS[5], ARGV[1])
-  redis.call("ZREM", KEYS[6], ARGV[1])
-  redis.call("ZREM", KEYS[7], ARGV[1])
-  redis.call("DEL", KEYS[8])
-  redis.call("DEL", KEYS[9])
+  local jobId = ARGV[1]
+  rcall("LREM", KEYS[1], 0, jobId)
+  rcall("LREM", KEYS[2], 0, jobId)
+  rcall("ZREM", KEYS[3], jobId)
+  rcall("LREM", KEYS[4], 0, jobId)
+  rcall("ZREM", KEYS[5], jobId)
+  rcall("ZREM", KEYS[6], jobId)
+  rcall("ZREM", KEYS[7], jobId)
+  rcall("DEL", KEYS[8])
+  rcall("DEL", KEYS[9])
+
+  -- delete keys related to rate limiter
+  local limiterIndexTable = KEYS[10] .. ":index"
+  local limitedSetKey = rcall("HGET", limiterIndexTable, jobId)
+  if limitedSetKey then
+    rcall("SREM", limitedSetKey, jobId)
+    rcall("HDEL", limiterIndexTable, jobId)
+  end
   return 1
 else
   return 0

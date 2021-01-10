@@ -174,7 +174,7 @@ as well as some other useful settings. All these settings are described in Bull'
 It is possible to create queues that limit the number of jobs processed in a unit of time. The limiter is defined per queue, independently of the number of workers, so you can scale horizontally and still limiting the rate of processing easily:
 
 ```js
-// Limit queue to max 1.000 jobs per 5 seconds.
+// Limit queue to max 1000 jobs per 5000 milliseconds.
 const myRateLimitedQueue = new Queue('rateLimited', {
   limiter: {
     max: 1000,
@@ -204,7 +204,7 @@ transcoderQueue.process('audio', processAudio);
 transcoderQueue.process('video', processVideo);
 ```
 
-Just keep in mind that every queue instance require to provide a processor for *every* named job or you will get an exception.
+Just keep in mind that every queue instance is required to provide a processor for *every* named job or you will get an exception.
 
 ## Sandboxed Processors
 
@@ -274,4 +274,3 @@ There are some important considerations regarding repeatable jobs:
 - Bull is smart enough not to add the same repeatable job if the repeat options are the same. (CAUTION: A job id is part of the repeat options since: https://github.com/OptimalBits/bull/pull/603, therefore passing job ids will allow jobs with the same cron to be inserted in the queue)
 - If there are no workers running, repeatable jobs will not accumulate next time a worker is online.
 - repeatable jobs can be removed using the [removeRepeatable](https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queueremoverepeatable) method.
-

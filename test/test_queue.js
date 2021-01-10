@@ -120,7 +120,7 @@ describe('Queue', () => {
   });
 
   describe('instantiation', () => {
-    it('should create a queue with standard redis opts', done => {
+    it('should create a queue with standard redis opts', () => {
       const queue = new Queue('standard');
 
       expect(queue.client.options.host).to.be.eql('127.0.0.1');
@@ -132,11 +132,13 @@ describe('Queue', () => {
       expect(queue.client.options.db).to.be.eql(0);
       expect(queue.eclient.options.db).to.be.eql(0);
 
-      queue.close().then(done, done);
+      return queue.close();
     });
 
     it('should create a queue with a redis connection string', () => {
-      const queue = new Queue('connstring', 'redis://123.4.5.67:1234/2');
+      const queue = new Queue('connstring', 'redis://123.4.5.67:1234/2', {
+        redis: { connectTimeout: 1000 }
+      });
 
       expect(queue.client.options.host).to.be.eql('123.4.5.67');
       expect(queue.eclient.options.host).to.be.eql('123.4.5.67');
@@ -147,11 +149,13 @@ describe('Queue', () => {
       expect(queue.client.options.db).to.be.eql(2);
       expect(queue.eclient.options.db).to.be.eql(2);
 
-      queue.close();
+      return queue.close();
     });
 
     it('should create a queue with only a hostname', () => {
-      const queue = new Queue('connstring', 'redis://127.2.3.4');
+      const queue = new Queue('connstring', 'redis://127.2.3.4', {
+        redis: { connectTimeout: 1000 }
+      });
 
       expect(queue.client.options.host).to.be.eql('127.2.3.4');
       expect(queue.eclient.options.host).to.be.eql('127.2.3.4');
@@ -162,7 +166,7 @@ describe('Queue', () => {
       expect(queue.client.condition.select).to.be.eql(0);
       expect(queue.eclient.condition.select).to.be.eql(0);
 
-      queue.close().catch((/*err*/) => {
+      return queue.close().catch((/*err*/) => {
         // Swallow error.
       });
     });
@@ -187,7 +191,7 @@ describe('Queue', () => {
       });
     });
 
-    it('creates a queue using the supplied redis DB', done => {
+    it('creates a queue using the supplied redis DB', () => {
       const queue = new Queue('custom', { redis: { DB: 1 } });
 
       expect(queue.client.options.host).to.be.eql('127.0.0.1');
@@ -199,10 +203,10 @@ describe('Queue', () => {
       expect(queue.client.options.db).to.be.eql(1);
       expect(queue.eclient.options.db).to.be.eql(1);
 
-      queue.close().then(done, done);
+      return queue.close();
     });
 
-    it('creates a queue using the supplied redis host', done => {
+    it('creates a queue using the supplied redis host', () => {
       const queue = new Queue('custom', { redis: { host: 'localhost' } });
 
       expect(queue.client.options.host).to.be.eql('localhost');
@@ -211,7 +215,7 @@ describe('Queue', () => {
       expect(queue.client.options.db).to.be.eql(0);
       expect(queue.eclient.options.db).to.be.eql(0);
 
-      queue.close().then(done, done);
+      return queue.close();
     });
 
     it('creates a queue with dots in its name', () => {
@@ -337,15 +341,20 @@ describe('Queue', () => {
         }, done);
     });
 
-    it('creates a queue with default job options', done => {
-      const defaultJobOptions = { removeOnComplete: true };
+    it('creates a queue with default job options', async () => {
+      const defaultJobOptions = { removeOnComplete: true, removeOnFail: false };
       const queue = new Queue('custom', {
         defaultJobOptions
       });
 
       expect(queue.defaultJobOptions).to.be.eql(defaultJobOptions);
 
-      queue.close().then(done, done);
+      const job = await queue.add('test', {}, { removeOnFail: true });
+
+      expect(job.opts).have.property('removeOnComplete', true);
+      expect(job.opts).have.property('removeOnFail', true);
+
+      await queue.close();
     });
 
     describe('bulk jobs', () => {
@@ -1683,29 +1692,6 @@ describe('Queue', () => {
     });
   });
 
-  it('count added, unprocessed jobs', () => {
-    const maxJobs = 100;
-    const added = [];
-
-    const queue = utils.buildQueue();
-
-    for (let i = 1; i <= maxJobs; i++) {
-      added.push(queue.add({ foo: 'bar', num: i }));
-    }
-
-    return Promise.all(added)
-      .then(queue.count.bind(queue))
-      .then(count => {
-        expect(count).to.be.eql(maxJobs);
-      })
-      .then(queue.empty.bind(queue))
-      .then(queue.count.bind(queue))
-      .then(count => {
-        expect(count).to.be.eql(0);
-        return queue.close();
-      });
-  });
-
   describe('Delayed jobs', () => {
     let queue;
 
@@ -2517,6 +2503,31 @@ describe('Queue', () => {
 
       // Note that backoff:0 should immediately retry the job upon failure (ie put it in 'waiting')
       queue.add({ foo: 'bar' }, { backoff: 0, attempts: 2 });
+    });
+  });
+
+  describe('Drain queue', () => {
+    it('should count zero after draining the queue', () => {
+      const maxJobs = 100;
+      const added = [];
+
+      const queue = utils.buildQueue();
+
+      for (let i = 1; i <= maxJobs; i++) {
+        added.push(queue.add({ foo: 'bar', num: i }));
+      }
+
+      return Promise.all(added)
+        .then(queue.count.bind(queue))
+        .then(count => {
+          expect(count).to.be.eql(maxJobs);
+        })
+        .then(queue.empty.bind(queue))
+        .then(queue.count.bind(queue))
+        .then(count => {
+          expect(count).to.be.eql(0);
+          return queue.close();
+        });
     });
   });
 

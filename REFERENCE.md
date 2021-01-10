@@ -4,6 +4,7 @@
 
   - [Queue#process](#queueprocess)
   - [Queue#add](#queueadd)
+  - [Queue#addBulk](#queueaddBulk)
   - [Queue#pause](#queuepause)
   - [Queue#resume](#queueresume)
   - [Queue#whenCurrentJobsFinished](#queuewhencurrentjobsfinished)
@@ -63,6 +64,7 @@ The optional `url` argument, allows to specify a redis connection string such as
 
 ```typescript
 interface QueueOptions {
+  createClient?(type: 'client' | 'subscriber' | 'bclient', config?: Redis.RedisOptions): Redis.Redis | Redis.Cluster;
   limiter?: RateLimiter;
   redis?: RedisOpts;
   prefix?: string = 'bull'; // prefix for all queue keys.
@@ -104,6 +106,19 @@ interface AdvancedSettings {
   drainDelay: number = 5; // A timeout for when the queue is in drained state (empty waiting for jobs).
 }
 ```
+
+**Custom or Shared IORedis Connections**
+
+`createClient` is passed a `type` to specify the type of connection that Bull is trying to create, and some options that `bull` would like to set for that connection.
+
+You can merge the provided options with some of your own and create an `ioredis` connection.
+
+When type is `client` or `subscriber` you can return the same connection for multiple queues, which can reduce the number of connections you open to the redis server.  Bull
+does not close or disconnect these connections when queues are closed, so if you need to have your app do a graceful shutdown, you will need to keep references to these
+Redis connections somewhere and disconnect them after you shut down all the queues.
+
+The `bclient` connection however is a "blocking client" and is used to wait for new jobs on a single queue at a time.  For this reason it cannot be shared and a
+new connection should be returned each time.
 
 **Advanced Settings**
 
@@ -259,7 +274,7 @@ interface JobOpts {
 
   repeat: RepeatOpts; // Repeat job according to a cron specification.
 
-  backoff: number | BackoffOpts; // Backoff setting for automatic retries if the job fails
+  backoff: number | BackoffOpts; // Backoff setting for automatic retries if the job fails, default strategy: `fixed`
 
   lifo: boolean; // if true, adds the job to the right of the queue instead of the left (default false)
   timeout: number; // The number of milliseconds after which the job should be fail with a timeout error [optional]
@@ -299,6 +314,16 @@ interface BackoffOpts {
   delay: number; // Backoff delay, in milliseconds.
 }
 ```
+
+---
+
+### Queue#addBulk
+
+```ts
+addBulk(jobs: { name?: string, data: object, opts?: JobOpts }[]): Promise<Job[]>
+```
+
+Creates array of jobs and adds them to the queue. They follow the same signature as [Queue#add](#queueadd).
 
 ---
 
@@ -472,7 +497,16 @@ value is the total amount of logs, useful for implementing pagination.
 ### Queue#getRepeatableJobs
 
 ```ts
-getRepeatableJobs(start?: number, end?: number, asc?: boolean): Promise <Job[]>
+getRepeatableJobs(start?: number, end?: number, asc?: boolean): Promise<{
+          key: string,
+          name: string,
+          id: number | string,
+          endDate: Date,
+          tz: string,
+          cron: string,
+          every: number,
+          next: number
+        }[]>
 ```
 
 Returns a promise that will return an array of Repeatable Job configurations. Optional parameters for range and ordering are provided.
@@ -575,6 +609,9 @@ Returns a promise that will return the waiting job counts for the given queue.
 
 ### Queue#getPausedCount
 
+*DEPRECATED* Since only the queue can be paused, getWaitingCount gives the same 
+result.
+
 ```ts
 getPausedCount() : Promise<number>
 ```
@@ -583,10 +620,21 @@ Returns a promise that will return the paused job counts for the given queue.
 
 ---
 
+### Getters
+
+The following methods are used to get the jobs that are in certain states.
+
+The GetterOpts can be used for configure some aspects from the getters.
+
+```ts
+interface GetterOpts
+  excludeData: boolean; // Exclude the data field of the jobs.
+```
+
 ### Queue#getWaiting
 
 ```ts
-getWaiting(start?: number, end?: number) : Promise<Array<Job>>
+getWaiting(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the waiting jobs between start and end.
@@ -596,7 +644,7 @@ Returns a promise that will return an array with the waiting jobs between start 
 ### Queue#getActive
 
 ```ts
-getActive(start?: number, end?: number) : Promise<Array<Job>>
+getActive(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the active jobs between start and end.
@@ -606,7 +654,7 @@ Returns a promise that will return an array with the active jobs between start a
 ### Queue#getDelayed
 
 ```ts
-getDelayed(start?: number, end?: number) : Promise<Array<Job>>
+getDelayed(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the delayed jobs between start and end.
@@ -616,7 +664,7 @@ Returns a promise that will return an array with the delayed jobs between start 
 ### Queue#getCompleted
 
 ```ts
-getCompleted(start?: number, end?: number) : Promise<Array<Job>>
+getCompleted(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the completed jobs between start and end.
@@ -626,7 +674,7 @@ Returns a promise that will return an array with the completed jobs between star
 ### Queue#getFailed
 
 ```ts
-getFailed(start?: number, end?: number) : Promise<Array<Job>>
+getFailed(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the failed jobs between start and end.
