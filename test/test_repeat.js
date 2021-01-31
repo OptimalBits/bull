@@ -57,6 +57,49 @@ describe('repeat', () => {
       .catch(done);
   });
 
+  it('should add a repetable job when using stardDate and endDate', async () => {
+    const job1 = await queue.add(
+      {
+        name: 'job1'
+      },
+      {
+        repeat: {
+          cron: '0 * * * * *',
+          startDate: '2020-09-02T22:29:00Z'
+        }
+      }
+    );
+
+    expect(job1).to.exist;
+    expect(job1.opts).to.have.property('repeat');
+    expect(job1.opts.repeat).to.be.deep.equal({
+      count: 1,
+      cron: '0 * * * * *',
+      startDate: '2020-09-02T22:29:00Z'
+    });
+
+    const job2 = await queue.add(
+      {
+        name: 'job2'
+      },
+      {
+        repeat: {
+          cron: '0 * * * * *',
+          startDate: '2020-09-02T22:29:00Z',
+          endDate: '2020-09-05T01:44:37Z'
+        }
+      }
+    );
+    expect(job2).to.exist;
+    expect(job2.opts).to.have.property('repeat');
+    expect(job2.opts.repeat).to.be.deep.equal({
+      count: 1,
+      cron: '0 * * * * *',
+      startDate: '2020-09-02T22:29:00Z',
+      endDate: '2020-09-05T01:44:37Z'
+    });
+  });
+
   it('should get repeatable jobs with different cron pattern', done => {
     const crons = [
       '10 * * * * *',
@@ -155,7 +198,7 @@ describe('repeat', () => {
     this.timeout(20000);
     const _this = this;
     const date = new Date('2017-02-07 9:24:00');
-    this.clock.tick(date.getTime());
+    this.clock.setSystemTime(date);
     const nextTick = 2 * ONE_SECOND + 500;
 
     queue
@@ -187,7 +230,7 @@ describe('repeat', () => {
   it('should repeat every 2 seconds with startDate in future', function(done) {
     const _this = this;
     const date = new Date('2017-02-07 9:24:00');
-    this.clock.tick(date.getTime());
+    this.clock.setSystemTime(date);
     const nextTick = 2 * ONE_SECOND + 500;
     const delay = 5 * ONE_SECOND + 500;
 
@@ -229,7 +272,7 @@ describe('repeat', () => {
   it('should repeat every 2 seconds with startDate in past', function(done) {
     const _this = this;
     const date = new Date('2017-02-07 9:24:00');
-    this.clock.tick(date.getTime());
+    this.clock.setSystemTime(date);
     const nextTick = 2 * ONE_SECOND + 500;
 
     queue
@@ -270,7 +313,7 @@ describe('repeat', () => {
   it('should repeat once a day for 5 days', function(done) {
     const _this = this;
     const date = new Date('2017-05-05 13:12:00');
-    this.clock.tick(date.getTime());
+    this.clock.setSystemTime(date);
     const nextTick = ONE_DAY;
 
     queue
@@ -316,9 +359,10 @@ describe('repeat', () => {
   });
 
   it('should repeat 7:th day every month at 9:25', function(done) {
+    this.timeout(20000);
     const _this = this;
     const date = new Date('2017-02-02 7:21:42');
-    this.clock.tick(date.getTime());
+    this.clock.setSystemTime(date);
 
     function nextTick() {
       const now = moment();
@@ -377,7 +421,7 @@ describe('repeat', () => {
   it('should allow removing a named repeatable job', function(done) {
     const _this = this;
     const date = new Date('2017-02-07 9:24:00');
-    this.clock.tick(date.getTime());
+    this.clock.setSystemTime(date);
 
     const nextTick = 2 * ONE_SECOND + 250;
     const repeat = { cron: '*/2 * * * * *' };
@@ -414,29 +458,42 @@ describe('repeat', () => {
     });
   });
 
-  it('should be able to remove repeatable jobs by key', () => {
+  it('should be able to remove repeatable jobs by key', async () => {
     const repeat = { cron: '*/2 * * * * *' };
 
-    return queue.add('remove', { foo: 'bar' }, { repeat }).then(() => {
-      return queue
-        .getRepeatableJobs()
-        .then(repeatableJobs => {
-          expect(repeatableJobs).to.have.length(1);
-          return queue.removeRepeatableByKey(repeatableJobs[0].key);
-        })
-        .then(() => {
-          return queue.getRepeatableJobs();
-        })
-        .then(repeatableJobs => {
-          expect(repeatableJobs).to.have.length(0);
-        });
-    });
+    await queue.add('remove', { foo: 'bar' }, { repeat });
+
+    const repeatableJobs = await queue.getRepeatableJobs();
+    expect(repeatableJobs).to.have.length(1);
+    await queue.removeRepeatableByKey(repeatableJobs[0].key);
+
+    const repeatableJobs2 = await queue.getRepeatableJobs();
+    expect(repeatableJobs2).to.have.length(0);
+
+    const delayedJobs = await queue.getDelayed();
+    expect(delayedJobs).to.have.length(0);
+  });
+
+  it('should be able to remove repeatable jobs by key that has a jobId', async () => {
+    const repeat = { cron: '*/2 * * * * *' };
+
+    await queue.add('remove', { foo: 'bar' }, { jobId: 'qux', repeat });
+
+    const repeatableJobs = await queue.getRepeatableJobs();
+    expect(repeatableJobs).to.have.length(1);
+    await queue.removeRepeatableByKey(repeatableJobs[0].key);
+
+    const repeatableJobs2 = await queue.getRepeatableJobs();
+    expect(repeatableJobs2).to.have.length(0);
+
+    const delayedJobs = await queue.getDelayed();
+    expect(delayedJobs).to.have.length(0);
   });
 
   it('should allow removing a customId repeatable job', function(done) {
     const _this = this;
     const date = new Date('2017-02-07 9:24:00');
-    this.clock.tick(date.getTime());
+    this.clock.setSystemTime(date);
 
     const nextTick = 2 * ONE_SECOND + 250;
     const repeat = { cron: '*/2 * * * * *' };
@@ -481,7 +538,7 @@ describe('repeat', () => {
     const nextTick = 2 * ONE_SECOND + 250;
     const repeat = { cron: '*/2 * * * * *' };
     const nextRepeatableJob = queue.nextRepeatableJob;
-    this.clock.tick(date.getTime());
+    this.clock.setSystemTime(date);
 
     const afterRemoved = new Promise(resolve => {
       queue.process(() => {
@@ -575,7 +632,7 @@ describe('repeat', () => {
   it('should not repeat more than 5 times', function(done) {
     const _this = this;
     const date = new Date('2017-02-07 9:24:00');
-    this.clock.tick(date.getTime());
+    this.clock.setSystemTime(date);
     const nextTick = ONE_SECOND + 500;
 
     queue
@@ -604,7 +661,7 @@ describe('repeat', () => {
         done(Error('should not repeat more than 5 times'));
       }
     });
-  });
+  }).timeout(5000);
 
   it('should processes delayed jobs by priority', function(done) {
     const _this = this;
@@ -613,7 +670,7 @@ describe('repeat', () => {
     const nextTick = 1000;
 
     const date = new Date('2017-02-07 9:24:00');
-    this.clock.tick(date.getTime());
+    this.clock.setSystemTime(date);
 
     jobAdds.push(queue.add({ p: 1 }, { priority: 1, delay: nextTick * 2 }));
     jobAdds.push(queue.add({ p: 3 }, { priority: 3, delay: nextTick * 2 }));
@@ -646,7 +703,7 @@ describe('repeat', () => {
 
     // Quantize time
     const time = Math.floor(date.getTime() / interval) * interval;
-    this.clock.tick(time);
+    this.clock.setSystemTime(time);
 
     const nextTick = ONE_SECOND * 2 + 500;
 
@@ -710,7 +767,7 @@ describe('repeat', () => {
   it('should emit a waiting event when adding a repeatable job to the waiting list', function(done) {
     const _this = this;
     const date = new Date('2017-02-07 9:24:00');
-    this.clock.tick(date.getTime());
+    this.clock.setSystemTime(date);
     const nextTick = 2 * ONE_SECOND + 500;
 
     queue.on('waiting', jobId => {

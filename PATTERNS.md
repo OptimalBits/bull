@@ -66,7 +66,13 @@ The most robust and scalable way to accomplish this is by combining the standard
 Reusing Redis Connections
 -------------------------
 
-A standard queue requires **3 connections** to the Redis server. In some situations you might want to re-use connections—for example on Heroku where the connection count is restricted. You can do this with the `createClient` option in the `Queue` constructor:
+A standard queue requires **3 connections** to the Redis server. In some situations you might want to re-use connections—for example on Heroku where the connection count is restricted. You can do this with the `createClient` option in the `Queue` constructor.
+
+Notes:
+- bclient connections [cannot be re-used](https://github.com/OptimalBits/bull/issues/880), so you should return a new connection each time this is called.
+- client and subscriber connections can be shared and will not be closed when the queue is closed.  When you are shutting down the process, first close the queues, then the shared connections (if they are shared).
+- if you are not sharing connections but still using `createClient` to do some custom connection logic, you may still need to keep a list of all the connections you created so you can manually close them later when the queue shuts down, if you need a graceful shutdown for your process
+- do not set a `keyPrefix` on the connection you create, use bull's built-in prefix feature if you need a key prefix
 
 ```js
 var {REDIS_URL} = process.env
@@ -82,8 +88,10 @@ var opts = {
         return client;
       case 'subscriber':
         return subscriber;
-      default:
+      case 'bclient':
         return new Redis(REDIS_URL);
+      default:
+        throw new Error('Unexpected connection type: ', type);
     }
   }
 }
@@ -95,15 +103,15 @@ var queueQux = new Queue('quxbaz', opts);
 Redis cluster
 -------------
 
-Bull internals requires atomic operations that spans different keys. This fact breaks Redis'
-rules for cluster configurations. However it is still possible to use a cluster environment
+Bull internals require atomic operations that span different keys. This behavior breaks Redis's
+rules for cluster configurations. However, it is still possible to use a cluster environment
 by using the proper bull prefix option as a cluster "hash tag". Hash tags are used to guarantee
 that certain keys are placed in the same hash slot, read more about hash tags in the [redis cluster
-tutorial](https://redis.io/topics/cluster-tutorial).
+tutorial](https://redis.io/topics/cluster-tutorial). A hash tag is defined with brackets. I.e. a key that has a substring inside brackets will use that
+substring to determine in which hash slot the key will be placed.
 
-A hash tag is defined with brackets. I.e. a key that has a substring inside brackets will use that
-substring to determine in which hash slot the key will be placed. So to make bull compatible with
-cluster, just use a queue prefix inside brackets, for example:
+In summary, to make bull compatible with Redis cluster, use a queue prefix inside brackets.
+For example:
 
 ```js
   var queue = new Queue('cluster', {

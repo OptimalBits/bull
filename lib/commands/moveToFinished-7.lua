@@ -13,6 +13,8 @@
       KEYS[5] priority key
       KEYS[6] active event key
 
+      KEYS[7] delayed key
+
       ARGV[1]  jobId
       ARGV[2]  timestamp
       ARGV[3]  msg property
@@ -70,6 +72,25 @@ if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
   end
 
   rcall("PUBLISH", KEYS[2], ARGV[7])
+
+  -- -- Check if we should get from the delayed set instead of the waiting list
+  -- local delayedJobId = rcall("ZRANGEBYSCORE", KEYS[7], 0, tonumber(ARGV[2]) * 0x1000, "LIMIT", 0, 1)[1]
+  -- if delayedJobId ~= nil then
+  --   local jobId = delayedJobId
+  --   if jobId then
+  --     local jobKey = ARGV[9] .. jobId
+  --     local lockKey = jobKey .. ':lock'
+
+  --     -- get a lock
+  --     rcall("SET", lockKey, ARGV[11], "PX", ARGV[10])
+
+  --     rcall("ZREM", KEYS[5], jobId) -- remove from priority
+  --     rcall("PUBLISH", KEYS[6], jobId)
+  --     rcall("HSET", jobKey, "processedOn", ARGV[2]) 
+
+  --     return {rcall("HGETALL", jobKey), jobId} -- get job data
+  --   end
+  -- end
 
   -- Try to get next job to avoid an extra roundtrip if the queue is not closing, 
   -- and not rate limited.

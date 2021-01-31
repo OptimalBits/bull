@@ -3,3 +3,5 @@ tmp
 coverage
 *.rdb
 .vscode
+package-lock.json
+.nyc_output

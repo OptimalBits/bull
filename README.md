@@ -47,19 +47,29 @@
   </p>
 </div>
 
+---
+
+### BullMQ
+
+If you want to start using the next major version of Bull written entirely in Typescript you are welcome to the new repo [here](https://github.com/taskforcesh/bullmq). Otherwise you are very welcome to still use Bull, which is a safe, battle tested codebase.
 
 ---
 
-### Sponsors
+### Official FrontEnd
 
-If you find Bull valuable, please consider sponsoring its development by using the Taskforce front-end &nbsp; [<img src="http://taskforce.sh/assets/logo_square.png" width="100" alt="Taskforce.sh, Inc" style="padding: 100px"/>](https://taskforce.sh). 
+[<img src="http://taskforce.sh/assets/logo_square.png" width="100" alt="Taskforce.sh, Inc" style="padding: 100px"/>](https://taskforce.sh)
 
-Besides helping Bull's development, you will also benefit from a constantly-improving UI for managing all of your queues and jobs.
+Super charge your queues with a profesional front end and optional Redis hosting:
+- Get a complete overview of all your queues.
+- Inspect jobs, search, retry, or promote delayed jobs.
+- Metrics and statistics.
+- and many more features.
 
+Sign up at [Taskforce.sh](https://taskforce.sh)
 
 ---
 
-### Features
+### Bull Features
 
 - [x] Minimal CPU usage due to a polling-free design.
 - [x] Robust design based on Redis.
@@ -88,7 +98,7 @@ There are a few third-party UIs that you can use for monitoring:
 **Bull v3**
 
 - [Taskforce](https://taskforce.sh)
-- [Arena](https://github.com/mixmaxhq/arena)
+- [bull-board](https://github.com/vcapretz/bull-board)
 - [bull-repl](https://github.com/darky/bull-repl)
 
 **Bull <= v2**
@@ -305,7 +315,7 @@ A job can be added to a queue and processed repeatedly according to a cron speci
 ```
 
 As a tip, check your expressions here to verify they are correct:
-[cron expression descriptor](http://cronexpressiondescriptor.azurewebsites.net/)
+[cron expression generator](https://crontab.cronhub.io)
 
 #### Pause / Resume
 
@@ -415,8 +425,8 @@ and being restarted as a result. Locking is implemented internally by creating a
 `lockRenewTime` (which is usually half `lockDuration`). If `lockDuration` elapses before the lock can be renewed,
 the job will be considered stalled and is automatically restarted; it will be __double processed__. This can happen when:
 1. The Node process running your job processor unexpectedly terminates.
-2. Your job processor was too CPU-intensive and stalled the Node event loop, and as a result, Bull couldn't renew the job lock (see #488 for how we might better detect this). You can fix this by breaking your job processor into smaller parts so that no single part can block the Node event loop. Alternatively, you can pass a larger value for the `lockDuration` setting (with the tradeoff being that it will take longer to recognize a real stalled job).
+2. Your job processor was too CPU-intensive and stalled the Node event loop, and as a result, Bull couldn't renew the job lock (see [#488](https://github.com/OptimalBits/bull/issues/488) for how we might better detect this). You can fix this by breaking your job processor into smaller parts so that no single part can block the Node event loop. Alternatively, you can pass a larger value for the `lockDuration` setting (with the tradeoff being that it will take longer to recognize a real stalled job).
 
 As such, you should always listen for the `stalled` event and log this to your error monitoring system, as this means your jobs are likely getting double-processed.
 
-As a safeguard so problematic jobs won't get restarted indefinitely (e.g. if the job processor aways crashes its Node process), jobs will be recovered from a stalled state a maximum of `maxStalledCount` times (default: `1`).
+As a safeguard so problematic jobs won't get restarted indefinitely (e.g. if the job processor always crashes its Node process), jobs will be recovered from a stalled state a maximum of `maxStalledCount` times (default: `1`).

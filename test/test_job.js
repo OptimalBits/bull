@@ -17,7 +17,7 @@ describe('Job', () => {
   });
 
   beforeEach(() => {
-    queue = new Queue('test-' + uuid(), {
+    queue = new Queue('test-' + uuid.v4(), {
       redis: { port: 6379, host: '127.0.0.1' }
     });
   });
@@ -90,6 +90,71 @@ describe('Job', () => {
     });
   });
 
+  describe('.createBulk', () => {
+    let jobs;
+    let inputJobs;
+
+    beforeEach(() => {
+      inputJobs = [
+        {
+          name: 'jobA',
+          data: {
+            foo: 'bar'
+          },
+          opts: {
+            testOpt: 'enabled'
+          }
+        },
+        {
+          name: 'jobB',
+          data: {
+            foo: 'baz'
+          },
+          opts: {
+            testOpt: 'disabled'
+          }
+        }
+      ];
+
+      return Job.createBulk(queue, inputJobs).then(createdJobs => {
+        jobs = createdJobs;
+      });
+    });
+
+    it('returns a promise for the jobs', () => {
+      expect(jobs).to.have.length(2);
+
+      expect(jobs[0]).to.have.property('id');
+      expect(jobs[0]).to.have.property('data');
+    });
+
+    it('should not modify input options', () => {
+      expect(inputJobs[0].opts).not.to.have.property('jobId');
+    });
+
+    it('saves the first job in redis', () => {
+      return Job.fromId(queue, jobs[0].id).then(storedJob => {
+        expect(storedJob).to.have.property('id');
+        expect(storedJob).to.have.property('data');
+
+        expect(storedJob.data.foo).to.be.equal('bar');
+        expect(storedJob.opts).to.be.a(Object);
+        expect(storedJob.opts.testOpt).to.be('enabled');
+      });
+    });
+
+    it('saves the second job in redis', () => {
+      return Job.fromId(queue, jobs[1].id).then(storedJob => {
+        expect(storedJob).to.have.property('id');
+        expect(storedJob).to.have.property('data');
+
+        expect(storedJob.data.foo).to.be.equal('baz');
+        expect(storedJob.opts).to.be.a(Object);
+        expect(storedJob.opts.testOpt).to.be('disabled');
+      });
+    });
+  });
+
   describe('.add jobs on priority queues', () => {
     it('add 4 jobs with different priorities', () => {
       return queue
@@ -126,6 +191,7 @@ describe('Job', () => {
       return Job.create(queue, { foo: 'bar' })
         .then(job => {
           return job.update({ baz: 'qux' }).then(() => {
+            expect(job.data).to.be.eql({ baz: 'qux' });
             return job;
           });
         })
@@ -246,6 +312,26 @@ describe('Job', () => {
     });
   });
 
+  describe('.removeFromPattern', () => {
+    it('remove jobs matching pattern', async () => {
+      const jobIds = ['foo', 'foo1', 'foo2', 'foo3', 'foo4', 'bar', 'baz'];
+      await Promise.all(
+        jobIds.map(jobId => Job.create(queue, { foo: 'bar' }, { jobId }))
+      );
+
+      await queue.removeJobs('foo*');
+
+      for (let i = 0; i < jobIds.length; i++) {
+        const storedJob = await Job.fromId(queue, jobIds[i]);
+        if (jobIds[i].startsWith('foo')) {
+          expect(storedJob).to.be(null);
+        } else {
+          expect(storedJob).to.not.be(null);
+        }
+      }
+    });
+  });
+
   describe('.remove on priority queues', () => {
     it('remove a job with jobID 1 and priority 3 and check the new order in the queue', () => {
       return queue
@@ -353,6 +439,32 @@ describe('Job', () => {
         });
       });
     });
+
+    it('sets retriedOn to a timestamp', cb => {
+      queue.add({ foo: 'bar' });
+      queue.process((job, done) => {
+        done(new Error('the job failed'));
+      });
+
+      queue.once('failed', job => {
+        queue.once('global:waiting', jobId2 => {
+          const now = Date.now();
+          expect(job.retriedOn)
+            .to.be.a('number')
+            .and.to.be.within(now - 1000, now);
+
+          Job.fromId(queue, jobId2).then(job2 => {
+            expect(job2.retriedOn)
+              .to.be.a('number')
+              .and.to.be.within(now - 1000, now);
+            cb();
+          });
+        });
+        queue.once('registered:global:waiting', () => {
+          job.retry();
+        });
+      });
+    });
   });
 
   describe('Locking', () => {
@@ -414,14 +526,11 @@ describe('Job', () => {
         });
       });
     });
-    it('can set and get progress as object', () => {
-      return Job.create(queue, { foo: 'bar' }).then(job => {
-        return job.progress({ total: 120, completed: 40 }).then(() => {
-          return Job.fromId(queue, job.id).then(storedJob => {
-            expect(storedJob.progress()).to.eql({ total: 120, completed: 40 });
-          });
-        });
-      });
+    it('can set and get progress as object', async () => {
+      const job = await Job.create(queue, { foo: 'bar' });
+      await job.progress({ total: 120, completed: 40 });
+      const storedJob = await Job.fromId(queue, job.id);
+      expect(storedJob.progress()).to.eql({ total: 120, completed: 40 });
     });
   });
 
@@ -658,6 +767,24 @@ describe('Job', () => {
             expect(err).to.be.ok();
           });
       });
+    });
+
+    it('should promote delayed job to the right queue if queue is paused', async () => {
+      await queue.add('normal', { foo: 'bar' });
+      const delayedJob = await queue.add(
+        'delayed',
+        { foo: 'bar' },
+        { delay: 1 }
+      );
+
+      await queue.pause();
+      await delayedJob.promote();
+      await queue.resume();
+
+      const waitingJobsCount = await queue.getWaitingCount();
+      expect(waitingJobsCount).to.be.equal(2);
+      const delayedJobsNewState = await delayedJob.getState();
+      expect(delayedJobsNewState).to.be.equal('waiting');
     });
   });
 
@@ -911,6 +1038,29 @@ describe('Job', () => {
             done();
           }
         );
+    });
+  });
+
+  describe('.fromJSON', () => {
+    let data;
+
+    beforeEach(() => {
+      data = { foo: 'bar' };
+    });
+
+    it('should parse JSON data by default', async () => {
+      const job = await Job.create(queue, data, {});
+      const jobParsed = Job.fromJSON(queue, job.toData());
+
+      expect(jobParsed.data).to.eql(data);
+    });
+
+    it('should not parse JSON data if "preventParsingData" option is specified', async () => {
+      const job = await Job.create(queue, data, { preventParsingData: true });
+      const jobParsed = Job.fromJSON(queue, job.toData());
+      const expectedData = JSON.stringify(data);
+
+      expect(jobParsed.data).to.be(expectedData);
     });
   });
 });

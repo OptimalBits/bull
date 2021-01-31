@@ -1,32 +1,131 @@
 # Changelog
 
+## v.3.20.0
+
+- feat(job): implement Job#retriedOn (#1868)
+- fix: job default opts fixes #1904
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.19.1...v3.20.0)
+
+## v.3.19.1
+
+- fix(getters): properly zip hmget result
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.19.0...v3.19.1)
+
+## v.3.19.0
+
+- feat: add option to exclude data on getters (#1910)
+- fix: lock ioredis to 4.18.0 to avoid breakage with newer 4.19.0+.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.18.1...v3.19.0)
+
+## v.3.18.1
+
+- fix(repeat): remove last delayed job.
+- fix(rate-limiter): increment jobCounter only when a job is processed. fixes #1875.
+- fix(sandbox): clear dangling timeout.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.18.0...v3.18.1)
+
+## v.3.18.0
+
+- feat: make pause forward compatible with bullmq (#1818) (@manast)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.17.0...v3.18.0)
+
+## v.3.17.0
+
+- feat: better rate limiter (#1816) (@manast)
+- feat(sandbox): kill child workers gracefully (#1802) (@GabrielCastro)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.16.0...v3.17.0)
+
+## v.3.16.0
+
+- feat(rate-limiter): add grouping support.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.15.0...v3.16.0)
+
+## v.3.15.0
+
+- feat: add isPaused fixes #1274
+- fix: emit waiting event when adding a priority job (#1134)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.14.0...v3.15.0)
+
+## v.3.14.0
+
+- feat(queue): add removeJobs function
+- fix: clamp negative job delay values to 0 to prevent thrashing
+- fix: use DEFAULT_JOB_NAME (#1585)
+- fix: remove the lazy client error handler on close (#1605)
+- fix: prevent exceeding the maximum stack call size when emptying large queues (#1660)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.13.0...v3.14.0)
+
+## v.3.13.0
+
+- feat: add "preventParsingData" job option to prevent data parsing
+- fix: queue.clean clean job logs as well
+- fix: whenCurrentJobsFinished should wait for all jobs
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.12.1...v3.13.0)
+
+## v.3.12.1
+
+- fix: catch errors parsing invalid progress data
+- fix(pause): don't initialize bclient if not waiting for jobs to finish
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.12.0...v3.12.1)
+
+## v.3.12.0
+
+- feat: support async custom backoffs.
+- feat(sandbox): emulate job.progress function.
+
+- fix: queue.pause(true, true) doesn't pause queue.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.11.0...v3.12.0)
+
+## v.3.11.0
+
+- feat(queue): basic support for bulk adding jobs.
+- feat(job): save data on job instance when updated.
+
+- fix(queue): whenCurrentJobsFinished shouldn't initialize bclient. Fixes #1346.
+- fix(queue): unhandled promise warning in updateDelayTimer.
+- fix(sandbox): if the child process is killed, remove it from the pool.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.10.0...v3.11.0)
+
 ## v.3.10.0
 
 - fix: remove logs automtically when using autoremove fixes #1330
 - feat: add support for keeping a specified number of jobs when using auto-remove.
 - feat: add support for node 12
-- fix: fix check for supported file types in sandboxed processors #1311 
+- fix: fix check for supported file types in sandboxed processors #1311
 - ci: drop support for node 6
 
- [Changes](https://github.com/OptimalBits/bull/compare/v3.9.1...v3.10.0)
+[Changes](https://github.com/OptimalBits/bull/compare/v3.9.1...v3.10.0)
 
 ## v.3.9.1
- 
- - fix: add log to job wrapper
- 
- [Changes](https://github.com/OptimalBits/bull/compare/v3.9.0...v3.9.1)
+
+- fix: add log to job wrapper
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.9.0...v3.9.1)
 
 ## v.3.9.0
- 
- - feat: add job.log #1165
- 
- [Changes](https://github.com/OptimalBits/bull/compare/v3.8.1...v3.9.0)
+
+- feat: add job.log #1165
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.8.1...v3.9.0)
 
 ## v.3.8.1
- 
- - fix: wait for ready in cleanJobsInSet fixes #1298
- 
- [Changes](https://github.com/OptimalBits/bull/compare/v3.8.0...v3.8.1)
+
+- fix: wait for ready in cleanJobsInSet fixes #1298
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.8.0...v3.8.1)
 
 ## v.3.8.0
 
