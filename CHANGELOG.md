@@ -1,5 +1,14 @@
 # Changelog
 
+## v.3.20.1
+
+fix(queue): possible infinite loop when disconnect fixes #1746
+fix(clean-priority): remove job from priority set on clean (#1405)
+fix(sandbox): job update (#1957)
+fix: use async version of process.send for progress and log (#1948)
+fix: promote jobs to the right "list" when paused
+
+
 ## v.3.20.0
 
 - feat(job): implement Job#retriedOn (#1868)
