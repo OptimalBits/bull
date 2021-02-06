@@ -774,7 +774,7 @@ describe('Job', () => {
       const delayedJob = await queue.add(
         'delayed',
         { foo: 'bar' },
-        { delay: 1 },
+        { delay: 1 }
       );
 
       await queue.pause();
