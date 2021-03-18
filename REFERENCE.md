@@ -728,25 +728,6 @@ await queue.obliterate();
 await queue.obliterate({ force: true });
 ```
 
-**Arguments**
-
-```js
-  grace: number; Grace period in milliseconds.
-  status: string; Status of the job to clean. Values are completed, wait, active,
-  delayed, and failed. Defaults to completed.
-  limit: number; maximum amount of jobs to clean per call. If not provided will clean all matching jobs.
-
-  returns Promise; A promise that resolves with an array of removed jobs.
-```
-
-**Events**
-
-The cleaner emits the `cleaned` event anytime the queue is cleaned.
-
-```typescript
-  queue.on('cleaned', listener: (jobs: number[], status: string) => void);
-```
-
 ---
 
 ## Job
