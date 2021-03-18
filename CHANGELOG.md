@@ -1,13 +1,21 @@
 # Changelog
 
+## v.3.21.0
+
+- feat: add a method to "obliterate" a queue
+- fix: upgrade lodash fixes #1996
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.20.1...v3.21.0)
+
 ## v.3.20.1
 
-fix(queue): possible infinite loop when disconnect fixes #1746
-fix(clean-priority): remove job from priority set on clean (#1405)
-fix(sandbox): job update (#1957)
-fix: use async version of process.send for progress and log (#1948)
-fix: promote jobs to the right "list" when paused
+- fix(queue): possible infinite loop when disconnect fixes #1746
+- fix(clean-priority): remove job from priority set on clean (#1405)
+- fix(sandbox): job update (#1957)
+- fix: use async version of process.send for progress and log (#1948)
+- fix: promote jobs to the right "list" when paused
 
+[Changes](https://github.com/OptimalBits/bull/compare/v3.20.0...v3.20.1)
 
 ## v.3.20.0
 
