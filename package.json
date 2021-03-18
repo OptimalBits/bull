@@ -24,7 +24,7 @@
     "debuglog": "^1.0.0",
     "get-port": "^5.1.1",
     "ioredis": "^4.22.0",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "p-timeout": "^3.2.0",
     "promise.prototype.finally": "^3.1.2",
     "semver": "^7.3.2",
