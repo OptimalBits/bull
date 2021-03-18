@@ -1,8 +1,6 @@
 'use strict';
 
 const expect = require('chai').expect;
-const redis = require('ioredis');
-const _ = require('lodash');
 const uuid = require('uuid');
 const utils = require('./utils');
 const delay = require('delay');
@@ -21,7 +19,7 @@ describe('Obliterate', () => {
     return queue.close();
   });
 
-  it.only('should obliterate an empty queue', async () => {
+  it('should obliterate an empty queue', async () => {
     await queue.obliterate();
 
     const client = await queue.client;
@@ -37,7 +35,7 @@ describe('Obliterate', () => {
     const job = await queue.add({ qux: 'baz' });
 
     let first = true;
-    queue.process(async job => {
+    queue.process(async () => {
       if (first) {
         first = false;
         throw new Error('failed first');
@@ -61,7 +59,7 @@ describe('Obliterate', () => {
     await queue.add({ foo: 'bar3' }, { delay: 5000 });
 
     let first = true;
-    queue.process(async job => {
+    queue.process(async () => {
       if (first) {
         first = false;
         throw new Error('failed first');
@@ -91,7 +89,7 @@ describe('Obliterate', () => {
     await queue.add({ foo: 'bar3' }, { delay: 5000 });
 
     let first = true;
-    queue.process(async job => {
+    queue.process(async () => {
       if (first) {
         first = false;
         throw new Error('failed first');
