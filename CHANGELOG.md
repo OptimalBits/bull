@@ -1,5 +1,15 @@
 # Changelog
 
+## v.3.21.1
+
+- fix: safer implementation of obliterate.
+Note: If you want to use the new method "obliterate" it is highly recommended
+that you upgrade to this version, since previous version is not safe to use
+if using the colon ':' character in your queue names.
+
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.21.0...v3.21.1)
+
 ## v.3.21.0
 
 - feat: add a method to "obliterate" a queue
