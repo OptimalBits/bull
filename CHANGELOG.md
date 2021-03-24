@@ -1,5 +1,12 @@
 # Changelog
 
+## v.3.22.0
+
+- feat: do not rely on comma to encode jobid in progress fixes #2003
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.21.1...v3.22.0)
+
+
 ## v.3.21.1
 
 - fix: safer implementation of obliterate.
