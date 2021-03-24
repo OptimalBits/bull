@@ -875,6 +875,52 @@ describe('Queue', () => {
       });
     });
 
+    it('process a job that updates progress with an object', done => {
+      queue.process((job, jobDone) => {
+        expect(job.data.foo).to.be.equal('bar');
+        job.progress({ myvalue: 42 });
+        jobDone();
+      });
+
+      queue
+        .add({ foo: 'bar' })
+        .then(job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        })
+        .catch(done);
+
+      queue.on('progress', (job, progress) => {
+        expect(job).to.be.ok;
+        expect(progress).to.be.eql({ myvalue: 42 });
+        done();
+      });
+    });
+
+    it('process a job that updates progress with an object emits a global event', done => {
+      let jobId;
+      queue.process((job, jobDone) => {
+        expect(job.data.foo).to.be.equal('bar');
+        job.progress({ myvalue: 42 });
+        jobDone();
+      });
+
+      queue
+        .add({ foo: 'bar' })
+        .then(job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+          jobId = job.id;
+        })
+        .catch(done);
+
+      queue.on('global:progress', (_jobId, progress) => {
+        expect(jobId).to.be.eql(_jobId);
+        expect(progress).to.be.eql({ myvalue: 42 });
+        done();
+      });
+    });
+
     it('process a job that returns data in the process handler', done => {
       queue.process((job, jobDone) => {
         expect(job.data.foo).to.be.equal('bar');
@@ -1901,7 +1947,10 @@ describe('Queue', () => {
       queue.add({});
       queue.add({});
 
-      queue.on('completed', _.after(2, () => done()));
+      queue.on(
+        'completed',
+        _.after(2, () => done())
+      );
     });
 
     //This job use delay to check that at any time we have 4 process in parallel.
