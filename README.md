@@ -59,7 +59,7 @@ If you want to start using the next major version of Bull written entirely in Ty
 
 [<img src="http://taskforce.sh/assets/logo_square.png" width="100" alt="Taskforce.sh, Inc" style="padding: 100px"/>](https://taskforce.sh)
 
-Super charge your queues with a profesional front end and optional Redis hosting:
+Super charge your queues with a professional front end and optional Redis hosting:
 - Get a complete overview of all your queues.
 - Inspect jobs, search, retry, or promote delayed jobs.
 - Metrics and statistics.
@@ -165,8 +165,8 @@ Definitions are currently maintained in the [DefinitelyTyped](https://github.com
 ## Contributing
 
 We welcome all types of contributions, either code fixes, new features or doc improvements.
-Code formatting is enforced by [prettier](https://prettier.io/)
-For commits please follow conventional [commits convention](https://www.conventionalcommits.org/en/v1.0.0-beta.2/)
+Code formatting is enforced by [prettier](https://prettier.io/).
+For commits please follow conventional [commits convention](https://www.conventionalcommits.org/en/v1.0.0-beta.2/).
 All code must pass lint rules and test suites before it can be merged into develop.
 
 ---
