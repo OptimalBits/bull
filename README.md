@@ -43,7 +43,7 @@
     </a>
   </p>
   <p>
-    <em>Follow <a href="http://twitter.com/manast">@manast</a> for Bull news and updates!</em>
+    <em>Follow <a href="http://twitter.com/manast">@manast</a> for *important* Bull/BullMQ news and updates!</em>
   </p>
 </div>
 
