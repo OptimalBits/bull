@@ -95,6 +95,10 @@ And coming up on the roadmap...
 
 There are a few third-party UIs that you can use for monitoring:
 
+**BullMQ**
+
+- [Taskforce](https://taskforce.sh)
+
 **Bull v3**
 
 - [Taskforce](https://taskforce.sh)
