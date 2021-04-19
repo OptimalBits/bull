@@ -1,5 +1,11 @@
 # Changelog
 
+## v.3.22.1
+
+- fix(obliterate): remove repeatable jobs fixes #2012
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.22.0...v3.22.1)
+
 ## v.3.22.0
 
 - feat: do not rely on comma to encode jobid in progress fixes #2003
