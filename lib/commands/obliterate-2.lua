@@ -103,16 +103,12 @@ if(removeKeys(waitKey, getListItems(waitKey))) then
     return 1
 end
 
-local waitKey = baseKey .. 'wait'
-if(removeKeys(waitKey, getListItems(waitKey))) then
-    return 1
-end
-
 rcall("DEL", baseKey .. 'priority')
 rcall("DEL", baseKey .. 'stalled-check')
 rcall("DEL", baseKey .. 'stalled')
 rcall("DEL", baseKey .. 'meta-paused')
 rcall("DEL", baseKey .. 'meta')
 rcall("DEL", baseKey .. 'id')
+rcall("DEL", baseKey .. 'repeat')
 
 return 0
