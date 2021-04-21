@@ -721,7 +721,7 @@ describe('Job', () => {
 
     it('should process a promoted job according to its priority', done => {
       queue.process(() => {
-        return delay(100);
+        return delay(10);
       });
 
       const completed = [];
@@ -729,8 +729,12 @@ describe('Job', () => {
       queue.on('completed', job => {
         completed.push(job.id);
         if (completed.length > 3) {
-          expect(completed).to.be.eql(['1', '2', '3', '4']);
-          done();
+          try {
+            expect(completed).to.be.eql(['1', '2', '3', '4']);
+            done();
+          } catch (err) {
+            done(err);
+          }
         }
       });
       const processStarted = new Promise(resolve =>
@@ -744,10 +748,8 @@ describe('Job', () => {
         .then(() => add('2', 1))
         .then(() => processStarted)
         .then(() => add('3', 5000))
-        .then(job => {
-          job.promote();
-        })
-        .then(() => add('4', 1));
+        .then(job => job.promote())
+        .then(() => add('4', 50));
     });
 
     it('should not promote a job that is not delayed', () => {
