@@ -96,8 +96,8 @@ describe('Obliterate', () => {
       }
       return delay(250);
     });
-
     await job.finished();
+
     await queue.obliterate({ force: true });
     const client = await queue.client;
     const keys = await client.keys(`bull:${queue.name}*`);
@@ -123,4 +123,49 @@ describe('Obliterate', () => {
     const keys = await client.keys(`bull:${queue.name}:*`);
     expect(keys.length).to.be.eql(0);
   });
+
+  it('should obliterate a queue with high number of jobs in different statuses', async () => {
+    const arr1 = [];
+    for (let i = 0; i < 300; i++) {
+      arr1.push(queue.add({ foo: `barLoop${i}` }));
+    }
+
+    const [lastCompletedJob] = (await Promise.all(arr1)).splice(-1);
+
+    let fail = false;
+    queue.process(async () => {
+      if (fail) {
+        throw new Error('failed job');
+      }
+    });
+
+    await lastCompletedJob.finished();
+
+    fail = true;
+
+    const arr2 = [];
+    for (let i = 0; i < 300; i++) {
+      arr2.push(queue.add({ foo: `barLoop${i}` }));
+    }
+
+    const [lastFailedJob] = (await Promise.all(arr2)).splice(-1);
+
+    try {
+      await lastFailedJob.finished();
+      expect(true).to.be.equal(false);
+    } catch (err) {
+      expect(true).to.be.equal(true);
+    }
+
+    const arr3 = [];
+    for (let i = 0; i < 1623; i++) {
+      arr3.push(queue.add({ foo: `barLoop${i}` }, { delay: 10000 }));
+    }
+    await Promise.all(arr3);
+
+    await queue.obliterate();
+    const client = await queue.client;
+    const keys = await client.keys(`bull:${queue.name}*`);
+    expect(keys.length).to.be.eql(0);
+  }).timeout(20000);
 });
