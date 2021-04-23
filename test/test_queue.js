@@ -133,7 +133,7 @@ describe('Queue', () => {
       expect(queue.eclient.options.db).to.be.eql(0);
 
       return queue.close();
-    }).timeout(10000);
+    });
 
     it('should create a queue with a redis connection string', () => {
       const queue = new Queue('connstring', 'redis://123.4.5.67:1234/2', {
@@ -150,7 +150,7 @@ describe('Queue', () => {
       expect(queue.eclient.options.db).to.be.eql(2);
 
       return queue.close();
-    });
+    }).timeout(10000);
 
     it('should create a queue with only a hostname', () => {
       const queue = new Queue('connstring', 'redis://127.2.3.4', {
