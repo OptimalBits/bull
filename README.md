@@ -55,14 +55,6 @@ If you want to start using the next major version of Bull written entirely in Ty
 
 ---
 
-### Sponsor
-
-[LOGO]
-
-If you need of high quality production Redis instances for your BullMQ project, please consider subscribing to RedisGreen (redisgreen.com), 
-one of the leaders of Redis hosting that works perfectly with BullMQ. Please use the promo code "BULLMQ" when signing up to help us
-sponsor the development of BullMQ.
-
 
 ### Official FrontEnd
 
