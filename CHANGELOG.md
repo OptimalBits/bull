@@ -1,3 +1,10 @@
+## [3.22.2](https://github.com/OptimalBits/bull/compare/v3.22.1...v3.22.2) (2021-04-23)
+
+
+### Bug Fixes
+
+* **obliterate:** obliterate many jobs fixes [#2016](https://github.com/OptimalBits/bull/issues/2016) ([7a923b4](https://github.com/OptimalBits/bull/commit/7a923b468d5299bbdfe06d1ee7447fd810e2779b))
+
 # Changelog
 
 ## v.3.22.1
