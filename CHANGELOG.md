@@ -5,7 +5,6 @@
 
 * **obliterate:** obliterate many jobs fixes [#2016](https://github.com/OptimalBits/bull/issues/2016) ([7a923b4](https://github.com/OptimalBits/bull/commit/7a923b468d5299bbdfe06d1ee7447fd810e2779b))
 
-# Changelog
 
 ## v.3.22.1
 
