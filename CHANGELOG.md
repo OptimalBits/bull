@@ -1,3 +1,10 @@
+## [3.22.3](https://github.com/OptimalBits/bull/compare/v3.22.2...v3.22.3) (2021-04-23)
+
+
+### Bug Fixes
+
+* **delayed:** re-schedule updateDelay in case of error fixes [#2015](https://github.com/OptimalBits/bull/issues/2015) ([16bbfad](https://github.com/OptimalBits/bull/commit/16bbfadb270bc6c7d6df9cf5ab30b7f66028b2b3))
+
 ## [3.22.2](https://github.com/OptimalBits/bull/compare/v3.22.1...v3.22.2) (2021-04-23)
 
 
