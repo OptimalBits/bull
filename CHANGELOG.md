@@ -1,3 +1,10 @@
+## [3.22.4](https://github.com/OptimalBits/bull/compare/v3.22.3...v3.22.4) (2021-04-27)
+
+
+### Bug Fixes
+
+* also populate retriedOn when loading from id with excludeData ([0964b39](https://github.com/OptimalBits/bull/commit/0964b390d9190510f0d016f4eb2a3f1bc6cdb4e5))
+
 ## [3.22.3](https://github.com/OptimalBits/bull/compare/v3.22.2...v3.22.3) (2021-04-23)
 
 
