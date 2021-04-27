@@ -4,7 +4,8 @@
      Input:
       KEYS[1] 'delayed'
       KEYS[2] 'wait'
-      KEYS[3] 'priority'
+      KEYS[3] 'paused'
+      KEYS[4] 'priority'
 
       ARGV[1]  queue.toKey('')
       ARGV[2]  jobId
@@ -21,13 +22,17 @@ if redis.call("ZREM", KEYS[1], jobId) == 1 then
 
   local target = KEYS[2];
 
+  if rcall("EXISTS", KEYS[3]) == 1 then
+    target = KEYS[3]
+  end
+
   if priority == 0 then
     -- LIFO or FIFO
     rcall("LPUSH", target, jobId)
   else
     -- Priority add
-    rcall("ZADD", KEYS[3], priority, jobId)
-    local count = rcall("ZCOUNT", KEYS[3], 0, priority)
+    rcall("ZADD", KEYS[4], priority, jobId)
+    local count = rcall("ZCOUNT", KEYS[4], 0, priority)
 
     local len = rcall("LLEN", target)
     local id = rcall("LINDEX", target, len - (count - 1))

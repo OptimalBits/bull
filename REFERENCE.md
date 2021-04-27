@@ -12,6 +12,7 @@
   - [Queue#removeJobs](#queueremovejobs)
   - [Queue#empty](#queueempty)
   - [Queue#clean](#queueclean)
+  - [Queue#obliterate](#queueobliterate)
   - [Queue#close](#queueclose)
   - [Queue#getJob](#queuegetjob)
   - [Queue#getJobs](#queuegetjobs)
@@ -692,32 +693,39 @@ Tells the queue remove jobs of a specific type created outside of a grace period
 **Example**
 
 ```js
-//cleans all jobs that completed over 5 seconds ago.
-queue.clean(5000);
-//clean all jobs that failed over 10 seconds ago.
-queue.clean(10000, 'failed');
 queue.on('cleaned', function(jobs, type) {
   console.log('Cleaned %s %s jobs', jobs.length, type);
 });
+
+//cleans all jobs that completed over 5 seconds ago.
+await queue.clean(5000);
+//clean all jobs that failed over 10 seconds ago.
+await queue.clean(10000, 'failed');
 ```
 
-**Arguments**
+### Queue#obliterate
+
+```ts
+obliterate(ops?: { force: boolean}): Promise<void>
+```
+
+Completely removes a queue with all its data.
+In order to obliterate a queue there cannot be active jobs, but this
+behaviour can be overrided with the "force" option.
+
+Note: since this operation can be quite long in duration depending on how
+many jobs there are in the queue, it is not performed atomically, instead
+is performed iterativelly. However the queue is always paused during this process,
+if the queue gets unpaused during the obliteration by another script, the call
+will fail with the removed items it managed to remove until the failure.
+
+**Example**
 
 ```js
-  grace: number; Grace period in milliseconds.
-  status: string; Status of the job to clean. Values are completed, wait, active,
-  delayed, and failed. Defaults to completed.
-  limit: number; maximum amount of jobs to clean per call. If not provided will clean all matching jobs.
+// Removes everything but only if there are no active jobs
+await queue.obliterate();
 
-  returns Promise; A promise that resolves with an array of removed jobs.
-```
-
-**Events**
-
-The cleaner emits the `cleaned` event anytime the queue is cleaned.
-
-```typescript
-  queue.on('cleaned', listener: (jobs: number[], status: string) => void);
+await queue.obliterate({ force: true });
 ```
 
 ---

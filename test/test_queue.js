@@ -150,7 +150,7 @@ describe('Queue', () => {
       expect(queue.eclient.options.db).to.be.eql(2);
 
       return queue.close();
-    });
+    }).timeout(10000);
 
     it('should create a queue with only a hostname', () => {
       const queue = new Queue('connstring', 'redis://127.2.3.4', {
@@ -871,6 +871,52 @@ describe('Queue', () => {
       queue.on('progress', (job, progress) => {
         expect(job).to.be.ok;
         expect(progress).to.be.eql(42);
+        done();
+      });
+    });
+
+    it('process a job that updates progress with an object', done => {
+      queue.process((job, jobDone) => {
+        expect(job.data.foo).to.be.equal('bar');
+        job.progress({ myvalue: 42 });
+        jobDone();
+      });
+
+      queue
+        .add({ foo: 'bar' })
+        .then(job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        })
+        .catch(done);
+
+      queue.on('progress', (job, progress) => {
+        expect(job).to.be.ok;
+        expect(progress).to.be.eql({ myvalue: 42 });
+        done();
+      });
+    });
+
+    it('process a job that updates progress with an object emits a global event', done => {
+      let jobId;
+      queue.process((job, jobDone) => {
+        expect(job.data.foo).to.be.equal('bar');
+        job.progress({ myvalue: 42 });
+        jobDone();
+      });
+
+      queue
+        .add({ foo: 'bar' })
+        .then(job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+          jobId = job.id;
+        })
+        .catch(done);
+
+      queue.on('global:progress', (_jobId, progress) => {
+        expect(jobId).to.be.eql(_jobId);
+        expect(progress).to.be.eql({ myvalue: 42 });
         done();
       });
     });
@@ -2662,6 +2708,28 @@ describe('Queue', () => {
         })
         .then(len => {
           expect(len).to.be.eql(2);
+          done();
+        });
+    });
+
+    it('should properly clean jobs from the priority set', done => {
+      const client = new redis(6379, '127.0.0.1', {});
+      queue.add({ some: 'data' }, { priority: 5 });
+      queue.add({ some: 'data' }, { priority: 5 });
+      delay(100)
+        .then(() => {
+          return queue.clean(0, 'wait', 1);
+        })
+        .then(() => {
+          return new Promise((resolve, reject) => {
+            client.zcount(queue.toKey('priority'), '5', '5', (err, res) => {
+              if (err) reject(err);
+              else resolve(res);
+            });
+          });
+        })
+        .then(priority => {
+          expect(priority).to.be.eql(1);
           done();
         });
     });
