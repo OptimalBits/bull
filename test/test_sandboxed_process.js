@@ -133,7 +133,7 @@ describe('sandboxed process', () => {
         expect(value).to.be.eql(42);
         expect(
           Object.keys(queue.childPool.retained).length +
-            queue.childPool.getAllFree().length
+          queue.childPool.getAllFree().length
         ).to.eql(4);
         after();
       } catch (err) {
@@ -161,7 +161,7 @@ describe('sandboxed process', () => {
         expect(value).to.be.eql(42);
         expect(
           Object.keys(queue.childPool.retained).length +
-            queue.childPool.getAllFree().length
+          queue.childPool.getAllFree().length
         ).to.eql(1);
         after();
       } catch (err) {
@@ -200,7 +200,7 @@ describe('sandboxed process', () => {
   it('should process and update progress', done => {
     queue.process(__dirname + '/fixtures/fixture_processor_progress.js');
 
-    queue.on('completed', (job, value) => {
+    queue.on('completed', async (job, value) => {
       try {
         expect(job.data).to.be.eql({ foo: 'bar' });
         expect(value).to.be.eql(37);
@@ -208,9 +208,27 @@ describe('sandboxed process', () => {
         expect(progresses).to.be.eql([10, 27, 78, 100]);
         expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
         expect(queue.childPool.getAllFree()).to.have.lengthOf(1);
-        queue.getJobLogs(job.id).then(logs =>
+        await queue.getJobLogs(job.id).then(logs =>
           expect(logs).to.be.eql({
             logs: ['10', '27', '78', '100'],
+            count: 4
+          })
+        );
+        await queue.getJobLogs(job.id, 2, 2).then(logs =>
+          expect(logs).to.be.eql({
+            logs: ['78'],
+            count: 4
+          })
+        );
+        await queue.getJobLogs(job.id, 0, 1).then(logs =>
+          expect(logs).to.be.eql({
+            logs: ['10', '27'],
+            count: 4
+          })
+        );
+        await queue.getJobLogs(job.id, 1, 2).then(logs =>
+          expect(logs).to.be.eql({
+            logs: ['27', '78'],
             count: 4
           })
         );
