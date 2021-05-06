@@ -103,6 +103,36 @@ describe('events', () => {
     });
   });
 
+  it('should emit global:failed when a job has stalled more than allowable times', done => {
+    queue.on('completed', (/*job*/) => {
+      done(new Error('should not have completed'));
+    });
+
+    queue.process((/*job*/) => {
+      return delay(250);
+    });
+
+    queue.add({ foo: 'bar' });
+
+    const queue2 = utils.buildQueue('test events', {
+      settings: {
+        stalledInterval: 100,
+        maxStalledCount: 0
+      }
+    });
+
+    queue2.on('global:failed', (jobId, error) => {
+      expect(error).equal('job stalled more than maxStalledCount');
+      expect(jobId).not.to.be.undefined;
+      queue2.close().then(done);
+    });
+
+    queue.on('active', () => {
+      queue2.startMoveUnlockedJobsToWait();
+      queue.close(true);
+    });
+  });
+
   it('emits waiting event when a job is added', done => {
     const queue = utils.buildQueue();
 
