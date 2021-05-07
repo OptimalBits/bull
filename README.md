@@ -55,12 +55,22 @@ If you want to start using the next major version of Bull written entirely in Ty
 
 ---
 
+### 🚀 Sponsor 🚀
+
+[<img src="https://www.redisgreen.com/images/rglogo/redisgreen_transparent_240x48.png" width="150" alt="RedisGreen" style="padding: 100px"/>](https://dashboard.redisgreen.net/new?utm_campaign=BULLMQ)
+
+If you need high quality production Redis instances for your Bull projects, please consider subscribing 
+to [RedisGreen](https://dashboard.redisgreen.net/new?utm_campaign=BULLMQ), 
+leaders in Redis hosting that works perfectly with Bull. Use the promo code "BULLMQ" when signing up to help us
+sponsor the development of Bull!
+
+---
 
 ### Official FrontEnd
 
 [<img src="http://taskforce.sh/assets/logo_square.png" width="100" alt="Taskforce.sh, Inc" style="padding: 100px"/>](https://taskforce.sh)
 
-Supercharge your queues with a professional front end and optional Redis hosting:
+Supercharge your queues with a professional front end:
 - Get a complete overview of all your queues.
 - Inspect jobs, search, retry, or promote delayed jobs.
 - Metrics and statistics.
