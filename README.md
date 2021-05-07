@@ -49,6 +49,12 @@
 
 ---
 
+### 🛠 Tutorials
+
+You can find tutorials and news in this blog: https://blog.taskforce.sh/
+
+---
+
 ### BullMQ
 
 If you want to start using the next major version of Bull written entirely in Typescript you are welcome to the new repo [here](https://github.com/taskforcesh/bullmq). Otherwise you are very welcome to still use Bull, which is a safe, battle tested codebase.
