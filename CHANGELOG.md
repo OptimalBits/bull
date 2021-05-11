@@ -1,3 +1,10 @@
+## [3.22.5](https://github.com/OptimalBits/bull/compare/v3.22.4...v3.22.5) (2021-05-11)
+
+
+### Bug Fixes
+
+* emit failed event when stalled job fails ([f68da41](https://github.com/OptimalBits/bull/commit/f68da4176658b9935cf4b63b218130008619b25b))
+
 ## [3.22.4](https://github.com/OptimalBits/bull/compare/v3.22.3...v3.22.4) (2021-04-27)
 
 
