@@ -214,21 +214,39 @@ describe('sandboxed process', () => {
             count: 4
           })
         );
-        await queue.getJobLogs(job.id, 2, 2, true).then(logs =>
+        await queue.getJobLogs(job.id, 2, 2).then(logs =>
           expect(logs).to.be.eql({
             logs: ['78'],
             count: 4
           })
         );
-        await queue.getJobLogs(job.id, 0, 1, true).then(logs =>
+        await queue.getJobLogs(job.id, 0, 1).then(logs =>
           expect(logs).to.be.eql({
             logs: ['10', '27'],
             count: 4
           })
         );
-        await queue.getJobLogs(job.id, 1, 2, true).then(logs =>
+        await queue.getJobLogs(job.id, 1, 2).then(logs =>
           expect(logs).to.be.eql({
             logs: ['27', '78'],
+            count: 4
+          })
+        );
+        await queue.getJobLogs(job.id, 2, 2, false).then(logs =>
+          expect(logs).to.be.eql({
+            logs: ['27'],
+            count: 4
+          })
+        );
+        await queue.getJobLogs(job.id, 0, 1, false).then(logs =>
+          expect(logs).to.be.eql({
+            logs: ['100', '78'],
+            count: 4
+          })
+        );
+        await queue.getJobLogs(job.id, 1, 2, false).then(logs =>
+          expect(logs).to.be.eql({
+            logs: ['78', '27'],
             count: 4
           })
         );
