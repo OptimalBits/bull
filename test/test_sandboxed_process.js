@@ -133,7 +133,7 @@ describe('sandboxed process', () => {
         expect(value).to.be.eql(42);
         expect(
           Object.keys(queue.childPool.retained).length +
-          queue.childPool.getAllFree().length
+            queue.childPool.getAllFree().length
         ).to.eql(4);
         after();
       } catch (err) {
@@ -161,7 +161,7 @@ describe('sandboxed process', () => {
         expect(value).to.be.eql(42);
         expect(
           Object.keys(queue.childPool.retained).length +
-          queue.childPool.getAllFree().length
+            queue.childPool.getAllFree().length
         ).to.eql(1);
         after();
       } catch (err) {
@@ -214,19 +214,19 @@ describe('sandboxed process', () => {
             count: 4
           })
         );
-        await queue.getJobLogs(job.id, 2, 2).then(logs =>
+        await queue.getJobLogs(job.id, 2, 2, true).then(logs =>
           expect(logs).to.be.eql({
             logs: ['78'],
             count: 4
           })
         );
-        await queue.getJobLogs(job.id, 0, 1).then(logs =>
+        await queue.getJobLogs(job.id, 0, 1, true).then(logs =>
           expect(logs).to.be.eql({
             logs: ['10', '27'],
             count: 4
           })
         );
-        await queue.getJobLogs(job.id, 1, 2).then(logs =>
+        await queue.getJobLogs(job.id, 1, 2, true).then(logs =>
           expect(logs).to.be.eql({
             logs: ['27', '78'],
             count: 4

@@ -546,15 +546,15 @@ describe('Job', () => {
           .then(logs =>
             expect(logs).to.be.eql({ logs: [firstLog, secondLog], count: 2 })
           )
-          .then(() => queue.getJobLogs(job.id, 0, 1))
+          .then(() => queue.getJobLogs(job.id, 0, 1, true))
           .then(logs =>
             expect(logs).to.be.eql({ logs: [firstLog, secondLog], count: 2 })
           )
-          .then(() => queue.getJobLogs(job.id, 0, 4000))
+          .then(() => queue.getJobLogs(job.id, 0, 4000, true))
           .then(logs =>
             expect(logs).to.be.eql({ logs: [firstLog, secondLog], count: 2 })
           )
-          .then(() => queue.getJobLogs(job.id, 1, 1))
+          .then(() => queue.getJobLogs(job.id, 1, 1, true))
           .then(logs =>
             expect(logs).to.be.eql({ logs: [secondLog], count: 2 })
           )
