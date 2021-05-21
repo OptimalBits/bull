@@ -49,7 +49,7 @@
 
 # 🙏 I Need your help!
 
-I need you to spend 15 seconds to complete this [survey](https://www.surveymonkey.com/r/8TYDNL2)
+I need you to spend 15 seconds to complete this [survey](https://docs.google.com/forms/d/e/1FAIpQLScpD5z9gdsjOwkgjV6XsLV0_paFZt-KYyJtL1r1DrI-yQVWww/viewform?usp=sf_link)
 
 Thanks!
 
