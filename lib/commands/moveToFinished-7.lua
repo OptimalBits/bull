@@ -1,5 +1,5 @@
 --[[
-  Move job from active to a finished status (completed o failed)
+  Move job from active to a finished status (completed or failed)
   A job can only be moved to completed if it was active.
   The job must be locked before it can be moved to a finished status,
   and the lock must be released in this script.
