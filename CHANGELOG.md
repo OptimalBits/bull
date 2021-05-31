@@ -1,3 +1,10 @@
+## [3.22.7](https://github.com/OptimalBits/bull/compare/v3.22.6...v3.22.7) (2021-05-31)
+
+
+### Bug Fixes
+
+* **obliterate:** remove job logs fixes [#2050](https://github.com/OptimalBits/bull/issues/2050) ([6ccf2b9](https://github.com/OptimalBits/bull/commit/6ccf2b90892bf16b4edb0095d6e770f978bc660a))
+
 ## [3.22.6](https://github.com/OptimalBits/bull/compare/v3.22.5...v3.22.6) (2021-05-17)
 
 
