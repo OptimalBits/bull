@@ -167,7 +167,6 @@ describe('Obliterate', () => {
 
     try {
       await lastFailedJob.finished();
-      f;
       expect(true).to.be.equal(false);
     } catch (err) {
       expect(true).to.be.equal(true);
