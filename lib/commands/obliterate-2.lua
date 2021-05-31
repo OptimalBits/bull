@@ -31,6 +31,7 @@ end
 local function removeJobs(parentKey, keys)
     for i, key in ipairs(keys) do
         rcall("DEL", baseKey .. key)
+        rcall("DEL", baseKey .. key .. ':logs')
     end
     maxCount = maxCount - #keys
 end

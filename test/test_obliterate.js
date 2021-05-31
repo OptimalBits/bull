@@ -124,6 +124,21 @@ describe('Obliterate', () => {
     expect(keys.length).to.be.eql(0);
   });
 
+  it('should remove job logs', async () => {
+    const job = await queue.add({});
+
+    queue.process(job => {
+      return job.log('Lorem Ipsum Dolor Sit Amet');
+    });
+
+    await job.finished();
+
+    await queue.obliterate({ force: true });
+
+    const { logs } = await queue.getJobLogs(job.id);
+    expect(logs).to.have.length(0);
+  });
+
   it('should obliterate a queue with high number of jobs in different statuses', async () => {
     const arr1 = [];
     for (let i = 0; i < 300; i++) {
