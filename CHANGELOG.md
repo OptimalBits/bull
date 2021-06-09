@@ -1,3 +1,10 @@
+## [3.22.8](https://github.com/OptimalBits/bull/compare/v3.22.7...v3.22.8) (2021-06-09)
+
+
+### Bug Fixes
+
+* upgrade ioredis fixes [#1445](https://github.com/OptimalBits/bull/issues/1445) ([f6a2364](https://github.com/OptimalBits/bull/commit/f6a23648146f5a53bb2e4084f8de9b783b782bed))
+
 ## [3.22.7](https://github.com/OptimalBits/bull/compare/v3.22.6...v3.22.7) (2021-05-31)
 
 
