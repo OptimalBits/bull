@@ -1,3 +1,10 @@
+## [3.22.9](https://github.com/OptimalBits/bull/compare/v3.22.8...v3.22.9) (2021-06-22)
+
+
+### Bug Fixes
+
+* **reprocess:** do not store job.id in added list ([3fbc506](https://github.com/OptimalBits/bull/commit/3fbc506aee4c36fd612ed18fc3a1619c0c8069d8))
+
 ## [3.22.8](https://github.com/OptimalBits/bull/compare/v3.22.7...v3.22.8) (2021-06-09)
 
 
