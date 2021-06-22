@@ -18,8 +18,7 @@
     -1 means the job is currently locked and can't be retried.
     -2 means the job was not found in the expected set.
 
-  Events:
-    emits 'added' if succesfully moved job to wait.
+
 ]]
 if (redis.call("EXISTS", KEYS[1]) == 1) then
   if (redis.call("EXISTS", KEYS[2]) == 0) then
@@ -28,7 +27,6 @@ if (redis.call("EXISTS", KEYS[1]) == 1) then
 
     if (redis.call("ZREM", KEYS[3], ARGV[1]) == 1) then
       redis.call(ARGV[2], KEYS[4], ARGV[1])
-      redis.call(ARGV[2], KEYS[4] .. ":added", ARGV[1])
 
       -- Emit waiting event (wait..ing@token)
       redis.call("PUBLISH", KEYS[4] .. "ing@" .. ARGV[3], ARGV[1])
