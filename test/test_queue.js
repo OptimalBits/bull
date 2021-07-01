@@ -357,6 +357,19 @@ describe('Queue', () => {
       await queue.close();
     });
 
+    it('should not change the options object', async () => {
+      const originalOptions = { redis: { keyPrefix: 'myQ' } };
+      const options = _.cloneDeep(originalOptions);
+
+      let queue = new Queue('q', 'redis://127.0.0.1', options);
+      expect(_.isEqual(options, originalOptions)).to.be.true;
+      await queue.close();
+
+      queue = new Queue('q', options);
+      expect(_.isEqual(options, originalOptions)).to.be.true;
+      await queue.close();
+    });
+
     describe('bulk jobs', () => {
       it('should default name of job', () => {
         const queue = new Queue('custom');
