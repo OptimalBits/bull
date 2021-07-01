@@ -1,3 +1,10 @@
+## [3.22.10](https://github.com/OptimalBits/bull/compare/v3.22.9...v3.22.10) (2021-07-01)
+
+
+### Bug Fixes
+
+* deep clone options ([#2083](https://github.com/OptimalBits/bull/issues/2083)) ([1e00a90](https://github.com/OptimalBits/bull/commit/1e00a90d1216083cdf33bc78a9753ece1acdddb2))
+
 ## [3.22.9](https://github.com/OptimalBits/bull/compare/v3.22.8...v3.22.9) (2021-06-22)
 
 
