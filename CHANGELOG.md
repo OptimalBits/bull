@@ -1,3 +1,10 @@
+## [3.22.11](https://github.com/OptimalBits/bull/compare/v3.22.10...v3.22.11) (2021-07-08)
+
+
+### Bug Fixes
+
+* **close:** clear timers after waiting jobs fixes [#1415](https://github.com/OptimalBits/bull/issues/1415) ([77b319d](https://github.com/OptimalBits/bull/commit/77b319da6acaa93351830f0a4e38b5ad1d3d8cf5))
+
 ## [3.22.10](https://github.com/OptimalBits/bull/compare/v3.22.9...v3.22.10) (2021-07-01)
 
 
