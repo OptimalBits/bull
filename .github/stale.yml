@@ -7,6 +7,8 @@ exemptLabels:
   - pinned
   - security
   - enhancement
+  - BETTER DOC
+  - bug
 # Label to use when marking an issue as stale
 staleLabel: wontfix
 # Comment to post when marking an issue as stale. Set to `false` to disable
