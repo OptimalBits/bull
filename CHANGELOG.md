@@ -1,3 +1,10 @@
+## [3.22.12](https://github.com/OptimalBits/bull/compare/v3.22.11...v3.22.12) (2021-07-13)
+
+
+### Bug Fixes
+
+* remove stalled job when finishing fixes [#1600](https://github.com/OptimalBits/bull/issues/1600) ([90763fd](https://github.com/OptimalBits/bull/commit/90763fd66404d8bc5a47ff8555cbe2da776c030d))
+
 ## [3.22.11](https://github.com/OptimalBits/bull/compare/v3.22.10...v3.22.11) (2021-07-08)
 
 
