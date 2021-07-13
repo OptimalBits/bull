@@ -14,6 +14,7 @@
       KEYS[6] active event key
 
       KEYS[7] delayed key
+      KEYS[8] stalled key
 
       ARGV[1]  jobId
       ARGV[2]  timestamp
@@ -40,6 +41,7 @@ if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
     local lockKey = KEYS[3] .. ':lock'
     if rcall("GET", lockKey) == ARGV[5] then
       rcall("DEL", lockKey)
+      rcall("SREM", KEYS[8], ARGV[1])
     else
       return -2
     end
