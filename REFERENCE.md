@@ -739,7 +739,7 @@ The most important property for the user is `Job#data` that includes the object 
 ### Job#progress
 
 ```ts
-progress(progress?: number): Promise
+progress(progress?: number | object): Promise
 ```
 
 Updates a job progress if called with an argument.
@@ -748,7 +748,7 @@ Return a promise resolving to the current job's progress if called without argum
 **Arguments**
 
 ```js
-  progress: number; Job progress between 0 and 100.
+  progress: number; Job progress number or any serializable object representing progress or similar.
 ```
 
 ---

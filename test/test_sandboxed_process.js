@@ -264,6 +264,24 @@ describe('sandboxed process', () => {
     queue.add({ foo: 'bar' });
   });
 
+  it('should process and update data', done => {
+    queue.process(__dirname + '/fixtures/fixture_processor_data.js');
+
+    queue.on('completed', (job, value) => {
+      try {
+        expect(job.data).to.be.eql({ baz: 'qux' });
+        expect(value).to.be.eql({ baz: 'qux' });
+        expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
+        expect(queue.childPool.getAllFree()).to.have.lengthOf(1);
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+
+    queue.add({ foo: 'bar' });
+  });
+
   it('should process and fail', done => {
     queue.process(__dirname + '/fixtures/fixture_processor_fail.js');
 
