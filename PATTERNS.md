@@ -25,33 +25,33 @@ communicate with each other. By using a queue the servers do not need to be onli
 Server A:
 
 ```js
-var Queue = require('bull');
+const Queue = require('bull');
 
-var sendQueue = new Queue("Server B");
-var receiveQueue = new Queue("Server A");
+const sendQueue = new Queue('Server B');
+const receiveQueue = new Queue('Server A');
 
-receiveQueue.process(function(job, done){
-  console.log("Received message", job.data.msg);
+receiveQueue.process(function (job, done) {
+  console.log('Received message', job.data.msg);
   done();
 });
 
-sendQueue.add({msg:"Hello"});
+sendQueue.add({ msg: 'Hello' });
 ```
 
 Server B:
 
 ```js
-var Queue = require('bull');
+const Queue = require('bull');
 
-var sendQueue = new Queue("Server A");
-var receiveQueue = new Queue("Server B");
+const sendQueue = new Queue('Server A');
+const receiveQueue = new Queue('Server B');
 
-receiveQueue.process(function(job, done){
-  console.log("Received message", job.data.msg);
+receiveQueue.process(function (job, done) {
+  console.log('Received message', job.data.msg);
   done();
 });
 
-sendQueue.add({msg:"World"});
+sendQueue.add({ msg: 'World' });
 ```
 
 
@@ -75,13 +75,13 @@ Notes:
 - do not set a `keyPrefix` on the connection you create, use bull's built-in prefix feature if you need a key prefix
 
 ```js
-var {REDIS_URL} = process.env
+const { REDIS_URL } = process.env;
 
-var Redis = require('ioredis')
-var client = new Redis(REDIS_URL);
-var subscriber = new Redis(REDIS_URL);
+const Redis = require('ioredis');
+const client = new Redis(REDIS_URL);
+const subscriber = new Redis(REDIS_URL);
 
-var opts = {
+const opts = {
   createClient: function (type) {
     switch (type) {
       case 'client':
@@ -96,8 +96,8 @@ var opts = {
   }
 }
 
-var queueFoo = new Queue('foobar', opts);
-var queueQux = new Queue('quxbaz', opts);
+const queueFoo = new Queue('foobar', opts);
+const queueQux = new Queue('quxbaz', opts);
 ```
 
 Redis cluster
@@ -114,9 +114,9 @@ In summary, to make bull compatible with Redis cluster, use a queue prefix insid
 For example:
 
 ```js
-  var queue = new Queue('cluster', {
-    prefix: '{myprefix}'
-  })
+const queue = new Queue('cluster', {
+  prefix: '{myprefix}'
+});
 ```
 
 If you use several queues in the same cluster, you should use different prefixes so that the
@@ -142,9 +142,9 @@ When the builtin backoff strategies on retries are not sufficient, a custom stra
 The function returns either the time to delay the retry with, 0 to retry immediately or -1 to fail the job immediately.
 
 ```js
-var Queue = require('bull');
+const Queue = require('bull');
 
-var myQueue = new Queue("Server B", {
+const myQueue = new Queue('Server B', {
   settings: {
     backoffStrategies: {
       jitter: function (attemptsMade, err) {
@@ -168,11 +168,11 @@ myQueue.add({foo: 'bar'}, {
 
 You may base your backoff strategy on the error that the job throws:
 ```js
-var Queue = require('bull');
+const Queue = require('bull');
 
-function MySpecificError() {}
+function MySpecificError() {};
 
-var myQueue = new Queue('Server C', {
+const myQueue = new Queue('Server C', {
   settings: {
     backoffStrategies: {
       foo: function (attemptsMade, err) {
@@ -185,7 +185,7 @@ var myQueue = new Queue('Server C', {
   }
 });
 
-myQueue.process(function(job, done){
+myQueue.process(function (job, done) {
   if (job.data.msg === 'Specific Error') {
     throw new MySpecificError();
   } else {
@@ -193,18 +193,18 @@ myQueue.process(function(job, done){
   }
 });
 
-myQueue.add({msg: 'Hello'}, {
+myQueue.add({ msg: 'Hello' }, {
   attempts: 3,
   backoff: {
     type: 'foo'
   }
 });
 
-myQueue.add({msg: 'Specific Error'}, {
- attempts: 3,
- backoff: {
-   type: 'foo'
- }
+myQueue.add({ msg: 'Specific Error' }, {
+  attempts: 3,
+  backoff: {
+    type: 'foo'
+  }
 });
 ```
 
@@ -218,7 +218,7 @@ Manually transitioning states for jobs can be done with a few simple methods.
 1. Adding a job to the 'waiting' queue. Grab the queue and call `add`.
 
 ```typescript
-import Queue from "bull";
+import Queue from 'bull';
 
 const queue = new Queue({
   limiter: {
@@ -228,7 +228,7 @@ const queue = new Queue({
   },
   ...queueOptions
 });
-queue.add({ random_attr: "random_value" });
+queue.add({ random_attr: 'random_value' });
 ```
 
 2. Pulling a job from 'waiting' and moving it to 'active'.
@@ -242,7 +242,7 @@ const job: Job = await queue.getNextJob();
 ```typescript
 const (nextJobData, nextJobId) = await job.moveToFailed(
   {
-    message: "Call to external service failed!",
+    message: 'Call to external service failed!',
   },
   true,
 );
@@ -251,7 +251,7 @@ const (nextJobData, nextJobId) = await job.moveToFailed(
 3. Move the job to the 'completed' queue.
 
 ```typescript
-const (nextJobData, nextJobId) = await job.moveToCompleted("succeeded", true);
+const (nextJobData, nextJobId) = await job.moveToCompleted('succeeded', true);
 ```
 
 4. Return the next job if one is returned.
