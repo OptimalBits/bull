@@ -90,9 +90,9 @@ Sometimes you need to provide job's _progress_ information to an external listen
 by using the `progress` method on the job object:
 
 ```js
-myFirstQueue.process( async (job) => {
+myFirstQueue.process(async (job) => {
   let progress = 0;
-  for(i = 0; i < 100; i++){
+  for (i = 0; i < 100; i++) {
     await doSomething(job.data);
     progress += 10;
     job.progress(progress);
