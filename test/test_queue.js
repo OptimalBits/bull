@@ -150,7 +150,7 @@ describe('Queue', () => {
       expect(queue.eclient.options.db).to.be.eql(2);
 
       return queue.close();
-    });
+    }).timeout(10000);
 
     it('should create a queue with only a hostname', () => {
       const queue = new Queue('connstring', 'redis://127.2.3.4', {
@@ -310,6 +310,11 @@ describe('Queue', () => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
+        .then(
+          queueFoo.bclient.client('GETNAME').then(name => {
+            expect(name).to.be.eql(queueFoo.clientName());
+          })
+        )
         .then(() => {
           return queueQux.add({ qux: 'baz' }).then(job => {
             expect(job.id).to.be.ok;
@@ -341,15 +346,33 @@ describe('Queue', () => {
         }, done);
     });
 
-    it('creates a queue with default job options', done => {
-      const defaultJobOptions = { removeOnComplete: true };
+    it('creates a queue with default job options', async () => {
+      const defaultJobOptions = { removeOnComplete: true, removeOnFail: false };
       const queue = new Queue('custom', {
         defaultJobOptions
       });
 
       expect(queue.defaultJobOptions).to.be.eql(defaultJobOptions);
 
-      queue.close().then(done, done);
+      const job = await queue.add('test', {}, { removeOnFail: true });
+
+      expect(job.opts).have.property('removeOnComplete', true);
+      expect(job.opts).have.property('removeOnFail', true);
+
+      await queue.close();
+    });
+
+    it('should not change the options object', async () => {
+      const originalOptions = { redis: { keyPrefix: 'myQ' } };
+      const options = _.cloneDeep(originalOptions);
+
+      let queue = new Queue('q', 'redis://127.0.0.1', options);
+      expect(_.isEqual(options, originalOptions)).to.be.true;
+      await queue.close();
+
+      queue = new Queue('q', options);
+      expect(_.isEqual(options, originalOptions)).to.be.true;
+      await queue.close();
     });
 
     describe('bulk jobs', () => {
@@ -866,6 +889,52 @@ describe('Queue', () => {
       queue.on('progress', (job, progress) => {
         expect(job).to.be.ok;
         expect(progress).to.be.eql(42);
+        done();
+      });
+    });
+
+    it('process a job that updates progress with an object', done => {
+      queue.process((job, jobDone) => {
+        expect(job.data.foo).to.be.equal('bar');
+        job.progress({ myvalue: 42 });
+        jobDone();
+      });
+
+      queue
+        .add({ foo: 'bar' })
+        .then(job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        })
+        .catch(done);
+
+      queue.on('progress', (job, progress) => {
+        expect(job).to.be.ok;
+        expect(progress).to.be.eql({ myvalue: 42 });
+        done();
+      });
+    });
+
+    it('process a job that updates progress with an object emits a global event', done => {
+      let jobId;
+      queue.process((job, jobDone) => {
+        expect(job.data.foo).to.be.equal('bar');
+        job.progress({ myvalue: 42 });
+        jobDone();
+      });
+
+      queue
+        .add({ foo: 'bar' })
+        .then(job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+          jobId = job.id;
+        })
+        .catch(done);
+
+      queue.on('global:progress', (_jobId, progress) => {
+        expect(jobId).to.be.eql(_jobId);
+        expect(progress).to.be.eql({ myvalue: 42 });
         done();
       });
     });
@@ -1414,6 +1483,39 @@ describe('Queue', () => {
           expect(job.data.foo).to.be.eql('bar');
         })
         .catch(done);
+    });
+
+    it('should clear job from stalled set when job completed', (done) => {
+      const queue2 = utils.buildQueue('running-job-' + uuid.v4(), {
+        settings: {
+          stalledInterval: 10
+        }
+      });
+
+      queue2.process(job => {
+        expect(job.data.foo).to.be.equal('bar');
+        return delay(100);
+      });
+
+      queue2.add({ foo: 'bar' }).then(
+        job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        },
+        err => {
+          done(err);
+        }
+      );
+
+      queue2.once('completed', async () => {
+        const stalled = await queue2.getStalledCount();
+        try {
+          expect(stalled).to.be.equal(0);
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
     });
 
     it('process a job that fails', done => {
@@ -2176,6 +2278,48 @@ describe('Queue', () => {
       });
     });
 
+    it('should pass strategy options to custom backoff', function(done) {
+      this.timeout(12000);
+      queue = utils.buildQueue('test retries and backoffs', {
+        settings: {
+          backoffStrategies: {
+            custom(attemptsMade, err, strategyOptions) {
+              expect(strategyOptions.id).to.be.equal('FOO42');
+              return attemptsMade * 1000;
+            }
+          }
+        }
+      });
+      let start;
+      queue.isReady().then(() => {
+        queue.process((job, jobDone) => {
+          if (job.attemptsMade < 2) {
+            throw new Error('Not yet!');
+          }
+          jobDone();
+        });
+
+        start = Date.now();
+        queue.add(
+          { foo: 'bar' },
+          {
+            attempts: 3,
+            backoff: {
+              type: 'custom',
+              options: {
+                id: 'FOO42'
+              }
+            }
+          }
+        );
+      });
+      queue.on('completed', () => {
+        const elapse = Date.now() - start;
+        expect(elapse).to.be.greaterThan(3000);
+        done();
+      });
+    });
+
     it('should not retry a job if the custom backoff returns -1', done => {
       queue = utils.buildQueue('test retries and backoffs', {
         settings: {
@@ -2657,6 +2801,28 @@ describe('Queue', () => {
         })
         .then(len => {
           expect(len).to.be.eql(2);
+          done();
+        });
+    });
+
+    it('should properly clean jobs from the priority set', done => {
+      const client = new redis(6379, '127.0.0.1', {});
+      queue.add({ some: 'data' }, { priority: 5 });
+      queue.add({ some: 'data' }, { priority: 5 });
+      delay(100)
+        .then(() => {
+          return queue.clean(0, 'wait', 1);
+        })
+        .then(() => {
+          return new Promise((resolve, reject) => {
+            client.zcount(queue.toKey('priority'), '5', '5', (err, res) => {
+              if (err) reject(err);
+              else resolve(res);
+            });
+          });
+        })
+        .then(priority => {
+          expect(priority).to.be.eql(1);
           done();
         });
     });

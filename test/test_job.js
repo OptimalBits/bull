@@ -439,6 +439,32 @@ describe('Job', () => {
         });
       });
     });
+
+    it('sets retriedOn to a timestamp', cb => {
+      queue.add({ foo: 'bar' });
+      queue.process((job, done) => {
+        done(new Error('the job failed'));
+      });
+
+      queue.once('failed', job => {
+        queue.once('global:waiting', jobId2 => {
+          const now = Date.now();
+          expect(job.retriedOn)
+            .to.be.a('number')
+            .and.to.be.within(now - 1000, now);
+
+          Job.fromId(queue, jobId2).then(job2 => {
+            expect(job2.retriedOn)
+              .to.be.a('number')
+              .and.to.be.within(now - 1000, now);
+            cb();
+          });
+        });
+        queue.once('registered:global:waiting', () => {
+          job.retry();
+        });
+      });
+    });
   });
 
   describe('Locking', () => {
@@ -519,6 +545,30 @@ describe('Job', () => {
           .then(() => queue.getJobLogs(job.id))
           .then(logs =>
             expect(logs).to.be.eql({ logs: [firstLog, secondLog], count: 2 })
+          )
+          .then(() => queue.getJobLogs(job.id, 0, 1))
+          .then(logs =>
+            expect(logs).to.be.eql({ logs: [firstLog, secondLog], count: 2 })
+          )
+          .then(() => queue.getJobLogs(job.id, 0, 4000))
+          .then(logs =>
+            expect(logs).to.be.eql({ logs: [firstLog, secondLog], count: 2 })
+          )
+          .then(() => queue.getJobLogs(job.id, 1, 1))
+          .then(logs =>
+            expect(logs).to.be.eql({ logs: [secondLog], count: 2 })
+          )
+          .then(() => queue.getJobLogs(job.id, 0, 1, false))
+          .then(logs =>
+            expect(logs).to.be.eql({ logs: [secondLog, firstLog], count: 2 })
+          )
+          .then(() => queue.getJobLogs(job.id, 0, 4000, false))
+          .then(logs =>
+            expect(logs).to.be.eql({ logs: [secondLog, firstLog], count: 2 })
+          )
+          .then(() => queue.getJobLogs(job.id, 1, 1, false))
+          .then(logs =>
+            expect(logs).to.be.eql({ logs: [firstLog], count: 2 })
           )
           .then(() => job.remove())
           .then(() => queue.getJobLogs(job.id))
@@ -741,6 +791,24 @@ describe('Job', () => {
             expect(err).to.be.ok();
           });
       });
+    });
+
+    it('should promote delayed job to the right queue if queue is paused', async () => {
+      await queue.add('normal', { foo: 'bar' });
+      const delayedJob = await queue.add(
+        'delayed',
+        { foo: 'bar' },
+        { delay: 1 }
+      );
+
+      await queue.pause();
+      await delayedJob.promote();
+      await queue.resume();
+
+      const waitingJobsCount = await queue.getWaitingCount();
+      expect(waitingJobsCount).to.be.equal(2);
+      const delayedJobsNewState = await delayedJob.getState();
+      expect(delayedJobsNewState).to.be.equal('waiting');
     });
   });
 

@@ -3,7 +3,8 @@
 
   Input:
     KEYS[1]  set key,
-    KEYS[2]  rate limiter key
+    KEYS[2]  priority key
+    KEYS[3]  rate limiter key
 
     ARGV[1]  jobId
     ARGV[2]  timestamp
@@ -38,17 +39,18 @@ for _, jobId in ipairs(jobIds) do
       else
         rcall("ZREM", KEYS[1], jobId)
       end
+      rcall("ZREM", KEYS[2], jobId)
       rcall("DEL", jobKey)
       rcall("DEL", jobKey .. ":logs")
 
       -- delete keys related to rate limiter
       -- NOTE: this code is unncessary for other sets than wait, paused and delayed.
-      local limiterIndexTable = KEYS[2] .. ":index"
+      local limiterIndexTable = KEYS[3] .. ":index"
       local limitedSetKey = rcall("HGET", limiterIndexTable, jobId)
 
       if limitedSetKey then
-          rcall("SREM", limitedSetKey, jobId)
-          rcall("HDEL", limiterIndexTable, jobId)
+        rcall("SREM", limitedSetKey, jobId)
+        rcall("HDEL", limiterIndexTable, jobId)
       end
 
       deletedCount = deletedCount + 1

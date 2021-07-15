@@ -26,7 +26,7 @@ if rcall("EXISTS", KEYS[3]) == 1 then
   if ARGV[3] ~= "0" then
     local lockKey = KEYS[3] .. ':lock'
     local lock = rcall("GET", lockKey)
-    if rcall("GET", lockKey) ~= ARGV[3] then
+    if lock ~= ARGV[3] then
       return -2
     end
   end
