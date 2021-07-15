@@ -74,6 +74,7 @@ describe('repeat', () => {
     expect(job1.opts).to.have.property('repeat');
     expect(job1.opts.repeat).to.be.deep.equal({
       count: 1,
+      immediately: false,
       cron: '0 * * * * *',
       startDate: '2020-09-02T22:29:00Z'
     });
@@ -94,6 +95,7 @@ describe('repeat', () => {
     expect(job2.opts).to.have.property('repeat');
     expect(job2.opts.repeat).to.be.deep.equal({
       count: 1,
+      immediately: false,
       cron: '0 * * * * *',
       startDate: '2020-09-02T22:29:00Z',
       endDate: '2020-09-05T01:44:37Z'
@@ -301,6 +303,59 @@ describe('repeat', () => {
       if (prev) {
         expect(prev.timestamp).to.be.lt(job.timestamp);
         expect(job.timestamp - prev.timestamp).to.be.gte(2000);
+      }
+      prev = job;
+      counter++;
+      if (counter == 20) {
+        done();
+      }
+    });
+  });
+
+  it('should repeat every 2 seconds and start immediately', function(done) {
+    const _this = this;
+    const date = new Date('2017-02-07 9:24:00');
+    this.clock.setSystemTime(date);
+    const nextTick = 2 * ONE_SECOND + 500;
+
+    queue
+      .add(
+        'repeat',
+        { foo: 'bar' },
+        {
+          repeat: {
+            every: 2000,
+            immediately: true
+          }
+        }
+      )
+      .then(() => {
+        _this.clock.tick(500);
+      });
+
+    queue.process('repeat', () => {
+      // dummy
+    });
+
+    let prev;
+    let counter = 0;
+    queue.on('completed', job => {
+      _this.clock.tick(nextTick);
+      // The first time the delay will be shorter
+      if (prev && counter === 1) {
+        try {
+          expect(prev.timestamp).to.be.lt(job.timestamp);
+          expect(job.timestamp - prev.timestamp).to.be.gte(500);
+        } catch (err) {
+          done(err);
+        }
+      } else if (prev) {
+        try {
+          expect(prev.timestamp).to.be.lt(job.timestamp);
+          expect(job.timestamp - prev.timestamp).to.be.gte(2000);
+        } catch (err) {
+          done(err);
+        }
       }
       prev = job;
       counter++;
