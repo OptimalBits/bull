@@ -1,3 +1,10 @@
+## [3.23.3](https://github.com/OptimalBits/bull/compare/v3.23.2...v3.23.3) (2021-07-15)
+
+
+### Bug Fixes
+
+* **delayed:** do not get lock twice fixes [#2033](https://github.com/OptimalBits/bull/issues/2033) ([2800cf8](https://github.com/OptimalBits/bull/commit/2800cf8923ccac52dcd4da4e7fd19b3404c68fe8))
+
 ## [3.23.2](https://github.com/OptimalBits/bull/compare/v3.23.1...v3.23.2) (2021-07-15)
 
 
