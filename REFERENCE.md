@@ -65,6 +65,7 @@ interface QueueOptions {
   redis?: RedisOpts;
   prefix?: string = 'bull'; // prefix for all queue keys.
   defaultJobOptions?: JobOpts;
+  createClient?: (type: enum('client', 'subscriber'), redisOpts?: RedisOpts) => redisClient,
   settings?: AdvancedSettings;
 }
 ```
