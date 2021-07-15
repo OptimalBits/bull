@@ -310,6 +310,11 @@ describe('Queue', () => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
         })
+        .then(
+          queueFoo.bclient.client('GETNAME').then(name => {
+            expect(name).to.be.eql(queueFoo.clientName());
+          })
+        )
         .then(() => {
           return queueQux.add({ qux: 'baz' }).then(job => {
             expect(job.id).to.be.ok;

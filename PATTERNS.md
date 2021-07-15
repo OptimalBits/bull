@@ -82,14 +82,15 @@ const client = new Redis(REDIS_URL);
 const subscriber = new Redis(REDIS_URL);
 
 const opts = {
-  createClient: function (type) {
+  // redisOpts here will contain at least a property of connectionName which will identify the queue based on its name
+  createClient: function (type, redisOpts) {
     switch (type) {
       case 'client':
         return client;
       case 'subscriber':
         return subscriber;
       case 'bclient':
-        return new Redis(REDIS_URL);
+        return new Redis(REDIS_URL, redisOpts);
       default:
         throw new Error('Unexpected connection type: ', type);
     }
