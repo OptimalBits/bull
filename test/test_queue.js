@@ -2273,6 +2273,48 @@ describe('Queue', () => {
       });
     });
 
+    it('should pass strategy options to custom backoff', function(done) {
+      this.timeout(12000);
+      queue = utils.buildQueue('test retries and backoffs', {
+        settings: {
+          backoffStrategies: {
+            custom(attemptsMade, err, strategyOptions) {
+              expect(strategyOptions.id).to.be.equal('FOO42');
+              return attemptsMade * 1000;
+            }
+          }
+        }
+      });
+      let start;
+      queue.isReady().then(() => {
+        queue.process((job, jobDone) => {
+          if (job.attemptsMade < 2) {
+            throw new Error('Not yet!');
+          }
+          jobDone();
+        });
+
+        start = Date.now();
+        queue.add(
+          { foo: 'bar' },
+          {
+            attempts: 3,
+            backoff: {
+              type: 'custom',
+              options: {
+                id: 'FOO42'
+              }
+            }
+          }
+        );
+      });
+      queue.on('completed', () => {
+        const elapse = Date.now() - start;
+        expect(elapse).to.be.greaterThan(3000);
+        done();
+      });
+    });
+
     it('should not retry a job if the custom backoff returns -1', done => {
       queue = utils.buildQueue('test retries and backoffs', {
         settings: {
