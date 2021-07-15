@@ -1,3 +1,10 @@
+## [3.23.2](https://github.com/OptimalBits/bull/compare/v3.23.1...v3.23.2) (2021-07-15)
+
+
+### Bug Fixes
+
+* **job:** add default err object fixes [#2029](https://github.com/OptimalBits/bull/issues/2029) ([39684e9](https://github.com/OptimalBits/bull/commit/39684e9f941e2ea4191809fdc2aa52b3d7b267ae))
+
 ## [3.23.1](https://github.com/OptimalBits/bull/compare/v3.23.0...v3.23.1) (2021-07-15)
 
 
