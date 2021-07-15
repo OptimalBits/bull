@@ -1,3 +1,17 @@
+# [3.23.0](https://github.com/OptimalBits/bull/compare/v3.22.12...v3.23.0) (2021-07-13)
+
+
+### Features
+
+* support job.update function in sandboxed processors ([ff79fb4](https://github.com/OptimalBits/bull/commit/ff79fb494ea3e123256b35d18b46b24fbb9b8365)), closes [#1279](https://github.com/OptimalBits/bull/issues/1279) [#1608](https://github.com/OptimalBits/bull/issues/1608) [#1056](https://github.com/OptimalBits/bull/issues/1056)
+
+## [3.22.12](https://github.com/OptimalBits/bull/compare/v3.22.11...v3.22.12) (2021-07-13)
+
+
+### Bug Fixes
+
+* remove stalled job when finishing fixes [#1600](https://github.com/OptimalBits/bull/issues/1600) ([90763fd](https://github.com/OptimalBits/bull/commit/90763fd66404d8bc5a47ff8555cbe2da776c030d))
+
 ## [3.22.11](https://github.com/OptimalBits/bull/compare/v3.22.10...v3.22.11) (2021-07-08)
 
 

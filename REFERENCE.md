@@ -185,7 +185,7 @@ i.e. a file exporting the process function like this:
 
 ```js
 // my-processor.js
-module.exports = function(job) {
+module.exports = function (job) {
   // do some job
 
   return value;
@@ -233,7 +233,7 @@ So watch out, as the following won't work:
 
 ```js
 // THIS WON'T WORK!!
-queue.process(function(job, done) {
+queue.process(function (job, done) {
   // Oops! done callback here!
   return Promise.resolve();
 });
@@ -242,7 +242,7 @@ queue.process(function(job, done) {
 This, however, will:
 
 ```js
-queue.process(function(job) {
+queue.process(function (job) {
   // No done callback here :)
   return Promise.resolve();
 });
@@ -385,7 +385,7 @@ Removes all the jobs which jobId matches the given pattern. The pattern must fol
 Example:
 
 ```js
-myQueue.removeJobs('?oo*').then(function() {
+myQueue.removeJobs('?oo*').then(function () {
   console.log('done removing jobs');
 });
 ```
@@ -414,11 +414,11 @@ close(): Promise
 Closes the underlying Redis client. Use this to perform a graceful shutdown.
 
 ```js
-var Queue = require('bull');
-var queue = Queue('example');
+const Queue = require('bull');
+const queue = Queue('example');
 
-var after100 = _.after(100, function() {
-  queue.close().then(function() {
+const after100 = _.after(100, function () {
+  queue.close().then(function () {
     console.log('done');
   });
 });
@@ -431,7 +431,7 @@ from within a job handler the queue won't close until _after_
 the job has been processed, so the following won't work:
 
 ```js
-queue.process(function(job, jobDone) {
+queue.process(function (job, jobDone) {
   handle(job);
   queue.close().then(jobDone);
 });
@@ -440,7 +440,7 @@ queue.process(function(job, jobDone) {
 Instead, do this:
 
 ```js
-queue.process(function(job, jobDone) {
+queue.process(function (job, jobDone) {
   handle(job);
   queue.close();
   jobDone();
@@ -693,7 +693,7 @@ Tells the queue remove jobs of a specific type created outside of a grace period
 **Example**
 
 ```js
-queue.on('cleaned', function(jobs, type) {
+queue.on('cleaned', function (jobs, type) {
   console.log('Cleaned %s %s jobs', jobs.length, type);
 });
 
@@ -739,7 +739,7 @@ The most important property for the user is `Job#data` that includes the object 
 ### Job#progress
 
 ```ts
-progress(progress?: number): Promise
+progress(progress?: number | object): Promise
 ```
 
 Updates a job progress if called with an argument.
@@ -748,7 +748,7 @@ Return a promise resolving to the current job's progress if called without argum
 **Arguments**
 
 ```js
-  progress: number; Job progress between 0 and 100.
+  progress: number; Job progress number or any serializable object representing progress or similar.
 ```
 
 ---
@@ -860,53 +860,53 @@ Moves a job to the `failed` queue. Pulls a job from 'waiting' to 'active' and re
 A queue emits also some useful events:
 
 ```js
-.on('error', function(error) {
+.on('error', function (error) {
   // An error occured.
 })
 
-.on('waiting', function(jobId){
+.on('waiting', function (jobId) {
   // A Job is waiting to be processed as soon as a worker is idling.
 });
 
-.on('active', function(job, jobPromise){
+.on('active', function (job, jobPromise) {
   // A job has started. You can use `jobPromise.cancel()`` to abort it.
 })
 
-.on('stalled', function(job){
+.on('stalled', function (job) {
   // A job has been marked as stalled. This is useful for debugging job
   // workers that crash or pause the event loop.
 })
 
-.on('progress', function(job, progress){
+.on('progress', function (job, progress) {
   // A job's progress was updated!
 })
 
-.on('completed', function(job, result){
+.on('completed', function (job, result) {
   // A job successfully completed with a `result`.
 })
 
-.on('failed', function(job, err){
+.on('failed', function (job, err) {
   // A job failed with reason `err`!
 })
 
-.on('paused', function(){
+.on('paused', function () {
   // The queue has been paused.
 })
 
-.on('resumed', function(job){
+.on('resumed', function (job) {
   // The queue has been resumed.
 })
 
-.on('cleaned', function(jobs, type) {
+.on('cleaned', function (jobs, type) {
   // Old jobs have been cleaned from the queue. `jobs` is an array of cleaned
   // jobs, and `type` is the type of jobs cleaned.
 });
 
-.on('drained', function() {
+.on('drained', function () {
   // Emitted every time the queue has processed all the waiting jobs (even if there can be some delayed jobs not yet processed)
 });
 
-.on('removed', function(job){
+.on('removed', function (job) {
   // A job successfully removed.
 });
 
@@ -930,23 +930,23 @@ If you need to access the `Job` instance in a global listener, use [Queue#getJob
 
 ```js
 // Local events pass the job instance...
-queue.on('progress', function(job, progress) {
+queue.on('progress', function (job, progress) {
   console.log(`Job ${job.id} is ${progress * 100}% ready!`);
 });
 
-queue.on('completed', function(job, result) {
+queue.on('completed', function (job, result) {
   console.log(`Job ${job.id} completed! Result: ${result}`);
   job.remove();
 });
 
 // ...whereas global events only pass the job ID:
-queue.on('global:progress', function(jobId, progress) {
+queue.on('global:progress', function (jobId, progress) {
   console.log(`Job ${jobId} is ${progress * 100}% ready!`);
 });
 
-queue.on('global:completed', function(jobId, result) {
+queue.on('global:completed', function (jobId, result) {
   console.log(`Job ${jobId} completed! Result: ${result}`);
-  queue.getJob(jobId).then(function(job) {
+  queue.getJob(jobId).then(function (job) {
     job.remove();
   });
 });
