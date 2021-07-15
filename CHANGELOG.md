@@ -1,3 +1,38 @@
+# [3.25.0](https://github.com/OptimalBits/bull/compare/v3.24.0...v3.25.0) (2021-07-15)
+
+
+### Features
+
+* pass clientName to createClient function ([2a29569](https://github.com/OptimalBits/bull/commit/2a295691b88318ff64beaa7b83e03487854a7fe4))
+
+# [3.24.0](https://github.com/OptimalBits/bull/compare/v3.23.3...v3.24.0) (2021-07-15)
+
+
+### Features
+
+* **backoff:** add option to specify options for custom backoff strategy ([e573010](https://github.com/OptimalBits/bull/commit/e5730107688a41c7268a717f16302c5959eaf6f6))
+
+## [3.23.3](https://github.com/OptimalBits/bull/compare/v3.23.2...v3.23.3) (2021-07-15)
+
+
+### Bug Fixes
+
+* **delayed:** do not get lock twice fixes [#2033](https://github.com/OptimalBits/bull/issues/2033) ([2800cf8](https://github.com/OptimalBits/bull/commit/2800cf8923ccac52dcd4da4e7fd19b3404c68fe8))
+
+## [3.23.2](https://github.com/OptimalBits/bull/compare/v3.23.1...v3.23.2) (2021-07-15)
+
+
+### Bug Fixes
+
+* **job:** add default err object fixes [#2029](https://github.com/OptimalBits/bull/issues/2029) ([39684e9](https://github.com/OptimalBits/bull/commit/39684e9f941e2ea4191809fdc2aa52b3d7b267ae))
+
+## [3.23.1](https://github.com/OptimalBits/bull/compare/v3.23.0...v3.23.1) (2021-07-15)
+
+
+### Bug Fixes
+
+* wait in queue to be ready in getNextJob fixes [#1852](https://github.com/OptimalBits/bull/issues/1852) ([4e224e5](https://github.com/OptimalBits/bull/commit/4e224e5533f729b9781b1db81e1875b1bd50afb0))
+
 # [3.23.0](https://github.com/OptimalBits/bull/compare/v3.22.12...v3.23.0) (2021-07-13)
 
 
