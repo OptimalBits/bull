@@ -1,3 +1,10 @@
+## [3.23.1](https://github.com/OptimalBits/bull/compare/v3.23.0...v3.23.1) (2021-07-15)
+
+
+### Bug Fixes
+
+* wait in queue to be ready in getNextJob fixes [#1852](https://github.com/OptimalBits/bull/issues/1852) ([4e224e5](https://github.com/OptimalBits/bull/commit/4e224e5533f729b9781b1db81e1875b1bd50afb0))
+
 # [3.23.0](https://github.com/OptimalBits/bull/compare/v3.22.12...v3.23.0) (2021-07-13)
 
 
