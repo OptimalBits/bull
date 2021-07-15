@@ -42,10 +42,12 @@
       <img src="http://isitmaintained.com/badge/resolution/optimalbits/bull.svg"/>
     </a>
   </p>
-  <p>
-    <em>Follow <a href="http://twitter.com/manast">@manast</a> for *important* Bull/BullMQ news and updates!</em>
-  </p>
 </div>
+
+### 📻 News and updates
+
+Follow me on [Twitter](http://twitter.com/manast) for important news and updates.
+
 
 ### 🛠 Tutorials
 
