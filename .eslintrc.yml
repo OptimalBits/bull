@@ -1,0 +1,41 @@
+env:
+  node: true
+
+parserOptions:
+  ecmaVersion: 2018
+
+extends:
+  - eslint:recommended
+  - plugin:mocha/recommended
+  - plugin:node/recommended
+
+plugins:
+  - mocha
+  - node
+
+rules:
+  valid-jsdoc: 0
+  func-style: 0
+  no-use-before-define: 0
+  camelcase: 1
+  no-unused-vars: 2
+  no-alert: 2
+  no-console: [2, { allow: ['warn', 'error'] }]
+  no-underscore-dangle: 0
+  object-shorthand: 0
+
+  strict: [2, 'global']
+  no-var: 2
+  prefer-arrow-callback: 2
+  prefer-const: 2
+  no-inner-declarations: 0
+  newline-per-chained-call: 2
+
+  mocha/no-exclusive-tests: 2
+  mocha/no-hooks-for-single-case: 0
+  mocha/no-mocha-arrows: 0
+  mocha/no-setup-in-describe: 0
+  mocha/no-sibling-hooks: 0
+  mocha/no-skipped-tests: 0
+
+  node/no-deprecated-api: 0

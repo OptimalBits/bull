@@ -62,6 +62,7 @@ if(#stalling > 0) then
         if(stalledCount > MAX_STALLED_JOB_COUNT) then
           rcall("ZADD", KEYS[4], ARGV[3], jobId)
           rcall("HSET", jobKey, "failedReason", "job stalled more than allowable limit")
+          rcall("PUBLISH", KEYS[4],  "{\"jobId\":\"" .. jobId .. "\", \"val\": \"job stalled more than maxStalledCount\"}")
           table.insert(failed, jobId)
         else
           -- Move the job back to the wait queue, to immediately be picked up by a waiting worker.

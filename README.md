@@ -42,36 +42,51 @@
       <img src="http://isitmaintained.com/badge/resolution/optimalbits/bull.svg"/>
     </a>
   </p>
-  <p>
-    <em>Follow <a href="http://twitter.com/manast">@manast</a> for Bull news and updates!</em>
-  </p>
 </div>
 
+### 📻 News and updates
+
+Follow me on [Twitter](http://twitter.com/manast) for important news and updates.
+
+
+### 🛠 Tutorials
+
+You can find tutorials and news in this blog: https://blog.taskforce.sh/
 
 ---
 
-### Sponsors
+### BullMQ
 
-Please visit our sponsors!:
-
-<div style="display:flex; align-items: center;" valign="middle">
-  <a href="https://getstream.io/winds?utm_source=bull&utm_medium=banner&utm_campaign=github" >
-    <img src="https://getstream.imgix.net/images/winds/winds-word-logo.svg" alt="Winds" width="200" style="padding: 10px"/>
-  </a>
-  <a href="http://mixmax.com">
-    <img src="https://mixmax.com/images/logo_confirmation.png" alt="Mixmax, Inc" width="75" style="padding: 10px"/>
-  </a>
-  <a href="http://taskforce.sh"  style="margin-left: 50px;">
-    <img src="http://taskforce.sh/assets/logo_square.png" width="160" alt="Taskforce.sh, Inc" style="padding: 10px"/>
-  </a>
-</div>
-
-Do you want to sponsor bull development? Please, let us know!
-
+If you want to start using the next major version of Bull written entirely in Typescript you are welcome to the new repo [here](https://github.com/taskforcesh/bullmq). Otherwise you are very welcome to still use Bull, which is a safe, battle tested codebase.
 
 ---
 
-### Features
+### 🚀 Sponsor 🚀
+
+[<img src="https://www.redisgreen.com/images/rglogo/redisgreen_transparent_240x48.png" width="150" alt="RedisGreen" style="padding: 100px"/>](https://dashboard.redisgreen.net/new?utm_campaign=BULLMQ)
+
+If you need high quality production Redis instances for your Bull projects, please consider subscribing 
+to [RedisGreen](https://dashboard.redisgreen.net/new?utm_campaign=BULLMQ), 
+leaders in Redis hosting that works perfectly with Bull. Use the promo code "BULLMQ" when signing up to help us
+sponsor the development of Bull!
+
+---
+
+### Official FrontEnd
+
+[<img src="http://taskforce.sh/assets/logo_square.png" width="100" alt="Taskforce.sh, Inc" style="padding: 100px"/>](https://taskforce.sh)
+
+Supercharge your queues with a professional front end:
+- Get a complete overview of all your queues.
+- Inspect jobs, search, retry, or promote delayed jobs.
+- Metrics and statistics.
+- and many more features.
+
+Sign up at [Taskforce.sh](https://taskforce.sh)
+
+---
+
+### Bull Features
 
 - [x] Minimal CPU usage due to a polling-free design.
 - [x] Robust design based on Redis.
@@ -97,10 +112,16 @@ And coming up on the roadmap...
 
 There are a few third-party UIs that you can use for monitoring:
 
+**BullMQ**
+
+- [Taskforce](https://taskforce.sh)
+
 **Bull v3**
 
-- [NEW (Preview) Taskforce](https://taskforce.sh)
-- [Arena](https://github.com/mixmaxhq/arena)
+- [Taskforce](https://taskforce.sh)
+- [bull-board](https://github.com/vcapretz/bull-board)
+- [bull-repl](https://github.com/darky/bull-repl)
+- [bull-monitor](https://github.com/s-r-x/bull-monitor)
 
 **Bull <= v2**
 
@@ -110,10 +131,15 @@ There are a few third-party UIs that you can use for monitoring:
 
 ---
 
+### Monitoring & Alerting
+
+- With Prometheus [Bull Queue Exporter](https://github.com/UpHabit/bull_exporter)
+
+---
+
 ### Feature Comparison
 
-Since there are a few job queue solutions, here a table comparing them to help you use the one that
-better suits your needs.
+Since there are a few job queue solutions, here is a table comparing them:
 
 | Feature         | Bull          | Kue   | Bee | Agenda |
 | :-------------  |:-------------:|:-----:|:---:|:------:|
@@ -157,20 +183,28 @@ yarn add --dev @types/bull
 
 Definitions are currently maintained in the [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bull) repo.
 
+
+## Contributing
+
+We welcome all types of contributions, either code fixes, new features or doc improvements.
+Code formatting is enforced by [prettier](https://prettier.io/).
+For commits please follow conventional [commits convention](https://www.conventionalcommits.org/en/v1.0.0-beta.2/).
+All code must pass lint rules and test suites before it can be merged into develop.
+
 ---
 
 ### Quick Guide
 
 #### Basic Usage
 ```js
-var Queue = require('bull');
+const Queue = require('bull');
 
-var videoQueue = new Queue('video transcoding', 'redis://127.0.0.1:6379');
-var audioQueue = new Queue('audio transcoding', {redis: {port: 6379, host: '127.0.0.1', password: 'foobared'}}); // Specify Redis connection using object
-var imageQueue = new Queue('image transcoding');
-var pdfQueue = new Queue('pdf transcoding');
+const videoQueue = new Queue('video transcoding', 'redis://127.0.0.1:6379');
+const audioQueue = new Queue('audio transcoding', { redis: { port: 6379, host: '127.0.0.1', password: 'foobared' } }); // Specify Redis connection using object
+const imageQueue = new Queue('image transcoding');
+const pdfQueue = new Queue('pdf transcoding');
 
-videoQueue.process(function(job, done){
+videoQueue.process(function (job, done) {
 
   // job.data contains the custom data passed when the job was created
   // job.id contains id of this job.
@@ -191,7 +225,7 @@ videoQueue.process(function(job, done){
   throw new Error('some unexpected error');
 });
 
-audioQueue.process(function(job, done){
+audioQueue.process(function (job, done) {
   // transcode audio asynchronously and report progress
   job.progress(42);
 
@@ -208,7 +242,7 @@ audioQueue.process(function(job, done){
   throw new Error('some unexpected error');
 });
 
-imageQueue.process(function(job, done){
+imageQueue.process(function (job, done) {
   // transcode image asynchronously and report progress
   job.progress(42);
 
@@ -225,14 +259,14 @@ imageQueue.process(function(job, done){
   throw new Error('some unexpected error');
 });
 
-pdfQueue.process(function(job){
+pdfQueue.process(function (job) {
   // Processors can also return promises instead of using the done callback
   return pdfAsyncProcessor();
 });
 
-videoQueue.add({video: 'http://example.com/video1.mov'});
-audioQueue.add({audio: 'http://example.com/audio1.mp3'});
-imageQueue.add({image: 'http://example.com/image1.tiff'});
+videoQueue.add({ video: 'http://example.com/video1.mov' });
+audioQueue.add({ audio: 'http://example.com/audio1.mp3' });
+imageQueue.add({ image: 'http://example.com/image1.tiff' });
 ```
 
 #### Using promises
@@ -240,7 +274,7 @@ imageQueue.add({image: 'http://example.com/image1.tiff'});
 Alternatively, you can use return promises instead of using the `done` callback:
 
 ```javascript
-videoQueue.process(function(job){ // don't forget to remove the done callback!
+videoQueue.process(function (job) { // don't forget to remove the done callback!
   // Simply return a promise
   return fetchVideo(job.data.url).then(transcodeVideo);
 
@@ -268,7 +302,7 @@ The process function can also be run in a separate process. This has several adv
 In order to use this feature just create a separate file with the processor:
 ```js
 // processor.js
-module.exports = function(job){
+module.exports = function (job) {
   // Do some heavy work
 
   return Promise.resolve(result);
@@ -292,51 +326,51 @@ queue.process('my processor', 5, '/path/to/my/processor.js');
 
 A job can be added to a queue and processed repeatedly according to a cron specification:
 
-```
-  paymentsQueue.process(function(job){
+```js
+  paymentsQueue.process(function (job) {
     // Check payments
   });
 
   // Repeat payment job once every day at 3:15 (am)
-  paymentsQueue.add(paymentsData, {repeat: {cron: '15 3 * * *'}});
+  paymentsQueue.add(paymentsData, { repeat: { cron: '15 3 * * *' } });
 
 ```
 
-As a tip, check your expressions here to verify they are as you expect them:
-[cron expression descriptor](http://cronexpressiondescriptor.azurewebsites.net/)
+As a tip, check your expressions here to verify they are correct:
+[cron expression generator](https://crontab.cronhub.io)
 
 #### Pause / Resume
 
 A queue can be paused and resumed globally (pass `true` to pause processing for
 just this worker):
 ```js
-queue.pause().then(function(){
+queue.pause().then(function () {
   // queue is paused now
 });
 
-queue.resume().then(function(){
+queue.resume().then(function () {
   // queue is resumed now
 })
 ```
 
 #### Events
 
-A queue emits also some useful events, for example...
+A queue emits some useful events, for example...
 ```js
-.on('completed', function(job, result){
+.on('completed', function (job, result) {
   // Job completed with output result!
 })
 ```
 
 For more information on events, including the full list of events that are fired, check out the [Events reference](./REFERENCE.md#events)
 
-#### Queues performace
+#### Queues performance
 
 Queues are cheap, so if you need many of them just create new ones with different
 names:
 ```javascript
-var userJohn = new Queue('john');
-var userLisa = new Queue('lisa');
+const userJohn = new Queue('john');
+const userLisa = new Queue('lisa');
 .
 .
 .
@@ -352,31 +386,30 @@ Queues are robust and can be run in parallel in several threads or processes
 without any risk of hazards or queue corruption. Check this simple example
 using cluster to parallelize jobs across processes:
 ```js
-var
-  Queue = require('bull'),
-  cluster = require('cluster');
+const Queue = require('bull');
+const cluster = require('cluster');
 
-var numWorkers = 8;
-var queue = new Queue("test concurrent queue");
+const numWorkers = 8;
+const queue = new Queue('test concurrent queue');
 
-if(cluster.isMaster){
-  for (var i = 0; i < numWorkers; i++) {
+if (cluster.isMaster) {
+  for (let i = 0; i < numWorkers; i++) {
     cluster.fork();
   }
 
-  cluster.on('online', function(worker) {
-    // Lets create a few jobs for the queue workers
-    for(var i=0; i<500; i++){
-      queue.add({foo: 'bar'});
+  cluster.on('online', function (worker) {
+    // Let's create a few jobs for the queue workers
+    for (let i = 0; i < 500; i++) {
+      queue.add({ foo: 'bar' });
     };
   });
 
-  cluster.on('exit', function(worker, code, signal) {
+  cluster.on('exit', function (worker, code, signal) {
     console.log('worker ' + worker.process.pid + ' died');
   });
-}else{
-  queue.process(function(job, jobDone){
-    console.log("Job done by worker", cluster.worker.id, job.id);
+} else {
+  queue.process(function (job, jobDone) {
+    console.log('Job done by worker', cluster.worker.id, job.id);
     jobDone();
   });
 }
@@ -389,7 +422,7 @@ if(cluster.isMaster){
 
 For the full documentation, check out the reference and common patterns:
 
-- [Guide](https://optimalbits.github.io/bull/) — Your startpoint for developing with Bull.
+- [Guide](https://optimalbits.github.io/bull/) — Your starting point for developing with Bull.
 - [Reference](./REFERENCE.md) — Reference document with all objects and methods available.
 - [Patterns](./PATTERNS.md) — a set of examples for common patterns.
 - [License](./LICENSE.md) — the Bull license—it's MIT.
@@ -402,7 +435,7 @@ If you see anything that could use more docs, please submit a pull request!
 
 ### Important Notes
 
-The queue aims for "at least once" working strategy. It means that in some situations a job
+The queue aims for an "at least once" working strategy. This means that in some situations, a job
 could be processed more than once. This mostly happens when a worker fails to keep a lock
 for a given job during the total duration of the processing.
 
@@ -413,8 +446,8 @@ and being restarted as a result. Locking is implemented internally by creating a
 `lockRenewTime` (which is usually half `lockDuration`). If `lockDuration` elapses before the lock can be renewed,
 the job will be considered stalled and is automatically restarted; it will be __double processed__. This can happen when:
 1. The Node process running your job processor unexpectedly terminates.
-2. Your job processor was too CPU-intensive and stalled the Node event loop, and as a result, Bull couldn't renew the job lock (see #488 for how we might better detect this). You can fix this by breaking your job processor into smaller parts so that no single part can block the Node event loop. Alternatively, you can pass a larger value for the `lockDuration` setting (with the tradeoff being that it will take longer to recognize a real stalled job).
+2. Your job processor was too CPU-intensive and stalled the Node event loop, and as a result, Bull couldn't renew the job lock (see [#488](https://github.com/OptimalBits/bull/issues/488) for how we might better detect this). You can fix this by breaking your job processor into smaller parts so that no single part can block the Node event loop. Alternatively, you can pass a larger value for the `lockDuration` setting (with the tradeoff being that it will take longer to recognize a real stalled job).
 
 As such, you should always listen for the `stalled` event and log this to your error monitoring system, as this means your jobs are likely getting double-processed.
 
-As a safeguard so problematic jobs won't get restarted indefinitely (e.g. if the job processor aways crashes its Node process), jobs will be recovered from a stalled state a maximum of `maxStalledCount` times (default: `1`).
+As a safeguard so problematic jobs won't get restarted indefinitely (e.g. if the job processor always crashes its Node process), jobs will be recovered from a stalled state a maximum of `maxStalledCount` times (default: `1`).

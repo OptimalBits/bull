@@ -1,14 +1,12 @@
-/*eslint-env node */
 'use strict';
 
-var Queue = require('../');
-var Promise = require('bluebird');
-var STD_QUEUE_NAME = 'test queue';
-var _ = require('lodash');
+const Queue = require('../');
+const STD_QUEUE_NAME = 'test queue';
+const _ = require('lodash');
 
-var queues = [];
+let queues = [];
 
-var originalSetTimeout = setTimeout;
+const originalSetTimeout = setTimeout;
 
 function simulateDisconnect(queue) {
   queue.client.disconnect();
@@ -17,13 +15,13 @@ function simulateDisconnect(queue) {
 
 function buildQueue(name, options) {
   options = _.extend({ redis: { port: 6379, host: '127.0.0.1' } }, options);
-  var queue = new Queue(name || STD_QUEUE_NAME, options);
+  const queue = new Queue(name || STD_QUEUE_NAME, options);
   queues.push(queue);
   return queue;
 }
 
 function newQueue(name, opts) {
-  var queue = buildQueue(name, opts);
+  const queue = buildQueue(name, opts);
   return queue.isReady();
 }
 
@@ -32,28 +30,30 @@ function cleanupQueue(queue) {
 }
 
 function cleanupQueues() {
-  return Promise.map(queues, function(queue) {
-    var errHandler = function() {};
-    queue.on('error', errHandler);
-    return queue.close().catch(errHandler);
-  }).then(function() {
+  return Promise.all(
+    queues.map(queue => {
+      const errHandler = function() {};
+      queue.on('error', errHandler);
+      return queue.close().catch(errHandler);
+    })
+  ).then(() => {
     queues = [];
   });
 }
 
 function sleep(ms) {
-  return new Promise(function(resolve) {
-    originalSetTimeout(function() {
+  return new Promise(resolve => {
+    originalSetTimeout(() => {
       resolve();
     }, ms);
   });
 }
 
 module.exports = {
-  simulateDisconnect: simulateDisconnect,
-  buildQueue: buildQueue,
-  cleanupQueue: cleanupQueue,
-  newQueue: newQueue,
-  cleanupQueues: cleanupQueues,
-  sleep: sleep
+  simulateDisconnect,
+  buildQueue,
+  cleanupQueue,
+  newQueue,
+  cleanupQueues,
+  sleep
 };
