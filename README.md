@@ -10,8 +10,8 @@
   </p>
   <br/>
   <p>
-    <a href="#sponsors"><strong>Sponsors</strong></a> ·
-    <a href="#features"><strong>Features</strong></a> ·
+    <a href="#-sponsors-"><strong>Sponsors</strong></a> ·
+    <a href="#bull-features"><strong>Features</strong></a> ·
     <a href="#uis"><strong>UIs</strong></a> ·
     <a href="#install"><strong>Install</strong></a> ·
     <a href="#quick-guide"><strong>Quick Guide</strong></a> ·
@@ -61,7 +61,7 @@ If you want to start using the next major version of Bull written entirely in Ty
 
 ---
 
-### 🚀 Sponsor 🚀
+### 🚀 Sponsors 🚀
 
 [<img src="https://www.redisgreen.com/images/rglogo/redisgreen_transparent_240x48.png" width="150" alt="RedisGreen" style="padding: 100px"/>](https://dashboard.redisgreen.net/new?utm_campaign=BULLMQ)
 
