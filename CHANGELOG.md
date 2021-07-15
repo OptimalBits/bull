@@ -1,3 +1,10 @@
+# [3.24.0](https://github.com/OptimalBits/bull/compare/v3.23.3...v3.24.0) (2021-07-15)
+
+
+### Features
+
+* **backoff:** add option to specify options for custom backoff strategy ([e573010](https://github.com/OptimalBits/bull/commit/e5730107688a41c7268a717f16302c5959eaf6f6))
+
 ## [3.23.3](https://github.com/OptimalBits/bull/compare/v3.23.2...v3.23.3) (2021-07-15)
 
 
