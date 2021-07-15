@@ -1,4 +1,212 @@
-# Changelog
+## [3.23.3](https://github.com/OptimalBits/bull/compare/v3.23.2...v3.23.3) (2021-07-15)
+
+
+### Bug Fixes
+
+* **delayed:** do not get lock twice fixes [#2033](https://github.com/OptimalBits/bull/issues/2033) ([2800cf8](https://github.com/OptimalBits/bull/commit/2800cf8923ccac52dcd4da4e7fd19b3404c68fe8))
+
+## [3.23.2](https://github.com/OptimalBits/bull/compare/v3.23.1...v3.23.2) (2021-07-15)
+
+
+### Bug Fixes
+
+* **job:** add default err object fixes [#2029](https://github.com/OptimalBits/bull/issues/2029) ([39684e9](https://github.com/OptimalBits/bull/commit/39684e9f941e2ea4191809fdc2aa52b3d7b267ae))
+
+## [3.23.1](https://github.com/OptimalBits/bull/compare/v3.23.0...v3.23.1) (2021-07-15)
+
+
+### Bug Fixes
+
+* wait in queue to be ready in getNextJob fixes [#1852](https://github.com/OptimalBits/bull/issues/1852) ([4e224e5](https://github.com/OptimalBits/bull/commit/4e224e5533f729b9781b1db81e1875b1bd50afb0))
+
+# [3.23.0](https://github.com/OptimalBits/bull/compare/v3.22.12...v3.23.0) (2021-07-13)
+
+
+### Features
+
+* support job.update function in sandboxed processors ([ff79fb4](https://github.com/OptimalBits/bull/commit/ff79fb494ea3e123256b35d18b46b24fbb9b8365)), closes [#1279](https://github.com/OptimalBits/bull/issues/1279) [#1608](https://github.com/OptimalBits/bull/issues/1608) [#1056](https://github.com/OptimalBits/bull/issues/1056)
+
+## [3.22.12](https://github.com/OptimalBits/bull/compare/v3.22.11...v3.22.12) (2021-07-13)
+
+
+### Bug Fixes
+
+* remove stalled job when finishing fixes [#1600](https://github.com/OptimalBits/bull/issues/1600) ([90763fd](https://github.com/OptimalBits/bull/commit/90763fd66404d8bc5a47ff8555cbe2da776c030d))
+
+## [3.22.11](https://github.com/OptimalBits/bull/compare/v3.22.10...v3.22.11) (2021-07-08)
+
+
+### Bug Fixes
+
+* **close:** clear timers after waiting jobs fixes [#1415](https://github.com/OptimalBits/bull/issues/1415) ([77b319d](https://github.com/OptimalBits/bull/commit/77b319da6acaa93351830f0a4e38b5ad1d3d8cf5))
+
+## [3.22.10](https://github.com/OptimalBits/bull/compare/v3.22.9...v3.22.10) (2021-07-01)
+
+
+### Bug Fixes
+
+* deep clone options ([#2083](https://github.com/OptimalBits/bull/issues/2083)) ([1e00a90](https://github.com/OptimalBits/bull/commit/1e00a90d1216083cdf33bc78a9753ece1acdddb2))
+
+## [3.22.9](https://github.com/OptimalBits/bull/compare/v3.22.8...v3.22.9) (2021-06-22)
+
+
+### Bug Fixes
+
+* **reprocess:** do not store job.id in added list ([3fbc506](https://github.com/OptimalBits/bull/commit/3fbc506aee4c36fd612ed18fc3a1619c0c8069d8))
+
+## [3.22.8](https://github.com/OptimalBits/bull/compare/v3.22.7...v3.22.8) (2021-06-09)
+
+
+### Bug Fixes
+
+* upgrade ioredis fixes [#1445](https://github.com/OptimalBits/bull/issues/1445) ([f6a2364](https://github.com/OptimalBits/bull/commit/f6a23648146f5a53bb2e4084f8de9b783b782bed))
+
+## [3.22.7](https://github.com/OptimalBits/bull/compare/v3.22.6...v3.22.7) (2021-05-31)
+
+
+### Bug Fixes
+
+* **obliterate:** remove job logs fixes [#2050](https://github.com/OptimalBits/bull/issues/2050) ([6ccf2b9](https://github.com/OptimalBits/bull/commit/6ccf2b90892bf16b4edb0095d6e770f978bc660a))
+
+## [3.22.6](https://github.com/OptimalBits/bull/compare/v3.22.5...v3.22.6) (2021-05-17)
+
+
+### Bug Fixes
+
+* **job:** fix job log pagination, fixes [#2031](https://github.com/OptimalBits/bull/issues/2031) ([30aa0a9](https://github.com/OptimalBits/bull/commit/30aa0a99acb4a04a12f988840bc8ccc7a014fed3))
+
+## [3.22.5](https://github.com/OptimalBits/bull/compare/v3.22.4...v3.22.5) (2021-05-11)
+
+
+### Bug Fixes
+
+* emit failed event when stalled job fails ([f68da41](https://github.com/OptimalBits/bull/commit/f68da4176658b9935cf4b63b218130008619b25b))
+
+## [3.22.4](https://github.com/OptimalBits/bull/compare/v3.22.3...v3.22.4) (2021-04-27)
+
+
+### Bug Fixes
+
+* also populate retriedOn when loading from id with excludeData ([0964b39](https://github.com/OptimalBits/bull/commit/0964b390d9190510f0d016f4eb2a3f1bc6cdb4e5))
+
+## [3.22.3](https://github.com/OptimalBits/bull/compare/v3.22.2...v3.22.3) (2021-04-23)
+
+
+### Bug Fixes
+
+* **delayed:** re-schedule updateDelay in case of error fixes [#2015](https://github.com/OptimalBits/bull/issues/2015) ([16bbfad](https://github.com/OptimalBits/bull/commit/16bbfadb270bc6c7d6df9cf5ab30b7f66028b2b3))
+
+## [3.22.2](https://github.com/OptimalBits/bull/compare/v3.22.1...v3.22.2) (2021-04-23)
+
+
+### Bug Fixes
+
+* **obliterate:** obliterate many jobs fixes [#2016](https://github.com/OptimalBits/bull/issues/2016) ([7a923b4](https://github.com/OptimalBits/bull/commit/7a923b468d5299bbdfe06d1ee7447fd810e2779b))
+
+
+## v.3.22.1
+
+- fix(obliterate): remove repeatable jobs fixes #2012
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.22.0...v3.22.1)
+
+## v.3.22.0
+
+- feat: do not rely on comma to encode jobid in progress fixes #2003
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.21.1...v3.22.0)
+
+
+## v.3.21.1
+
+- fix: safer implementation of obliterate.
+Note: If you want to use the new method "obliterate" it is highly recommended
+that you upgrade to this version, since previous version is not safe to use
+if using the colon ':' character in your queue names.
+
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.21.0...v3.21.1)
+
+## v.3.21.0
+
+- feat: add a method to "obliterate" a queue
+- fix: upgrade lodash fixes #1996
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.20.1...v3.21.0)
+
+## v.3.20.1
+
+- fix(queue): possible infinite loop when disconnect fixes #1746
+- fix(clean-priority): remove job from priority set on clean (#1405)
+- fix(sandbox): job update (#1957)
+- fix: use async version of process.send for progress and log (#1948)
+- fix: promote jobs to the right "list" when paused
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.20.0...v3.20.1)
+
+## v.3.20.0
+
+- feat(job): implement Job#retriedOn (#1868)
+- fix: job default opts fixes #1904
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.19.1...v3.20.0)
+
+## v.3.19.1
+
+- fix(getters): properly zip hmget result
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.19.0...v3.19.1)
+
+## v.3.19.0
+
+- feat: add option to exclude data on getters (#1910)
+- fix: lock ioredis to 4.18.0 to avoid breakage with newer 4.19.0+.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.18.1...v3.19.0)
+
+## v.3.18.1
+
+- fix(repeat): remove last delayed job.
+- fix(rate-limiter): increment jobCounter only when a job is processed. fixes #1875.
+- fix(sandbox): clear dangling timeout.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.18.0...v3.18.1)
+
+## v.3.18.0
+
+- feat: make pause forward compatible with bullmq (#1818) (@manast)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.17.0...v3.18.0)
+
+## v.3.17.0
+
+- feat: better rate limiter (#1816) (@manast)
+- feat(sandbox): kill child workers gracefully (#1802) (@GabrielCastro)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.16.0...v3.17.0)
+
+## v.3.16.0
+
+- feat(rate-limiter): add grouping support.
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.15.0...v3.16.0)
+
+## v.3.15.0
+
+- feat: add isPaused fixes #1274
+- fix: emit waiting event when adding a priority job (#1134)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.14.0...v3.15.0)
+
+## v.3.14.0
+
+- feat(queue): add removeJobs function
+- fix: clamp negative job delay values to 0 to prevent thrashing
+- fix: use DEFAULT_JOB_NAME (#1585)
+- fix: remove the lazy client error handler on close (#1605)
+- fix: prevent exceeding the maximum stack call size when emptying large queues (#1660)
+
+[Changes](https://github.com/OptimalBits/bull/compare/v3.13.0...v3.14.0)
 
 ## v.3.13.0
 

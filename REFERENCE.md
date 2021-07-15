@@ -4,12 +4,15 @@
 
   - [Queue#process](#queueprocess)
   - [Queue#add](#queueadd)
+  - [Queue#addBulk](#queueaddBulk)
   - [Queue#pause](#queuepause)
   - [Queue#resume](#queueresume)
   - [Queue#whenCurrentJobsFinished](#queuewhencurrentjobsfinished)
   - [Queue#count](#queuecount)
+  - [Queue#removeJobs](#queueremovejobs)
   - [Queue#empty](#queueempty)
   - [Queue#clean](#queueclean)
+  - [Queue#obliterate](#queueobliterate)
   - [Queue#close](#queueclose)
   - [Queue#getJob](#queuegetjob)
   - [Queue#getJobs](#queuegetjobs)
@@ -62,6 +65,7 @@ The optional `url` argument, allows to specify a redis connection string such as
 
 ```typescript
 interface QueueOptions {
+  createClient?(type: 'client' | 'subscriber' | 'bclient', config?: Redis.RedisOptions): Redis.Redis | Redis.Cluster;
   limiter?: RateLimiter;
   redis?: RedisOpts;
   prefix?: string = 'bull'; // prefix for all queue keys.
@@ -72,9 +76,10 @@ interface QueueOptions {
 
 ```typescript
 interface RateLimiter {
-  max: number,      // Max number of jobs processed
-  duration: number, // per duration in milliseconds
-  bounceBack: boolean = false; // When jobs get rate limited, they stay in the waiting queue and are not moved to the delayed queue
+  max: number; // Max number of jobs processed
+  duration: number; // per duration in milliseconds
+  bounceBack?: boolean = false; // When jobs get rate limited, they stay in the waiting queue and are not moved to the delayed queue
+  groupKey?: string; // allows grouping of jobs with the specified key from the data object passed to the Queue#add (ex. "network.handle")
 }
 ```
 
@@ -102,6 +107,19 @@ interface AdvancedSettings {
   drainDelay: number = 5; // A timeout for when the queue is in drained state (empty waiting for jobs).
 }
 ```
+
+**Custom or Shared IORedis Connections**
+
+`createClient` is passed a `type` to specify the type of connection that Bull is trying to create, and some options that `bull` would like to set for that connection.
+
+You can merge the provided options with some of your own and create an `ioredis` connection.
+
+When type is `client` or `subscriber` you can return the same connection for multiple queues, which can reduce the number of connections you open to the redis server.  Bull
+does not close or disconnect these connections when queues are closed, so if you need to have your app do a graceful shutdown, you will need to keep references to these
+Redis connections somewhere and disconnect them after you shut down all the queues.
+
+The `bclient` connection however is a "blocking client" and is used to wait for new jobs on a single queue at a time.  For this reason it cannot be shared and a
+new connection should be returned each time.
 
 **Advanced Settings**
 
@@ -167,7 +185,7 @@ i.e. a file exporting the process function like this:
 
 ```js
 // my-processor.js
-module.exports = function(job) {
+module.exports = function (job) {
   // do some job
 
   return value;
@@ -215,7 +233,7 @@ So watch out, as the following won't work:
 
 ```js
 // THIS WON'T WORK!!
-queue.process(function(job, done) {
+queue.process(function (job, done) {
   // Oops! done callback here!
   return Promise.resolve();
 });
@@ -224,7 +242,7 @@ queue.process(function(job, done) {
 This, however, will:
 
 ```js
-queue.process(function(job) {
+queue.process(function (job) {
   // No done callback here :)
   return Promise.resolve();
 });
@@ -257,7 +275,7 @@ interface JobOpts {
 
   repeat: RepeatOpts; // Repeat job according to a cron specification.
 
-  backoff: number | BackoffOpts; // Backoff setting for automatic retries if the job fails
+  backoff: number | BackoffOpts; // Backoff setting for automatic retries if the job fails, default strategy: `fixed`
 
   lifo: boolean; // if true, adds the job to the right of the queue instead of the left (default false)
   timeout: number; // The number of milliseconds after which the job should be fail with a timeout error [optional]
@@ -300,6 +318,16 @@ interface BackoffOpts {
 
 ---
 
+### Queue#addBulk
+
+```ts
+addBulk(jobs: { name?: string, data: object, opts?: JobOpts }[]): Promise<Job[]>
+```
+
+Creates array of jobs and adds them to the queue. They follow the same signature as [Queue#add](#queueadd).
+
+---
+
 ### Queue#pause
 
 ```ts
@@ -308,7 +336,7 @@ pause(isLocal?: boolean, doNotWaitActive?: boolean): Promise
 
 Returns a promise that resolves when the queue is paused. A paused queue will not process new jobs until resumed, but current jobs being processed will continue until they are finalized. The pause can be either global or local. If global, all workers in all queue instances for a given queue will be paused. If local, just this worker will stop processing new jobs after the current lock expires. This can be useful to stop a worker from taking new jobs prior to shutting down.
 
-If `doNotWaitActive` is `true`, `pause` will *not* wait for any active jobs to finish before resolving. Otherwise, `pause` *will* wait for active jobs to finish. See [Queue#whenCurrentJobsFinished](#queuewhencurrentjobsfinished) for more information.
+If `doNotWaitActive` is `true`, `pause` will _not_ wait for any active jobs to finish before resolving. Otherwise, `pause` _will_ wait for active jobs to finish. See [Queue#whenCurrentJobsFinished](#queuewhencurrentjobsfinished) for more information.
 
 Pausing a queue that is already paused does nothing.
 
@@ -346,13 +374,34 @@ Returns a promise that returns the number of jobs in the queue, waiting or delay
 
 ---
 
+### Queue#removeJobs
+
+```ts
+removeJobs(pattern: string): Promise<void>
+```
+
+Removes all the jobs which jobId matches the given pattern. The pattern must follow redis glob-style pattern (syntax)[https://redis.io/commands/keys]
+
+Example:
+
+```js
+myQueue.removeJobs('?oo*').then(function () {
+  console.log('done removing jobs');
+});
+```
+
+Will remove jobs with ids such as: "boo", "foofighter", etc.
+
+---
+
 ### Queue#empty
 
 ```ts
 empty(): Promise
 ```
 
-Empties a queue deleting all the input lists and associated jobs.
+Drains a queue deleting all the *input* lists and associated jobs. Note, this function only remove the jobs that are
+*waiting" to be processed by the queue or *delayed*.
 
 ---
 
@@ -365,11 +414,11 @@ close(): Promise
 Closes the underlying Redis client. Use this to perform a graceful shutdown.
 
 ```js
-var Queue = require('bull');
-var queue = Queue('example');
+const Queue = require('bull');
+const queue = Queue('example');
 
-var after100 = _.after(100, function() {
-  queue.close().then(function() {
+const after100 = _.after(100, function () {
+  queue.close().then(function () {
     console.log('done');
   });
 });
@@ -382,7 +431,7 @@ from within a job handler the queue won't close until _after_
 the job has been processed, so the following won't work:
 
 ```js
-queue.process(function(job, jobDone) {
+queue.process(function (job, jobDone) {
   handle(job);
   queue.close().then(jobDone);
 });
@@ -391,7 +440,7 @@ queue.process(function(job, jobDone) {
 Instead, do this:
 
 ```js
-queue.process(function(job, jobDone) {
+queue.process(function (job, jobDone) {
   handle(job);
   queue.close();
   jobDone();
@@ -423,12 +472,12 @@ parameter. If the specified job cannot be located, the promise will be resolved 
 ### Queue#getJobs
 
 ```ts
-getJobs(types: string[], start?: number, end?: number, asc?: boolean): Promise<Job[]>
+getJobs(types: JobStatus[], start?: number, end?: number, asc?: boolean): Promise<Job[]>
 ```
 
-Returns a promise that will return an array of job instances of the given types. Optional parameters for range and ordering are provided. 
+Returns a promise that will return an array of job instances of the given job statuses. Optional parameters for range and ordering are provided.
 
-Note: The `start` and `end` options are applied **per job type**. For example, if there are 10 jobs in state `completed` and 10 jobs in state `active`, `getJobs(['completed', 'active'], 0, 4)` will yield an array with 10 entries, representing the first 5 completed jobs (0 - 4) and the first 5 active jobs (0 - 4).
+Note: The `start` and `end` options are applied **per job statuses**. For example, if there are 10 jobs in state `completed` and 10 jobs in state `active`, `getJobs(['completed', 'active'], 0, 4)` will yield an array with 10 entries, representing the first 5 completed jobs (0 - 4) and the first 5 active jobs (0 - 4).
 
 ---
 
@@ -449,7 +498,16 @@ value is the total amount of logs, useful for implementing pagination.
 ### Queue#getRepeatableJobs
 
 ```ts
-getRepeatableJobs(start?: number, end?: number, asc?: boolean): Promise <Job[]>
+getRepeatableJobs(start?: number, end?: number, asc?: boolean): Promise<{
+          key: string,
+          name: string,
+          id: number | string,
+          endDate: Date,
+          tz: string,
+          cron: string,
+          every: number,
+          next: number
+        }[]>
 ```
 
 Returns a promise that will return an array of Repeatable Job configurations. Optional parameters for range and ordering are provided.
@@ -552,6 +610,9 @@ Returns a promise that will return the waiting job counts for the given queue.
 
 ### Queue#getPausedCount
 
+*DEPRECATED* Since only the queue can be paused, getWaitingCount gives the same 
+result.
+
 ```ts
 getPausedCount() : Promise<number>
 ```
@@ -560,10 +621,21 @@ Returns a promise that will return the paused job counts for the given queue.
 
 ---
 
+### Getters
+
+The following methods are used to get the jobs that are in certain states.
+
+The GetterOpts can be used for configure some aspects from the getters.
+
+```ts
+interface GetterOpts
+  excludeData: boolean; // Exclude the data field of the jobs.
+```
+
 ### Queue#getWaiting
 
 ```ts
-getWaiting(start?: number, end?: number) : Promise<Array<Job>>
+getWaiting(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the waiting jobs between start and end.
@@ -573,7 +645,7 @@ Returns a promise that will return an array with the waiting jobs between start 
 ### Queue#getActive
 
 ```ts
-getActive(start?: number, end?: number) : Promise<Array<Job>>
+getActive(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the active jobs between start and end.
@@ -583,7 +655,7 @@ Returns a promise that will return an array with the active jobs between start a
 ### Queue#getDelayed
 
 ```ts
-getDelayed(start?: number, end?: number) : Promise<Array<Job>>
+getDelayed(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the delayed jobs between start and end.
@@ -593,7 +665,7 @@ Returns a promise that will return an array with the delayed jobs between start 
 ### Queue#getCompleted
 
 ```ts
-getCompleted(start?: number, end?: number) : Promise<Array<Job>>
+getCompleted(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the completed jobs between start and end.
@@ -603,7 +675,7 @@ Returns a promise that will return an array with the completed jobs between star
 ### Queue#getFailed
 
 ```ts
-getFailed(start?: number, end?: number) : Promise<Array<Job>>
+getFailed(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the failed jobs between start and end.
@@ -621,32 +693,39 @@ Tells the queue remove jobs of a specific type created outside of a grace period
 **Example**
 
 ```js
-//cleans all jobs that completed over 5 seconds ago.
-queue.clean(5000);
-//clean all jobs that failed over 10 seconds ago.
-queue.clean(10000, 'failed');
-queue.on('cleaned', function(jobs, type) {
+queue.on('cleaned', function (jobs, type) {
   console.log('Cleaned %s %s jobs', jobs.length, type);
 });
+
+//cleans all jobs that completed over 5 seconds ago.
+await queue.clean(5000);
+//clean all jobs that failed over 10 seconds ago.
+await queue.clean(10000, 'failed');
 ```
 
-**Arguments**
+### Queue#obliterate
+
+```ts
+obliterate(ops?: { force: boolean}): Promise<void>
+```
+
+Completely removes a queue with all its data.
+In order to obliterate a queue there cannot be active jobs, but this
+behaviour can be overrided with the "force" option.
+
+Note: since this operation can be quite long in duration depending on how
+many jobs there are in the queue, it is not performed atomically, instead
+is performed iterativelly. However the queue is always paused during this process,
+if the queue gets unpaused during the obliteration by another script, the call
+will fail with the removed items it managed to remove until the failure.
+
+**Example**
 
 ```js
-  grace: number; Grace period in milliseconds.
-  status: string; Status of the job to clean. Values are completed, wait, active,
-  delayed, and failed. Defaults to completed.
-  limit: number; maximum amount of jobs to clean per call. If not provided will clean all matching jobs.
+// Removes everything but only if there are no active jobs
+await queue.obliterate();
 
-  returns Promise; A promise that resolves with an array of removed jobs.
-```
-
-**Events**
-
-The cleaner emits the `cleaned` event anytime the queue is cleaned.
-
-```typescript
-  queue.on('cleaned', listener: (jobs: number[], status: string) => void);
+await queue.obliterate({ force: true });
 ```
 
 ---
@@ -660,7 +739,7 @@ The most important property for the user is `Job#data` that includes the object 
 ### Job#progress
 
 ```ts
-progress(progress?: number): Promise
+progress(progress?: number | object): Promise
 ```
 
 Updates a job progress if called with an argument.
@@ -669,7 +748,7 @@ Return a promise resolving to the current job's progress if called without argum
 **Arguments**
 
 ```js
-  progress: number; Job progress between 0 and 100.
+  progress: number; Job progress number or any serializable object representing progress or similar.
 ```
 
 ---
@@ -781,53 +860,53 @@ Moves a job to the `failed` queue. Pulls a job from 'waiting' to 'active' and re
 A queue emits also some useful events:
 
 ```js
-.on('error', function(error) {
+.on('error', function (error) {
   // An error occured.
 })
 
-.on('waiting', function(jobId){
+.on('waiting', function (jobId) {
   // A Job is waiting to be processed as soon as a worker is idling.
 });
 
-.on('active', function(job, jobPromise){
+.on('active', function (job, jobPromise) {
   // A job has started. You can use `jobPromise.cancel()`` to abort it.
 })
 
-.on('stalled', function(job){
+.on('stalled', function (job) {
   // A job has been marked as stalled. This is useful for debugging job
   // workers that crash or pause the event loop.
 })
 
-.on('progress', function(job, progress){
+.on('progress', function (job, progress) {
   // A job's progress was updated!
 })
 
-.on('completed', function(job, result){
+.on('completed', function (job, result) {
   // A job successfully completed with a `result`.
 })
 
-.on('failed', function(job, err){
+.on('failed', function (job, err) {
   // A job failed with reason `err`!
 })
 
-.on('paused', function(){
+.on('paused', function () {
   // The queue has been paused.
 })
 
-.on('resumed', function(job){
+.on('resumed', function (job) {
   // The queue has been resumed.
 })
 
-.on('cleaned', function(jobs, type) {
+.on('cleaned', function (jobs, type) {
   // Old jobs have been cleaned from the queue. `jobs` is an array of cleaned
   // jobs, and `type` is the type of jobs cleaned.
 });
 
-.on('drained', function() {
+.on('drained', function () {
   // Emitted every time the queue has processed all the waiting jobs (even if there can be some delayed jobs not yet processed)
 });
 
-.on('removed', function(job){
+.on('removed', function (job) {
   // A job successfully removed.
 });
 
@@ -851,23 +930,23 @@ If you need to access the `Job` instance in a global listener, use [Queue#getJob
 
 ```js
 // Local events pass the job instance...
-queue.on('progress', function(job, progress) {
+queue.on('progress', function (job, progress) {
   console.log(`Job ${job.id} is ${progress * 100}% ready!`);
 });
 
-queue.on('completed', function(job, result) {
+queue.on('completed', function (job, result) {
   console.log(`Job ${job.id} completed! Result: ${result}`);
   job.remove();
 });
 
 // ...whereas global events only pass the job ID:
-queue.on('global:progress', function(jobId, progress) {
+queue.on('global:progress', function (jobId, progress) {
   console.log(`Job ${jobId} is ${progress * 100}% ready!`);
 });
 
-queue.on('global:completed', function(jobId, result) {
+queue.on('global:completed', function (jobId, result) {
   console.log(`Job ${jobId} completed! Result: ${result}`);
-  queue.getJob(jobId).then(function(job) {
+  queue.getJob(jobId).then(function (job) {
     job.remove();
   });
 });

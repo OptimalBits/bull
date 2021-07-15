@@ -120,7 +120,7 @@ describe('Queue', () => {
   });
 
   describe('instantiation', () => {
-    it('should create a queue with standard redis opts', done => {
+    it('should create a queue with standard redis opts', () => {
       const queue = new Queue('standard');
 
       expect(queue.client.options.host).to.be.eql('127.0.0.1');
@@ -132,11 +132,13 @@ describe('Queue', () => {
       expect(queue.client.options.db).to.be.eql(0);
       expect(queue.eclient.options.db).to.be.eql(0);
 
-      queue.close().then(done, done);
+      return queue.close();
     });
 
     it('should create a queue with a redis connection string', () => {
-      const queue = new Queue('connstring', 'redis://123.4.5.67:1234/2');
+      const queue = new Queue('connstring', 'redis://123.4.5.67:1234/2', {
+        redis: { connectTimeout: 1000 }
+      });
 
       expect(queue.client.options.host).to.be.eql('123.4.5.67');
       expect(queue.eclient.options.host).to.be.eql('123.4.5.67');
@@ -147,11 +149,13 @@ describe('Queue', () => {
       expect(queue.client.options.db).to.be.eql(2);
       expect(queue.eclient.options.db).to.be.eql(2);
 
-      queue.close();
-    });
+      return queue.close();
+    }).timeout(10000);
 
     it('should create a queue with only a hostname', () => {
-      const queue = new Queue('connstring', 'redis://127.2.3.4');
+      const queue = new Queue('connstring', 'redis://127.2.3.4', {
+        redis: { connectTimeout: 1000 }
+      });
 
       expect(queue.client.options.host).to.be.eql('127.2.3.4');
       expect(queue.eclient.options.host).to.be.eql('127.2.3.4');
@@ -162,7 +166,7 @@ describe('Queue', () => {
       expect(queue.client.condition.select).to.be.eql(0);
       expect(queue.eclient.condition.select).to.be.eql(0);
 
-      queue.close().catch((/*err*/) => {
+      return queue.close().catch((/*err*/) => {
         // Swallow error.
       });
     });
@@ -187,7 +191,7 @@ describe('Queue', () => {
       });
     });
 
-    it('creates a queue using the supplied redis DB', done => {
+    it('creates a queue using the supplied redis DB', () => {
       const queue = new Queue('custom', { redis: { DB: 1 } });
 
       expect(queue.client.options.host).to.be.eql('127.0.0.1');
@@ -199,10 +203,10 @@ describe('Queue', () => {
       expect(queue.client.options.db).to.be.eql(1);
       expect(queue.eclient.options.db).to.be.eql(1);
 
-      queue.close().then(done, done);
+      return queue.close();
     });
 
-    it('creates a queue using the supplied redis host', done => {
+    it('creates a queue using the supplied redis host', () => {
       const queue = new Queue('custom', { redis: { host: 'localhost' } });
 
       expect(queue.client.options.host).to.be.eql('localhost');
@@ -211,7 +215,7 @@ describe('Queue', () => {
       expect(queue.client.options.db).to.be.eql(0);
       expect(queue.eclient.options.db).to.be.eql(0);
 
-      queue.close().then(done, done);
+      return queue.close();
     });
 
     it('creates a queue with dots in its name', () => {
@@ -342,15 +346,33 @@ describe('Queue', () => {
         }, done);
     });
 
-    it('creates a queue with default job options', done => {
-      const defaultJobOptions = { removeOnComplete: true };
+    it('creates a queue with default job options', async () => {
+      const defaultJobOptions = { removeOnComplete: true, removeOnFail: false };
       const queue = new Queue('custom', {
         defaultJobOptions
       });
 
       expect(queue.defaultJobOptions).to.be.eql(defaultJobOptions);
 
-      queue.close().then(done, done);
+      const job = await queue.add('test', {}, { removeOnFail: true });
+
+      expect(job.opts).have.property('removeOnComplete', true);
+      expect(job.opts).have.property('removeOnFail', true);
+
+      await queue.close();
+    });
+
+    it('should not change the options object', async () => {
+      const originalOptions = { redis: { keyPrefix: 'myQ' } };
+      const options = _.cloneDeep(originalOptions);
+
+      let queue = new Queue('q', 'redis://127.0.0.1', options);
+      expect(_.isEqual(options, originalOptions)).to.be.true;
+      await queue.close();
+
+      queue = new Queue('q', options);
+      expect(_.isEqual(options, originalOptions)).to.be.true;
+      await queue.close();
     });
 
     describe('bulk jobs', () => {
@@ -479,7 +501,7 @@ describe('Queue', () => {
 
       it('should remove a job after completed if the default job options specify removeOnComplete', done => {
         utils
-          .newQueue('test-' + uuid(), {
+          .newQueue('test-' + uuid.v4(), {
             defaultJobOptions: {
               removeOnComplete: true
             }
@@ -562,7 +584,7 @@ describe('Queue', () => {
       it('should keep specified number of jobs after completed with global removeOnComplete', async () => {
         const keepJobs = 3;
 
-        const localQueue = await utils.newQueue('test-' + uuid(), {
+        const localQueue = await utils.newQueue('test-' + uuid.v4(), {
           defaultJobOptions: {
             removeOnComplete: keepJobs
           }
@@ -631,7 +653,7 @@ describe('Queue', () => {
 
       it('should remove a job after fail if the default job options specify removeOnFail', done => {
         utils
-          .newQueue('test-' + uuid(), {
+          .newQueue('test-' + uuid.v4(), {
             defaultJobOptions: {
               removeOnFail: true
             }
@@ -712,7 +734,7 @@ describe('Queue', () => {
       it('should keep specified number of jobs after completed with global removeOnFail', async () => {
         const keepJobs = 3;
 
-        const localQueue = await utils.newQueue('test-' + uuid(), {
+        const localQueue = await utils.newQueue('test-' + uuid.v4(), {
           defaultJobOptions: {
             removeOnFail: keepJobs
           }
@@ -867,6 +889,52 @@ describe('Queue', () => {
       queue.on('progress', (job, progress) => {
         expect(job).to.be.ok;
         expect(progress).to.be.eql(42);
+        done();
+      });
+    });
+
+    it('process a job that updates progress with an object', done => {
+      queue.process((job, jobDone) => {
+        expect(job.data.foo).to.be.equal('bar');
+        job.progress({ myvalue: 42 });
+        jobDone();
+      });
+
+      queue
+        .add({ foo: 'bar' })
+        .then(job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        })
+        .catch(done);
+
+      queue.on('progress', (job, progress) => {
+        expect(job).to.be.ok;
+        expect(progress).to.be.eql({ myvalue: 42 });
+        done();
+      });
+    });
+
+    it('process a job that updates progress with an object emits a global event', done => {
+      let jobId;
+      queue.process((job, jobDone) => {
+        expect(job.data.foo).to.be.equal('bar');
+        job.progress({ myvalue: 42 });
+        jobDone();
+      });
+
+      queue
+        .add({ foo: 'bar' })
+        .then(job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+          jobId = job.id;
+        })
+        .catch(done);
+
+      queue.on('global:progress', (_jobId, progress) => {
+        expect(jobId).to.be.eql(_jobId);
+        expect(progress).to.be.eql({ myvalue: 42 });
         done();
       });
     });
@@ -1340,7 +1408,7 @@ describe('Queue', () => {
     it('process stalled jobs without requiring a queue restart', function(done) {
       this.timeout(12000);
 
-      const queue2 = utils.buildQueue('running-stalled-job-' + uuid(), {
+      const queue2 = utils.buildQueue('running-stalled-job-' + uuid.v4(), {
         settings: {
           lockRenewTime: 5000,
           lockDuration: 500,
@@ -1381,7 +1449,7 @@ describe('Queue', () => {
       const FAILED_MESSAGE = 'job stalled more than allowable limit';
       this.timeout(10000);
 
-      const queue2 = utils.buildQueue('running-stalled-job-' + uuid(), {
+      const queue2 = utils.buildQueue('running-stalled-job-' + uuid.v4(), {
         settings: {
           lockRenewTime: 2500,
           lockDuration: 250,
@@ -1415,6 +1483,39 @@ describe('Queue', () => {
           expect(job.data.foo).to.be.eql('bar');
         })
         .catch(done);
+    });
+
+    it('should clear job from stalled set when job completed', (done) => {
+      const queue2 = utils.buildQueue('running-job-' + uuid.v4(), {
+        settings: {
+          stalledInterval: 10
+        }
+      });
+
+      queue2.process(job => {
+        expect(job.data.foo).to.be.equal('bar');
+        return delay(100);
+      });
+
+      queue2.add({ foo: 'bar' }).then(
+        job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        },
+        err => {
+          done(err);
+        }
+      );
+
+      queue2.once('completed', async () => {
+        const stalled = await queue2.getStalledCount();
+        try {
+          expect(stalled).to.be.equal(0);
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
     });
 
     it('process a job that fails', done => {
@@ -1651,29 +1752,6 @@ describe('Queue', () => {
     });
   });
 
-  it('count added, unprocessed jobs', () => {
-    const maxJobs = 100;
-    const added = [];
-
-    const queue = utils.buildQueue();
-
-    for (let i = 1; i <= maxJobs; i++) {
-      added.push(queue.add({ foo: 'bar', num: i }));
-    }
-
-    return Promise.all(added)
-      .then(queue.count.bind(queue))
-      .then(count => {
-        expect(count).to.be.eql(maxJobs);
-      })
-      .then(queue.empty.bind(queue))
-      .then(queue.count.bind(queue))
-      .then(count => {
-        expect(count).to.be.eql(0);
-        return queue.close();
-      });
-  });
-
   describe('Delayed jobs', () => {
     let queue;
 
@@ -1760,7 +1838,7 @@ describe('Queue', () => {
     it('should process delayed jobs in correct order even in case of restart', function(done) {
       this.timeout(15000);
 
-      const QUEUE_NAME = 'delayed queue multiple' + uuid();
+      const QUEUE_NAME = 'delayed queue multiple' + uuid.v4();
       let order = 1;
 
       queue = new Queue(QUEUE_NAME);
@@ -1805,7 +1883,7 @@ describe('Queue', () => {
     });
 
     it('should process delayed jobs with exact same timestamps in correct order (FIFO)', done => {
-      const QUEUE_NAME = 'delayed queue multiple' + uuid();
+      const QUEUE_NAME = 'delayed queue multiple' + uuid.v4();
       queue = new Queue(QUEUE_NAME);
       let order = 1;
 
@@ -2488,11 +2566,36 @@ describe('Queue', () => {
     });
   });
 
+  describe('Drain queue', () => {
+    it('should count zero after draining the queue', () => {
+      const maxJobs = 100;
+      const added = [];
+
+      const queue = utils.buildQueue();
+
+      for (let i = 1; i <= maxJobs; i++) {
+        added.push(queue.add({ foo: 'bar', num: i }));
+      }
+
+      return Promise.all(added)
+        .then(queue.count.bind(queue))
+        .then(count => {
+          expect(count).to.be.eql(maxJobs);
+        })
+        .then(queue.empty.bind(queue))
+        .then(queue.count.bind(queue))
+        .then(count => {
+          expect(count).to.be.eql(0);
+          return queue.close();
+        });
+    });
+  });
+
   describe('Cleaner', () => {
     let queue;
 
     beforeEach(() => {
-      queue = utils.buildQueue('cleaner' + uuid());
+      queue = utils.buildQueue('cleaner' + uuid.v4());
     });
 
     afterEach(function() {
@@ -2527,7 +2630,7 @@ describe('Queue', () => {
     });
 
     it('should clean an empty queue', done => {
-      const testQueue = utils.buildQueue('cleaner' + uuid());
+      const testQueue = utils.buildQueue('cleaner' + uuid.v4());
       testQueue.isReady().then(() => {
         return testQueue.clean(0);
       });
@@ -2656,6 +2759,28 @@ describe('Queue', () => {
         })
         .then(len => {
           expect(len).to.be.eql(2);
+          done();
+        });
+    });
+
+    it('should properly clean jobs from the priority set', done => {
+      const client = new redis(6379, '127.0.0.1', {});
+      queue.add({ some: 'data' }, { priority: 5 });
+      queue.add({ some: 'data' }, { priority: 5 });
+      delay(100)
+        .then(() => {
+          return queue.clean(0, 'wait', 1);
+        })
+        .then(() => {
+          return new Promise((resolve, reject) => {
+            client.zcount(queue.toKey('priority'), '5', '5', (err, res) => {
+              if (err) reject(err);
+              else resolve(res);
+            });
+          });
+        })
+        .then(priority => {
+          expect(priority).to.be.eql(1);
           done();
         });
     });

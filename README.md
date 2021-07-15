@@ -42,28 +42,51 @@
       <img src="http://isitmaintained.com/badge/resolution/optimalbits/bull.svg"/>
     </a>
   </p>
-  <p>
-    <em>Follow <a href="http://twitter.com/manast">@manast</a> for Bull news and updates!</em>
-  </p>
 </div>
 
----
+### 📻 News and updates
 
-### BullMQ 4 Beta
+Follow me on [Twitter](http://twitter.com/manast) for important news and updates.
 
-If you want to start using the next major version of Bull you are welcome to the new repo [here](https://github.com/taskforcesh/bullmq)
 
----
+### 🛠 Tutorials
 
-### Sponsors
-
-If you find Bull valuable, please consider sponsoring its development by using the Taskforce front-end &nbsp; [<img src="http://taskforce.sh/assets/logo_square.png" width="100" alt="Taskforce.sh, Inc" style="padding: 100px"/>](https://taskforce.sh). 
-
-Besides helping Bull's development, you will also benefit from a constantly-improving UI for managing all of your queues and jobs.
+You can find tutorials and news in this blog: https://blog.taskforce.sh/
 
 ---
 
-### Features
+### BullMQ
+
+If you want to start using the next major version of Bull written entirely in Typescript you are welcome to the new repo [here](https://github.com/taskforcesh/bullmq). Otherwise you are very welcome to still use Bull, which is a safe, battle tested codebase.
+
+---
+
+### 🚀 Sponsor 🚀
+
+[<img src="https://www.redisgreen.com/images/rglogo/redisgreen_transparent_240x48.png" width="150" alt="RedisGreen" style="padding: 100px"/>](https://dashboard.redisgreen.net/new?utm_campaign=BULLMQ)
+
+If you need high quality production Redis instances for your Bull projects, please consider subscribing 
+to [RedisGreen](https://dashboard.redisgreen.net/new?utm_campaign=BULLMQ), 
+leaders in Redis hosting that works perfectly with Bull. Use the promo code "BULLMQ" when signing up to help us
+sponsor the development of Bull!
+
+---
+
+### Official FrontEnd
+
+[<img src="http://taskforce.sh/assets/logo_square.png" width="100" alt="Taskforce.sh, Inc" style="padding: 100px"/>](https://taskforce.sh)
+
+Supercharge your queues with a professional front end:
+- Get a complete overview of all your queues.
+- Inspect jobs, search, retry, or promote delayed jobs.
+- Metrics and statistics.
+- and many more features.
+
+Sign up at [Taskforce.sh](https://taskforce.sh)
+
+---
+
+### Bull Features
 
 - [x] Minimal CPU usage due to a polling-free design.
 - [x] Robust design based on Redis.
@@ -80,7 +103,7 @@ Besides helping Bull's development, you will also benefit from a constantly-impr
 
 And coming up on the roadmap...
 
-- [ ] Job completion acknowledgement.
+- [ ] Job completion acknowledgement (you can use the message queue [pattern](https://github.com/OptimalBits/bull/blob/develop/PATTERNS.md#returning-job-completions) in the meantime).
 - [ ] Parent-child jobs relationships.
 
 ---
@@ -89,12 +112,16 @@ And coming up on the roadmap...
 
 There are a few third-party UIs that you can use for monitoring:
 
+**BullMQ**
+
+- [Taskforce](https://taskforce.sh)
+
 **Bull v3**
 
 - [Taskforce](https://taskforce.sh)
-- [Arena](https://github.com/mixmaxhq/arena)
-- [bull-repl](https://github.com/darky/bull-repl)
 - [bull-board](https://github.com/vcapretz/bull-board)
+- [bull-repl](https://github.com/darky/bull-repl)
+- [bull-monitor](https://github.com/s-r-x/bull-monitor)
 
 **Bull <= v2**
 
@@ -160,8 +187,8 @@ Definitions are currently maintained in the [DefinitelyTyped](https://github.com
 ## Contributing
 
 We welcome all types of contributions, either code fixes, new features or doc improvements.
-Code formatting is enforced by [prettier](https://prettier.io/)
-For commits please follow conventional [commits convention](https://www.conventionalcommits.org/en/v1.0.0-beta.2/)
+Code formatting is enforced by [prettier](https://prettier.io/).
+For commits please follow conventional [commits convention](https://www.conventionalcommits.org/en/v1.0.0-beta.2/).
 All code must pass lint rules and test suites before it can be merged into develop.
 
 ---
@@ -170,14 +197,14 @@ All code must pass lint rules and test suites before it can be merged into devel
 
 #### Basic Usage
 ```js
-var Queue = require('bull');
+const Queue = require('bull');
 
-var videoQueue = new Queue('video transcoding', 'redis://127.0.0.1:6379');
-var audioQueue = new Queue('audio transcoding', {redis: {port: 6379, host: '127.0.0.1', password: 'foobared'}}); // Specify Redis connection using object
-var imageQueue = new Queue('image transcoding');
-var pdfQueue = new Queue('pdf transcoding');
+const videoQueue = new Queue('video transcoding', 'redis://127.0.0.1:6379');
+const audioQueue = new Queue('audio transcoding', { redis: { port: 6379, host: '127.0.0.1', password: 'foobared' } }); // Specify Redis connection using object
+const imageQueue = new Queue('image transcoding');
+const pdfQueue = new Queue('pdf transcoding');
 
-videoQueue.process(function(job, done){
+videoQueue.process(function (job, done) {
 
   // job.data contains the custom data passed when the job was created
   // job.id contains id of this job.
@@ -198,7 +225,7 @@ videoQueue.process(function(job, done){
   throw new Error('some unexpected error');
 });
 
-audioQueue.process(function(job, done){
+audioQueue.process(function (job, done) {
   // transcode audio asynchronously and report progress
   job.progress(42);
 
@@ -215,7 +242,7 @@ audioQueue.process(function(job, done){
   throw new Error('some unexpected error');
 });
 
-imageQueue.process(function(job, done){
+imageQueue.process(function (job, done) {
   // transcode image asynchronously and report progress
   job.progress(42);
 
@@ -232,14 +259,14 @@ imageQueue.process(function(job, done){
   throw new Error('some unexpected error');
 });
 
-pdfQueue.process(function(job){
+pdfQueue.process(function (job) {
   // Processors can also return promises instead of using the done callback
   return pdfAsyncProcessor();
 });
 
-videoQueue.add({video: 'http://example.com/video1.mov'});
-audioQueue.add({audio: 'http://example.com/audio1.mp3'});
-imageQueue.add({image: 'http://example.com/image1.tiff'});
+videoQueue.add({ video: 'http://example.com/video1.mov' });
+audioQueue.add({ audio: 'http://example.com/audio1.mp3' });
+imageQueue.add({ image: 'http://example.com/image1.tiff' });
 ```
 
 #### Using promises
@@ -247,7 +274,7 @@ imageQueue.add({image: 'http://example.com/image1.tiff'});
 Alternatively, you can use return promises instead of using the `done` callback:
 
 ```javascript
-videoQueue.process(function(job){ // don't forget to remove the done callback!
+videoQueue.process(function (job) { // don't forget to remove the done callback!
   // Simply return a promise
   return fetchVideo(job.data.url).then(transcodeVideo);
 
@@ -275,7 +302,7 @@ The process function can also be run in a separate process. This has several adv
 In order to use this feature just create a separate file with the processor:
 ```js
 // processor.js
-module.exports = function(job){
+module.exports = function (job) {
   // Do some heavy work
 
   return Promise.resolve(result);
@@ -299,29 +326,29 @@ queue.process('my processor', 5, '/path/to/my/processor.js');
 
 A job can be added to a queue and processed repeatedly according to a cron specification:
 
-```
-  paymentsQueue.process(function(job){
+```js
+  paymentsQueue.process(function (job) {
     // Check payments
   });
 
   // Repeat payment job once every day at 3:15 (am)
-  paymentsQueue.add(paymentsData, {repeat: {cron: '15 3 * * *'}});
+  paymentsQueue.add(paymentsData, { repeat: { cron: '15 3 * * *' } });
 
 ```
 
 As a tip, check your expressions here to verify they are correct:
-[cron expression descriptor](http://cronexpressiondescriptor.azurewebsites.net/)
+[cron expression generator](https://crontab.cronhub.io)
 
 #### Pause / Resume
 
 A queue can be paused and resumed globally (pass `true` to pause processing for
 just this worker):
 ```js
-queue.pause().then(function(){
+queue.pause().then(function () {
   // queue is paused now
 });
 
-queue.resume().then(function(){
+queue.resume().then(function () {
   // queue is resumed now
 })
 ```
@@ -330,7 +357,7 @@ queue.resume().then(function(){
 
 A queue emits some useful events, for example...
 ```js
-.on('completed', function(job, result){
+.on('completed', function (job, result) {
   // Job completed with output result!
 })
 ```
@@ -342,8 +369,8 @@ For more information on events, including the full list of events that are fired
 Queues are cheap, so if you need many of them just create new ones with different
 names:
 ```javascript
-var userJohn = new Queue('john');
-var userLisa = new Queue('lisa');
+const userJohn = new Queue('john');
+const userLisa = new Queue('lisa');
 .
 .
 .
@@ -359,31 +386,30 @@ Queues are robust and can be run in parallel in several threads or processes
 without any risk of hazards or queue corruption. Check this simple example
 using cluster to parallelize jobs across processes:
 ```js
-var
-  Queue = require('bull'),
-  cluster = require('cluster');
+const Queue = require('bull');
+const cluster = require('cluster');
 
-var numWorkers = 8;
-var queue = new Queue("test concurrent queue");
+const numWorkers = 8;
+const queue = new Queue('test concurrent queue');
 
-if(cluster.isMaster){
-  for (var i = 0; i < numWorkers; i++) {
+if (cluster.isMaster) {
+  for (let i = 0; i < numWorkers; i++) {
     cluster.fork();
   }
 
-  cluster.on('online', function(worker) {
-    // Lets create a few jobs for the queue workers
-    for(var i=0; i<500; i++){
-      queue.add({foo: 'bar'});
+  cluster.on('online', function (worker) {
+    // Let's create a few jobs for the queue workers
+    for (let i = 0; i < 500; i++) {
+      queue.add({ foo: 'bar' });
     };
   });
 
-  cluster.on('exit', function(worker, code, signal) {
+  cluster.on('exit', function (worker, code, signal) {
     console.log('worker ' + worker.process.pid + ' died');
   });
-}else{
-  queue.process(function(job, jobDone){
-    console.log("Job done by worker", cluster.worker.id, job.id);
+} else {
+  queue.process(function (job, jobDone) {
+    console.log('Job done by worker', cluster.worker.id, job.id);
     jobDone();
   });
 }

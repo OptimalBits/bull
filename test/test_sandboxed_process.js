@@ -177,7 +177,7 @@ describe('sandboxed process', () => {
     ]).then(() => {
       queue.process(__dirname + '/fixtures/fixture_processor_slow.js');
     });
-  });
+  }).timeout(5000);
 
   it('should process and complete using done', done => {
     queue.process(__dirname + '/fixtures/fixture_processor_callback.js');
@@ -200,7 +200,7 @@ describe('sandboxed process', () => {
   it('should process and update progress', done => {
     queue.process(__dirname + '/fixtures/fixture_processor_progress.js');
 
-    queue.on('completed', (job, value) => {
+    queue.on('completed', async (job, value) => {
       try {
         expect(job.data).to.be.eql({ foo: 'bar' });
         expect(value).to.be.eql(37);
@@ -208,9 +208,45 @@ describe('sandboxed process', () => {
         expect(progresses).to.be.eql([10, 27, 78, 100]);
         expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
         expect(queue.childPool.getAllFree()).to.have.lengthOf(1);
-        queue.getJobLogs(job.id).then(logs =>
+        await queue.getJobLogs(job.id).then(logs =>
           expect(logs).to.be.eql({
             logs: ['10', '27', '78', '100'],
+            count: 4
+          })
+        );
+        await queue.getJobLogs(job.id, 2, 2).then(logs =>
+          expect(logs).to.be.eql({
+            logs: ['78'],
+            count: 4
+          })
+        );
+        await queue.getJobLogs(job.id, 0, 1).then(logs =>
+          expect(logs).to.be.eql({
+            logs: ['10', '27'],
+            count: 4
+          })
+        );
+        await queue.getJobLogs(job.id, 1, 2).then(logs =>
+          expect(logs).to.be.eql({
+            logs: ['27', '78'],
+            count: 4
+          })
+        );
+        await queue.getJobLogs(job.id, 2, 2, false).then(logs =>
+          expect(logs).to.be.eql({
+            logs: ['27'],
+            count: 4
+          })
+        );
+        await queue.getJobLogs(job.id, 0, 1, false).then(logs =>
+          expect(logs).to.be.eql({
+            logs: ['100', '78'],
+            count: 4
+          })
+        );
+        await queue.getJobLogs(job.id, 1, 2, false).then(logs =>
+          expect(logs).to.be.eql({
+            logs: ['78', '27'],
             count: 4
           })
         );
@@ -223,6 +259,24 @@ describe('sandboxed process', () => {
     const progresses = [];
     queue.on('progress', (job, progress) => {
       progresses.push(progress);
+    });
+
+    queue.add({ foo: 'bar' });
+  });
+
+  it('should process and update data', done => {
+    queue.process(__dirname + '/fixtures/fixture_processor_data.js');
+
+    queue.on('completed', (job, value) => {
+      try {
+        expect(job.data).to.be.eql({ baz: 'qux' });
+        expect(value).to.be.eql({ baz: 'qux' });
+        expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
+        expect(queue.childPool.getAllFree()).to.have.lengthOf(1);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
 
     queue.add({ foo: 'bar' });
@@ -343,5 +397,40 @@ describe('sandboxed process', () => {
     });
 
     queue.add({ foo: 'bar' });
+  });
+
+  it('should allow the job to complete and then exit on clean', async function() {
+    this.timeout(1500);
+    const processFile = __dirname + '/fixtures/fixture_processor_slow.js';
+    queue.process(processFile);
+
+    // aquire and release a child here so we know it has it's full termination handler setup
+    const expectedChild = await queue.childPool.retain(processFile);
+    queue.childPool.release(expectedChild);
+    const onActive = new Promise(resolve => queue.once('active', resolve));
+    const jobAddPromise = queue.add({ foo: 'bar' });
+
+    await onActive;
+
+    // at this point the job should be active and running on the child
+    expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(1);
+    expect(queue.childPool.getAllFree()).to.have.lengthOf(0);
+    const child = Object.values(queue.childPool.retained)[0];
+    expect(child).to.equal(expectedChild);
+    expect(child.exitCode).to.equal(null);
+    expect(child.finished).to.equal(undefined);
+
+    // trigger a clean while we know it's doing work
+    await queue.childPool.clean();
+
+    // ensure the child did get cleaned up
+    expect(expectedChild.killed).to.eql(true);
+    expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
+    expect(queue.childPool.getAllFree()).to.have.lengthOf(0);
+
+    // make sure the job completed successfully
+    const job = await jobAddPromise;
+    const jobResult = await job.finished();
+    expect(jobResult).to.equal(42);
   });
 });
