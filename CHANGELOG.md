@@ -1,3 +1,10 @@
+# [3.25.0](https://github.com/OptimalBits/bull/compare/v3.24.0...v3.25.0) (2021-07-15)
+
+
+### Features
+
+* pass clientName to createClient function ([2a29569](https://github.com/OptimalBits/bull/commit/2a295691b88318ff64beaa7b83e03487854a7fe4))
+
 # [3.24.0](https://github.com/OptimalBits/bull/compare/v3.23.3...v3.24.0) (2021-07-15)
 
 
