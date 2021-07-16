@@ -820,7 +820,7 @@ describe('repeat', () => {
     this.clock.tick(every + 1);
 
     let processed = 0;
-    queue.process(async job => {
+    queue.process(async () => {
       this.clock.tick(every);
       processed++;
     });
