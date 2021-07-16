@@ -695,7 +695,6 @@ describe('repeat', () => {
     }, done);
   });
 
-  // Skip test that only fails on travis
   it('should use ".every" as a valid interval', function(done) {
     const _this = this;
     const interval = ONE_SECOND * 2;
@@ -801,5 +800,36 @@ describe('repeat', () => {
         done(Error('repeatable job got the wrong repeat count'));
       }
     });
+  });
+
+  it('it should stop repeating after endDate', async function() {
+    const every = 100;
+    const date = new Date('2017-02-07 9:24:00');
+    this.clock.setSystemTime(date);
+
+    await queue.add(
+      { id: 'my id' },
+      {
+        repeat: {
+          endDate: Date.now() + 1000,
+          every: 100
+        }
+      }
+    );
+
+    this.clock.tick(every + 1);
+
+    let processed = 0;
+    queue.process(async () => {
+      this.clock.tick(every);
+      processed++;
+    });
+
+    await utils.sleep(1100);
+
+    const delayed = await queue.getDelayed();
+
+    expect(delayed).to.have.length(0);
+    expect(processed).to.be.equal(10);
   });
 });
