@@ -32,6 +32,7 @@
   - [Queue#getDelayed](#queuegetdelayed)
   - [Queue#getCompleted](#queuegetcompleted)
   - [Queue#getFailed](#queuegetfailed)
+  - [Queue#getWorkers](#queuegetworkers)
 
 - [Job](#job)
 
@@ -679,6 +680,17 @@ getFailed(start?: number, end?: number, opts?: GetterOpts) : Promise<Array<Job>>
 ```
 
 Returns a promise that will return an array with the failed jobs between start and end.
+
+---
+
+### Queue#getWorkers
+
+```ts
+getWorkers() : Promise<Array<Object>>
+```
+
+Returns a promise that will return an array workers currently listening or processing jobs.
+The object includes the same fields as [Redis CLIENT LIST](https://redis.io/commands/client-list) command.
 
 ---
 
