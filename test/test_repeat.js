@@ -13,7 +13,7 @@ const ONE_HOUR = 60 * ONE_MINUTE;
 const ONE_DAY = 24 * ONE_HOUR;
 const MAX_INT = 2147483647;
 
-describe('repeat', () => {
+describe.only('repeat', () => {
   let queue;
   let client;
 
@@ -75,7 +75,8 @@ describe('repeat', () => {
     expect(job1.opts.repeat).to.be.deep.equal({
       count: 1,
       cron: '0 * * * * *',
-      startDate: '2020-09-02T22:29:00Z'
+      startDate: '2020-09-02T22:29:00Z',
+      key: '__default__::::0 * * * * *'
     });
 
     const job2 = await queue.add(
@@ -96,7 +97,8 @@ describe('repeat', () => {
       count: 1,
       cron: '0 * * * * *',
       startDate: '2020-09-02T22:29:00Z',
-      endDate: '2020-09-05T01:44:37Z'
+      endDate: '2020-09-05T01:44:37Z',
+      key: '__default__::1599270277000::0 * * * * *'
     });
   });
 
