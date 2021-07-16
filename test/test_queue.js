@@ -1485,7 +1485,7 @@ describe('Queue', () => {
         .catch(done);
     });
 
-    it('should clear job from stalled set when job completed', (done) => {
+    it('should clear job from stalled set when job completed', done => {
       const queue2 = utils.buildQueue('running-job-' + uuid.v4(), {
         settings: {
           stalledInterval: 10
