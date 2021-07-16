@@ -32,6 +32,8 @@
     "uuid": "^8.3.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.14.6",
+    "@babel/eslint-parser": "^7.14.7",
     "@commitlint/cli": "^7.6.1",
     "@commitlint/config-conventional": "^7.6.0",
     "@semantic-release/changelog": "^5.0.1",
