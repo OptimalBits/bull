@@ -1,3 +1,10 @@
+## [3.25.2](https://github.com/OptimalBits/bull/compare/v3.25.1...v3.25.2) (2021-07-16)
+
+
+### Bug Fixes
+
+* **repeatable:** honor endDate fixes [#1573](https://github.com/OptimalBits/bull/issues/1573) ([7f0db0e](https://github.com/OptimalBits/bull/commit/7f0db0e293367752971be8a1bf7b6c8cf4190350))
+
 ## [3.25.1](https://github.com/OptimalBits/bull/compare/v3.25.0...v3.25.1) (2021-07-16)
 
 
