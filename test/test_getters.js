@@ -35,6 +35,22 @@ describe('Jobs getters', function() {
       });
   });
 
+  it('should get prioritized job counts', () => {
+    return Promise.all([
+      queue.add({ foo: 'bar' }, { priority: 2 }),
+      queue.add({ baz: 'qux' }, { priority: 2 }),
+      queue.add({ baz: 'foo' }, { priority: 3 }),
+    ]).then(() => {
+      return queue.getPrioritizedJobCounts([1, 2, 3]).then(priorityCounts => {
+        expect(priorityCounts).to.deep.equal({
+          [1]: 0,
+          [2]: 2,
+          [3]: 1
+        });
+      });
+    });
+  });
+
   it('should get waiting jobs', () => {
     return Promise.all([
       queue.add({ foo: 'bar' }),
