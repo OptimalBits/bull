@@ -474,6 +474,14 @@ describe('repeat', () => {
     expect(delayedJobs).to.have.length(0);
   });
 
+  it('should return repeatable job key', async () => {
+    const repeat = { cron: '*/2 * * * * *' };
+
+    const job = await queue.add('remove', { foo: 'bar' }, { repeat });
+
+    expect(job.opts.repeat.key).to.be.equal('remove::::*/2 * * * * *');
+  });
+
   it('should be able to remove repeatable jobs by key that has a jobId', async () => {
     const repeat = { cron: '*/2 * * * * *' };
 

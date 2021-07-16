@@ -304,6 +304,7 @@ interface RepeatOpts {
   limit?: number; // Number of times the job should repeat at max.
   every?: number; // Repeat every millis (cron setting cannot be used together with this setting.)
   count?: number; // The start value for the repeat iteration count.
+  readonly key: string; // The key for the repeatable job metadata in Redis.
 }
 ```
 
@@ -533,7 +534,17 @@ for the job when it was added.
 removeRepeatableByKey(key: string): Promise<void>
 ```
 
-Removes a given repeatable job by its key.
+Removes a given repeatable job by its key so that no more repeteable jobs will be processed for this 
+particular job.
+There are currently two ways to get the "key" of a repeatable job, either listing alll the existing repeatable jobs, and getting the "key" for the one you want to delete, or by getting it from the added job, like this:
+
+```ts
+  const job = await queue.add('remove', { foo: 'bar' }, { repeat });
+
+  // Store "job.opts.repeat.key" somewhere and later
+
+  await removeRepeatbleByKey(key);
+```
 
 ---
 
