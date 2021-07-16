@@ -13,7 +13,7 @@ const ONE_HOUR = 60 * ONE_MINUTE;
 const ONE_DAY = 24 * ONE_HOUR;
 const MAX_INT = 2147483647;
 
-describe.only('repeat', () => {
+describe('repeat', () => {
   let queue;
   let client;
 
