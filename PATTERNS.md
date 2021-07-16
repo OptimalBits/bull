@@ -169,33 +169,33 @@ myQueue.add({foo: 'bar'}, {
 
 You may specify options for your strategy:
 ```js
-var Queue = require('bull');
+const Queue = require('bull');
 
-var myQueue = new Queue("Server B", {
+const myQueue = new Queue('Server B', {
   settings: {
     backoffStrategies: {
       // truncated binary exponential backoff
       binaryExponential: function (attemptsMade, err, options) {
         // Options can be undefined, you need to handle it by yourself
         if (!options) {
-            options = {}
+          options = {}
         }
-        var delay = options.delay || 1000;
-        var truncate = options.truncate || 1000;
-        console.error({attemptsMade, err, options});
+        const delay = options.delay || 1000;
+        const truncate = options.truncate || 1000;
+        console.error({ attemptsMade, err, options });
         return Math.round(Math.random() * (Math.pow(2, Math.max(attemptsMade, truncate)) - 1) * delay)
       }
     }
   }
 });
 
-myQueue.add({foo: 'bar'}, {
+myQueue.add({ foo: 'bar' }, {
   attempts: 10,
   backoff: {
     type: 'binaryExponential',
     options: {
-        delay: 500,
-        truncate: 5
+      delay: 500,
+      truncate: 5
     }
   }
 });
