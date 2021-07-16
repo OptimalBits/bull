@@ -1,3 +1,10 @@
+## [3.25.1](https://github.com/OptimalBits/bull/compare/v3.25.0...v3.25.1) (2021-07-16)
+
+
+### Bug Fixes
+
+* error when .lua scripts missing in built bundle ([85307c3](https://github.com/OptimalBits/bull/commit/85307c3a8e48b910590b2682700c5062c84d32b0))
+
 # [3.25.0](https://github.com/OptimalBits/bull/compare/v3.24.0...v3.25.0) (2021-07-15)
 
 
