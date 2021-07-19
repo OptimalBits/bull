@@ -1,3 +1,10 @@
+# [3.26.0](https://github.com/OptimalBits/bull/compare/v3.25.2...v3.26.0) (2021-07-16)
+
+
+### Features
+
+* **repeatable:** store key in repeat options ([dab0d82](https://github.com/OptimalBits/bull/commit/dab0d8266174f1d25ec914cff8450594d85db511))
+
 ## [3.25.2](https://github.com/OptimalBits/bull/compare/v3.25.1...v3.25.2) (2021-07-16)
 
 

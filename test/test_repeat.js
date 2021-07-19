@@ -75,7 +75,8 @@ describe('repeat', () => {
     expect(job1.opts.repeat).to.be.deep.equal({
       count: 1,
       cron: '0 * * * * *',
-      startDate: '2020-09-02T22:29:00Z'
+      startDate: '2020-09-02T22:29:00Z',
+      key: '__default__::::0 * * * * *'
     });
 
     const job2 = await queue.add(
@@ -96,7 +97,8 @@ describe('repeat', () => {
       count: 1,
       cron: '0 * * * * *',
       startDate: '2020-09-02T22:29:00Z',
-      endDate: '2020-09-05T01:44:37Z'
+      endDate: '2020-09-05T01:44:37Z',
+      key: '__default__::1599270277000::0 * * * * *'
     });
   });
 
@@ -472,6 +474,14 @@ describe('repeat', () => {
 
     const delayedJobs = await queue.getDelayed();
     expect(delayedJobs).to.have.length(0);
+  });
+
+  it('should return repeatable job key', async () => {
+    const repeat = { cron: '*/2 * * * * *' };
+
+    const job = await queue.add('remove', { foo: 'bar' }, { repeat });
+
+    expect(job.opts.repeat.key).to.be.equal('remove::::*/2 * * * * *');
   });
 
   it('should be able to remove repeatable jobs by key that has a jobId', async () => {
