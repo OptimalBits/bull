@@ -282,6 +282,27 @@ describe('sandboxed process', () => {
     queue.add({ foo: 'bar' });
   });
 
+  it('should process, discard and fail without retry', done => {
+    queue.process(__dirname + '/fixtures/fixture_processor_discard.js');
+
+    queue.on('failed', (job, err) => {
+      try {
+        expect(job.data).eql({ foo: 'bar' });
+        expect(job.isDiscarded()).to.be.true;
+        expect(job.failedReason).eql('Manually discarded processor');
+        expect(err.message).eql('Manually discarded processor');
+        expect(err.stack).include('fixture_processor_discard.js');
+        expect(Object.keys(queue.childPool.retained)).to.have.lengthOf(0);
+        expect(queue.childPool.getAllFree()).to.have.lengthOf(1);
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+
+    queue.add({ foo: 'bar' });
+  });
+
   it('should process and fail', done => {
     queue.process(__dirname + '/fixtures/fixture_processor_fail.js');
 
