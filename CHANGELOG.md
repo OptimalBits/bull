@@ -1,3 +1,10 @@
+# [3.27.0](https://github.com/OptimalBits/bull/compare/v3.26.0...v3.27.0) (2021-07-27)
+
+
+### Features
+
+* support job.discard function in sandboxed processors ([5adcf2c](https://github.com/OptimalBits/bull/commit/5adcf2ceed263d46089cceefcdcaa658151c53b7))
+
 # [3.26.0](https://github.com/OptimalBits/bull/compare/v3.25.2...v3.26.0) (2021-07-16)
 
 
