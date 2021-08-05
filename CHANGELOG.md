@@ -1,3 +1,10 @@
+# [3.28.0](https://github.com/OptimalBits/bull/compare/v3.27.0...v3.28.0) (2021-08-05)
+
+
+### Features
+
+* **queue:** handle redis url containing username ([a245fc4](https://github.com/OptimalBits/bull/commit/a245fc403827fd22b08dbe1499fe843eb1ad633a))
+
 # [3.27.0](https://github.com/OptimalBits/bull/compare/v3.26.0...v3.27.0) (2021-07-27)
 
 
