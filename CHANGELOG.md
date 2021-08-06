@@ -1,3 +1,10 @@
+## [3.28.1](https://github.com/OptimalBits/bull/compare/v3.28.0...v3.28.1) (2021-08-06)
+
+
+### Bug Fixes
+
+* **queue:** changed user prop to username for redisOptions ([71baea9](https://github.com/OptimalBits/bull/commit/71baea91de702d9bd1d5516f09b22599b7f13045))
+
 # [3.28.0](https://github.com/OptimalBits/bull/compare/v3.27.0...v3.28.0) (2021-08-05)
 
 
