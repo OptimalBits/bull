@@ -1,3 +1,10 @@
+# [3.29.0](https://github.com/OptimalBits/bull/compare/v3.28.1...v3.29.0) (2021-08-20)
+
+
+### Features
+
+* **jobs:** add extendLock method ([30d5959](https://github.com/OptimalBits/bull/commit/30d59590c34cb664e3b9a62695c4092c9b1ae3f3))
+
 ## [3.28.1](https://github.com/OptimalBits/bull/compare/v3.28.0...v3.28.1) (2021-08-06)
 
 
