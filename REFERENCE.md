@@ -318,8 +318,8 @@ The cron expression uses the [cron-parser](https://github.com/harrisiirak/cron-p
 
 The Repeatable Job configuration is not a job, so it will not show up in methods like `getJobs()`. To manage Repeatable Job
 configurations, use [`getRepeatableJobs()`](#queuegetrepeatablejobs) and similar. This also means repeated jobs do **not**
-participate in evaluating jobId uniqueness - that is, a non-repeatable job can have the same jobId as a Repeatable Job
-configuration, and two Repeatable Job configurations can have the same jobId as long as they have different repeat options.
+participate in evaluating `jobId` uniqueness - that is, a non-repeatable job can have the same `jobId` as a Repeatable Job
+configuration, and two Repeatable Job configurations can have the same `jobId` as long as they have different repeat options.
 
 That is, the following code will result in three jobs being created (one immediate and two delayed):
 ```ts
@@ -584,12 +584,12 @@ await queue.removeRepeatableByKey(repeatableKey);
 
 Otherwise, you can list all repeatable jobs with [`getRepeatableJobs()`](#queuegetrepeatablejobs), find the job you want to remove in the list, and use the key there to remove it:
 ```ts
-  await queue.add('remove', { example: 'data' }, { jobId: 'findMe', repeat: { every: 1000 } })
-  
-  // ... then later ...
-  const repeatableJobs = await queue.getRepeatableJobs()
-  const foundJob = repeatableJobs.find(job => job.id === 'findMe')
-  await queue.removeRepeatableByKey(foundJob.key)
+await queue.add('remove', { example: 'data' }, { jobId: 'findMe', repeat: { every: 1000 } })
+
+// ... then later ...
+const repeatableJobs = await queue.getRepeatableJobs()
+const foundJob = repeatableJobs.find(job => job.id === 'findMe')
+await queue.removeRepeatableByKey(foundJob.key)
 ```
 ---
 
