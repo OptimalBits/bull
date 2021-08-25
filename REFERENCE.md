@@ -274,7 +274,7 @@ interface JobOpts {
 
   attempts: number; // The total number of attempts to try the job until it completes.
 
-  repeat: RepeatOpts; // Repeat job according to a cron specification, see below for details
+  repeat: RepeatOpts; // Repeat job according to a cron specification, see below for details.
 
   backoff: number | BackoffOpts; // Backoff setting for automatic retries if the job fails, default strategy: `fixed`
 
@@ -285,7 +285,7 @@ interface JobOpts {
   // integer, but you can use this setting to override it.
   // If you use this option, it is up to you to ensure the
   // jobId is unique. If you attempt to add a job with an id that
-  // already exists, it will not be added (see caveat below about repeatable jobs)
+  // already exists, it will not be added (see caveat below about repeatable jobs).
 
   removeOnComplete: boolean | number; // If true, removes the job when it successfully
   // completes. A number specified the amount of jobs to keep. Default behavior is to keep the job in the completed set.
