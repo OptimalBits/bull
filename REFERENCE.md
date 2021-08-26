@@ -274,7 +274,7 @@ interface JobOpts {
 
   attempts: number; // The total number of attempts to try the job until it completes.
 
-  repeat: RepeatOpts; // Repeat job according to a cron specification.
+  repeat: RepeatOpts; // Repeat job according to a cron specification, see below for details.
 
   backoff: number | BackoffOpts; // Backoff setting for automatic retries if the job fails, default strategy: `fixed`
 
@@ -285,7 +285,7 @@ interface JobOpts {
   // integer, but you can use this setting to override it.
   // If you use this option, it is up to you to ensure the
   // jobId is unique. If you attempt to add a job with an id that
-  // already exists, it will not be added.
+  // already exists, it will not be added (see caveat below about repeatable jobs).
 
   removeOnComplete: boolean | number; // If true, removes the job when it successfully
   // completes. A number specified the amount of jobs to keep. Default behavior is to keep the job in the completed set.
@@ -296,6 +296,7 @@ interface JobOpts {
 }
 ```
 
+#### Repeated Job Details
 ```typescript
 interface RepeatOpts {
   cron?: string; // Cron string
@@ -309,8 +310,27 @@ interface RepeatOpts {
 }
 ```
 
-More information regarding the [cron expression](https://github.com/harrisiirak/cron-parser)
+Adding a job with the `repeat` option set will actually do two things immediately: create a Repeatable Job configuration,
+and schedule a regular delayed job for the job's first run. This first run will be scheduled "on the hour", that is if you create
+a job that repeats every 15 minutes at 4:07, the job will first run at 4:15, then 4:30, and so on.
 
+The cron expression uses the [cron-parser](https://github.com/harrisiirak/cron-parser) library, see their docs for more details.
+
+The Repeatable Job configuration is not a job, so it will not show up in methods like `getJobs()`. To manage Repeatable Job
+configurations, use [`getRepeatableJobs()`](#queuegetrepeatablejobs) and similar. This also means repeated jobs do **not**
+participate in evaluating `jobId` uniqueness - that is, a non-repeatable job can have the same `jobId` as a Repeatable Job
+configuration, and two Repeatable Job configurations can have the same `jobId` as long as they have different repeat options.
+
+That is, the following code will result in three jobs being created (one immediate and two delayed):
+```ts
+await queue.add({}, { jobId: 'example', repeat: { every: 5 * 1000 } })
+await queue.add({}, { jobId: 'example', repeat: { every: 5 * 1000 } }) // Will not be created, same repeat configuration
+await queue.add({}, { jobId: 'example', repeat: { every: 10 * 1000 } }) // Will be created, different repeat configuration
+await queue.add({}, { jobId: 'example' }) // Will be created, no regular job with this id
+await queue.add({}, { jobId: 'example' }) // Will not be created, conflicts with previous regular job
+```
+
+#### Backoff Options
 ```typescript
 interface BackoffOpts {
   type: string; // Backoff type, which can be either `fixed` or `exponential`. A custom backoff strategy can also be specified in `backoffStrategies` on the queue settings.
@@ -394,6 +414,8 @@ myQueue.removeJobs('?oo*').then(function () {
 
 Will remove jobs with ids such as: "boo", "foofighter", etc.
 
+Note: This method does not affect Repeatable Job configurations, instead use [`removeRepeatable()`](#queueremoverepeatable) or [`removeRepeatableByKey()`](#queueremoverepeatablebykey)
+
 ---
 
 ### Queue#empty
@@ -402,8 +424,14 @@ Will remove jobs with ids such as: "boo", "foofighter", etc.
 empty(): Promise
 ```
 
-Drains a queue deleting all the *input* lists and associated jobs. Note, this function only remove the jobs that are
-*waiting" to be processed by the queue or *delayed*.
+Drains a queue deleting all the *input* lists and associated jobs.
+
+Note: This function only removes the jobs that are *waiting* to be processed by the queue or *delayed*.
+Jobs in other states (active, failed, completed) and Repeatable Job configurations will remain, and
+repeatable jobs will continue to be created on schedule.
+
+To remove other job statuses, use [`clean()`](#queueclean), and to remove everything including Repeatable Job
+configurations, use [`obliterate()`](#queueobliterate).
 
 ---
 
@@ -469,6 +497,8 @@ getJob(jobId: string): Promise<Job>
 Returns a promise that will return the job instance associated with the `jobId`
 parameter. If the specified job cannot be located, the promise will be resolved to `null`.
 
+Note: This method does not return Repeatable Job configurations, to do so see [`getRepeatableJobs()`](#queuegetrepeatablejobs)
+
 ---
 
 ### Queue#getJobs
@@ -480,6 +510,8 @@ getJobs(types: JobStatus[], start?: number, end?: number, asc?: boolean): Promis
 Returns a promise that will return an array of job instances of the given job statuses. Optional parameters for range and ordering are provided.
 
 Note: The `start` and `end` options are applied **per job statuses**. For example, if there are 10 jobs in state `completed` and 10 jobs in state `active`, `getJobs(['completed', 'active'], 0, 4)` will yield an array with 10 entries, representing the first 5 completed jobs (0 - 4) and the first 5 active jobs (0 - 4).
+
+This method does not return Repeatable Job configurations, to do so see [`getRepeatableJobs()`](#queuegetrepeatablejobs)
 
 ---
 
@@ -522,7 +554,7 @@ Returns a promise that will return an array of Repeatable Job configurations. Op
 removeRepeatable(name?: string, repeat: RepeatOpts): Promise<void>
 ```
 
-Removes a given repeatable job. The RepeatOpts needs to be the same as the ones used
+Removes a given Repeatable Job configuration. The RepeatOpts needs to be the same as the ones used
 for the job when it was added.
 
 ---
@@ -535,18 +567,30 @@ for the job when it was added.
 removeRepeatableByKey(key: string): Promise<void>
 ```
 
-Removes a given repeatable job by its key so that no more repeteable jobs will be processed for this 
-particular job.
-There are currently two ways to get the "key" of a repeatable job, either listing alll the existing repeatable jobs, and getting the "key" for the one you want to delete, or by getting it from the added job, like this:
+Removes a given Repeatable Job configuration by its key so that no more repeatable jobs will be processed for this 
+particular configuration. 
 
+There are currently two ways to get the "key" of a repeatable job.
+
+When first creating the job, `queue.add()` will return a job object with the key for that job, which you can store for later use:
 ```ts
-  const job = await queue.add('remove', { foo: 'bar' }, { repeat });
+const job = await queue.add('remove', { example: 'data' }, { repeat: { every: 1000 } });
+// store job.opts.repeat.key somewhere...
+const repeatableKey = job.opts.repeat.key;
 
-  // Store "job.opts.repeat.key" somewhere and later
-
-  await removeRepeatbleByKey(key);
+// ...then later...
+await queue.removeRepeatableByKey(repeatableKey);
 ```
 
+Otherwise, you can list all repeatable jobs with [`getRepeatableJobs()`](#queuegetrepeatablejobs), find the job you want to remove in the list, and use the key there to remove it:
+```ts
+await queue.add('remove', { example: 'data' }, { jobId: 'findMe', repeat: { every: 1000 } })
+
+// ... then later ...
+const repeatableJobs = await queue.getRepeatableJobs()
+const foundJob = repeatableJobs.find(job => job.id === 'findMe')
+await queue.removeRepeatableByKey(foundJob.key)
+```
 ---
 
 ### Queue#getJobCounts
