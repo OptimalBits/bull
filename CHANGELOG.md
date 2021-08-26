@@ -1,3 +1,10 @@
+## [3.29.1](https://github.com/OptimalBits/bull/compare/v3.29.0...v3.29.1) (2021-08-26)
+
+
+### Bug Fixes
+
+* protect getJob with isReady, fixes [#1386](https://github.com/OptimalBits/bull/issues/1386) ([2f27faa](https://github.com/OptimalBits/bull/commit/2f27faa410f70504f24df2ebd6bb7831df21660d))
+
 # [3.29.0](https://github.com/OptimalBits/bull/compare/v3.28.1...v3.29.0) (2021-08-20)
 
 
