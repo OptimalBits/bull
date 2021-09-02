@@ -6,6 +6,7 @@
   - [Queue#add](#queueadd)
   - [Queue#addBulk](#queueaddBulk)
   - [Queue#pause](#queuepause)
+  - [Queue#isPaused](#queueispaused)
   - [Queue#resume](#queueresume)
   - [Queue#whenCurrentJobsFinished](#queuewhencurrentjobsfinished)
   - [Queue#count](#queuecount)
@@ -361,6 +362,16 @@ Returns a promise that resolves when the queue is paused. A paused queue will no
 If `doNotWaitActive` is `true`, `pause` will _not_ wait for any active jobs to finish before resolving. Otherwise, `pause` _will_ wait for active jobs to finish. See [Queue#whenCurrentJobsFinished](#queuewhencurrentjobsfinished) for more information.
 
 Pausing a queue that is already paused does nothing.
+
+---
+
+### Queue#isPaused
+
+```ts
+isPaused(isLocal?: boolean): Promise<boolean>
+```
+
+Checks if the queue is paused. Pass true if you need to know if this particular instance is paused.
 
 ---
 
