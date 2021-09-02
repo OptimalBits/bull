@@ -123,11 +123,12 @@ describe('connection', () => {
       });
   });
 
-  it('should fail if redis connection fails', done => {
+  it('should fail if redis connection fails and does not reconnect', done => {
     queue = utils.buildQueue('connection fail', {
       redis: {
         host: 'localhost',
-        port: 1234
+        port: 1234,
+        retryStrategy: () => false
       }
     });
 
