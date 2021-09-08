@@ -1,3 +1,10 @@
+## [3.29.2](https://github.com/OptimalBits/bull/compare/v3.29.1...v3.29.2) (2021-09-08)
+
+
+### Bug Fixes
+
+* **connection:** fail only if redis connection does not recover ([0ca4c6b](https://github.com/OptimalBits/bull/commit/0ca4c6b4d57efa78e5ca484cb8bed2a6961646a3))
+
 ## [3.29.1](https://github.com/OptimalBits/bull/compare/v3.29.0...v3.29.1) (2021-08-26)
 
 
