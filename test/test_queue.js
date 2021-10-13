@@ -1291,7 +1291,7 @@ describe('Queue', () => {
       let processedA = false;
 
       const startProcessing = new Promise(resolve => {
-        queue.process('jobA', async job => {
+        queue.process('jobA', async () => {
           resolve();
           return new Promise(resolve => {
             setTimeout(() => {
