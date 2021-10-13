@@ -1,3 +1,10 @@
+## [3.29.3](https://github.com/OptimalBits/bull/compare/v3.29.2...v3.29.3) (2021-10-13)
+
+
+### Bug Fixes
+
+* **name-processors:** wait for all processors when closing fixes [#1618](https://github.com/OptimalBits/bull/issues/1618) ([79ce013](https://github.com/OptimalBits/bull/commit/79ce013af695f96ff57106b213982647e0783d3f))
+
 ## [3.29.2](https://github.com/OptimalBits/bull/compare/v3.29.1...v3.29.2) (2021-09-08)
 
 
