@@ -1287,6 +1287,34 @@ describe('Queue', () => {
       });
     });
 
+    it('should wait for all jobs when closing queue with named processors', async () => {
+      let processedA = false;
+
+      const startProcessing = new Promise(resolve => {
+        queue.process('jobA', async job => {
+          resolve();
+          return new Promise(resolve => {
+            setTimeout(() => {
+              processedA = true;
+              resolve();
+            }, 500);
+          });
+        });
+      });
+
+      queue.process('jobB', async () => {});
+
+      queue.add('jobA', {});
+
+      await startProcessing;
+
+      expect(processedA).to.be.eq(false);
+
+      await queue.close();
+
+      expect(processedA).to.be.eq(true);
+    });
+
     it('processes several stalled jobs when starting several queues', function(done) {
       this.timeout(50000);
 
