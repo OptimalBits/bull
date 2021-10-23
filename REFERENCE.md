@@ -955,6 +955,12 @@ A queue emits also some useful events:
   // workers that crash or pause the event loop.
 })
 
+.on('lockExtendingFailed', function (job) {
+  // A job failed to extend lock. This will be useful to debug redis 
+  // connection issues and jobs getting restarted because workers
+  // are not able to extend locks.
+});
+
 .on('progress', function (job, progress) {
   // A job's progress was updated!
 })

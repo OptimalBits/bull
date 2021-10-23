@@ -211,6 +211,26 @@ describe('events', () => {
     });
   });
 
+  it('should emit an event if a job fails to extend lock', done => {
+    const LOCK_RENEW_TIME = 1;
+    queue = utils.buildQueue('queue fails to extend lock', {
+      settings: {
+        lockRenewTime: LOCK_RENEW_TIME
+      }
+    });
+    queue.once('lockExtendingFailed', lockingFailedJob => {
+      expect(lockingFailedJob.data.foo).to.be.equal('lockingFailedJobFoo');
+      queue.close().then(done);
+    });
+    queue.isReady().then(() => {
+      queue.process(() => {
+        utils.simulateDisconnect(queue);
+        return delay(LOCK_RENEW_TIME + 0.25);
+      });
+      queue.add({ foo: 'lockingFailedJobFoo' });
+    });
+  });
+
   it('should listen to global events', done => {
     const queue1 = utils.buildQueue();
     const queue2 = utils.buildQueue();
