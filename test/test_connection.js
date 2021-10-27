@@ -24,8 +24,6 @@ describe('connection', () => {
   it('should fail if reusing connections with invalid options', () => {
     const errMsg = Queue.ErrorMessages.MISSING_REDIS_OPTS;
     {
-      let testQueue;
-
       try {
         const client = new redis();
 
@@ -39,7 +37,7 @@ describe('connection', () => {
             }
           }
         };
-        testQueue = utils.buildQueue('external connections', opts);
+        utils.buildQueue('external connections', opts);
         throw new Error('should fail with invalid redis options');
       } catch (err) {
         expect(err.message).to.be.equal(errMsg);
