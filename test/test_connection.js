@@ -43,7 +43,6 @@ describe('connection', () => {
         throw new Error('should fail with invalid redis options');
       } catch (err) {
         expect(err.message).to.be.equal(errMsg);
-        testQueue.close();
       }
     }
     {
