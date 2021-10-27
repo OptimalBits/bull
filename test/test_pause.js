@@ -11,7 +11,10 @@ const sinon = require('sinon');
 describe('.pause', () => {
   let client;
   beforeEach(() => {
-    client = new redis();
+    client = new redis({
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false
+    });
     return client.flushdb();
   });
 
