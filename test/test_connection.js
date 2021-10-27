@@ -3,6 +3,7 @@
 const expect = require('expect.js');
 const utils = require('./utils');
 const redis = require('ioredis');
+const Queue = require('../lib/queue');
 
 describe('connection', () => {
   let queue;
@@ -18,6 +19,59 @@ describe('connection', () => {
 
   afterEach(() => {
     return client.quit();
+  });
+
+  it('should fail if reusing connections with invalid options', () => {
+    const errMsg = Queue.ErrorMessages.MISSING_REDIS_OPTS;
+    {
+      let testQueue;
+
+      try {
+        const client = new redis();
+
+        const opts = {
+          createClient(type) {
+            switch (type) {
+              case 'client':
+                return client;
+              default:
+                return new redis();
+            }
+          }
+        };
+        testQueue = utils.buildQueue('external connections', opts);
+        throw new Error('should fail with invalid redis options');
+      } catch (err) {
+        expect(err.message).to.be.equal(errMsg);
+        testQueue.close();
+      }
+    }
+    {
+      const subscriber = new redis();
+
+      const opts = {
+        createClient(type) {
+          switch (type) {
+            case 'subscriber':
+              return subscriber;
+            default:
+              return new redis({
+                maxRetriesPerRequest: null,
+                enableReadyCheck: false
+              });
+          }
+        }
+      };
+
+      const testQueue = utils.buildQueue('external connections', opts);
+
+      try {
+        testQueue.on('global:completed', () => {});
+      } catch (err) {
+        expect(err.message).to.be.equal(errMsg);
+        testQueue.close();
+      }
+    }
   });
 
   it('should recover from a connection loss', done => {
@@ -80,8 +134,13 @@ describe('connection', () => {
   });
 
   it('should not close external connections', () => {
-    const client = new redis();
-    const subscriber = new redis();
+    const redisOpts = {
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false
+    };
+
+    const client = new redis(redisOpts);
+    const subscriber = new redis(redisOpts);
 
     const opts = {
       createClient(type) {

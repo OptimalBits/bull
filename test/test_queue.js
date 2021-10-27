@@ -280,8 +280,12 @@ describe('Queue', () => {
     });
 
     it('should allow reuse redis connections', done => {
-      const client = new redis();
-      const subscriber = new redis();
+      const redisOpts = {
+        maxRetriesPerRequest: null,
+        enableReadyCheck: false
+      };
+      const client = new redis(redisOpts);
+      const subscriber = new redis(redisOpts);
 
       const opts = {
         createClient(type, opts) {
