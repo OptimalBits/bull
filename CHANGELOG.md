@@ -1,3 +1,18 @@
+# [4.0.0](https://github.com/OptimalBits/bull/compare/v3.29.3...v4.0.0) (2021-10-27)
+
+
+### Bug Fixes
+
+* force options to guarantee correct reconnects ([3ade8e6](https://github.com/OptimalBits/bull/commit/3ade8e6727d7b906a30b09bccb6dc10d76ed1b5f))
+
+
+### BREAKING CHANGES
+
+* If redis opts are missing:
+ { maxRetriesPerRequest: null,
+   enableReadyCheck: false }
+then a exception will be thrown.
+
 ## [3.29.3](https://github.com/OptimalBits/bull/compare/v3.29.2...v3.29.3) (2021-10-13)
 
 
