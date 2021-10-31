@@ -1,3 +1,10 @@
+# [4.1.0](https://github.com/OptimalBits/bull/compare/v4.0.0...v4.1.0) (2021-10-31)
+
+
+### Features
+
+* emit event on job lock extend failure ([7247b3b](https://github.com/OptimalBits/bull/commit/7247b3bb9741c5eb18ce4027ea14349cbc8504c5))
+
 # [4.0.0](https://github.com/OptimalBits/bull/compare/v3.29.3...v4.0.0) (2021-10-27)
 
 
