@@ -26,9 +26,7 @@
     "ioredis": "^4.27.0",
     "lodash": "^4.17.21",
     "p-timeout": "^3.2.0",
-    "promise.prototype.finally": "^3.1.2",
     "semver": "^7.3.2",
-    "util.promisify": "^1.0.1",
     "uuid": "^8.3.0"
   },
   "devDependencies": {
