@@ -218,7 +218,7 @@ describe('events', () => {
         lockRenewTime: LOCK_RENEW_TIME
       }
     });
-    queue.once('lockExtendingFailed', lockingFailedJob => {
+    queue.once('lock-extension-failed', lockingFailedJob => {
       expect(lockingFailedJob.data.foo).to.be.equal('lockingFailedJobFoo');
       queue.close().then(done);
     });
