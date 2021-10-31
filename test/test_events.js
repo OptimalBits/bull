@@ -218,8 +218,9 @@ describe('events', () => {
         lockRenewTime: LOCK_RENEW_TIME
       }
     });
-    queue.once('lock-extension-failed', lockingFailedJob => {
+    queue.once('lock-extension-failed', (lockingFailedJob, error) => {
       expect(lockingFailedJob.data.foo).to.be.equal('lockingFailedJobFoo');
+      expect(error.message).to.be.equal('Connection is closed.');
       queue.close().then(done);
     });
     queue.isReady().then(() => {
