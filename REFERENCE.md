@@ -306,6 +306,7 @@ If you need to a job to stop processing after it times out, here are a couple su
  - Have the job itself periodically check `job.getStatus()`, and exit if the status becomes `'failed'`
  - Implement the job as a _cancelable promise_. If the processor's promise has a `cancel()` method, it will
    be called when a job times out, and the job can respond accordingly.
+ - If you have a way to externally stop a job, add a listener for the `failed` event and do so there.
 
 #### Repeated Job Details
 ```typescript
