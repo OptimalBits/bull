@@ -110,7 +110,7 @@ interface AdvancedSettings {
 }
 ```
 
-**Custom or Shared IORedis Connections**
+#### Custom or Shared IORedis Connections
 
 `createClient` is passed a `type` to specify the type of connection that Bull is trying to create, and some options that `bull` would like to set for that connection.
 
@@ -123,7 +123,7 @@ Redis connections somewhere and disconnect them after you shut down all the queu
 The `bclient` connection however is a "blocking client" and is used to wait for new jobs on a single queue at a time.  For this reason it cannot be shared and a
 new connection should be returned each time.
 
-**Advanced Settings**
+#### Advanced Settings
 
 **Warning:** Do not override these advanced settings unless you understand the internals of the queue.
 
@@ -781,7 +781,7 @@ clean(grace: number, status?: string, limit?: number): Promise<number[]>
 
 Tells the queue remove jobs of a specific type created outside of a grace period.
 
-**Example**
+#### Example
 
 ```js
 queue.on('cleaned', function (jobs, type) {
@@ -810,7 +810,7 @@ is performed iterativelly. However the queue is always paused during this proces
 if the queue gets unpaused during the obliteration by another script, the call
 will fail with the removed items it managed to remove until the failure.
 
-**Example**
+#### Example
 
 ```js
 // Removes everything but only if there are no active jobs
@@ -836,7 +836,7 @@ progress(progress?: number | object): Promise
 Updates a job progress if called with an argument.
 Return a promise resolving to the current job's progress if called without argument.
 
-**Arguments**
+#### Arguments
 
 ```js
   progress: number; Job progress number or any serializable object representing progress or similar.
