@@ -297,7 +297,9 @@ interface JobOpts {
 }
 ```
 
-Note that jobs are _not_ proactively stopped after the given `timeout`. The job is marked as failed
+#### Timeout Implementation
+
+It is important to note that jobs are _not_ proactively stopped after the given `timeout`. The job is marked as failed
 and the job's promise is rejected, but Bull has no way to stop the processor function externally.
 
 If you need to a job to stop processing after it times out, here are a couple suggestions:
