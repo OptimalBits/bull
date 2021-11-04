@@ -297,6 +297,14 @@ interface JobOpts {
 }
 ```
 
+Note that jobs are _not_ proactively stopped after the given `timeout`. The job is marked as failed
+and the job's promise is rejected, but Bull has no way to stop the processor function externally.
+
+If you need to a job to stop processing after it times out, here are a couple suggestions:
+ - Have the job itself periodically check `job.getStatus()`, and exit if the status becomes `'failed'`
+ - Implement the job as a _cancelable promise_. If the processor's promise has a `cancel()` method, it will
+   be called when a job times out, and the job can respond accordingly.
+
 #### Repeated Job Details
 ```typescript
 interface RepeatOpts {
@@ -313,7 +321,9 @@ interface RepeatOpts {
 
 Adding a job with the `repeat` option set will actually do two things immediately: create a Repeatable Job configuration,
 and schedule a regular delayed job for the job's first run. This first run will be scheduled "on the hour", that is if you create
-a job that repeats every 15 minutes at 4:07, the job will first run at 4:15, then 4:30, and so on.
+a job that repeats every 15 minutes at 4:07, the job will first run at 4:15, then 4:30, and so on. If `startDate` is set, the job
+will not run before `startDate`, but will still run "on the hour". In the previous example, if `startDate` was set for some day at
+6:05, the same day, the first job would run on that day at 6:15.
 
 The cron expression uses the [cron-parser](https://github.com/harrisiirak/cron-parser) library, see their docs for more details.
 
