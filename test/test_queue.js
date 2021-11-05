@@ -1062,6 +1062,59 @@ describe('Queue', () => {
       });
     });
 
+    describe('canceling jobs that return cancelable promises', () => {
+      beforeEach(() => {
+        queue.process('native', (job) => {
+          job.progress('not canceled')
+          const promise = delay(20)
+          promise.cancel = function() { job.progress('canceled') }
+          return promise
+        });
+        queue.process('promiseLike', (job) => {
+          job.progress('not canceled')
+          const promise = delay(20)
+          return {
+            then: promise.then,
+            catch: promise.catch,
+            cancel: function() { job.progress('canceled') }
+          }
+        })
+
+        queue.on('active', async (job, jobPromise) => {
+          await delay(10)
+          jobPromise.cancel()
+        })
+      })
+
+      it('cancel a job that returns a native promise with a cancel property added', async () => {
+        queue.add('native', {})
+        await delay(100)
+        const job = await queue.getJob(1)
+        expect(job.progress()).to.be.eq('canceled')
+      })
+
+      it('cancel a job with a timeout that returns a native promise with a cancel property added', async () => {
+        queue.add('native', {}, { timeout: 1000 })
+        await delay(100)
+        const job = await queue.getJob(1)
+        expect(job.progress()).to.be.eq('canceled')
+      })
+
+      it('cancel a job that returns a promise-like object with a cancel property', async () => {
+        queue.add('promiseLike', {})
+        await delay(100)
+        const job = await queue.getJob(1)
+        expect(job.progress()).to.be.eq('canceled')
+      })
+
+      it('cancel a job with a timeout that returns a promise-like object with a cancel property', async () => {
+        queue.add('promiseLike',{ timeout: 1000 } )
+        await delay(100)
+        const job = await queue.getJob(1)
+        expect(job.progress()).to.be.eq('canceled')
+      })
+    })
+
     it('process a synchronous job', done => {
       queue.process(job => {
         expect(job.data.foo).to.be.equal('bar');
