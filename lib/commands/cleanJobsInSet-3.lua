@@ -20,10 +20,18 @@ if ARGV[4] == "wait" or ARGV[4] == "active" or ARGV[4] == "paused" then
   isList = true
 end
 
-local jobIds = rcall(command, KEYS[1], 0, -1)
+local limit = tonumber(ARGV[3])
+local range_limit = -1
+
+-- If we're only deleting _n_ items, avoid retrieving all items
+-- for faster performance
+if limit > 0 then
+  range_limit = limit
+end
+
+local jobIds = rcall(command, KEYS[1], 0, range_limit)
 local deleted = {}
 local deletedCount = 0
-local limit = tonumber(ARGV[3])
 local jobTS
 for _, jobId in ipairs(jobIds) do
   if limit > 0 and deletedCount >= limit then
