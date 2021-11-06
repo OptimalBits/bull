@@ -305,7 +305,8 @@ and the job's promise is rejected, but Bull has no way to stop the processor fun
 If you need to a job to stop processing after it times out, here are a couple suggestions:
  - Have the job itself periodically check `job.getStatus()`, and exit if the status becomes `'failed'`
  - Implement the job as a _cancelable promise_. If the processor's promise has a `cancel()` method, it will
-   be called when a job times out, and the job can respond accordingly.
+   be called when a job times out, and the job can respond accordingly. (Note: currently this only works for
+   native Promises, see [#2203](https://github.com/OptimalBits/bull/issues/2203)
  - If you have a way to externally stop a job, add a listener for the `failed` event and do so there.
 
 #### Repeated Job Details
