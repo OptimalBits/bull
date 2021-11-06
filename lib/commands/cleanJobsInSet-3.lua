@@ -36,8 +36,12 @@ local rangeEnd = -1
 
 -- If we're only deleting _n_ items, avoid retrieving all items
 -- for faster performance
+--
+-- Start from the tail of the list, since that's where oldest elements
+-- are generally added for FIFO lists
 if limit > 0 then
-  rangeEnd = limit - 1
+  rangeStart = -1 - limit + 1
+  rangeEnd = -1
 end
 
 local jobIds = rcall(command, setKey, rangeStart, rangeEnd)
@@ -91,8 +95,8 @@ while ((limit <= 0 or deletedCount < limit) and next(jobIds, nil) ~= nil) do
 
   if deletedCount < limit then
     -- We didn't delete enough. Look for more to delete
-    rangeStart = rangeStart + limit
-    rangeEnd = rangeEnd + limit
+    rangeStart = rangeStart - limit
+    rangeEnd = rangeEnd - limit
     jobIds = rcall(command, setKey, rangeStart, rangeEnd)
   end
 end

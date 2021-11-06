@@ -2853,6 +2853,18 @@ describe('Queue', () => {
       expect(len).to.be.eql(2);
     });
 
+    it('shouldn\'t clean anything if all jobs are in grace period', async () => {
+      await queue.add({ some: 'data' });
+      await queue.add({ some: 'data' });
+
+      const cleaned = await queue.clean(5000, 'wait', 1);
+      expect(cleaned.length).to.be.eql(0);
+
+      const cleaned2 = await queue.clean(5000, 'wait');
+      expect(cleaned2.length).to.be.eql(0);
+      expect(await queue.count()).to.be.eql(2);
+    });
+
     it('should properly clean jobs from the priority set', done => {
       const client = new redis(6379, '127.0.0.1', {});
       queue.add({ some: 'data' }, { priority: 5 });
