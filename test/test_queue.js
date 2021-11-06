@@ -2837,6 +2837,22 @@ describe('Queue', () => {
         });
     });
 
+    it('should clean the number of jobs requested even if first jobs timestamp doesn\'t match', async () => {
+      // This job shouldn't get deleted due to the 5000 grace
+      await queue.add({ some: 'data' });
+      // This job should get cleaned since 10000 > 5000 grace
+      const jobToClean = await queue.add({ some: 'data' }, { timestamp: Date.now() - 10000 });
+      // This job shouldn't get deleted due to the 5000 grace
+      await queue.add({ some: 'data' });
+
+      const cleaned = await queue.clean(5000, 'wait', 1);
+      expect(cleaned.length).to.be.eql(1);
+      expect(cleaned[0]).to.eql(jobToClean.id);
+
+      const len = await queue.count();
+      expect(len).to.be.eql(2);
+    });
+
     it('should properly clean jobs from the priority set', done => {
       const client = new redis(6379, '127.0.0.1', {});
       queue.add({ some: 'data' }, { priority: 5 });

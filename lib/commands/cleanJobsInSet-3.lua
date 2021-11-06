@@ -31,16 +31,16 @@ if setName == "wait" or setName == "active" or setName == "paused" then
 end
 
 local limit = tonumber(limitStr)
-local rangeLimit = -1
 local rangeStart = 0
+local rangeEnd = -1
 
 -- If we're only deleting _n_ items, avoid retrieving all items
 -- for faster performance
 if limit > 0 then
-  rangeLimit = limit
+  rangeEnd = limit - 1
 end
 
-local jobIds = rcall(command, setKey, rangeStart, rangeLimit)
+local jobIds = rcall(command, setKey, rangeStart, rangeEnd)
 local deleted = {}
 local deletedCount = 0
 local jobTS
@@ -91,8 +91,9 @@ while ((limit <= 0 or deletedCount < limit) and next(jobIds, nil) ~= nil) do
 
   if deletedCount < limit then
     -- We didn't delete enough. Look for more to delete
-    rangeStart = rangeStart + rangeLimit
-    jobIds = rcall(command, setKey, rangeStart, rangeLimit)
+    rangeStart = rangeStart + limit
+    rangeEnd = rangeEnd + limit
+    jobIds = rcall(command, setKey, rangeStart, rangeEnd)
   end
 end
 
