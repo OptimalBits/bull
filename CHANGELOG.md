@@ -1,3 +1,10 @@
+## [4.1.1](https://github.com/OptimalBits/bull/compare/v4.1.0...v4.1.1) (2021-11-16)
+
+
+### Bug Fixes
+
+* **emit:** protect emit calls fixes [#2213](https://github.com/OptimalBits/bull/issues/2213) ([4978a2b](https://github.com/OptimalBits/bull/commit/4978a2b40ee840ba91e0939e86e1e3b15e8b16e9))
+
 # [4.1.0](https://github.com/OptimalBits/bull/compare/v4.0.0...v4.1.0) (2021-10-31)
 
 
