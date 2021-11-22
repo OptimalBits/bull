@@ -280,7 +280,7 @@ interface JobOpts {
   backoff: number | BackoffOpts; // Backoff setting for automatic retries if the job fails, default strategy: `fixed`
 
   lifo: boolean; // if true, adds the job to the right of the queue instead of the left (default false)
-  timeout: number; // The number of milliseconds after which the job should be fail with a timeout error [optional]
+  timeout: number; // The number of milliseconds after which the job should fail with a timeout error [optional]
 
   jobId: number | string; // Override the job ID - by default, the job ID is a unique
   // integer, but you can use this setting to override it.
