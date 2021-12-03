@@ -26,9 +26,6 @@
     <a href="https://gitter.im/OptimalBits/bull">
       <img src="https://img.shields.io/npm/dm/bull.svg?maxAge=2592000"/>
     </a>
-    <a href="http://travis-ci.org/OptimalBits/bull">
-      <img src="https://img.shields.io/travis/OptimalBits/bull/master.svg"/>
-    </a>
     <a href="http://badge.fury.io/js/bull">
       <img src="https://badge.fury.io/js/bull.svg"/>
     </a>
@@ -40,6 +37,9 @@
     </a>
     <a href="http://isitmaintained.com/project/OptimalBits/bull">
       <img src="http://isitmaintained.com/badge/resolution/optimalbits/bull.svg"/>
+    </a>
+        <a href="https://twitter.com/manast">
+      <img src="https://img.shields.io/twitter/follow/manast?label=Stay%20updated&style=social"/>
     </a>
   </p>
 </div>
