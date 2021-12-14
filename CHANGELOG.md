@@ -1,3 +1,10 @@
+## [4.1.2](https://github.com/OptimalBits/bull/compare/v4.1.1...v4.1.2) (2021-12-14)
+
+
+### Performance Improvements
+
+* speed up performance of queue.clean when called with a limit ([#2205](https://github.com/OptimalBits/bull/issues/2205)) ([c20e469](https://github.com/OptimalBits/bull/commit/c20e469dcd71fd13e23e922f2720f55450311d22))
+
 ## [4.1.1](https://github.com/OptimalBits/bull/compare/v4.1.0...v4.1.1) (2021-11-16)
 
 
