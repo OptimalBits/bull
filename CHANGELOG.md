@@ -1,3 +1,10 @@
+## [4.1.4](https://github.com/OptimalBits/bull/compare/v4.1.3...v4.1.4) (2021-12-14)
+
+
+### Bug Fixes
+
+* **queue:** check redisOptions is available fixes [#2186](https://github.com/OptimalBits/bull/issues/2186) ([071c51d](https://github.com/OptimalBits/bull/commit/071c51d16db58ed9f71138058dbbc25f73383e56))
+
 ## [4.1.3](https://github.com/OptimalBits/bull/compare/v4.1.2...v4.1.3) (2021-12-14)
 
 
