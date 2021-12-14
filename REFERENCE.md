@@ -110,7 +110,7 @@ interface AdvancedSettings {
 }
 ```
 
-**Custom or Shared IORedis Connections**
+#### Custom or Shared IORedis Connections
 
 `createClient` is passed a `type` to specify the type of connection that Bull is trying to create, and some options that `bull` would like to set for that connection.
 
@@ -123,7 +123,7 @@ Redis connections somewhere and disconnect them after you shut down all the queu
 The `bclient` connection however is a "blocking client" and is used to wait for new jobs on a single queue at a time.  For this reason it cannot be shared and a
 new connection should be returned each time.
 
-**Advanced Settings**
+#### Advanced Settings
 
 **Warning:** Do not override these advanced settings unless you understand the internals of the queue.
 
@@ -297,6 +297,18 @@ interface JobOpts {
 }
 ```
 
+#### Timeout Implementation
+
+It is important to note that jobs are _not_ proactively stopped after the given `timeout`. The job is marked as failed
+and the job's promise is rejected, but Bull has no way to stop the processor function externally.
+
+If you need to a job to stop processing after it times out, here are a couple suggestions:
+ - Have the job itself periodically check `job.getStatus()`, and exit if the status becomes `'failed'`
+ - Implement the job as a _cancelable promise_. If the processor's promise has a `cancel()` method, it will
+   be called when a job times out, and the job can respond accordingly. (Note: currently this only works for
+   native Promises, see [#2203](https://github.com/OptimalBits/bull/issues/2203)
+ - If you have a way to externally stop a job, add a listener for the `failed` event and do so there.
+
 #### Repeated Job Details
 ```typescript
 interface RepeatOpts {
@@ -313,7 +325,9 @@ interface RepeatOpts {
 
 Adding a job with the `repeat` option set will actually do two things immediately: create a Repeatable Job configuration,
 and schedule a regular delayed job for the job's first run. This first run will be scheduled "on the hour", that is if you create
-a job that repeats every 15 minutes at 4:07, the job will first run at 4:15, then 4:30, and so on.
+a job that repeats every 15 minutes at 4:07, the job will first run at 4:15, then 4:30, and so on. If `startDate` is set, the job
+will not run before `startDate`, but will still run "on the hour". In the previous example, if `startDate` was set for some day at
+6:05, the same day, the first job would run on that day at 6:15.
 
 The cron expression uses the [cron-parser](https://github.com/harrisiirak/cron-parser) library, see their docs for more details.
 
@@ -768,7 +782,7 @@ clean(grace: number, status?: string, limit?: number): Promise<number[]>
 
 Tells the queue remove jobs of a specific type created outside of a grace period.
 
-**Example**
+#### Example
 
 ```js
 queue.on('cleaned', function (jobs, type) {
@@ -797,7 +811,7 @@ is performed iterativelly. However the queue is always paused during this proces
 if the queue gets unpaused during the obliteration by another script, the call
 will fail with the removed items it managed to remove until the failure.
 
-**Example**
+#### Example
 
 ```js
 // Removes everything but only if there are no active jobs
@@ -823,7 +837,7 @@ progress(progress?: number | object): Promise
 Updates a job progress if called with an argument.
 Return a promise resolving to the current job's progress if called without argument.
 
-**Arguments**
+#### Arguments
 
 ```js
   progress: number; Job progress number or any serializable object representing progress or similar.
