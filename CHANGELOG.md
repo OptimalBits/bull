@@ -1,3 +1,10 @@
+## [4.1.3](https://github.com/OptimalBits/bull/compare/v4.1.2...v4.1.3) (2021-12-14)
+
+
+### Bug Fixes
+
+* typo on url ([#2195](https://github.com/OptimalBits/bull/issues/2195)) ([7e7d9cb](https://github.com/OptimalBits/bull/commit/7e7d9cb58d7cb5c1a92020f7c4333932526d8e98))
+
 ## [4.1.2](https://github.com/OptimalBits/bull/compare/v4.1.1...v4.1.2) (2021-12-14)
 
 
