@@ -405,7 +405,7 @@ describe('Queue', () => {
     });
   });
 
-  describe(' a worker', () => {
+  describe('a worker', () => {
     let queue;
 
     beforeEach(() => {
@@ -2121,6 +2121,18 @@ describe('Queue', () => {
       queue.on('failed', cb);
       queue.on('error', done);
     });
+
+    it ('should share child pool across all different queues created' ,async  () => {
+      const [queueA, queueB ] = await Promise.all([
+        utils.newQueue('queueA', { settings: { isSharedChildPool: true } }),
+        utils.newQueue('queueB', { settings: { isSharedChildPool: true } })
+      ])
+
+      await Promise.all([queueA.add(), queueB.add()])
+
+      expect(queueA.childPool).to.be.eql(queueB.childPool);
+
+    })
   });
 
   describe('Retries and backoffs', () => {

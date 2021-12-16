@@ -107,6 +107,7 @@ interface AdvancedSettings {
   retryProcessDelay: number = 5000; // delay before processing next job in case of internal error.
   backoffStrategies: {}; // A set of custom backoff strategies keyed by name.
   drainDelay: number = 5; // A timeout for when the queue is in drained state (empty waiting for jobs).
+  isSharedChildPool: boolean = false; // enables multiple queues on the same instance of child pool to share the same instance.
 }
 ```
 
@@ -592,8 +593,8 @@ for the job when it was added.
 removeRepeatableByKey(key: string): Promise<void>
 ```
 
-Removes a given Repeatable Job configuration by its key so that no more repeatable jobs will be processed for this 
-particular configuration. 
+Removes a given Repeatable Job configuration by its key so that no more repeatable jobs will be processed for this
+particular configuration.
 
 There are currently two ways to get the "key" of a repeatable job.
 
@@ -691,7 +692,7 @@ Returns a promise that will return the waiting job counts for the given queue.
 
 ### Queue#getPausedCount
 
-*DEPRECATED* Since only the queue can be paused, getWaitingCount gives the same 
+*DEPRECATED* Since only the queue can be paused, getWaitingCount gives the same
 result.
 
 ```ts
@@ -970,7 +971,7 @@ A queue emits also some useful events:
 })
 
 .on('lock-extension-failed', function (job, err) {
-  // A job failed to extend lock. This will be useful to debug redis 
+  // A job failed to extend lock. This will be useful to debug redis
   // connection issues and jobs getting restarted because workers
   // are not able to extend locks.
 });
