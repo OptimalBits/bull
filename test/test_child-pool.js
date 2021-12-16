@@ -143,10 +143,10 @@ describe('Child pool', () => {
   });
 
   it('should returned a shared child pool is isSharedChildPool is true', () => {
-    expect(childPool(true)).to.be.equal(new childPool(true))
-  })
+    expect(childPool(true)).to.be.equal(new childPool(true));
+  });
 
   it('should return a different childPool if isSharedChildPool is false', () => {
-    expect(childPool()).to.not.be.equal(childPool())
-  })
+    expect(childPool()).to.not.be.equal(childPool());
+  });
 });
