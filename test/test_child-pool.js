@@ -141,4 +141,18 @@ describe('Child pool', () => {
         expect(children).to.include(child);
       });
   });
+
+  it('should kill child after processing is finished and not retain it', function() {
+    const processor = __dirname + '/fixtures/fixture_processor_bar.js';
+
+    pool.setReuseProcesses(false);
+
+    return pool.retain(processor).then(_child => {
+      expect(_child).to.be.ok;
+      pool.release(_child);
+
+      expect(pool.retained).to.be.empty;
+      expect(pool.free[processor]).to.be.empty;
+    });
+  });
 });
