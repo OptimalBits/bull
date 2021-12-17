@@ -2122,16 +2122,6 @@ describe('Queue', () => {
       queue.on('error', done);
     });
 
-    it('should share child pool across all different queues created', async () => {
-      const [queueA, queueB] = await Promise.all([
-        utils.newQueue('queueA', { settings: { isSharedChildPool: true } }),
-        utils.newQueue('queueB', { settings: { isSharedChildPool: true } })
-      ]);
-
-      await Promise.all([queueA.add(), queueB.add()]);
-
-      expect(queueA.childPool).to.be.eql(queueB.childPool);
-    });
   });
 
   describe('Retries and backoffs', () => {
@@ -2848,14 +2838,11 @@ describe('Queue', () => {
         });
     });
 
-    it("should clean the number of jobs requested even if first jobs timestamp doesn't match", async () => {
+    it('should clean the number of jobs requested even if first jobs timestamp doesn\'t match', async () => {
       // This job shouldn't get deleted due to the 5000 grace
       await queue.add({ some: 'data' });
       // This job should get cleaned since 10000 > 5000 grace
-      const jobToClean = await queue.add(
-        { some: 'data' },
-        { timestamp: Date.now() - 10000 }
-      );
+      const jobToClean = await queue.add({ some: 'data' }, { timestamp: Date.now() - 10000 });
       // This job shouldn't get deleted due to the 5000 grace
       await queue.add({ some: 'data' });
 
@@ -2867,7 +2854,7 @@ describe('Queue', () => {
       expect(len).to.be.eql(2);
     });
 
-    it("shouldn't clean anything if all jobs are in grace period", async () => {
+    it('shouldn\'t clean anything if all jobs are in grace period', async () => {
       await queue.add({ some: 'data' });
       await queue.add({ some: 'data' });
 
