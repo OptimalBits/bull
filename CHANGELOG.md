@@ -1,3 +1,10 @@
+# [4.2.0](https://github.com/OptimalBits/bull/compare/v4.1.4...v4.2.0) (2021-12-21)
+
+
+### Features
+
+* **queue:** enabled queues to share childPool instance ([#2237](https://github.com/OptimalBits/bull/issues/2237)) ([16fdbe9](https://github.com/OptimalBits/bull/commit/16fdbe90a05ae2e2bcb134a550a97dc84dfe573e))
+
 ## [4.1.4](https://github.com/OptimalBits/bull/compare/v4.1.3...v4.1.4) (2021-12-14)
 
 
