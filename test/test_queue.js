@@ -405,7 +405,7 @@ describe('Queue', () => {
     });
   });
 
-  describe(' a worker', () => {
+  describe('a worker', () => {
     let queue;
 
     beforeEach(() => {
@@ -2121,6 +2121,7 @@ describe('Queue', () => {
       queue.on('failed', cb);
       queue.on('error', done);
     });
+
   });
 
   describe('Retries and backoffs', () => {

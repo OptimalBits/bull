@@ -141,4 +141,22 @@ describe('Child pool', () => {
         expect(children).to.include(child);
       });
   });
+
+  it('should returned a shared child pool is isSharedChildPool is true', () => {
+    expect(childPool(true)).to.be.equal(new childPool(true));
+  });
+
+  it('should return a different childPool if isSharedChildPool is false', () => {
+    expect(childPool()).to.not.be.equal(childPool());
+  });
+
+  it('should not overwrite the the childPool singleton when isSharedChildPool is false', () => {
+    const childPoolA = new childPool(true)
+    const childPoolB = new childPool(false)
+    const childPoolC = new childPool(true);
+
+    expect(childPoolA).to.be.equal(childPoolC)
+    expect(childPoolB).to.not.be.equal(childPoolA)
+    expect(childPoolB).to.not.be.equal(childPoolC)
+  })
 });
