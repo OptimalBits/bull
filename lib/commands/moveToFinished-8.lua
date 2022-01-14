@@ -49,6 +49,8 @@ if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
 
   -- Remove from active list
   rcall("LREM", KEYS[1], -1, ARGV[1])
+  -- Remove from wait list
+  rcall("LREM", KEYS[4], -1, ARGV[1])
 
   -- Remove job?
   local removeJobs = tonumber(ARGV[6])
