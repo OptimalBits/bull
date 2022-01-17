@@ -1,3 +1,10 @@
+## [4.2.1](https://github.com/OptimalBits/bull/compare/v4.2.0...v4.2.1) (2022-01-17)
+
+
+### Bug Fixes
+
+* **sandbox:** exit if uncaughtException ([43dc2e6](https://github.com/OptimalBits/bull/commit/43dc2e69dfa0cbaf960ce6f1bd6c4125b1052ff9))
+
 # [4.2.0](https://github.com/OptimalBits/bull/compare/v4.1.4...v4.2.0) (2021-12-21)
 
 
