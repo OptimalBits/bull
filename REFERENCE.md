@@ -278,7 +278,8 @@ interface JobOpts {
 
   repeat: RepeatOpts; // Repeat job according to a cron specification, see below for details.
 
-  backoff: number | BackoffOpts; // Backoff setting for automatic retries if the job fails, default strategy: `fixed`
+  backoff: number | BackoffOpts; // Backoff setting for automatic retries if the job fails, default strategy: `fixed`.
+  // Needs `attempts` to be set.
 
   lifo: boolean; // if true, adds the job to the right of the queue instead of the left (default false)
   timeout: number; // The number of milliseconds after which the job should fail with a timeout error [optional]
