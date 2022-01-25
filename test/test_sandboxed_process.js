@@ -485,4 +485,33 @@ describe('sandboxed process', () => {
 
     expect(queueA.childPool).to.not.be.equal(queueB.childPool);
   })
+
+  it('should initialized childPool if initChildPool is passed in the constructor', async () => {
+    const queue = await utils.newQueue('queue', { settings: { initChildPool: true } });
+
+    expect(queue.childPool).to.not.be.null
+  })
+
+  it('should not initialized childPool if initChildPool is false', async () => {
+    const queue = await utils.newQueue('queue', { settings: { initChildPool: false } });
+
+    expect(queue.childPool).to.be.undefined
+  })
+
+  it('should initialized childPool and still be able to process jobs', async () => {
+    const queue = await utils.newQueue('queue', { settings: { initChildPool: true } });
+
+    expect(queue.childPool).to.not.be.null
+
+    const processFile = __dirname + '/fixtures/fixture_processor.js';
+
+    queue.process(processFile)
+
+    queue.add({ foo: 'bar' });
+
+    const { job, value } = await utils.waitForQueueToProcessJob(queue);
+
+    expect(job.data).to.be.eql({ foo: 'bar' });
+    expect(value).to.be.eql(42);
+  })
 });

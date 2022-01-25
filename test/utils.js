@@ -49,11 +49,20 @@ function sleep(ms) {
   });
 }
 
+function waitForQueueToProcessJob(queue) {
+  return new Promise(resolve => {
+    queue.on('completed', (job, value) => {
+      resolve({ job, value })
+    })
+  });
+}
+
 module.exports = {
   simulateDisconnect,
   buildQueue,
   cleanupQueue,
   newQueue,
   cleanupQueues,
-  sleep
+  sleep,
+  waitForQueueToProcessJob
 };
