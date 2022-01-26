@@ -488,8 +488,6 @@ describe('Queue', () => {
 
         const datas = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
 
-        let jobIds;
-
         const processing = new Promise(resolve => {
           queue.on(fail ? 'failed' : 'completed', async job => {
             clock.tick(1000);
@@ -536,7 +534,7 @@ describe('Queue', () => {
           jobOpts.removeOnComplete = opts;
         }
 
-        jobIds = (
+        const jobIds = (
           await Promise.all(datas.map(async data => queue.add(data, jobOpts)))
         ).map(job => job.id);
 
