@@ -1,3 +1,10 @@
+# [4.3.0](https://github.com/OptimalBits/bull/compare/v4.2.1...v4.3.0) (2022-01-26)
+
+
+### Features
+
+* upgrade cron version enabling new cron expressions ([79337a3](https://github.com/OptimalBits/bull/commit/79337a30758ea7e6d6b1536eb0edebcd0b3c8274))
+
 ## [4.2.1](https://github.com/OptimalBits/bull/compare/v4.2.0...v4.2.1) (2022-01-17)
 
 
