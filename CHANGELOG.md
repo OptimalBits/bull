@@ -1,3 +1,10 @@
+# [4.4.0](https://github.com/OptimalBits/bull/compare/v4.3.0...v4.4.0) (2022-01-26)
+
+
+### Features
+
+* add support for removeOn based on time ([90f040c](https://github.com/OptimalBits/bull/commit/90f040c052325da302c99f17111a12d1afbe88bd))
+
 # [4.3.0](https://github.com/OptimalBits/bull/compare/v4.2.1...v4.3.0) (2022-01-26)
 
 
