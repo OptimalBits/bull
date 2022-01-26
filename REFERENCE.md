@@ -290,14 +290,39 @@ interface JobOpts {
   // jobId is unique. If you attempt to add a job with an id that
   // already exists, it will not be added (see caveat below about repeatable jobs).
 
-  removeOnComplete: boolean | number; // If true, removes the job when it successfully
+  removeOnComplete: boolean | number | KeepJobs; // If true, removes the job when it successfully
   // completes. A number specified the amount of jobs to keep. Default behavior is to keep the job in the completed set.
+  // See KeepJobs if using that interface instead.
 
-  removeOnFail: boolean | number; // If true, removes the job when it fails after all attempts. A number specified the amount of jobs to keep
+  removeOnFail: boolean | number | KeepJobs; // If true, removes the job when it fails after all attempts. A number specified the amount of jobs to keep, see KeepJobs if using that interface instead.
   // Default behavior is to keep the job in the failed set.
   stackTraceLimit: number; // Limits the amount of stack trace lines that will be recorded in the stacktrace.
 }
 ```
+
+#### KeepJobs Options
+```typescript
+/**
+ * KeepJobs
+ *
+ * Specify which jobs to keep after finishing. If both age and count are
+ * specified, then the jobs kept will be the ones that satisfies both
+ * properties.
+ */
+export interface KeepJobs {
+  /**
+   * Maximum age in *seconds* for job to be kept.
+   */
+  age?: number;
+
+  /**
+   * Maximum count of jobs to be kept.
+   */
+  count?: number;
+}
+```
+
+---
 
 #### Timeout Implementation
 
