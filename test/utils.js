@@ -49,11 +49,14 @@ function sleep(ms) {
   });
 }
 
-function waitForQueueToProcessJob(queue) {
-  return new Promise(resolve => {
+function waitForQueueToCompleteJob(queue) {
+  return new Promise((resolve, reject) => {
     queue.on('completed', (job, value) => {
       resolve({ job, value })
     })
+    queue.on('failed', (job, err) => {
+      reject({job, err})
+    });
   });
 }
 
@@ -64,5 +67,5 @@ module.exports = {
   newQueue,
   cleanupQueues,
   sleep,
-  waitForQueueToProcessJob
+  waitForQueueToCompleteJob
 };

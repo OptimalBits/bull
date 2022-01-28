@@ -498,20 +498,44 @@ describe('sandboxed process', () => {
     expect(queue.childPool).to.be.undefined
   })
 
-  it('should initialized childPool and still be able to process jobs', async () => {
-    const queue = await utils.newQueue('queue', { settings: { initChildPool: true } });
-
-    expect(queue.childPool).to.not.be.null
-
+  it('should initialized childPool and fork a childProcess for processor using same child', async () => {
     const processFile = __dirname + '/fixtures/fixture_processor.js';
+    await queue.initChildPool(processFile);
+    expect(queue.childPool).to.not.be.null
+    expect(queue.childPool.free[processFile]).to.not.be.empty;
 
     queue.process(processFile)
 
     queue.add({ foo: 'bar' });
 
-    const { job, value } = await utils.waitForQueueToProcessJob(queue);
+    try {
+      const { job, value } = await utils.waitForQueueToCompleteJob(queue);
 
-    expect(job.data).to.be.eql({ foo: 'bar' });
-    expect(value).to.be.eql(42);
-  })
+      expect(queue.childPool.retained).to.be.empty;
+      expect(queue.childPool.getFree(processFile)).to.have.lengthOf(1)
+      expect(job.data).to.be.eql({ foo: 'bar' });
+      expect(value).to.be.eql(42);
+    } catch(error) {
+      expect.fail(error);
+    }
+  });
+
+  it('should have childpool be available for both queues if they are sharing a childPool', async () => {
+    const [queueA, queueB] = await Promise.all([
+      utils.newQueue('queueA', { settings: { isSharedChildPool: true } }),
+      utils.newQueue('queueB', { settings: { isSharedChildPool: true } })
+    ]);
+
+    const processFile = __dirname + '/fixtures/fixture_processor.js';
+    queueA.process(processFile)
+    queueB.process(processFile)
+
+    queueA.initChildPool(processFile)
+
+    await Promise.all([queueA.add(), queueB.add()]);
+
+    expect(queueA.childPool.getFree(processFile)).to.be.eql(queueB.childPool.getFree(processFile));
+    expect(queueA.childPool.retained).to.be.empty;
+    expect(queueA.childPool.getFree(processFile)).to.have.lengthOf(1)
+  });
 });

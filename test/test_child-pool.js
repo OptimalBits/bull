@@ -2,6 +2,7 @@
 
 const expect = require('chai').expect;
 const childPool = require('../lib/process/child-pool');
+const { ChildProcess } = require('child_process')
 
 describe('Child pool', () => {
   let pool;
@@ -158,5 +159,44 @@ describe('Child pool', () => {
     expect(childPoolA).to.be.equal(childPoolC)
     expect(childPoolB).to.not.be.equal(childPoolA)
     expect(childPoolB).to.not.be.equal(childPoolC)
-  })
+  });
+
+  it('should initialize a free child to be forked', async () => {
+    const processor = __dirname + '/fixtures/fixture_processor_bar.js';
+
+    const child = await pool.addFreeChild(processor);
+
+    expect(child).to.be.instanceof(ChildProcess);
+    expect(pool.getFree(processor)).to.not.be.empty;
+    expect(pool.retained).to.be.empty;
+    expect({}).to.be.empty
+  });
+
+  it('should reuse the same child forked from addFreeChild', async () => {
+    const processor = __dirname + '/fixtures/fixture_processor_bar.js';
+
+    const child = await pool.addFreeChild(processor);
+    const _child = await pool.retain(processor);
+
+    expect(child).to.be.ok;
+    expect(_child).to.be.ok;
+    expect(pool.getFree(processor)).to.be.empty;
+    expect(child).to.be.equal(_child)
+  });
+
+  it('should reuse the same child from addFreeChild forked after retaining', async () => {
+    const processor = __dirname + '/fixtures/fixture_processor_bar.js';
+
+    const childA = await pool.addFreeChild(processor);
+    const childB = await pool.retain(processor);
+    pool.release(childB);
+
+    expect(pool.retained).to.be.empty;
+    const childC = await pool.retain(processor);
+
+    expect(pool.getFree(processor)).to.be.empty;
+    expect(childA === childB && childB === childC).to.be.true;
+  });
+
+
 });
