@@ -520,22 +520,34 @@ describe('sandboxed process', () => {
     }
   });
 
-  it('should have childpool be available for both queues if they are sharing a childPool', async () => {
+  it('should have child process be available for both queues if they are sharing a childPool', async () => {
     const [queueA, queueB] = await Promise.all([
       utils.newQueue('queueA', { settings: { isSharedChildPool: true } }),
       utils.newQueue('queueB', { settings: { isSharedChildPool: true } })
     ]);
 
     const processFile = __dirname + '/fixtures/fixture_processor.js';
+    await queueA.initChildPool(processFile)
+
     queueA.process(processFile)
     queueB.process(processFile)
-
-    queueA.initChildPool(processFile)
 
     await Promise.all([queueA.add(), queueB.add()]);
 
     expect(queueA.childPool.getFree(processFile)).to.be.eql(queueB.childPool.getFree(processFile));
     expect(queueA.childPool.retained).to.be.empty;
-    expect(queueA.childPool.getFree(processFile)).to.have.lengthOf(1)
+    expect(queueA.childPool.getFree(processFile)).to.have.lengthOf(2)
+  });
+
+  it('should not initialize child pool if it is called more than once', async () => {
+    const processFile = __dirname + '/fixtures/fixture_processor.js';
+    expect(queue.childPool).to.not.be.ok;
+
+    await queue.initChildPool(processFile);
+    await queue.initChildPool(processFile);
+
+    expect(queue.childPool).to.be.ok;
+    expect(queue.childPool.retained).to.be.empty;
+    expect(queue.childPool.getFree(processFile)).to.have.lengthOf(1)
   });
 });
