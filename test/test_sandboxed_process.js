@@ -539,7 +539,7 @@ describe('sandboxed process', () => {
     expect(queueA.childPool.getFree(processFile)).to.have.lengthOf(2)
   });
 
-  it('should not initialize child pool if it is called more than once', async () => {
+  it('should not initialize child process multiple times if it is called more than once or already available', async () => {
     const processFile = __dirname + '/fixtures/fixture_processor.js';
     expect(queue.childPool).to.not.be.ok;
 
@@ -550,4 +550,18 @@ describe('sandboxed process', () => {
     expect(queue.childPool.retained).to.be.empty;
     expect(queue.childPool.getFree(processFile)).to.have.lengthOf(1)
   });
+
+  it('should not initialize childProcess if any processes are already retained', async () => {
+    const processFile = __dirname + '/fixtures/fixture_processor.js';
+
+    queue.process(processFile)
+    await queue.add();
+    await queue.initChildPool(processFile)
+
+    expect(queue.childPool).to.be.ok;
+    expect(queue.childPool.retained).to.not.be.empty
+    expect(queue.childPool.getFree(processFile)).to.have.lengthOf(0)
+
+
+  })
 });
