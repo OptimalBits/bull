@@ -612,6 +612,59 @@ describe('Queue', () => {
           .catch(done);
       });
 
+      describe('.retryJobs', () => {
+        it('should retry all failed jobs', async () => {
+          const jobCount = 8;
+    
+          let fail = true;
+          queue.process(async () => {
+            await delay(10);
+              if (fail) {
+                throw new Error('failed');
+              }
+          });
+        
+          let order = 0;
+          const failing = new Promise(resolve => {
+            queue.on('failed', job => {
+              expect(order).to.be.eql(job.data.idx);
+              if (order === jobCount - 1) {
+                resolve();
+              }
+              order++;
+            });
+          });
+  
+          for (const index of Array.from(Array(jobCount).keys())) {
+            await queue.add({ idx: index });
+          }
+    
+          await failing;
+    
+          const failedCount = await queue.getJobCounts('failed');
+          expect(failedCount.failed).to.be.equal(jobCount);
+    
+          order = 0;
+          const completing = new Promise(resolve => {
+            queue.on('completed', job => {
+              expect(order).to.be.eql(job.data.idx);
+              if (order === jobCount - 1) {
+                resolve();
+              }
+              order++;
+            });
+          });
+    
+          fail = false;
+          await queue.retryJobs({ count: 2 });
+    
+          await completing;
+    
+          const CompletedCount = await queue.getJobCounts('completed');
+          expect(CompletedCount.completed).to.be.equal(jobCount);
+        });          
+      });
+  
       it('should keep specified number of jobs after completed with removeOnComplete', async () => {
         const keepJobs = 3;
         await testRemoveOnFinish(keepJobs, keepJobs);
