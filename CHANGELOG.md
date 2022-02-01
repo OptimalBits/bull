@@ -1,3 +1,10 @@
+# [4.5.0](https://github.com/OptimalBits/bull/compare/v4.4.0...v4.5.0) (2022-02-01)
+
+
+### Features
+
+* **queue:** add retryJobs for failed status ([501b2cc](https://github.com/OptimalBits/bull/commit/501b2cc49ccd0d7de82fea50144b52fa9879d1f5))
+
 # [4.4.0](https://github.com/OptimalBits/bull/compare/v4.3.0...v4.4.0) (2022-01-26)
 
 
