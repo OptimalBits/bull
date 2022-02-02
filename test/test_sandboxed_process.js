@@ -486,82 +486,58 @@ describe('sandboxed process', () => {
     expect(queueA.childPool).to.not.be.equal(queueB.childPool);
   })
 
-  it('should initialized childPool if initChildPool is passed in the constructor', async () => {
-    const queue = await utils.newQueue('queue', { settings: { initChildPool: true } });
-
-    expect(queue.childPool).to.not.be.null
-  })
-
-  it('should not initialized childPool if initChildPool is false', async () => {
-    const queue = await utils.newQueue('queue', { settings: { initChildPool: false } });
-
-    expect(queue.childPool).to.be.undefined
-  })
-
-  it('should initialized childPool and fork a childProcess for processor using same child', async () => {
-    const processFile = __dirname + '/fixtures/fixture_processor.js';
-    await queue.initChildPool(processFile);
-    expect(queue.childPool).to.not.be.null
-    expect(queue.childPool.free[processFile]).to.not.be.empty;
-
-    queue.process(processFile)
-
-    queue.add({ foo: 'bar' });
-
-    try {
-      const { job, value } = await utils.waitForQueueToCompleteJob(queue);
-
-      expect(queue.childPool.retained).to.be.empty;
-      expect(queue.childPool.getFree(processFile)).to.have.lengthOf(1)
-      expect(job.data).to.be.eql({ foo: 'bar' });
-      expect(value).to.be.eql(42);
-    } catch(error) {
-      expect.fail(error);
-    }
-  });
 
   it('should have child process be available for both queues if they are sharing a childPool', async () => {
     const [queueA, queueB] = await Promise.all([
-      utils.newQueue('queueA', { settings: { isSharedChildPool: true } }),
-      utils.newQueue('queueB', { settings: { isSharedChildPool: true } })
+      utils.newQueue('queueA', { settings: { isSharedChildPool: true, initChildProcess: true } }),
+      utils.newQueue('queueB', { settings: { isSharedChildPool: true, initChildProcess: true } })
     ]);
 
     const processFile = __dirname + '/fixtures/fixture_processor.js';
-    await queueA.initChildPool(processFile)
 
     queueA.process(processFile)
     queueB.process(processFile)
 
     await Promise.all([queueA.add(), queueB.add()]);
 
+    expect(queueA).to.not.be.eql(queueB);
     expect(queueA.childPool.getFree(processFile)).to.be.eql(queueB.childPool.getFree(processFile));
-    expect(queueA.childPool.retained).to.be.empty;
     expect(queueA.childPool.getFree(processFile)).to.have.lengthOf(2)
-  });
-
-  it('should not initialize child process multiple times if it is called more than once or already available', async () => {
-    const processFile = __dirname + '/fixtures/fixture_processor.js';
-    expect(queue.childPool).to.not.be.ok;
-
-    await queue.initChildPool(processFile);
-    await queue.initChildPool(processFile);
-
-    expect(queue.childPool).to.be.ok;
-    expect(queue.childPool.retained).to.be.empty;
-    expect(queue.childPool.getFree(processFile)).to.have.lengthOf(1)
-  });
-
-  it('should not initialize childProcess if any processes are already retained', async () => {
-    const processFile = __dirname + '/fixtures/fixture_processor.js';
-
-    queue.process(processFile)
-    await queue.add();
-    await queue.initChildPool(processFile)
-
-    expect(queue.childPool).to.be.ok;
-    expect(queue.childPool.retained).to.not.be.empty
-    expect(queue.childPool.getFree(processFile)).to.have.lengthOf(0)
-
-
   })
+
+  it('should initialize childPool and fork process if initChildPool is passed during process', async () => {
+    const processFile = __dirname + '/fixtures/fixture_processor.js';
+    const queue = await utils.newQueue('test queue', { settings: { initChildProcess: true } })
+
+    expect(queue.childPool).to.not.be.ok
+    queue.process(processFile)
+
+    await queue.add({ foo: 'bar' });
+
+    try {
+      expect(queue.childPool.retained).to.be.empty;
+      expect(queue.childPool.getFree(processFile)).to.have.lengthOf(1)
+    } catch(error) {
+      expect.fail(error);
+    }
+  });
+
+  it('should not initialize childPool and fork process if initChildPool is passed during process', async () => {
+    const processFile = __dirname + '/fixtures/fixture_processor.js';
+    const queue = await utils.newQueue('test queue', { settings: { initChildProcess: false } })
+
+    expect(queue.childPool).to.not.be.ok
+    queue.process(processFile)
+
+    await queue.add({ foo: 'bar' });
+
+    try {
+
+      expect(queue.childPool.retained).to.be.empty;
+      expect(queue.childPool.getFree(processFile)).to.have.lengthOf(0)
+    } catch(error) {
+      expect.fail(error);
+    }
+  });
+
 });

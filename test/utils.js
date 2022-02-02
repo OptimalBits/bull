@@ -52,10 +52,15 @@ function sleep(ms) {
 function waitForQueueToCompleteJob(queue) {
   return new Promise((resolve, reject) => {
     queue.on('completed', (job, value) => {
-      resolve({ job, value })
+      resolve({ status: 'completed', job, value })
     })
     queue.on('failed', (job, err) => {
-      reject({job, err})
+      reject({ status: 'failed', job, err})
+    });
+
+
+    queue.on('removed', (job) => {
+      reject({ status: 'removed', job });
     });
   });
 }
