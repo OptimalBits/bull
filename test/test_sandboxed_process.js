@@ -486,33 +486,19 @@ describe('sandboxed process', () => {
     expect(queueA.childPool).to.not.be.equal(queueB.childPool);
   })
 
-
-  it('should have child process be available for both queues if they are sharing a childPool', async () => {
-    const [queueA, queueB] = await Promise.all([
-      utils.newQueue('queueA', { settings: { isSharedChildPool: true, initChildProcess: true } }),
-      utils.newQueue('queueB', { settings: { isSharedChildPool: true, initChildProcess: true } })
-    ]);
-
-    const processFile = __dirname + '/fixtures/fixture_processor.js';
-
-    queueA.process(processFile)
-    queueB.process(processFile)
-
-    await Promise.all([queueA.add(), queueB.add()]);
-
-    expect(queueA).to.not.be.eql(queueB);
-    expect(queueA.childPool.getFree(processFile)).to.be.eql(queueB.childPool.getFree(processFile));
-    expect(queueA.childPool.getFree(processFile)).to.have.lengthOf(2)
-  })
-
   it('should initialize childPool and fork process if initChildPool is passed during process', async () => {
     const processFile = __dirname + '/fixtures/fixture_processor.js';
     const queue = await utils.newQueue('test queue', { settings: { initChildProcess: true } })
 
     expect(queue.childPool).to.not.be.ok
+    const waitForJobToBeActive = utils.waitForJobToBeActive(queue);
     queue.process(processFile)
 
     await queue.add({ foo: 'bar' });
+
+    // wait for job to be active  before having application to wait for it to be finished
+    await waitForJobToBeActive;
+    await queue.whenCurrentJobsFinished();
 
     try {
       expect(queue.childPool.retained).to.be.empty;

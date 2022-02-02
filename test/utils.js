@@ -41,27 +41,18 @@ function cleanupQueues() {
   });
 }
 
+function waitForJobToBeActive(queue)  {
+  return new Promise(resolve => queue.on('active', () => {
+    resolve();
+  }));
+}
+
+
 function sleep(ms) {
   return new Promise(resolve => {
     originalSetTimeout(() => {
       resolve();
     }, ms);
-  });
-}
-
-function waitForQueueToCompleteJob(queue) {
-  return new Promise((resolve, reject) => {
-    queue.on('completed', (job, value) => {
-      resolve({ status: 'completed', job, value })
-    })
-    queue.on('failed', (job, err) => {
-      reject({ status: 'failed', job, err})
-    });
-
-
-    queue.on('removed', (job) => {
-      reject({ status: 'removed', job });
-    });
   });
 }
 
@@ -72,5 +63,5 @@ module.exports = {
   newQueue,
   cleanupQueues,
   sleep,
-  waitForQueueToCompleteJob
+  waitForJobToBeActive
 };

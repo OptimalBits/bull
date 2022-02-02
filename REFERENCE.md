@@ -3,7 +3,6 @@
 - [Queue](#queue)
 
   - [Queue#process](#queueprocess)
-  - [Queue#initChildPool](#queueinitchildpool)
   - [Queue#add](#queueadd)
   - [Queue#addBulk](#queueaddBulk)
   - [Queue#pause](#queuepause)
@@ -109,6 +108,7 @@ interface AdvancedSettings {
   backoffStrategies: {}; // A set of custom backoff strategies keyed by name.
   drainDelay: number = 5; // A timeout for when the queue is in drained state (empty waiting for jobs).
   isSharedChildPool: boolean = false; // enables multiple queues on the same instance of child pool to share the same instance.
+  initChildPool: boolean = false // forks child process before consuming jobs.
 }
 ```
 
@@ -252,13 +252,6 @@ queue.process(function (job) {
 });
 ```
 
----
-
-### Queue#initChildPool
-```ts
-initChildPool(processorFile: string): Promise<ChildProcess>
-```
-Manually adds a forked child to be used by sandbox processes. Normally the forked child is lazy-loaded, but by running this function it can manually, so it is available at start
 ---
 
 ### Queue#add
