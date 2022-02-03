@@ -3,6 +3,7 @@
 - [Queue](#queue)
 
   - [Queue#process](#queueprocess)
+  - [Queue#initChildProcess](#queueinitchildprocess)
   - [Queue#add](#queueadd)
   - [Queue#addBulk](#queueaddBulk)
   - [Queue#pause](#queuepause)
@@ -108,7 +109,6 @@ interface AdvancedSettings {
   backoffStrategies: {}; // A set of custom backoff strategies keyed by name.
   drainDelay: number = 5; // A timeout for when the queue is in drained state (empty waiting for jobs).
   isSharedChildPool: boolean = false; // enables multiple queues on the same instance of child pool to share the same instance.
-  initChildPool: boolean = false // forks child process before consuming jobs.
 }
 ```
 
@@ -254,6 +254,13 @@ queue.process(function (job) {
 
 ---
 
+### Queue#initChildProcess
+```ts
+initChildPool(processorFile: string): Promise<ChildProcess>
+```
+Manually adds a forked child to be used by sandbox processes. Normally the forked child is lazy-loaded, but by running this function it can manually, so it is available at start
+---
+
 ### Queue#add
 
 ```ts
@@ -306,11 +313,11 @@ It is important to note that jobs are _not_ proactively stopped after the given 
 and the job's promise is rejected, but Bull has no way to stop the processor function externally.
 
 If you need to a job to stop processing after it times out, here are a couple suggestions:
- - Have the job itself periodically check `job.getStatus()`, and exit if the status becomes `'failed'`
- - Implement the job as a _cancelable promise_. If the processor's promise has a `cancel()` method, it will
-   be called when a job times out, and the job can respond accordingly. (Note: currently this only works for
-   native Promises, see [#2203](https://github.com/OptimalBits/bull/issues/2203)
- - If you have a way to externally stop a job, add a listener for the `failed` event and do so there.
+- Have the job itself periodically check `job.getStatus()`, and exit if the status becomes `'failed'`
+- Implement the job as a _cancelable promise_. If the processor's promise has a `cancel()` method, it will
+  be called when a job times out, and the job can respond accordingly. (Note: currently this only works for
+  native Promises, see [#2203](https://github.com/OptimalBits/bull/issues/2203)
+- If you have a way to externally stop a job, add a listener for the `failed` event and do so there.
 
 #### Repeated Job Details
 ```typescript
@@ -561,15 +568,15 @@ value is the total amount of logs, useful for implementing pagination.
 
 ```ts
 getRepeatableJobs(start?: number, end?: number, asc?: boolean): Promise<{
-          key: string,
-          name: string,
-          id: number | string,
-          endDate: Date,
-          tz: string,
-          cron: string,
-          every: number,
-          next: number
-        }[]>
+  key: string,
+  name: string,
+  id: number | string,
+  endDate: Date,
+  tz: string,
+  cron: string,
+  every: number,
+  next: number
+}[]>
 ```
 
 Returns a promise that will return an array of Repeatable Job configurations. Optional parameters for range and ordering are provided.
@@ -713,7 +720,7 @@ The GetterOpts can be used for configure some aspects from the getters.
 
 ```ts
 interface GetterOpts
-  excludeData: boolean; // Exclude the data field of the jobs.
+excludeData: boolean; // Exclude the data field of the jobs.
 ```
 
 ### Queue#getWaiting
@@ -959,49 +966,49 @@ A queue emits also some useful events:
   // An error occured.
 })
 
-.on('waiting', function (jobId) {
-  // A Job is waiting to be processed as soon as a worker is idling.
-});
+  .on('waiting', function (jobId) {
+    // A Job is waiting to be processed as soon as a worker is idling.
+  });
 
 .on('active', function (job, jobPromise) {
   // A job has started. You can use `jobPromise.cancel()`` to abort it.
 })
 
-.on('stalled', function (job) {
-  // A job has been marked as stalled. This is useful for debugging job
-  // workers that crash or pause the event loop.
-})
+  .on('stalled', function (job) {
+    // A job has been marked as stalled. This is useful for debugging job
+    // workers that crash or pause the event loop.
+  })
 
-.on('lock-extension-failed', function (job, err) {
-  // A job failed to extend lock. This will be useful to debug redis
-  // connection issues and jobs getting restarted because workers
-  // are not able to extend locks.
-});
+  .on('lock-extension-failed', function (job, err) {
+    // A job failed to extend lock. This will be useful to debug redis
+    // connection issues and jobs getting restarted because workers
+    // are not able to extend locks.
+  });
 
 .on('progress', function (job, progress) {
   // A job's progress was updated!
 })
 
-.on('completed', function (job, result) {
-  // A job successfully completed with a `result`.
-})
+  .on('completed', function (job, result) {
+    // A job successfully completed with a `result`.
+  })
 
-.on('failed', function (job, err) {
-  // A job failed with reason `err`!
-})
+  .on('failed', function (job, err) {
+    // A job failed with reason `err`!
+  })
 
-.on('paused', function () {
-  // The queue has been paused.
-})
+  .on('paused', function () {
+    // The queue has been paused.
+  })
 
-.on('resumed', function (job) {
-  // The queue has been resumed.
-})
+  .on('resumed', function (job) {
+    // The queue has been resumed.
+  })
 
-.on('cleaned', function (jobs, type) {
-  // Old jobs have been cleaned from the queue. `jobs` is an array of cleaned
-  // jobs, and `type` is the type of jobs cleaned.
-});
+  .on('cleaned', function (jobs, type) {
+    // Old jobs have been cleaned from the queue. `jobs` is an array of cleaned
+    // jobs, and `type` is the type of jobs cleaned.
+  });
 
 .on('drained', function () {
   // Emitted every time the queue has processed all the waiting jobs (even if there can be some delayed jobs not yet processed)

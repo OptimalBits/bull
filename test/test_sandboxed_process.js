@@ -469,6 +469,8 @@ describe('sandboxed process', () => {
 
 
     expect(queueA.childPool).to.be.eql(queueB.childPool);
+
+    await Promise.all([queueA.close(), queueB.close()])
   });
 
   it('should not share childPool across different queues if isSharedChildPool isn\'t specified', async () => {
@@ -484,6 +486,7 @@ describe('sandboxed process', () => {
     await Promise.all([queueA.add(), queueB.add()]);
 
     expect(queueA.childPool).to.not.be.equal(queueB.childPool);
+    await Promise.all([queueA.close(), queueB.close()])
   })
 
   it('should initialize childPool and fork process if initChildPool is passed during process', async () => {
@@ -506,7 +509,35 @@ describe('sandboxed process', () => {
     } catch(error) {
       expect.fail(error);
     }
+    finally {
+      await queue.close()
+    }
   });
+
+  it('it should fork one process for multiple queues if they are sharing the childPool', async () => {
+    const queues = await Promise.all(
+      new Array(3).fill(null)
+        .map((_, index) =>
+          utils.newQueue(`queue: ${index}`, { settings: { isSharedChildPool: true, initChildProcess: true } })
+        )
+    );
+    const processFile = __dirname + '/fixtures/fixture_processor.js';
+    queues.forEach(queue => queue.process(processFile));
+    for (const queue of queues) {
+      await queue.initChildProcess(processFile);
+      const waitPromise = utils.waitForJobToBeActive(queue);
+      queue.add({}); // add a job
+
+      await waitPromise;
+      await queue.whenCurrentJobsFinished();
+
+      expect(queue.childPool).to.be.ok;
+      expect(queue.childPool.retained).to.be.empty;
+      expect(queue.childPool.getFree(processFile)).to.have.lengthOf(1);
+    }
+
+    await Promise.all(queues.map(queue => queue.close()));
+  }).timeout(10000);
 
   it('should not initialize childPool and fork process if initChildPool is passed during process', async () => {
     const processFile = __dirname + '/fixtures/fixture_processor.js';
@@ -523,6 +554,9 @@ describe('sandboxed process', () => {
       expect(queue.childPool.getFree(processFile)).to.have.lengthOf(0)
     } catch(error) {
       expect.fail(error);
+    }
+    finally {
+      await queue.close();
     }
   });
 
