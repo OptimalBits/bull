@@ -475,6 +475,73 @@ describe('Queue', () => {
     });
 
     describe('auto job removal', () => {
+      async function testRemoveOnFinish(opts, expectedCount, fail) {
+        const clock = sinon.useFakeTimers();
+        clock.reset();
+
+        queue.process(async job => {
+          await job.log('test log');
+          if (fail) {
+            throw new Error('job failed');
+          }
+        });
+
+        const datas = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+
+        const processing = new Promise(resolve => {
+          queue.on(fail ? 'failed' : 'completed', async job => {
+            clock.tick(1000);
+
+            if (job.data == 14) {
+              const counts = await queue.getJobCounts(
+                fail ? 'failed' : 'completed'
+              );
+
+              if (fail) {
+                expect(counts.failed).to.be.equal(expectedCount);
+              } else {
+                expect(counts.completed).to.be.equal(expectedCount);
+              }
+
+              await Promise.all(
+                jobIds.map(async (jobId, index) => {
+                  const job = await queue.getJob(jobId);
+                  const logs = await queue.getJobLogs(jobId);
+
+                  try {
+                    if (index >= datas.length - expectedCount) {
+                      expect(job).to.not.be.equal(null);
+                      expect(logs.logs).to.not.be.empty;
+                    } else {
+                      expect(job).to.be.equal(null);
+                      expect(logs.logs).to.be.empty;
+                    }
+                  } catch (err) {
+                    console.error(err);
+                  }
+                })
+              );
+
+              resolve();
+            }
+          });
+        });
+
+        const jobOpts = {};
+        if (fail) {
+          jobOpts.removeOnFail = opts;
+        } else {
+          jobOpts.removeOnComplete = opts;
+        }
+
+        const jobIds = (
+          await Promise.all(datas.map(async data => queue.add(data, jobOpts)))
+        ).map(job => job.id);
+
+        await processing;
+        clock.restore();
+      }
+
       it('should remove job after completed if removeOnComplete', done => {
         queue
           .process((job, jobDone) => {
@@ -545,6 +612,82 @@ describe('Queue', () => {
           .catch(done);
       });
 
+      describe('.retryJobs', () => {
+        it('should retry all failed jobs', async () => {
+          const jobCount = 8;
+    
+          let fail = true;
+          queue.process(async () => {
+            await delay(10);
+              if (fail) {
+                throw new Error('failed');
+              }
+          });
+        
+          let order = 0;
+          const failing = new Promise(resolve => {
+            queue.on('failed', job => {
+              expect(order).to.be.eql(job.data.idx);
+              if (order === jobCount - 1) {
+                resolve();
+              }
+              order++;
+            });
+          });
+  
+          for (const index of Array.from(Array(jobCount).keys())) {
+            await queue.add({ idx: index });
+          }
+    
+          await failing;
+    
+          const failedCount = await queue.getJobCounts('failed');
+          expect(failedCount.failed).to.be.equal(jobCount);
+    
+          order = 0;
+          const completing = new Promise(resolve => {
+            queue.on('completed', job => {
+              expect(order).to.be.eql(job.data.idx);
+              if (order === jobCount - 1) {
+                resolve();
+              }
+              order++;
+            });
+          });
+    
+          fail = false;
+          await queue.retryJobs({ count: 2 });
+    
+          await completing;
+    
+          const CompletedCount = await queue.getJobCounts('completed');
+          expect(CompletedCount.completed).to.be.equal(jobCount);
+        });          
+      });
+  
+      it('should keep specified number of jobs after completed with removeOnComplete', async () => {
+        const keepJobs = 3;
+        await testRemoveOnFinish(keepJobs, keepJobs);
+      });
+
+      it('should keep of jobs newer than specified after completed with removeOnComplete', async () => {
+        const age = 7;
+        await testRemoveOnFinish({ age }, age);
+      });
+
+      it('should keep of jobs newer than specified and up to a count completed with removeOnComplete', async () => {
+        const age = 7;
+        const count = 5;
+        await testRemoveOnFinish({ age, count }, count);
+      });
+
+      it('should keep of jobs newer than specified and up to a count fail with removeOnFail', async () => {
+        const age = 7;
+        const count = 5;
+        await testRemoveOnFinish({ age, count }, count, true);
+      });
+
+      /*
       it('should keep specified number of jobs after completed with removeOnComplete', async () => {
         const keepJobs = 3;
         queue.process(async job => {
@@ -584,6 +727,7 @@ describe('Queue', () => {
           });
         });
       });
+      */
 
       it('should keep specified number of jobs after completed with global removeOnComplete', async () => {
         const keepJobs = 3;
@@ -2121,7 +2265,6 @@ describe('Queue', () => {
       queue.on('failed', cb);
       queue.on('error', done);
     });
-
   });
 
   describe('Retries and backoffs', () => {
@@ -2838,11 +2981,14 @@ describe('Queue', () => {
         });
     });
 
-    it('should clean the number of jobs requested even if first jobs timestamp doesn\'t match', async () => {
+    it("should clean the number of jobs requested even if first jobs timestamp doesn't match", async () => {
       // This job shouldn't get deleted due to the 5000 grace
       await queue.add({ some: 'data' });
       // This job should get cleaned since 10000 > 5000 grace
-      const jobToClean = await queue.add({ some: 'data' }, { timestamp: Date.now() - 10000 });
+      const jobToClean = await queue.add(
+        { some: 'data' },
+        { timestamp: Date.now() - 10000 }
+      );
       // This job shouldn't get deleted due to the 5000 grace
       await queue.add({ some: 'data' });
 
@@ -2854,7 +3000,7 @@ describe('Queue', () => {
       expect(len).to.be.eql(2);
     });
 
-    it('shouldn\'t clean anything if all jobs are in grace period', async () => {
+    it("shouldn't clean anything if all jobs are in grace period", async () => {
       await queue.add({ some: 'data' });
       await queue.add({ some: 'data' });
 
