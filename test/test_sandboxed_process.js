@@ -488,10 +488,10 @@ describe('sandboxed process', () => {
   it('should fail if the process file is broken', async () => {
     const processFile = __dirname + '/fixtures/fixture_processor_broken.js';
     queue.process(processFile);
-    const job = await queue.add('test', { exitCode: 1 });
+    await queue.add('test', {});
 
     return new Promise(resolve => {
-      queue.on('failed', (job, err) => {
+      queue.on('failed', () => {
         resolve();
       });
     });
