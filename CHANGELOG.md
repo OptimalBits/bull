@@ -1,3 +1,10 @@
+## [4.5.1](https://github.com/OptimalBits/bull/compare/v4.5.0...v4.5.1) (2022-02-06)
+
+
+### Bug Fixes
+
+* **sandbox:** broken processor files should fail jobs ([dd0b853](https://github.com/OptimalBits/bull/commit/dd0b853a516c32baac535395377a19e361964dc8))
+
 # [4.5.0](https://github.com/OptimalBits/bull/compare/v4.4.0...v4.5.0) (2022-02-01)
 
 
