@@ -51,48 +51,46 @@ if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
   rcall("LREM", KEYS[1], -1, ARGV[1])
 
   -- Remove job?
-  local removeJobs = tonumber(ARGV[6])
-  if removeJobs ~= 1 then
-    -- Add to complete/failed set
-    rcall("ZADD", KEYS[2], ARGV[2], ARGV[1])
-    rcall("HMSET", KEYS[3], ARGV[3], ARGV[4], "finishedOn", ARGV[2]) -- "returnvalue" / "failedReason" and "finishedOn"
+  local keepJobs = cmsgpack.unpack(ARGV[6])
+  local maxCount = keepJobs['count']
+  local maxAge = keepJobs['age']
+  local targetSet = KEYS[2]
+  local timestamp = ARGV[2]
 
-    -- Remove old jobs?
-    if removeJobs and removeJobs > 1 then
-      local start = removeJobs - 1
-      local jobIds = rcall("ZREVRANGE", KEYS[2], start, -1)
+  if maxCount ~= 0 then
+
+    -- Add to complete/failed set
+    rcall("ZADD", targetSet, timestamp, ARGV[1])
+    rcall("HMSET", KEYS[3], ARGV[3], ARGV[4], "finishedOn", timestamp) -- "returnvalue" / "failedReason" and "finishedOn"
+
+    local function removeJobs(jobIds)
       for i, jobId in ipairs(jobIds) do
         local jobKey = ARGV[9] .. jobId
         local jobLogKey = jobKey .. ':logs'
         rcall("DEL", jobKey, jobLogKey)
       end
-      rcall("ZREMRANGEBYRANK", KEYS[2], 0, -removeJobs);
+    end
+    
+    -- Remove old jobs?
+    if maxAge ~= nil then
+      local start = timestamp - maxAge * 1000
+      local jobIds = rcall("ZREVRANGEBYSCORE", targetSet, start, "-inf")
+      removeJobs(jobIds)
+      rcall("ZREMRANGEBYSCORE", targetSet, "-inf", start)
+    end
+
+    if maxCount ~= nil and maxCount > 0 then
+      local start = maxCount
+      local jobIds = rcall("ZREVRANGE", targetSet, start, -1)
+      removeJobs(jobIds)
+      rcall("ZREMRANGEBYRANK", targetSet, 0, -(maxCount + 1));
     end
   else
     local jobLogKey = KEYS[3] .. ':logs'
     rcall("DEL", KEYS[3], jobLogKey)
   end
 
-  rcall("PUBLISH", KEYS[2], ARGV[7])
-
-  -- -- Check if we should get from the delayed set instead of the waiting list
-  -- local delayedJobId = rcall("ZRANGEBYSCORE", KEYS[7], 0, tonumber(ARGV[2]) * 0x1000, "LIMIT", 0, 1)[1]
-  -- if delayedJobId ~= nil then
-  --   local jobId = delayedJobId
-  --   if jobId then
-  --     local jobKey = ARGV[9] .. jobId
-  --     local lockKey = jobKey .. ':lock'
-
-  --     -- get a lock
-  --     rcall("SET", lockKey, ARGV[11], "PX", ARGV[10])
-
-  --     rcall("ZREM", KEYS[5], jobId) -- remove from priority
-  --     rcall("PUBLISH", KEYS[6], jobId)
-  --     rcall("HSET", jobKey, "processedOn", ARGV[2]) 
-
-  --     return {rcall("HGETALL", jobKey), jobId} -- get job data
-  --   end
-  -- end
+  rcall("PUBLISH", targetSet, ARGV[7])
 
   -- Try to get next job to avoid an extra roundtrip if the queue is not closing, 
   -- and not rate limited.

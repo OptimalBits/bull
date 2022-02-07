@@ -1,3 +1,31 @@
+## [4.5.1](https://github.com/OptimalBits/bull/compare/v4.5.0...v4.5.1) (2022-02-06)
+
+
+### Bug Fixes
+
+* **sandbox:** broken processor files should fail jobs ([dd0b853](https://github.com/OptimalBits/bull/commit/dd0b853a516c32baac535395377a19e361964dc8))
+
+# [4.5.0](https://github.com/OptimalBits/bull/compare/v4.4.0...v4.5.0) (2022-02-01)
+
+
+### Features
+
+* **queue:** add retryJobs for failed status ([501b2cc](https://github.com/OptimalBits/bull/commit/501b2cc49ccd0d7de82fea50144b52fa9879d1f5))
+
+# [4.4.0](https://github.com/OptimalBits/bull/compare/v4.3.0...v4.4.0) (2022-01-26)
+
+
+### Features
+
+* add support for removeOn based on time ([90f040c](https://github.com/OptimalBits/bull/commit/90f040c052325da302c99f17111a12d1afbe88bd))
+
+# [4.3.0](https://github.com/OptimalBits/bull/compare/v4.2.1...v4.3.0) (2022-01-26)
+
+
+### Features
+
+* upgrade cron version enabling new cron expressions ([79337a3](https://github.com/OptimalBits/bull/commit/79337a30758ea7e6d6b1536eb0edebcd0b3c8274))
+
 ## [4.2.1](https://github.com/OptimalBits/bull/compare/v4.2.0...v4.2.1) (2022-01-17)
 
 
