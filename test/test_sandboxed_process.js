@@ -6,6 +6,7 @@ const redis = require('ioredis');
 const _ = require('lodash');
 const delay = require('delay');
 const pReflect = require('p-reflect');
+const ChildPool = require('../').ChildPool
 
 describe('sandboxed process', () => {
   let queue;
@@ -500,74 +501,82 @@ describe('sandboxed process', () => {
     });
   });
 
-  it('should initialize childPool and fork process if initChildPool is passed during process', async () => {
+  it('should have a forked child available for the queue class to use.', async () => {
     const processFile = __dirname + '/fixtures/fixture_processor.js';
-    const queue = await utils.newQueue('test queue', { settings: { initChildProcess: true } })
+    const childPool = new ChildPool();
+    await childPool.addFreeChild(processFile)
 
-    expect(queue.childPool).to.not.be.ok
-    const waitForJobToBeActive = utils.waitForJobToBeActive(queue);
-    queue.process(processFile)
 
-    await queue.add({ foo: 'bar' });
+    const testQueue = await utils.newQueue('test queue', { settings: { isSharedChildPool: true, childPool  } });
+    testQueue.process(processFile);
+    await testQueue.add();
+    await Promise.resolve();
 
-    // wait for job to be active  before having application to wait for it to be finished
-    await waitForJobToBeActive;
+    expect(testQueue).to.be.ok;
+    expect(testQueue.childPool).to.be.ok;
+    expect(testQueue.childPool.getFree(processFile)).to.have.lengthOf(1);
+
+    await testQueue.close(true)
+  });
+
+  it('should process jobs right away when a child process if available', async function () {
+    this.timeout(3000)
+    const processFile = __dirname + '/fixtures/fixture_processor.js';
+    const childPool = new ChildPool(true);
+    await childPool.addFreeChild(processFile)
+
+
+    const testQueue = await utils.newQueue('test queue', { settings: { isSharedChildPool: true, childPool  } });
+
+    const waitForActive = utils.waitForJobToBeActive(testQueue);
+    testQueue.process(processFile);
+    await testQueue.add();
+    await waitForActive;
     await queue.whenCurrentJobsFinished();
 
-    try {
-      expect(queue.childPool.retained).to.be.empty;
-      expect(queue.childPool.getFree(processFile)).to.have.lengthOf(1)
-    } catch(error) {
-      expect.fail(error);
-    }
-    finally {
-      await queue.close()
-    }
+    await Promise.resolve();
+
+    expect(testQueue).to.be.ok;
+    expect(testQueue.childPool).to.be.ok;
+
+     await testQueue.close(true)
   });
 
-  it('it should fork one process for multiple queues if they are sharing the childPool', async () => {
-    const queues = await Promise.all(
-      new Array(3).fill(null)
-        .map((_, index) =>
-          utils.newQueue(`queue: ${index}`, { settings: { isSharedChildPool: true, initChildProcess: true } })
-        )
-    );
+  it('should share a childPool passed in for all queues given the same queue', async () => {
     const processFile = __dirname + '/fixtures/fixture_processor.js';
-    queues.forEach(queue => queue.process(processFile));
-    for (const queue of queues) {
-      await queue.initChildProcess(processFile);
-      const waitPromise = utils.waitForJobToBeActive(queue);
-      queue.add({}); // add a job
+    const childPool = new ChildPool();
+    await childPool.addFreeChild(processFile)
 
-      await waitPromise;
-      await queue.whenCurrentJobsFinished();
 
-      expect(queue.childPool).to.be.ok;
-      expect(queue.childPool.retained).to.be.empty;
-      expect(queue.childPool.getFree(processFile)).to.have.lengthOf(1);
-    }
+    const [queueA, queueB] = await Promise.all([
+      utils.newQueue('queueA', { settings: { childPool } }),
+      utils.newQueue('queueB', { settings: { childPool } })
+    ]);
 
-    await Promise.all(queues.map(queue => queue.close()));
-  }).timeout(10000);
+    expect(childPool).to.be.eql(queueA.childPool);
+    expect(queueA.childPool).to.be.eql(queueB.childPool);
 
-  it('should not initialize childPool and fork process if initChildPool is passed during process', async () => {
-    const processFile = __dirname + '/fixtures/fixture_processor.js';
-    const queue = await utils.newQueue('test queue', { settings: { initChildProcess: false } })
-
-    expect(queue.childPool).to.not.be.ok
-    queue.process(processFile)
-
-    await queue.add({ foo: 'bar' });
-
-    try {
-
-      expect(queue.childPool.retained).to.be.empty;
-      expect(queue.childPool.getFree(processFile)).to.have.lengthOf(0)
-    } catch(error) {
-      expect.fail(error);
-    }
-    finally {
-      await queue.close();
-    }
+    Promise.all([await queueA.close(true), await queueB.close(true)]);
   });
+
+  it('should not share queues if one of the queues childPool is passed in', async () => {
+    const processFile = __dirname + '/fixtures/fixture_processor.js';
+    const childPool = new ChildPool();
+
+
+    const [queueA, queueB] = await Promise.all([
+      utils.newQueue('queueA', { settings: { childPool } }),
+      utils.newQueue('queueB', { settings: { isSharedChildPool: true } })
+    ]);
+
+    Promise.all([queueA.process(processFile), queueB.process(processFile)]);
+    await Promise.all([queueA.add(), queueB.add()]);
+
+    expect(queueA).to.not.be.equal(queueB);
+    expect(queueA.childPool).to.not.be.equal(queueB.childPool)
+
+
+    Promise.all([await queueA.close(true), await queueB.close(true)]);
+  });
+
 });

@@ -3,7 +3,6 @@
 - [Queue](#queue)
 
   - [Queue#process](#queueprocess)
-  - [Queue#initChildProcess](#queueinitchildprocess)
   - [Queue#add](#queueadd)
   - [Queue#addBulk](#queueaddBulk)
   - [Queue#pause](#queuepause)
@@ -49,6 +48,10 @@
   - [Job#finished](#jobfinished)
   - [Job#moveToCompleted](#jobMoveToCompleted)
   - [Job#moveToFailed](#jobMoveToFailed)
+
+- [ChildPool](#childpool)
+
+  - [ChildPool#addFreeChild](#childpooladdfreechild)
 
 - [Events](#events)
   - [Global events](#global-events)
@@ -109,6 +112,7 @@ interface AdvancedSettings {
   backoffStrategies: {}; // A set of custom backoff strategies keyed by name.
   drainDelay: number = 5; // A timeout for when the queue is in drained state (empty waiting for jobs).
   isSharedChildPool: boolean = false; // enables multiple queues on the same instance of child pool to share the same instance.
+  childPool: ChildPool = null // enables to pass in child pool into the contructor so it is available for queues sandbox processes.
 }
 ```
 
@@ -252,13 +256,6 @@ queue.process(function (job) {
 });
 ```
 
----
-
-### Queue#initChildProcess
-```ts
-initChildPool(processorFile: string): Promise<ChildProcess>
-```
-Manually adds a forked child to be used by sandbox processes. Normally the forked child is lazy-loaded, but by running this function it can manually, so it is available at start
 ---
 
 ### Queue#add
@@ -980,6 +977,20 @@ moveToFailed(errorInfo:{ message: string; }, ignoreLock?:boolean): Promise<strin
 
 Moves a job to the `failed` queue. Pulls a job from 'waiting' to 'active' and returns a tuple containing the next jobs data and id. If no job is in the `waiting` queue, returns null.
 
+---
+## ChildPool
+
+A job includes all data needed to perform its execution, as well as the progress method needed to update its progress.
+
+The most important property for the user is `Job#data` that includes the object that was passed to [`Queue#add`](#queueadd), and that is normally used to perform the job.
+
+### Job#addFreeChild
+
+```ts
+addFreeChild(processFile: string): Promise<ChildProcess>
+```
+Adds a forked childprocess to be used for process file when called with the [`Queue#process`](#queueprocess) function since forking jobs in nodejs can be slow.
+Forking in Nodejs can be slow depending on the system, and this gives the option to fork consuming jobs and passing to the queue.
 ---
 
 ## Events

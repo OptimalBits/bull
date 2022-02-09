@@ -42,9 +42,17 @@ function cleanupQueues() {
 }
 
 function waitForJobToBeActive(queue)  {
-  return new Promise(resolve => queue.on('active', () => {
-    resolve();
-  }));
+  return new Promise(resolve => {
+    queue.on('active', () => {
+        resolve();
+      }
+    );
+
+    queue.on('global:active', () => {
+        resolve();
+      }
+    );
+  })
 }
 
 
