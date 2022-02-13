@@ -31,7 +31,7 @@ describe('workers', () => {
   it('should get all workers for this queue', async () => {
     queue.process(() => {});
 
-    await delay(100);
+    await queue.bclient.ping();
 
     const workers = await queue.getWorkers();
     expect(workers).to.have.length(1);
