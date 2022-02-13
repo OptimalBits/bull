@@ -3,6 +3,7 @@
 const expect = require('chai').expect;
 const utils = require('./utils');
 const redis = require('ioredis');
+const delay = require('delay');
 
 describe('workers', () => {
   let queue;
@@ -27,11 +28,12 @@ describe('workers', () => {
     });
   });
 
-  it('should get all workers for this queue', () => {
+  it('should get all workers for this queue', async () => {
     queue.process(() => {});
 
-    return queue.getWorkers().then(workers => {
-      expect(workers).to.have.length(1);
-    });
+    await delay(100);
+
+    const workers = await queue.getWorkers();
+    expect(workers).to.have.length(1);
   });
 });
