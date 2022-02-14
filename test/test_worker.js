@@ -3,7 +3,6 @@
 const expect = require('chai').expect;
 const utils = require('./utils');
 const redis = require('ioredis');
-const delay = require('delay');
 
 describe('workers', () => {
   let queue;
