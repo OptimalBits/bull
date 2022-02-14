@@ -1,3 +1,10 @@
+## [4.5.2](https://github.com/OptimalBits/bull/compare/v4.5.1...v4.5.2) (2022-02-14)
+
+
+### Bug Fixes
+
+* **scripts:** make it easier for tools like vercel to find the .lua scripts ([8ab5b1d](https://github.com/OptimalBits/bull/commit/8ab5b1d1c3eecf41b20d97f464030377ece01640))
+
 ## [4.5.1](https://github.com/OptimalBits/bull/compare/v4.5.0...v4.5.1) (2022-02-06)
 
 
