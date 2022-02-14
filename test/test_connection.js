@@ -2,6 +2,7 @@
 
 const expect = require('expect.js');
 const utils = require('./utils');
+const { isRedisReady } = require('../lib/utils');
 const redis = require('ioredis');
 const Queue = require('../lib/queue');
 
@@ -71,30 +72,34 @@ describe('connection', () => {
     }
   });
 
-  it('should recover from a connection loss', done => {
+  it('should recover from a connection loss', async () => {
     queue.on('error', () => {
       // error event has to be observed or the exception will bubble up
     });
 
-    queue
-      .process((job, jobDone) => {
-        expect(job.data.foo).to.be.equal('bar');
-        jobDone();
-        queue.close();
-      })
-      .then(() => {
-        done();
-      })
-      .catch(done);
+    const done = new Promise((resolve, reject) => {
+      queue
+        .process((job, jobDone) => {
+          expect(job.data.foo).to.be.equal('bar');
+          jobDone();
+          queue.close();
+        })
+        .then(() => {
+          resolve();
+        })
+        .catch(reject);
+    });
 
     // Simulate disconnect
-    queue.isReady().then(() => {
-      queue.client.stream.end();
-      queue.client.emit('error', new Error('ECONNRESET'));
+    await queue.isReady();
+    await isRedisReady(queue.client);
+    queue.client.stream.end();
+    queue.client.emit('error', new Error('ECONNRESET'));
 
-      // add something to the queue
-      queue.add({ foo: 'bar' });
-    });
+    // add something to the queue
+    await queue.add({ foo: 'bar' });
+
+    await done;
   });
 
   it('should handle jobs added before and after a redis disconnect', done => {
@@ -188,7 +193,7 @@ describe('connection', () => {
       }
     });
 
-    queue.isReady().then(
+    isRedisReady(queue.client).then(
       () => {
         done(new Error('Did not fail connecting to invalid redis instance'));
       },
@@ -197,5 +202,17 @@ describe('connection', () => {
         queue.close().then(done, done);
       }
     );
+  });
+
+  it('should close cleanly if redis connection fails', async () => {
+    queue = utils.buildQueue('connection fail', {
+      redis: {
+        host: 'localhost',
+        port: 1234,
+        retryStrategy: () => false
+      }
+    });
+
+    await queue.close();
   });
 });
