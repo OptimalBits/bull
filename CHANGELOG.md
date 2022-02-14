@@ -1,3 +1,10 @@
+## [4.5.3](https://github.com/OptimalBits/bull/compare/v4.5.2...v4.5.3) (2022-02-14)
+
+
+### Bug Fixes
+
+* **commands:** do not wait for redis to load commands ([ad7b647](https://github.com/OptimalBits/bull/commit/ad7b6474db426b4970a0d1d3ddb8a032a22c481b))
+
 ## [4.5.2](https://github.com/OptimalBits/bull/compare/v4.5.1...v4.5.2) (2022-02-14)
 
 
