@@ -1,3 +1,10 @@
+## [4.5.4](https://github.com/OptimalBits/bull/compare/v4.5.3...v4.5.4) (2022-02-14)
+
+
+### Bug Fixes
+
+* **queue:** return correct workers with getWorkers() ([193644c](https://github.com/OptimalBits/bull/commit/193644c5ed290901448f8c35ede99e1063a90f4a))
+
 ## [4.5.3](https://github.com/OptimalBits/bull/compare/v4.5.2...v4.5.3) (2022-02-14)
 
 
