@@ -1,3 +1,10 @@
+## [4.5.5](https://github.com/OptimalBits/bull/compare/v4.5.4...v4.5.5) (2022-02-16)
+
+
+### Bug Fixes
+
+* **worker:** better closing when disconnected ([41b9404](https://github.com/OptimalBits/bull/commit/41b940457b3447619c3c2887674a8cebf1508b07))
+
 ## [4.5.4](https://github.com/OptimalBits/bull/compare/v4.5.3...v4.5.4) (2022-02-14)
 
 
