@@ -1,3 +1,10 @@
+## [4.5.6](https://github.com/OptimalBits/bull/compare/v4.5.5...v4.5.6) (2022-02-20)
+
+
+### Bug Fixes
+
+* **sandbox:** wait for result of sending start command ([232ed85](https://github.com/OptimalBits/bull/commit/232ed85d4c980d94dee5d9e4c5b6f8758dbb82d9))
+
 ## [4.5.5](https://github.com/OptimalBits/bull/compare/v4.5.4...v4.5.5) (2022-02-16)
 
 
