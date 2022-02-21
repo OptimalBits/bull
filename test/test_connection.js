@@ -215,4 +215,16 @@ describe('connection', () => {
 
     await queue.close();
   });
+
+  it('should accept ioredis options on the query string', async () => {
+    queue = new Queue(
+      'connection query string',
+      'redis://localhost?tls=RedisCloudFixed'
+    );
+
+    expect(queue.clients[0].options).to.have.property('tls');
+    expect(queue.clients[0].options.tls).to.have.property('ca');
+
+    await queue.close();
+  });
 });
