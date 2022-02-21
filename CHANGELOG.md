@@ -1,3 +1,38 @@
+## [4.5.6](https://github.com/OptimalBits/bull/compare/v4.5.5...v4.5.6) (2022-02-20)
+
+
+### Bug Fixes
+
+* **sandbox:** wait for result of sending start command ([232ed85](https://github.com/OptimalBits/bull/commit/232ed85d4c980d94dee5d9e4c5b6f8758dbb82d9))
+
+## [4.5.5](https://github.com/OptimalBits/bull/compare/v4.5.4...v4.5.5) (2022-02-16)
+
+
+### Bug Fixes
+
+* **worker:** better closing when disconnected ([41b9404](https://github.com/OptimalBits/bull/commit/41b940457b3447619c3c2887674a8cebf1508b07))
+
+## [4.5.4](https://github.com/OptimalBits/bull/compare/v4.5.3...v4.5.4) (2022-02-14)
+
+
+### Bug Fixes
+
+* **queue:** return correct workers with getWorkers() ([193644c](https://github.com/OptimalBits/bull/commit/193644c5ed290901448f8c35ede99e1063a90f4a))
+
+## [4.5.3](https://github.com/OptimalBits/bull/compare/v4.5.2...v4.5.3) (2022-02-14)
+
+
+### Bug Fixes
+
+* **commands:** do not wait for redis to load commands ([ad7b647](https://github.com/OptimalBits/bull/commit/ad7b6474db426b4970a0d1d3ddb8a032a22c481b))
+
+## [4.5.2](https://github.com/OptimalBits/bull/compare/v4.5.1...v4.5.2) (2022-02-14)
+
+
+### Bug Fixes
+
+* **scripts:** make it easier for tools like vercel to find the .lua scripts ([8ab5b1d](https://github.com/OptimalBits/bull/commit/8ab5b1d1c3eecf41b20d97f464030377ece01640))
+
 ## [4.5.1](https://github.com/OptimalBits/bull/compare/v4.5.0...v4.5.1) (2022-02-06)
 
 

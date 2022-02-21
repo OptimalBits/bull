@@ -55,6 +55,58 @@ You can find tutorials and news in this blog: https://blog.taskforce.sh/
 
 ---
 
+### Used by
+
+Bull is popular among large and small organizations, like the following ones:
+
+<table cellspacing="0" cellpadding="0">
+  <tr>
+    <td valign="center">
+      <a href="https://github.com/atlassian/github-for-jira">
+        <img
+          src="https://876297641-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-LUuDmt_xXMfG66Rn1GA%2Fuploads%2FevsJCF6F1tx1ScZwDQOd%2FAtlassian-horizontal-blue-rgb.webp?alt=media&token=2fcd0528-e8bb-4bdd-af35-9d20e313d1a8"
+          width="150"
+          alt="Atlassian"
+      /></a>
+    </td>
+    <td valign="center">
+      <a href="https://github.com/Autodesk">
+        <img
+          src="https://876297641-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-LUuDmt_xXMfG66Rn1GA%2Fuploads%2FvpTe02RdOhUJBA8TdHEE%2Fautodesk-logo-white.png?alt=media&token=326961b4-ea4f-4ded-89a4-e05692eec8ee"
+          width="150"
+          alt="Autodesk"
+      /></a>
+    </td>
+    <td valign="center">
+      <a href="https://github.com/common-voice/common-voice">
+        <img
+          src="https://876297641-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-LUuDmt_xXMfG66Rn1GA%2Fuploads%2F4zPSrubNJKViAzUIftIy%2Fmozilla-logo-bw-rgb.png?alt=media&token=9f93aae2-833f-4cc4-8df9-b7fea0ad5cb5"
+          width="150"
+          alt="Mozilla"
+      /></a>
+    </td>
+    <td valign="center">
+      <a href="https://github.com/nestjs/bull">
+        <img
+          src="https://876297641-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-LUuDmt_xXMfG66Rn1GA%2Fuploads%2FfAcGye182utFUtPKdLqJ%2FScreenshot%202022-02-15%20at%2011.32.39.png?alt=media&token=29feb550-f0bc-467d-a290-f700701d7d15"
+          width="150"
+          alt="Nest"
+      /></a>
+    </td>
+    <td valign="center">
+      <a href="https://github.com/salesforce/refocus">
+        <img
+          src="https://876297641-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-LUuDmt_xXMfG66Rn1GA%2Fuploads%2FZNnYNuL5qJ6ZoBh7JJEW%2Fsalesforce-logo.png?alt=media&token=ddcae63b-08c0-4dd4-8496-3b29a9bf977d"
+          width="100"
+          alt="Salesforce"
+      /></a>
+    </td>
+
+  </tr>
+</table>
+
+---
+
 ### BullMQ
 
 If you want to start using the next major version of Bull written entirely in Typescript you are welcome to the new repo [here](https://github.com/taskforcesh/bullmq). Otherwise you are very welcome to still use Bull, which is a safe, battle tested codebase.
