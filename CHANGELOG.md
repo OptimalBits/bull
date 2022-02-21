@@ -1,3 +1,10 @@
+# [4.6.0](https://github.com/OptimalBits/bull/compare/v4.5.6...v4.6.0) (2022-02-21)
+
+
+### Features
+
+* handle redis uri queries ([54e5463](https://github.com/OptimalBits/bull/commit/54e5463bffee1b8b56b460460c79d8751142d859))
+
 ## [4.5.6](https://github.com/OptimalBits/bull/compare/v4.5.5...v4.5.6) (2022-02-20)
 
 
