@@ -1,3 +1,10 @@
+## [4.6.1](https://github.com/OptimalBits/bull/compare/v4.6.0...v4.6.1) (2022-02-21)
+
+
+### Bug Fixes
+
+* **sandbox:** better error reporting broken processor file ([10db479](https://github.com/OptimalBits/bull/commit/10db479731bcb8ba27c3a0e2dd4094c8e9ff1c57))
+
 # [4.6.0](https://github.com/OptimalBits/bull/compare/v4.5.6...v4.6.0) (2022-02-21)
 
 
