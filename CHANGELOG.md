@@ -1,3 +1,10 @@
+## [4.6.2](https://github.com/OptimalBits/bull/compare/v4.6.1...v4.6.2) (2022-02-23)
+
+
+### Bug Fixes
+
+* better handling of maxRetriesPerRequest ([d3b9138](https://github.com/OptimalBits/bull/commit/d3b91386e30d7205efdc19bcd18fe1e5fefa3542))
+
 ## [4.6.1](https://github.com/OptimalBits/bull/compare/v4.6.0...v4.6.1) (2022-02-21)
 
 
