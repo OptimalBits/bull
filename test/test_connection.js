@@ -3,19 +3,15 @@
 const expect = require('expect.js');
 const utils = require('./utils');
 const { isRedisReady } = require('../lib/utils');
-const redis = require('ioredis');
+const Redis = require('ioredis');
 const Queue = require('../lib/queue');
 
 describe('connection', () => {
-  let queue;
   let client;
 
   beforeEach(() => {
-    client = new redis();
-    return client.flushdb().then(() => {
-      queue = utils.buildQueue();
-      return queue;
-    });
+    client = new Redis();
+    return client.flushdb();
   });
 
   afterEach(() => {
@@ -24,55 +20,41 @@ describe('connection', () => {
 
   it('should fail if reusing connections with invalid options', () => {
     const errMsg = Queue.ErrorMessages.MISSING_REDIS_OPTS;
-    {
-      try {
-        const client = new redis();
 
-        const opts = {
-          createClient(type) {
-            switch (type) {
-              case 'client':
-                return client;
-              default:
-                return new redis();
-            }
-          }
-        };
-        utils.buildQueue('external connections', opts);
-        throw new Error('should fail with invalid redis options');
-      } catch (err) {
-        expect(err.message).to.be.equal(errMsg);
-      }
-    }
-    {
-      const subscriber = new redis();
+    const client = new Redis();
 
-      const opts = {
-        createClient(type) {
-          switch (type) {
-            case 'subscriber':
-              return subscriber;
-            default:
-              return new redis({
-                maxRetriesPerRequest: null,
-                enableReadyCheck: false
-              });
-          }
+    const opts = {
+      createClient(type) {
+        switch (type) {
+          case 'client':
+            return client;
+          default:
+            return new Redis();
         }
-      };
-
-      const testQueue = utils.buildQueue('external connections', opts);
-
-      try {
-        testQueue.on('global:completed', () => {});
-      } catch (err) {
-        expect(err.message).to.be.equal(errMsg);
-        testQueue.close();
       }
+    };
+    const queue = utils.buildQueue('external connections', opts);
+    expect(queue).to.be.ok();
+
+    try {
+      // eslint-disable-next-line no-unused-vars
+      const _ = queue.bclient;
+      throw new Error('should fail with invalid redis options');
+    } catch (err) {
+      expect(err.message).to.be.equal(errMsg);
+    }
+
+    try {
+      // eslint-disable-next-line no-unused-vars
+      const _ = queue.eclient;
+      throw new Error('should fail with invalid redis options');
+    } catch (err) {
+      expect(err.message).to.be.equal(errMsg);
     }
   });
 
   it('should recover from a connection loss', async () => {
+    const queue = utils.buildQueue();
     queue.on('error', () => {
       // error event has to be observed or the exception will bubble up
     });
@@ -104,6 +86,8 @@ describe('connection', () => {
 
   it('should handle jobs added before and after a redis disconnect', done => {
     let count = 0;
+    const queue = utils.buildQueue();
+
     queue
       .process((job, jobDone) => {
         if (count == 0) {
@@ -141,8 +125,8 @@ describe('connection', () => {
       enableReadyCheck: false
     };
 
-    const client = new redis(redisOpts);
-    const subscriber = new redis(redisOpts);
+    const client = new Redis(redisOpts);
+    const subscriber = new Redis(redisOpts);
 
     const opts = {
       createClient(type) {
@@ -152,7 +136,7 @@ describe('connection', () => {
           case 'subscriber':
             return subscriber;
           default:
-            return new redis();
+            return new Redis();
         }
       }
     };
@@ -184,31 +168,28 @@ describe('connection', () => {
       });
   });
 
-  it('should fail if redis connection fails and does not reconnect', done => {
-    queue = utils.buildQueue('connection fail', {
+  it('should fail if redis connection fails and does not reconnect', async () => {
+    const queue = utils.buildQueue('connection fail 123', {
       redis: {
         host: 'localhost',
         port: 1234,
         retryStrategy: () => false
       }
     });
-
-    isRedisReady(queue.client).then(
-      () => {
-        done(new Error('Did not fail connecting to invalid redis instance'));
-      },
-      err => {
-        expect(err.code).to.be.eql('ECONNREFUSED');
-        queue.close().then(done, done);
-      }
-    );
+    try {
+      await isRedisReady(queue.client);
+      new Error('Did not fail connecting to invalid redis instance');
+    } catch (err) {
+      expect(err.code).to.be.eql('ECONNREFUSED');
+      await queue.close();
+    }
   });
 
   it('should close cleanly if redis connection fails', async () => {
-    queue = utils.buildQueue('connection fail', {
+    const queue = new Queue('connection fail', {
       redis: {
         host: 'localhost',
-        port: 1234,
+        port: 1235,
         retryStrategy: () => false
       }
     });
@@ -217,7 +198,7 @@ describe('connection', () => {
   });
 
   it('should accept ioredis options on the query string', async () => {
-    queue = new Queue(
+    const queue = new Queue(
       'connection query string',
       'redis://localhost?tls=RedisCloudFixed'
     );
