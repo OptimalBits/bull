@@ -294,6 +294,8 @@ describe('Queue', () => {
               return client;
             case 'subscriber':
               return subscriber;
+            case 'bclient':
+              return new redis({ ...opts, ...redisOpts });
             default:
               return new redis(opts);
           }
@@ -615,15 +617,15 @@ describe('Queue', () => {
       describe('.retryJobs', () => {
         it('should retry all failed jobs', async () => {
           const jobCount = 8;
-    
+
           let fail = true;
           queue.process(async () => {
             await delay(10);
-              if (fail) {
-                throw new Error('failed');
-              }
+            if (fail) {
+              throw new Error('failed');
+            }
           });
-        
+
           let order = 0;
           const failing = new Promise(resolve => {
             queue.on('failed', job => {
@@ -634,16 +636,16 @@ describe('Queue', () => {
               order++;
             });
           });
-  
+
           for (const index of Array.from(Array(jobCount).keys())) {
             await queue.add({ idx: index });
           }
-    
+
           await failing;
-    
+
           const failedCount = await queue.getJobCounts('failed');
           expect(failedCount.failed).to.be.equal(jobCount);
-    
+
           order = 0;
           const completing = new Promise(resolve => {
             queue.on('completed', job => {
@@ -654,17 +656,17 @@ describe('Queue', () => {
               order++;
             });
           });
-    
+
           fail = false;
           await queue.retryJobs({ count: 2 });
-    
+
           await completing;
-    
+
           const CompletedCount = await queue.getJobCounts('completed');
           expect(CompletedCount.completed).to.be.equal(jobCount);
-        });          
+        });
       });
-  
+
       it('should keep specified number of jobs after completed with removeOnComplete', async () => {
         const keepJobs = 3;
         await testRemoveOnFinish(keepJobs, keepJobs);
