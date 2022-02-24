@@ -2911,6 +2911,29 @@ describe('Queue', () => {
         });
     });
 
+    it('should leave a job that was queued before but processed within the grace period', done => {
+      queue.process((job, jobDone) => {
+        jobDone();
+      });
+      queue.add({ some: 'data' });
+      queue.add({ some: 'data' }, { delay: 100 });
+      delay(200)
+        .then(() => {
+          // At this point both jobs have executed, but the delayed one was only processed about 100 milliseconds ago:
+          return queue.clean(150);
+        })
+        .then(() => {
+          return queue.getCompleted();
+        })
+        .then(jobs => {
+          expect(jobs.length).to.be.eql(1);
+          return queue.empty();
+        })
+        .then(() => {
+          done();
+        });
+    });
+
     it('should clean all failed jobs', done => {
       queue.add({ some: 'data' });
       queue.add({ some: 'data' });
