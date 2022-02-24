@@ -71,9 +71,6 @@ while ((limit <= 0 or deletedCount < limit) and next(jobIds, nil) ~= nil) do
           break
         end
       end
-      if (not jobTS) then
-        jobTS = rcall("HGET", jobKey, "timestamp")
-      end
       if (not jobTS or jobTS < maxTimestamp) then
         if isList then
           rcall("LREM", setKey, 0, jobId)
