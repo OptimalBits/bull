@@ -7,12 +7,10 @@
         
         ARGV[1]  count
         ARGV[2]  force
-]]
-
+]] 
 -- This command completely destroys a queue including all of its jobs, current or past 
 -- leaving no trace of its existence. Since this script needs to iterate to find all the job
 -- keys, consider that this call may be slow for very large queues.
-
 -- The queue needs to be "paused" or it will return an error
 -- If the queue has currently active jobs then the script by default will return error,
 -- however this behaviour can be overrided using the `force` option.
@@ -45,15 +43,11 @@ end
 local function removeZSetJobs(keyName, max)
     local jobs = getZSetItems(keyName, max)
     removeJobs(keyName, jobs)
-    if(#jobs > 0) then
-        rcall("ZREM", keyName, unpack(jobs))
-    end
+    if (#jobs > 0) then rcall("ZREM", keyName, unpack(jobs)) end
 end
 
 local function removeLockKeys(keys)
-    for i, key in ipairs(keys) do
-        rcall("DEL", baseKey .. key .. ':lock')
-    end
+    for i, key in ipairs(keys) do rcall("DEL", baseKey .. key .. ':lock') end
 end
 
 -- 1) Check if paused, if not return with error.
@@ -65,7 +59,7 @@ end
 local activeKey = baseKey .. 'active'
 local activeJobs = getListItems(activeKey, maxCount)
 if (#activeJobs > 0) then
-    if(ARGV[2] == "") then 
+    if (ARGV[2] == "") then
         return -2 -- Error, ExistsActiveJobs
     end
 end
@@ -73,35 +67,25 @@ end
 removeLockKeys(activeJobs)
 removeJobs(activeKey, activeJobs)
 rcall("LTRIM", activeKey, #activeJobs, -1)
-if(maxCount <= 0) then
-    return 1
-end
+if (maxCount <= 0) then return 1 end
 
 local waitKey = baseKey .. 'paused'
 removeListJobs(waitKey, maxCount)
-if(maxCount <= 0) then
-    return 1
-end
+if (maxCount <= 0) then return 1 end
 
 local delayedKey = baseKey .. 'delayed'
 removeZSetJobs(delayedKey, maxCount)
-if(maxCount <= 0) then
-    return 1
-end
+if (maxCount <= 0) then return 1 end
 
 local completedKey = baseKey .. 'completed'
 removeZSetJobs(completedKey, maxCount)
-if(maxCount <= 0) then
-    return 1
-end
+if (maxCount <= 0) then return 1 end
 
 local failedKey = baseKey .. 'failed'
 removeZSetJobs(failedKey, maxCount)
-if(maxCount <= 0) then
-    return 1
-end
+if (maxCount <= 0) then return 1 end
 
-if(maxCount > 0) then
+if (maxCount > 0) then
     rcall("DEL", baseKey .. 'priority')
     rcall("DEL", baseKey .. 'stalled-check')
     rcall("DEL", baseKey .. 'stalled')
@@ -109,6 +93,10 @@ if(maxCount > 0) then
     rcall("DEL", baseKey .. 'meta')
     rcall("DEL", baseKey .. 'id')
     rcall("DEL", baseKey .. 'repeat')
+    rcall("DEL", baseKey .. 'metrics:completed')
+    rcall("DEL", baseKey .. 'metrics:completed:data')
+    rcall("DEL", baseKey .. 'metrics:failed')
+    rcall("DEL", baseKey .. 'metrics:failed:data')
     return 0
 else
     return 1

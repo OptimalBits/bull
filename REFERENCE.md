@@ -34,6 +34,7 @@
   - [Queue#getCompleted](#queuegetcompleted)
   - [Queue#getFailed](#queuegetfailed)
   - [Queue#getWorkers](#queuegetworkers)
+  - [Queue#getMetrics](#queuegetmetrics)
 
 - [Job](#job)
 
@@ -71,8 +72,15 @@ interface QueueOptions {
   limiter?: RateLimiter;
   redis?: RedisOpts;
   prefix?: string = 'bull'; // prefix for all queue keys.
+  metrics?: MetricsOpts; // Configure metrics
   defaultJobOptions?: JobOpts;
   settings?: AdvancedSettings;
+}
+```
+
+```typescript
+interface MetricsOpts {
+    maxDataPoints?: number; //  Max number of data points to collect, granularity is fixed at one minute.
 }
 ```
 
@@ -796,8 +804,26 @@ Returns a promise that will return an array with the failed jobs between start a
 getWorkers() : Promise<Array<Object>>
 ```
 
-Returns a promise that will return an array workers currently listening or processing jobs.
+Returns a promise that will resolve to an array workers currently listening or processing jobs.
 The object includes the same fields as [Redis CLIENT LIST](https://redis.io/commands/client-list) command.
+
+---
+
+### Queue#getMetrics
+
+```ts
+getMetrics(type: 'completed' | 'failed', start = 0, end = -1) : Promise<{
+  meta: {
+    count: number;
+    prevTS: number;
+    prevCount: number;
+  };
+  data: number[];
+  count: number;
+}>
+```
+
+Returns a promise that resolves to a Metrics object.
 
 ---
 
