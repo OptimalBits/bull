@@ -11,7 +11,7 @@ const ONE_HOUR = 60 * ONE_MINUTE;
 
 const { MetricsTime } = require('../lib/utils');
 
-describe('metrics', function() {
+describe('metrics', () => {
   beforeEach(async function() {
     this.clock = sinon.useFakeTimers();
     const client = new redis();
