@@ -15,7 +15,7 @@ describe('metrics', () => {
   beforeEach(async function() {
     this.clock = sinon.useFakeTimers();
     const client = new redis();
-    //await client.flushdb();
+    await client.flushdb();
     return client.quit();
   });
 
