@@ -1,3 +1,10 @@
+# [4.7.0](https://github.com/OptimalBits/bull/compare/v4.6.2...v4.7.0) (2022-03-02)
+
+
+### Features
+
+* **metrics:** add support for collecting queue metrics ([886d764](https://github.com/OptimalBits/bull/commit/886d7643819dcf52902d2e92394267dbd495c71b))
+
 ## [4.6.2](https://github.com/OptimalBits/bull/compare/v4.6.1...v4.6.2) (2022-02-23)
 
 
