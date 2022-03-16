@@ -498,7 +498,7 @@ configurations, use [`obliterate()`](#queueobliterate).
 ### Queue#close
 
 ```ts
-close(): Promise
+close(doNotWaitJobs?: boolean): Promise
 ```
 
 Closes the underlying Redis client. Use this to perform a graceful shutdown.
