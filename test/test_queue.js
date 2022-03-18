@@ -2983,6 +2983,16 @@ describe('Queue', () => {
         });
     });
 
+    it('should succeed when the limit is higher than the actual number of jobs', async () => {
+      await queue.add({ some: 'data' });
+      await queue.add({ some: 'data' });
+      await delay(100);
+      const deletedJobs = await queue.clean(0, 'wait', 100);
+      expect(deletedJobs).to.have.length(2);
+      const remainingJobsCount = await queue.count();
+      expect(remainingJobsCount).to.be.eql(0);
+    });
+
     it("should clean the number of jobs requested even if first jobs timestamp doesn't match", async () => {
       // This job shouldn't get deleted due to the 5000 grace
       await queue.add({ some: 'data' });
