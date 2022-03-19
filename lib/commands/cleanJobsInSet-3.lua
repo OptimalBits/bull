@@ -60,7 +60,17 @@ while ((limit <= 0 or deletedCount < limit) and next(jobIds, nil) ~= nil) do
 
     local jobKey = jobKeyPrefix .. jobId
     if (rcall("EXISTS", jobKey .. ":lock") == 0) then
-      jobTS = rcall("HGET", jobKey, "timestamp")
+      -- Find the right timestamp of the job to compare to maxTimestamp:
+      -- * finishedOn says when the job was completed, but it isn't set unless the job has actually completed
+      -- * processedOn represents when the job was last attempted, but it doesn't get populated until the job is first tried
+      -- * timestamp is the original job submission time
+      -- Fetch all three of these (in that order) and use the first one that is set so that we'll leave jobs that have been active within the grace period:
+      for _, ts in ipairs(rcall("HMGET", jobKey, "finishedOn", "processedOn", "timestamp")) do
+        if (ts) then
+          jobTS = ts
+          break
+        end
+      end
       if (not jobTS or jobTS < maxTimestamp) then
         if isList then
           rcall("LREM", setKey, 0, jobId)
