@@ -2876,10 +2876,12 @@ describe('Queue', () => {
       queue.on(
         'completed',
         _.after(2, () => {
-          queue.clean(0).then(jobs => {
-            expect(jobs.length).to.be.eql(2);
-            done();
-          }, done);
+          delay(200).then(() => {
+            queue.clean(0).then(jobs => {
+              expect(jobs.length).to.be.eql(2);
+              done();
+            }, done);
+          });
         })
       );
     });
