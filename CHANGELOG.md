@@ -1,3 +1,10 @@
+# [4.8.0](https://github.com/OptimalBits/bull/compare/v4.7.0...v4.8.0) (2022-03-19)
+
+
+### Features
+
+* have Queue#clean consult job.{finishedOn,processedOn,timestamp} ([#2309](https://github.com/OptimalBits/bull/issues/2309)) ([b7058e6](https://github.com/OptimalBits/bull/commit/b7058e6e8f4bb56febebaf9452f993883240fa9d))
+
 # [4.7.0](https://github.com/OptimalBits/bull/compare/v4.6.2...v4.7.0) (2022-03-02)
 
 
