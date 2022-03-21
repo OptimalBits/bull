@@ -53,7 +53,8 @@ local jobTS
 -- - Once, if limit is -1 or 0
 -- - As many times as needed if limit is positive
 while ((limit <= 0 or deletedCount < limit) and next(jobIds, nil) ~= nil) do
-  for _, jobId in ipairs(jobIds) do
+  local jobIdsLen = #jobIds
+  for i, jobId in ipairs(jobIds) do
     if limit > 0 and deletedCount >= limit then
       break
     end
@@ -73,7 +74,10 @@ while ((limit <= 0 or deletedCount < limit) and next(jobIds, nil) ~= nil) do
       end
       if (not jobTS or jobTS < maxTimestamp) then
         if isList then
-          rcall("LREM", setKey, 0, jobId)
+          -- Job ids can't be the empty string. Use the empty string as a
+          -- deletion marker. The actual deletion will occur at the end of the
+          -- script.
+          rcall("LSET", setKey, rangeEnd - jobIdsLen + i, "")
         else
           rcall("ZREM", setKey, jobId)
         end
@@ -109,6 +113,10 @@ while ((limit <= 0 or deletedCount < limit) and next(jobIds, nil) ~= nil) do
     rangeEnd = rangeEnd - limit
     jobIds = rcall(command, setKey, rangeStart, rangeEnd)
   end
+end
+
+if isList then
+  rcall("LREM", setKey, 0, "")
 end
 
 return deleted
