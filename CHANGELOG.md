@@ -1,3 +1,10 @@
+## [4.8.1](https://github.com/OptimalBits/bull/compare/v4.8.0...v4.8.1) (2022-03-21)
+
+
+### Performance Improvements
+
+* speed up clean operation ([#2326](https://github.com/OptimalBits/bull/issues/2326)) ([ef5f471](https://github.com/OptimalBits/bull/commit/ef5f4717258940042fa11f980622034cde765860))
+
 # [4.8.0](https://github.com/OptimalBits/bull/compare/v4.7.0...v4.8.0) (2022-03-19)
 
 
