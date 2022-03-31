@@ -272,7 +272,7 @@ videoQueue.process(function (job, done) {
   // call done when finished
   done();
 
-  // or give a error if error
+  // or give an error if error
   done(new Error('error transcoding'));
 
   // or pass it a result
@@ -289,7 +289,7 @@ audioQueue.process(function (job, done) {
   // call done when finished
   done();
 
-  // or give a error if error
+  // or give an error if error
   done(new Error('error transcoding'));
 
   // or pass it a result
@@ -306,7 +306,7 @@ imageQueue.process(function (job, done) {
   // call done when finished
   done();
 
-  // or give a error if error
+  // or give an error if error
   done(new Error('error transcoding'));
 
   // or pass it a result
