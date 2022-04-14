@@ -22,6 +22,19 @@
 
 local rcall = redis.call
 
+local function batches(n, batchSize)
+  local i = 0
+
+  return function()
+    local from = i * batchSize + 1
+    i = i + 1
+    if (from <= n) then
+      local to = math.min(from + batchSize - 1, n)
+      return from, to
+    end
+  end
+end
+
 -- Check if we need to check for stalled jobs now.
 if rcall("EXISTS", KEYS[5]) == 1 then
   return {{}, {}}
@@ -77,8 +90,11 @@ end
 
 -- Mark potentially stalled jobs
 local active = rcall('LRANGE', KEYS[3], 0, -1)
-if(#active > 0) then
-  rcall('SADD', KEYS[1], unpack(active))
+
+if (#active > 0) then
+  for from, to in batches(#active, 7000) do
+    rcall('SADD', KEYS[1], unpack(active, from, to))
+  end
 end
 
 return {failed, stalled}
