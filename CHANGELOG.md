@@ -1,3 +1,10 @@
+## [4.8.2](https://github.com/OptimalBits/bull/compare/v4.8.1...v4.8.2) (2022-04-21)
+
+
+### Bug Fixes
+
+* unlock job when moving it to delayed ([#2329](https://github.com/OptimalBits/bull/issues/2329)) ([11eae6b](https://github.com/OptimalBits/bull/commit/11eae6b960c83b47dadb22991b2b3e239c177508))
+
 ## [4.8.1](https://github.com/OptimalBits/bull/compare/v4.8.0...v4.8.1) (2022-03-21)
 
 
