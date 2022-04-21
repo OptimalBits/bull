@@ -641,6 +641,28 @@ describe('Job', () => {
       });
     });
 
+    it('unlocks the job when moving it to delayed', () => {
+      queue.process(() => {
+        throw new Error('Oh dear');
+      });
+      return Job.create(
+        queue,
+        { foo: 'bar' },
+        { attempts: 3, backoff: 100 }
+      ).then(job => {
+        return new Promise(resolve => {
+          queue.once('failed', resolve);
+        })
+          .then(() => {
+            const client = new redis();
+            return client.get(job.lockKey());
+          })
+          .then(lockValue => {
+            expect(lockValue).to.be(null);
+          });
+      });
+    });
+
     it('marks the job as failed when attempts made equal to attempts given', () => {
       return Job.create(queue, { foo: 'bar' }, { attempts: 1 }).then(job => {
         return job
