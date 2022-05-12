@@ -1,3 +1,10 @@
+## [4.8.3](https://github.com/OptimalBits/bull/compare/v4.8.2...v4.8.3) (2022-05-12)
+
+
+### Bug Fixes
+
+* **stalled-jobs:** move stalled jobs to wait in batches ([2f1fb6c](https://github.com/OptimalBits/bull/commit/2f1fb6cdc1329f98b2dd30e847b5a79839db0346))
+
 ## [4.8.2](https://github.com/OptimalBits/bull/compare/v4.8.1...v4.8.2) (2022-04-21)
 
 
