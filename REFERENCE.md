@@ -833,7 +833,7 @@ Returns a promise that resolves to a Metrics object.
 clean(grace: number, status?: string, limit?: number): Promise<number[]>
 ```
 
-Tells the queue remove jobs of a specific type created outside of a grace period.
+Tells the queue remove jobs of a specific type created outside of a grace period. **Note:** this operation is expensive and _should not_ be utilized on large queues (e.g., queues with over 100,000 tasks).
 
 #### Example
 
