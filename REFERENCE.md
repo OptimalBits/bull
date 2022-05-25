@@ -166,9 +166,9 @@ backoffStrategies: {
 
 ```ts
 /**
- * Consider these as overloaded functions. Since method overloading doesn't exist in javacript
- * bull recognizes the desired function call by checking the parameters' types. Make sure you
- * comply with one of the below defined patterns.
+ * Consider these as overloaded functions. Since method overloading doesn't exist in JavaScript,
+ * Bull recognizes the desired function call by checking the parameters' types.
+ * Make sure you comply with one of the below defined patterns.
  *
  * Note: Concurrency defaults to 1 if not specified.
  */
