@@ -3098,5 +3098,59 @@ describe('Queue', () => {
           done();
         });
     });
+
+    it('should clean completed jobs outside grace period', async () => {
+      queue.process((job, jobDone) => {
+        jobDone();
+      });
+      const [jobToClean] = await Promise.all([
+        queue.add({ some: 'oldJob' }),
+        queue.add({ some: 'gracePeriodJob' }, { delay: 50 }),
+      ]);
+      await delay(100);
+
+      const cleaned = await queue.clean(75, 'completed');
+
+      expect(cleaned.length).to.be.eql(1);
+      expect(cleaned[0]).to.eql(jobToClean.id);
+    });
+
+    it('should clean completed jobs outside grace period with limit', async () => {
+      queue.process((job, jobDone) => {
+        jobDone();
+      });
+      const [jobToClean] = await Promise.all([
+        queue.add({ some: 'oldJob' }),
+        queue.add({ some: 'gracePeriodJob' }, { delay: 50 }),
+      ]);
+      await delay(100);
+
+      const cleaned = await queue.clean(75, 'completed', 10);
+
+      expect(cleaned.length).to.be.eql(1);
+      expect(cleaned[0]).to.eql(jobToClean.id);
+    });
+
+    it('should clean completed jobs respecting limit', async () => {
+      queue.process((job, jobDone) => {
+        jobDone();
+      });
+      const jobsToCleanPromises = [];
+      for (let i = 0; i < 3; i++) {
+        jobsToCleanPromises.push(queue.add({ some: 'jobToClean' }));
+      }
+
+      const [jobsToClean] = await Promise.all([
+        Promise.all(jobsToCleanPromises),
+        queue.add({ some: 'gracePeriodJob' }, { delay: 50 }),
+      ]);
+      await delay(100);
+
+      const cleaned = await queue.clean(75, 'completed', 1);
+
+      expect(cleaned.length).to.be.eql(1);
+      const jobsToCleanIds = jobsToClean.map(job => job.id);
+      expect(jobsToCleanIds).to.include(cleaned[0]);
+    });
   });
 });
