@@ -55,7 +55,7 @@
     "nyc": "^15.1.0",
     "p-reflect": "^1.0.0",
     "prettier": "^1.19.1",
-    "semantic-release": "^17.4.2",
+    "semantic-release": "^19.0.3",
     "sinon": "^7.5.0"
   },
   "scripts": {
