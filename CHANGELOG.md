@@ -1,3 +1,10 @@
+## [4.8.4](https://github.com/OptimalBits/bull/compare/v4.8.3...v4.8.4) (2022-06-16)
+
+
+### Bug Fixes
+
+* **worker:** better disconnect when blocking connection ([b9ea7f4](https://github.com/OptimalBits/bull/commit/b9ea7f4780948d4556548e6bf13e2c3271939d12))
+
 ## [4.8.3](https://github.com/OptimalBits/bull/compare/v4.8.2...v4.8.3) (2022-05-12)
 
 
