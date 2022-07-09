@@ -337,7 +337,7 @@ export interface KeepJobs {
 It is important to note that jobs are _not_ proactively stopped after the given `timeout`. The job is marked as failed
 and the job's promise is rejected, but Bull has no way to stop the processor function externally.
 
-If you need to a job to stop processing after it times out, here are a couple suggestions:
+If you need a job to stop processing after it times out, here are a couple suggestions:
  - Have the job itself periodically check `job.getStatus()`, and exit if the status becomes `'failed'`
  - Implement the job as a _cancelable promise_. If the processor's promise has a `cancel()` method, it will
    be called when a job times out, and the job can respond accordingly. (Note: currently this only works for
