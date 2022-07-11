@@ -23,7 +23,7 @@
     "cron-parser": "^4.2.1",
     "debuglog": "^1.0.0",
     "get-port": "^5.1.1",
-    "ioredis": "^4.28.5",
+    "ioredis": "^5.0.0",
     "lodash": "^4.17.21",
     "msgpackr": "^1.5.2",
     "p-timeout": "^3.2.0",
