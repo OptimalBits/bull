@@ -1,3 +1,10 @@
+## [4.8.5](https://github.com/OptimalBits/bull/compare/v4.8.4...v4.8.5) (2022-07-27)
+
+
+### Performance Improvements
+
+* **clean:** use ZRANGEBYSCORE to improve performance ([#2363](https://github.com/OptimalBits/bull/issues/2363)) ([3331188](https://github.com/OptimalBits/bull/commit/3331188bce510e0bb4749d92cb63f4c73203d076))
+
 ## [4.8.4](https://github.com/OptimalBits/bull/compare/v4.8.3...v4.8.4) (2022-06-16)
 
 
