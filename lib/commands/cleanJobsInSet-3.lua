@@ -7,7 +7,7 @@
     KEYS[3]  rate limiter key
 
     ARGV[1]  jobId
-    ARGV[2]  timestamp
+    ARGV[2]  maxTimestamp
     ARGV[3]  limit the number of jobs to be removed. 0 is unlimited
     ARGV[4]  set name, can be any of 'wait', 'active', 'paused', 'delayed', 'completed', or 'failed'
 ]]
@@ -21,13 +21,29 @@ local maxTimestamp = ARGV[2]
 local limitStr = ARGV[3]
 local setName = ARGV[4]
 
-local command = "ZRANGE"
 local isList = false
 local rcall = redis.call
 
 if setName == "wait" or setName == "active" or setName == "paused" then
-  command = "LRANGE"
   isList = true
+end
+
+-- We use ZRANGEBYSCORE to make the case where we're deleting a limited number
+-- of items in a sorted set only run a single iteration. If we simply used
+-- ZRANGE, we may take a long time traversing through jobs that are within the
+-- grace period.
+local function shouldUseZRangeByScore(isList, limit)
+  return not isList and limit > 0
+end
+
+local function getJobs(setKey, isList, rangeStart, rangeEnd, maxTimestamp, limit)
+  if isList then
+    return rcall("LRANGE", setKey, rangeStart, rangeEnd)
+  elseif shouldUseZRangeByScore(isList, limit) then
+    return rcall("ZRANGEBYSCORE", setKey, 0, maxTimestamp, "LIMIT", 0, limit)
+  else
+    return rcall("ZRANGE", setKey, rangeStart, rangeEnd)
+  end
 end
 
 local limit = tonumber(limitStr)
@@ -44,7 +60,7 @@ if limit > 0 then
   rangeEnd = -1
 end
 
-local jobIds = rcall(command, setKey, rangeStart, rangeEnd)
+local jobIds = getJobs(setKey, isList, rangeStart, rangeEnd, maxTimestamp, limit)
 local deleted = {}
 local deletedCount = 0
 local jobTS
@@ -101,9 +117,9 @@ while ((limit <= 0 or deletedCount < limit) and next(jobIds, nil) ~= nil) do
     end
   end
 
-  -- If we didn't have a limit, return immediately. We should have deleted
-  -- all the jobs we can
-  if limit <= 0 then
+  -- If we didn't have a limit or used the single-iteration ZRANGEBYSCORE
+  -- function, return immediately. We should have deleted all the jobs we can
+  if limit <= 0 or shouldUseZRangeByScore(isList, limit) then
     break
   end
 
@@ -111,7 +127,7 @@ while ((limit <= 0 or deletedCount < limit) and next(jobIds, nil) ~= nil) do
     -- We didn't delete enough. Look for more to delete
     rangeStart = rangeStart - limit
     rangeEnd = rangeEnd - limit
-    jobIds = rcall(command, setKey, rangeStart, rangeEnd)
+    jobIds = getJobs(setKey, isList, rangeStart, rangeEnd, maxTimestamp, limit)
   end
 end
 
