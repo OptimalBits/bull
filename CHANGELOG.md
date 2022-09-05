@@ -1,3 +1,10 @@
+# [4.9.0](https://github.com/OptimalBits/bull/compare/v4.8.5...v4.9.0) (2022-09-05)
+
+
+### Features
+
+* support .cjs files ([75e6775](https://github.com/OptimalBits/bull/commit/75e6775fc3720563aac9cd9a07d1722dfbdfa177))
+
 ## [4.8.5](https://github.com/OptimalBits/bull/compare/v4.8.4...v4.8.5) (2022-07-27)
 
 
