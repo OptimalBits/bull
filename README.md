@@ -115,10 +115,10 @@ If you want to start using the next major version of Bull written entirely in Ty
 
 ### 🚀 Sponsors 🚀
 
-[<img src="https://www.redisgreen.com/images/rglogo/redisgreen_transparent_240x48.png" width="150" alt="RedisGreen" style="padding: 100px"/>](https://dashboard.redisgreen.net/new?utm_campaign=BULLMQ)
+[<img src="https://www.memetria.com/images/logo/memetria-logo.svg" width="300" alt="Memetria for Redis" style="padding: 100px"/>](https://dashboard.memetria.com/new?utm_campaign=BULLMQ)
 
 If you need high quality production Redis instances for your Bull projects, please consider subscribing 
-to [RedisGreen](https://dashboard.redisgreen.net/new?utm_campaign=BULLMQ), 
+to [Memetria for Redis](https://dashboard.memetria.com/new?utm_campaign=BULLMQ), 
 leaders in Redis hosting that works perfectly with Bull. Use the promo code "BULLMQ" when signing up to help us
 sponsor the development of Bull!
 
