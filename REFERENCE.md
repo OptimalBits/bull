@@ -844,7 +844,9 @@ queue.on('cleaned', function (jobs, type) {
 
 //cleans all jobs that completed over 5 seconds ago.
 await queue.clean(5000);
-//clean all jobs that failed over 10 seconds ago.
+
+//clear all jobs with a certain status for more than 10 seconds.
+//Status can be: completed, failed, delayed, active, waiting
 await queue.clean(10000, 'failed');
 ```
 
