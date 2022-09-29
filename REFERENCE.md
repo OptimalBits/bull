@@ -74,6 +74,7 @@ interface QueueOptions {
   prefix?: string = 'bull'; // prefix for all queue keys.
   metrics?: MetricsOpts; // Configure metrics
   defaultJobOptions?: JobOpts;
+  createClient?: (type: enum('client', 'subscriber'), redisOpts?: RedisOpts) => redisClient,
   settings?: AdvancedSettings;
 }
 ```
@@ -661,7 +662,8 @@ getJobCounts() : Promise<JobCounts>
 
 Returns a promise that will return the job counts for the given queue.
 
-```typescript{
+```typescript
+{
   interface JobCounts {
     waiting: number,
     active: number,
@@ -880,6 +882,10 @@ await queue.obliterate({ force: true });
 A job includes all data needed to perform its execution, as well as the progress method needed to update its progress.
 
 The most important property for the user is `Job#data` that includes the object that was passed to [`Queue#add`](#queueadd), and that is normally used to perform the job.
+
+Other useful job properties:
+* `job.attemptsMade`: number of failed attempts.
+* `job.finishedOn`: Unix Timestamp, when job is completed or finally failed after all attempts.
 
 ### Job#progress
 

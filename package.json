@@ -6,6 +6,7 @@
     "node": ">=10.1"
   },
   "main": "./index.js",
+  "types": "./index.d.ts",
   "repository": {
     "type": "git",
     "url": "git://github.com/OptimalBits/bull.git"
