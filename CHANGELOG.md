@@ -1,3 +1,10 @@
+# [4.10.0](https://github.com/OptimalBits/bull/compare/v4.9.0...v4.10.0) (2022-09-29)
+
+
+### Features
+
+* **types:** add typescript types to package ([e793f8d](https://github.com/OptimalBits/bull/commit/e793f8d1502bc5ed4a2e15087dc048c18e5e8644))
+
 # [4.9.0](https://github.com/OptimalBits/bull/compare/v4.8.5...v4.9.0) (2022-09-05)
 
 
