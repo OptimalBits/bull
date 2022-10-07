@@ -275,6 +275,9 @@ An optional name can be added, so that only process functions defined for that n
 **Note:**
 You need to define _processors_ for all the named jobs that you add to your queue or the queue will complain that you are missing a processor for the given job, unless you use the `*` as job name when defining the processor.
 
+**Note:**
+Considering all jobs in a finished state (`failed` or `completed`) are stored in Redis, depending on the number of jobs running and your Redis setup, you might want to setup a default maximum number of jobs kept, using the `removeOnComplete` and `removeOnFailed` options when creating a queue so Redis does not end up running out of memory.
+
 ```typescript
 interface JobOpts {
   priority: number; // Optional priority value. ranges from 1 (highest priority) to MAX_INT  (lowest priority). Note that
