@@ -97,6 +97,8 @@ interface RateLimiter {
 `RedisOpts` are passed directly to ioredis constructor, check [ioredis](https://github.com/luin/ioredis/blob/master/API.md)
 for details. We document here just the most important ones.
 
+> Note however that enabling `lazyConnect` does not seem to play along well with Bull as referenced in [several](https://github.com/OptimalBits/bull/issues/1945#issuecomment-1008548693) [issues](https://github.com/OptimalBits/bull/issues/2242#issuecomment-1008548166).
+
 ```typescript
 interface RedisOpts {
   port?: number = 6379;
