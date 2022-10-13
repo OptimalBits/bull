@@ -1,3 +1,10 @@
+## [4.10.1](https://github.com/OptimalBits/bull/compare/v4.10.0...v4.10.1) (2022-10-13)
+
+
+### Bug Fixes
+
+* support for instantiation using redisUrl ([6288f7d](https://github.com/OptimalBits/bull/commit/6288f7de9b82e712e480510eb10c03bd4d1cd24e))
+
 # [4.10.0](https://github.com/OptimalBits/bull/compare/v4.9.0...v4.10.0) (2022-09-29)
 
 
