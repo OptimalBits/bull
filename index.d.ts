@@ -64,7 +64,7 @@ declare namespace Bull {
      * Options passed into the `ioredis` constructor's `options` parameter.
      * `connectionName` is overwritten with `Queue.clientName()`. other properties are copied
      */
-    redis?: Redis.RedisOptions | undefined;
+    redis?: Redis.RedisOptions | string| undefined;
 
     /**
      * When specified, the `Queue` will use this function to create new `ioredis` client connections.
