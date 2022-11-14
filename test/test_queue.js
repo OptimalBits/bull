@@ -365,6 +365,8 @@ describe('Queue', () => {
       expect(job.opts).have.property('removeOnComplete', true);
       expect(job.opts).have.property('removeOnFail', true);
 
+      expect(queue.getName()).to.be.eql('custom');
+
       await queue.close();
     });
 

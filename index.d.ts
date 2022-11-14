@@ -875,6 +875,11 @@ declare namespace Bull {
     getRepeatableCount(): Promise<number>;
 
     /**
+     * Returns a string which represents the queue name
+     */
+    getName(): string;
+
+    /**
      * Tells the queue remove all jobs created outside of a grace period in milliseconds.
      * You can clean the jobs with the following states: completed, wait (typo for waiting), active, delayed, and failed.
      * @param grace Grace period in milliseconds.
