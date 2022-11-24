@@ -1,3 +1,10 @@
+## [4.10.2](https://github.com/OptimalBits/bull/compare/v4.10.1...v4.10.2) (2022-11-24)
+
+
+### Bug Fixes
+
+* **queue:** throw error when needed instead of hiding it in a closure ([8a742c1](https://github.com/OptimalBits/bull/commit/8a742c1176e7147e2069602f18089d8becb4cb15))
+
 ## [4.10.1](https://github.com/OptimalBits/bull/compare/v4.10.0...v4.10.1) (2022-10-13)
 
 
