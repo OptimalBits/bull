@@ -3105,7 +3105,7 @@ describe('Queue', () => {
       });
       const [jobToClean] = await Promise.all([
         queue.add({ some: 'oldJob' }),
-        queue.add({ some: 'gracePeriodJob' }, { delay: 50 }),
+        queue.add({ some: 'gracePeriodJob' }, { delay: 50 })
       ]);
       await delay(100);
 
@@ -3121,7 +3121,7 @@ describe('Queue', () => {
       });
       const [jobToClean] = await Promise.all([
         queue.add({ some: 'oldJob' }),
-        queue.add({ some: 'gracePeriodJob' }, { delay: 50 }),
+        queue.add({ some: 'gracePeriodJob' }, { delay: 50 })
       ]);
       await delay(100);
 
@@ -3142,7 +3142,7 @@ describe('Queue', () => {
 
       const [jobsToClean] = await Promise.all([
         Promise.all(jobsToCleanPromises),
-        queue.add({ some: 'gracePeriodJob' }, { delay: 50 }),
+        queue.add({ some: 'gracePeriodJob' }, { delay: 50 })
       ]);
       await delay(100);
 
@@ -3151,6 +3151,29 @@ describe('Queue', () => {
       expect(cleaned.length).to.be.eql(1);
       const jobsToCleanIds = jobsToClean.map(job => job.id);
       expect(jobsToCleanIds).to.include(cleaned[0]);
+    });
+
+    it('should clean failed jobs without leaving any job keys', async () => {
+      const numJobs = 10;
+      queue.process((job, jobDone) => {
+        jobDone(new Error('It failed'));
+      });
+      const jobsToCleanPromises = [];
+      for (let i = 0; i < numJobs; i++) {
+        jobsToCleanPromises.push(queue.add({ some: 'jobToClean' }));
+      }
+
+      await Promise.all([
+        Promise.all(jobsToCleanPromises),
+        queue.add({ some: 'gracePeriodJob' }, { delay: 50 })
+      ]);
+      await delay(100);
+
+      await queue.clean(0, 'failed');
+
+      const client = new redis();
+      const keys = await client.keys(`bull:${queue.name}:*`);
+      expect(keys.length).to.be.eql(2);
     });
   });
 });
