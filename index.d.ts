@@ -19,6 +19,7 @@
 //                 Levi Bostian <https://github.com/levibostian>
 //                 Todd Dukart <https://github.com/tdukart>
 //                 Mix <https://github.com/mnixry>
+//                 Jonatan Colussi <https://github.com/JonatanColussi>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.8
 
@@ -145,13 +146,21 @@ declare namespace Bull {
   type ProcessCallbackFunction<T> = (job: Job<T>, done: DoneCallback) => void;
   type ProcessPromiseFunction<T> = (job: Job<T>) => Promise<void>;
 
+  type JsonLikeObject = {
+    [key: string]: string | number | boolean | null | JsonLikeObject | JsonLikeObject[];
+  };
+
+  type SwapTypes<T> = {
+    [k in keyof T]: T[k] extends JsonLikeObject ? T[k] : string;
+  };
+
   interface Job<T = any> {
     id: JobId;
 
     /**
      * The custom data passed when the job was created
      */
-    data: T;
+    data: SwapTypes<T>;
 
     /**
      * Options of the job
