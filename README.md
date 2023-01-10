@@ -46,8 +46,10 @@
 
 ### 📻 News and updates
 
-Follow me on [Twitter](http://twitter.com/manast) for important news and updates.
+Bull is currently in maintainance mode, we are only fixing bugs. For new features check [BullMQ](https://github.com/taskforcesh/bullmq), a modern rewritten
+implementation written in Typescript. You are still very welcome to use Bull if it suits your needs, which is a safe, battle tested library.
 
+Follow me on [Twitter](http://twitter.com/manast) for other important news and updates.
 
 ### 🛠 Tutorials
 
@@ -104,12 +106,6 @@ Bull is popular among large and small organizations, like the following ones:
 
   </tr>
 </table>
-
----
-
-### BullMQ
-
-If you want to start using the next major version of Bull written entirely in Typescript you are welcome to the new repo [here](https://github.com/taskforcesh/bullmq). Otherwise you are very welcome to still use Bull, which is a safe, battle tested codebase.
 
 ---
 
