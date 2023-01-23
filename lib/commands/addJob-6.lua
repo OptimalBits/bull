@@ -33,6 +33,7 @@
       ARGV[9]  priority
       ARGV[10] LIFO
       ARGV[11] token
+      ARGV[12] buffer
 ]]
 local jobId
 local jobIdKey
@@ -47,7 +48,16 @@ else
   jobId = ARGV[2]
   jobIdKey = ARGV[1] .. jobId
   if rcall("EXISTS", jobIdKey) == 1 then
-    return jobId .. "" -- convert to string
+    if ARGV[12] == '1' then
+      local originalJobId = jobId
+      jobId = jobId .. ":buffer"
+      jobIdKey = ARGV[1] .. jobId
+      if rcall("EXISTS", jobIdKey) == 1 then
+        return originalJobId .. "" -- Even buffer exists
+      end
+    else
+      return jobId .. "" -- convert to string
+    end
   end
 end
 
