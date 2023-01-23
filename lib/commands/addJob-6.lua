@@ -49,11 +49,10 @@ else
   jobIdKey = ARGV[1] .. jobId
   if rcall("EXISTS", jobIdKey) == 1 then
     if ARGV[12] == '1' then
-      local originalJobId = jobId
       jobId = jobId .. ":buffer"
       jobIdKey = ARGV[1] .. jobId
       if rcall("EXISTS", jobIdKey) == 1 then
-        return originalJobId .. "" -- Even buffer exists
+        return jobId .. "" -- Even buffer exists
       end
     else
       return jobId .. "" -- convert to string
