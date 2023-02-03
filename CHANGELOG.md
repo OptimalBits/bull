@@ -1,3 +1,10 @@
+## [4.10.3](https://github.com/OptimalBits/bull/compare/v4.10.2...v4.10.3) (2023-02-03)
+
+
+### Bug Fixes
+
+* don't reschedule delay timer if closing ([#2535](https://github.com/OptimalBits/bull/issues/2535)) ([8a0292a](https://github.com/OptimalBits/bull/commit/8a0292a574df82a62d718e13d8995800fd8529d0))
+
 ## [4.10.2](https://github.com/OptimalBits/bull/compare/v4.10.1...v4.10.2) (2022-11-24)
 
 
