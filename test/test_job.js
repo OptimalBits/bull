@@ -440,6 +440,28 @@ describe('Job', () => {
       });
     });
 
+    it('retry job with paused queue', cb => {
+      queue.add({ foo: 'bar' });
+      queue.process((job, done) => {
+        done(new Error('the job failed'));
+      });
+
+      queue.pause();
+
+      queue.once('failed', job => {
+        queue.once('global:paused', jobId2 => {
+          Job.fromId(queue, jobId2).then(job2 => {
+            expect(job2.data.foo).to.be.equal('bar');
+            cb();
+          });
+        });
+        queue.once('registered:global:paused', () => {
+          job.retry();
+        });
+      });
+      queue.resume();
+    });
+
     it('sets retriedOn to a timestamp', cb => {
       queue.add({ foo: 'bar' });
       queue.process((job, done) => {
