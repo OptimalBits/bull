@@ -665,6 +665,65 @@ describe('Queue', () => {
           const CompletedCount = await queue.getJobCounts('completed');
           expect(CompletedCount.completed).to.be.equal(jobCount);
         });
+
+        it('should move to pause all failed jobs if the queue is paused', async () => {
+          const jobCount = 8;
+
+          let fail = true;
+          queue.process(async () => {
+            await delay(10);
+            if (fail) {
+              throw new Error('failed');
+            }
+          });
+
+          let order = 0;
+          const failing = new Promise(resolve => {
+            queue.on('failed', job => {
+              expect(order).to.be.eql(job.data.idx);
+              if (order === jobCount - 1) {
+                resolve();
+              }
+              order++;
+            });
+          });
+
+          for (const index of Array.from(Array(jobCount).keys())) {
+            await queue.add({ idx: index });
+          }
+
+          await failing;
+
+          const failedCount = await queue.getJobCounts('failed');
+          expect(failedCount.failed).to.be.equal(jobCount);
+
+          order = 0;
+          const completing = new Promise(resolve => {
+            queue.on('completed', job => {
+              expect(order).to.be.eql(job.data.idx);
+              if (order === jobCount - 1) {
+                resolve();
+              }
+              order++;
+            });
+          });
+
+          fail = false;
+
+          await queue.pause();
+
+          await queue.retryJobs({ count: 2 });
+
+          const pausedJobs = await queue.getJobs(['paused']);
+          expect(pausedJobs).to.have.lengthOf(jobCount);
+
+          await queue.resume();
+
+          await completing;
+
+          const CompletedCount = await queue.getJobCounts('completed');
+          expect(CompletedCount.completed).to.be.equal(jobCount);
+        });
       });
 
       it('should keep specified number of jobs after completed with removeOnComplete', async () => {
@@ -1883,6 +1942,56 @@ describe('Queue', () => {
         expect(failedOnce).to.be.eql(true);
         retryQueue.close().then(done);
       });
+    });
+
+    it('retry a job that fails on a paused queue moves the job to paused', async () => {
+      let called = 0;
+      let failedOnce = false;
+      const notEvenErr = new Error('Not even!');
+
+      const retryQueue = utils.buildQueue('retry-test-queue');
+
+      const job = await retryQueue.add({ foo: 'bar' });
+      expect(job.id).to.be.ok;
+      expect(job.data.foo).to.be.eql('bar');
+
+      retryQueue.process((job, jobDone) => {
+        called++;
+        if (called % 2 !== 0) {
+          throw notEvenErr;
+        }
+        jobDone();
+      });
+
+      const failed = new Promise(resolve => {
+        retryQueue.once('failed', async (job, err) => {
+          expect(job).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+          expect(err).to.be.eql(notEvenErr);
+          failedOnce = true;
+          resolve();
+        });
+      });
+
+      await failed;
+
+      await retryQueue.pause();
+
+      await retryQueue.retryJob(job);
+
+      const pausedJobs = await retryQueue.getJobs(['paused']);
+      expect(pausedJobs).to.have.length(1);
+
+      await retryQueue.resume();
+
+      const completed = new Promise(resolve => {
+        retryQueue.once('completed', () => {
+          expect(failedOnce).to.be.eql(true);
+          retryQueue.close().then(resolve);
+        });
+      });
+
+      await completed;
     });
 
     it('retry a job that fails using job retry method', done => {

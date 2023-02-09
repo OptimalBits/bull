@@ -5,6 +5,8 @@
       KEYS[1] 'active',
       KEYS[2] 'wait'
       KEYS[3] jobId
+      KEYS[4] 'meta-paused'
+      KEYS[5] 'paused'
 
       ARGV[1]  pushCmd
       ARGV[2]  jobId
@@ -30,7 +32,15 @@ if redis.call("EXISTS", KEYS[3]) == 1 then
   end
 
   redis.call("LREM", KEYS[1], 0, ARGV[2])
-  redis.call(ARGV[1], KEYS[2], ARGV[2])
+
+  local target
+  if rcall("EXISTS", KEYS[4]) ~= 1 then
+    target = KEYS[2]
+  else
+    target = KEYS[5]
+  end
+
+  redis.call(ARGV[1], target, ARGV[2])
 
   return 0
 else
