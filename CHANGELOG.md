@@ -1,3 +1,10 @@
+## [4.10.4](https://github.com/OptimalBits/bull/compare/v4.10.3...v4.10.4) (2023-02-09)
+
+
+### Bug Fixes
+
+* **retry:** handle pause queue status ([9f945d6](https://github.com/OptimalBits/bull/commit/9f945d60c69e8b5d7b46f58189a1c49a83897099))
+
 ## [4.10.3](https://github.com/OptimalBits/bull/compare/v4.10.2...v4.10.3) (2023-02-03)
 
 
