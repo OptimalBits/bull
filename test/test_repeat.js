@@ -645,15 +645,18 @@ describe('repeat', () => {
     this.clock.setSystemTime(date);
     const nextTick = ONE_SECOND + 500;
 
-    queue
-      .add(
-        'repeat',
-        { foo: 'bar' },
-        { repeat: { limit: 5, cron: '*/1 * * * * *' } }
-      )
-      .then(() => {
-        _this.clock.tick(nextTick);
-      });
+    const addThenTick = () =>
+      queue
+        .add(
+          'repeat',
+          { foo: 'bar' },
+          { repeat: { limit: 5, cron: '*/1 * * * * *' } }
+        )
+        .then(() => {
+          _this.clock.tick(nextTick);
+        });
+
+    addThenTick();
 
     queue.process('repeat', () => {
       // dummy
@@ -664,6 +667,7 @@ describe('repeat', () => {
       _this.clock.tick(nextTick);
       counter++;
       if (counter == 5) {
+        addThenTick();
         utils.sleep(nextTick * 2).then(() => {
           done();
         }, nextTick * 2);
