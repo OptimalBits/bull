@@ -507,6 +507,7 @@ declare namespace Bull {
     failed: number;
     delayed: number;
     waiting: number;
+    paused: number;
   }
 
   interface JobInformation {
