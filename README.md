@@ -163,6 +163,7 @@ There are a few third-party UIs that you can use for monitoring:
 **BullMQ**
 
 - [Taskforce](https://taskforce.sh)
+- [QueueDash](https://github.com/alexbudure/queuedash)
 
 **Bull v3**
 
@@ -171,6 +172,7 @@ There are a few third-party UIs that you can use for monitoring:
 - [bull-repl](https://github.com/darky/bull-repl)
 - [bull-monitor](https://github.com/s-r-x/bull-monitor)
 - [Monitoro](https://github.com/AbhilashJN/monitoro)
+- [QueueDash](https://github.com/alexbudure/queuedash)
 
 **Bull <= v2**
 
