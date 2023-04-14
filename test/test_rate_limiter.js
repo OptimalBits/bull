@@ -201,6 +201,56 @@ describe('Rate limiter', () => {
     });
   });
 
+  [
+    { max: 1, numJobs: 3, duration: 100 },
+    { max: 2, numJobs: 11, duration: 100 },
+    { max: 3, numJobs: 16, duration: 100 },
+    { max: 10, numJobs: 51, duration: 100 },
+    { max: 100, numJobs: 501, duration: 500 }
+  ].forEach(({ max, numJobs, duration }) => {
+    it(`should obey the rate limit with max = ${max}, duration = ${duration}ms, and numJobs = ${numJobs}`, done => {
+      const startTime = new Date().getTime();
+      let completedJobs = 0;
+      let enqueuedJobs = 0;
+
+      const newQueue = utils.buildQueue(`test rate limiter with ${max}`, {
+        limiter: {
+          max,
+          duration
+        }
+      });
+
+      newQueue.on('failed', e => {
+        assert.fail(e);
+      });
+
+      newQueue.process(() => {
+        completedJobs++;
+
+        if (enqueuedJobs < numJobs) {
+          enqueuedJobs++;
+          return newQueue.add({});
+        } else if (completedJobs === numJobs) {
+          try {
+            const timeDiff = new Date().getTime() - startTime;
+            expect(timeDiff).to.be.above(
+              (Math.ceil(numJobs / max) - 1) * duration
+            );
+            expect(timeDiff).to.be.below(Math.ceil(numJobs / max) * duration);
+            done();
+          } catch (err) {
+            done(err);
+          }
+        }
+      });
+
+      for (let i = 0; i < max; i++) {
+        newQueue.add({});
+        enqueuedJobs++;
+      }
+    }).timeout(Math.ceil(numJobs / max) * duration);
+  });
+
   it('should not put a job into the delayed queue when discard is true', () => {
     const newQueue = utils.buildQueue('test rate limiter', {
       limiter: {

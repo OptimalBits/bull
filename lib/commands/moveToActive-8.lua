@@ -68,7 +68,7 @@ local rateLimit = function(jobId, maxJobs)
 
     if numLimitedJobs > 0 then
       -- Note, add some slack to compensate for drift.
-      delay = ((numLimitedJobs * ARGV[7] * 1.1) /  maxJobs) + tonumber(rcall("PTTL", rateLimiterKey))
+      delay = tonumber(rcall("PTTL", rateLimiterKey)) + ARGV[7] * math.floor(numLimitedJobs / maxJobs)
     end
   end
 
@@ -80,7 +80,7 @@ local rateLimit = function(jobId, maxJobs)
   if (delay == 0) and (jobCounter >= maxJobs) then
     -- Seems like there are no current rated limited jobs, but the jobCounter has exceeded the number of jobs for this unit of time so we need to rate limit this job.
     local exceedingJobs = jobCounter - maxJobs
-    delay = tonumber(rcall("PTTL", rateLimiterKey)) + ((exceedingJobs) * ARGV[7]) / maxJobs
+    delay = tonumber(rcall("PTTL", rateLimiterKey)) + ARGV[7] * math.floor(exceedingJobs / maxJobs)
   end
 
   if delay > 0 then
