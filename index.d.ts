@@ -85,6 +85,12 @@ declare namespace Bull {
     limiter?: RateLimiter | undefined;
 
     defaultJobOptions?: JobOptions | undefined;
+
+    metrics?: MetricsOpts; // Configure metrics
+  }
+
+  interface MetricsOpts {
+    maxDataPoints?: number; //  Max number of data points to collect, granularity is fixed at one minute.
   }
 
   interface AdvancedSettings {
@@ -886,6 +892,27 @@ declare namespace Bull {
       status?: JobStatusClean,
       limit?: number
     ): Promise<Array<Job<T>>>;
+
+    /**
+     * Returns a promise that resolves to a Metrics object.
+     * @param type Job metric type either 'completed' or 'failed'
+     * @param start Start point of the metrics, where 0 is the newest point to be returned.
+     * @param end End point of the metrics, where -1 is the oldest point to be returned.
+     * @returns - Returns an object with queue metrics.
+     */
+    getMetrics(
+      type: 'completed' | 'failed', 
+      start?: number, 
+      end?: number
+    ) : Promise<{
+      meta: {
+        count: number;
+        prevTS: number;
+        prevCount: number;
+      };
+      data: number[];
+      count: number;
+    }>
 
     /**
      * Returns a promise that marks the start of a transaction block.
