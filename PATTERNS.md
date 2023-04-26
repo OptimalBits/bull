@@ -199,7 +199,7 @@ myQueue.add({ foo: 'bar' }, {
   attempts: 10,
   backoff: {
     type: 'binaryExponential',
-    options: {
+    strategyOptions: {
       delay: 500,
       truncate: 5
     }
