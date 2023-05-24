@@ -64,7 +64,7 @@ declare namespace Bull {
      * Options passed into the `ioredis` constructor's `options` parameter.
      * `connectionName` is overwritten with `Queue.clientName()`. other properties are copied
      */
-    redis?: Redis.RedisOptions | string| undefined;
+    redis?: Redis.RedisOptions | string | undefined;
 
     /**
      * When specified, the `Queue` will use this function to create new `ioredis` client connections.
@@ -377,7 +377,7 @@ declare namespace Bull {
     /**
      * Options for custom strategies
      */
-    strategyOptions?: any;
+    options?: any;
   }
 
   interface RepeatOptions {
@@ -395,7 +395,7 @@ declare namespace Bull {
      * Number of times the job should repeat at max.
      */
     limit?: number | undefined;
-    
+
     /**
      * The start value for the repeat iteration count.
      */
@@ -913,10 +913,10 @@ declare namespace Bull {
      * @returns - Returns an object with queue metrics.
      */
     getMetrics(
-      type: 'completed' | 'failed', 
-      start?: number, 
+      type: 'completed' | 'failed',
+      start?: number,
       end?: number
-    ) : Promise<{
+    ): Promise<{
       meta: {
         count: number;
         prevTS: number;
@@ -924,7 +924,7 @@ declare namespace Bull {
       };
       data: number[];
       count: number;
-    }>
+    }>;
 
     /**
      * Returns a promise that marks the start of a transaction block.
