@@ -855,7 +855,7 @@ declare namespace Bull {
     /**
      * Returns a promise that resolves with the job counts for the given queue of the given job statuses.
      */
-    getJobCountByTypes(types: JobStatus[] | JobStatus): Promise<JobCounts>;
+    getJobCountByTypes(types: JobStatus[] | JobStatus): Promise<number>;
 
     /**
      * Returns a promise that resolves with the quantity of completed jobs.
