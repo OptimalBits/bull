@@ -26,7 +26,7 @@ or
 $ yarn add bull
 ```
 
-In order to work with Bull, you also need to have a Redis server running. For local development you can easily install
+In order to work with Bull, you also need to have a Redis server running. For local development, you can easily install
 it using [docker](https://hub.docker.com/_/redis/).
 
 Bull will by default try to connect to a Redis server running on `localhost:6379`
@@ -41,11 +41,11 @@ const myFirstQueue = new Bull('my-first-queue');
 
 A queue instance can normally have 3 main different roles: A job producer, a job consumer or/and an events listener.
 
-Although one given instance can be used for the 3 roles, normally the producer and consumer are divided into several instances. A given queue, always referred by its instantiation name ( `my-first-queue` in the example above ), can have many producers, many consumers, and many listeners. An important aspect is that producers can add jobs to a queue even if there are no consumers available at that moment: queues provide asynchronous communication, which is one of the features that makes them so powerful.
+Although one given instance can be used for the 3 roles, normally the producer and consumer are divided into several instances. A given queue, always referred to by its instantiation name ( `my-first-queue` in the example above ), can have many producers, many consumers, and many listeners. An important aspect is that producers can add jobs to a queue even if there are no consumers available at that moment: queues provide asynchronous communication, which is one of the features that makes them so powerful.
 
 Conversely, you can have one or more workers consuming jobs from the queue, which will consume the jobs in a given order: FIFO (the default), LIFO or according to priorities.
 
-Talking about workers, they can run in the same or different processes, in the same machine or in a cluster. Redis will act as a common point, and as long as a consumer or producer can connect to Redis, they will be able to co-operate processing the jobs.
+Talking about workers, they can run in the same or different processes, in the same machine, or in a cluster. Redis will act as a common point, and as long as a consumer or producer can connect to Redis, they will be able to co-operate in processing the jobs.
 
 ## Producers
 
@@ -59,7 +59,7 @@ const job = await myFirstQueue.add({
 });
 ```
 
-As you can see a job is just a javascript object. This object needs to be serializable, more concrete it should be possible to JSON stringify it, since that is how it is going to be stored in Redis.
+As you can see a job is just a javascript object. This object needs to be serializable, more concrete it should be possible to JSON stringify it since that is how it is going to be stored in Redis.
 
 It is also possible to provide an options object after the job's data, but we will cover that later on.
 
@@ -77,7 +77,7 @@ myFirstQueue.process(async (job) => {
 ```
 
 The `process` function will be called every time the worker is idling and there are jobs to process in the queue. Since
-the consumer does not need to be online when the jobs are added it could happen that the queue has already many jobs waiting in it, so then the process will be kept busy processing jobs one by one until all of them are done.
+the consumer does not need to be online when the jobs are added, the queue could have many jobs already waiting in it. So then the process will be kept busy processing jobs one by one until all of them are done.
 
 In the example above we define the process function as `async`, which is the highly recommended way to define them.
 If your Node runtime does not support async/await, then you can just return a promise at the end of the process
@@ -86,7 +86,7 @@ function for a similar result.
 The value returned by your process function will be stored in the jobs object and can be accessed later on, for example
 in a listener for the `completed` event.
 
-Sometimes you need to provide job's _progress_ information to an external listener, this can be easily accomplished
+Sometimes you need to provide a job's _progress_ information to an external listener, this can be easily accomplished
 by using the `progress` method on the job object:
 
 ```js
@@ -124,7 +124,7 @@ be in different states, until its completion or failure (although technically a 
 
 ![Diagram showing job statuses](job-lifecycle.png)
 
-When a job is added to a queue it can be in one of two states, it can either be in the "wait" status, which is, in fact, a waiting list, where all jobs must enter before they can be processed, or it can be in a "delayed" status: a delayed status implies that the job is waiting for some timeout or to be promoted for being processed, however, a delayed job will not be processed directly, instead it will be placed at the beginning of the waiting list and processed as soon as a worker is idle.
+When a job is added to a queue it can be in one of two states, it can either be in the "wait" status, which is, in fact, a waiting list, where all jobs must enter before they can be processed, or it can be in a "delayed" status: a delayed status implies that the job is waiting for some timeout or to be promoted for being processed. However, a delayed job will not be processed directly, instead, it will be placed at the beginning of the waiting list and processed as soon as a worker is idle.
 
 The next state for a job is the "active" state. The active state is represented by a set, and are jobs that are currently being
 processed, i.e. they are running in the `process` function explained in the previous chapter. A job can be in the active state for an unlimited amount of time until the process is completed or an exception is thrown so that the job will end in
@@ -138,21 +138,22 @@ the worker is not able to tell the queue that it is still working on the job.
 
 When a job stalls, depending on the job settings the job can be retried by another idle worker or it can just move to the failed status.
 
-Stalled jobs can be avoided by either making sure that the process function does not keep Node event loop busy for too long (we are talking several seconds with Bull default options), or by using a separate [sandboxed processor](#sandboxed-processors).
+Stalled jobs can be avoided by either making sure that the process function does not keep the Node event loop busy for too long (we are talking several seconds with Bull default options), or by using a separate [sandboxed processor](#sandboxed-processors).
 
 # Events
 
 A Queue in Bull generates a handful of events that are useful in many use cases.
-Events can be local for a given queue instance (a worker), for example, if a job is completed in a given worker a local event will be emitted just for that instance. However, it is possible to listen to all events, by prefixing ```global:``` to the local event name. Then we can listen to all the events produced by all the workers of a given queue.
+Events can be local for a given queue instance (a worker), for example, if a job is completed in a given worker, a local event will be emitted just for that instance. However, it is possible to listen to all events, by prefixing ```global:``` to the local event name. Then we can listen to all the events produced by all the workers of a given queue.
 
 A local complete event:
+
 ```js
 queue.on('completed', job => {
   console.log(`Job with id ${job.id} has been completed`);
 })
 ```
 
-Whereas the global version of the event can be listen to with:
+Whereas the global version of the event can be listened to with:
 
 ```js
 queue.on('global:completed', jobId => {
@@ -167,11 +168,11 @@ The list of available events can be found in the [reference](https://github.com/
 # Queue Options
 
 A queue can be instantiated with some useful options, for instance, you can specify the location and password of your Redis server,
-as well as some other useful settings. All these settings are described in Bull's [reference](https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queue) and we will not repeat them here, however, we will go through some use cases.
+as well as some other useful settings. All these settings are described in Bull's [reference](https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queue) and we will not repeat them here. However, we will go through some use cases.
 
 ## Rate Limiter
 
-It is possible to create queues that limit the number of jobs processed in a unit of time. The limiter is defined per queue, independently of the number of workers, so you can scale horizontally and still limiting the rate of processing easily:
+It is possible to create queues that limit the number of jobs processed in a unit of time. The limiter is defined per queue, independently of the number of workers, so you can scale horizontally and still limit the rate of processing easily:
 
 ```js
 // Limit queue to max 1000 jobs per 5000 milliseconds.
@@ -215,7 +216,7 @@ and if the jobs are very IO intensive they will be handled just fine.
 Sometimes jobs are more CPU intensive which could lock the Node event loop
 for too long and Bull could decide the job has been stalled. To avoid this situation, it is possible to run the process functions in separate Node processes. In this case, the concurrency parameter will decide the maximum number of concurrent processes that are allowed to run.
 
-We call this kind of processes for "sandboxed" processes, and they also have the property that if the crash they will not affect any other process, and a new
+We call these kinds of processes "sandboxed" processes, and they also have the property that if they crash they will not affect any other process, and a new
 process will be spawned automatically to replace it.
 
 
@@ -243,7 +244,7 @@ const myJob = await myqueue.add({ foo: 'bar' }, { delay: 5000 });
 
 ## Prioritized
 
-Jobs can be added to a queue with a priority value. Jobs with higher priority will be processed before than jobs with lower priority. Highest priority is 1, and lower the larger integer you use. Keep in mind that priority queues are a bit slower than a standard queue (currently insertion time O(n), n being the number of jobs currently waiting in the queue, instead of O(1) for standard queues).
+Jobs can be added to a queue with a priority value. Jobs with higher priority will be processed before jobs with lower priority. The highest priority is 1, and the larger the integer you use, the lower the priority of the job. Keep in mind that priority queues are a bit slower than a standard queue (currently insertion time O(n), n being the number of jobs currently waiting in the queue, instead of O(1) for standard queues).
 
 ```js
 const myJob = await myqueue.add({ foo: 'bar' }, { priority: 3 });
@@ -272,5 +273,5 @@ paymentsQueue.add(paymentsData, { repeat: { cron: '15 3 * * *' } });
 There are some important considerations regarding repeatable jobs:
 
 - Bull is smart enough not to add the same repeatable job if the repeat options are the same. (CAUTION: A job id is part of the repeat options since: https://github.com/OptimalBits/bull/pull/603, therefore passing job ids will allow jobs with the same cron to be inserted in the queue)
-- If there are no workers running, repeatable jobs will not accumulate next time a worker is online.
-- repeatable jobs can be removed using the [removeRepeatable](https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queueremoverepeatable) method.
+- If there are no workers running, repeatable jobs will not accumulate the next time a worker is online.
+- Repeatable jobs can be removed using the [removeRepeatable](https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queueremoverepeatable) method.
