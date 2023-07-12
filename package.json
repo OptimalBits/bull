@@ -22,7 +22,6 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "cron-parser": "^4.2.1",
-    "debuglog": "^1.0.0",
     "get-port": "^5.1.1",
     "ioredis": "^5.3.2",
     "lodash": "^4.17.21",
