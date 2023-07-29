@@ -21,7 +21,7 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
-    "cron-parser": "^4.2.1",
+    "cron-parser": "^4.8.1",
     "get-port": "^5.1.1",
     "ioredis": "^5.3.2",
     "lodash": "^4.17.21",
