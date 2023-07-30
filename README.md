@@ -46,7 +46,7 @@
 
 ### 📻 News and updates
 
-Bull is currently in maintainance mode, we are only fixing bugs. For new features check [BullMQ](https://github.com/taskforcesh/bullmq), a modern rewritten
+Bull is currently in maintenance mode, we are only fixing bugs. For new features check [BullMQ](https://github.com/taskforcesh/bullmq), a modern rewritten
 implementation in Typescript. You are still very welcome to use Bull if it suits your needs, which is a safe, battle tested library.
 
 Follow me on [Twitter](http://twitter.com/manast) for other important news and updates.
