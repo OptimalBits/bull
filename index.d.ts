@@ -832,6 +832,16 @@ declare namespace Bull {
       asc?: boolean
     ): Promise<Array<Job<T>>>;
 
+    getMetrics(type: 'completed' | 'failed', start?: number, end?: number): Promise<{
+      meta: {
+        count: number;
+        prevTS: number;
+        prevCount: number;
+      };
+      data: number[];
+      count: number;
+    }>
+
     /**
      * Returns a promise that resolves to the next job in queue.
      */
