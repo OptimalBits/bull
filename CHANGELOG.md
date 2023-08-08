@@ -1,3 +1,10 @@
+## [4.11.2](https://github.com/OptimalBits/bull/compare/v4.11.1...v4.11.2) (2023-08-08)
+
+
+### Bug Fixes
+
+* **worker:** better client name support ([5910f44](https://github.com/OptimalBits/bull/commit/5910f44b03a264d979c8ade54d64d13fdc908b51))
+
 ## [4.11.1](https://github.com/OptimalBits/bull/compare/v4.11.0...v4.11.1) (2023-08-08)
 
 
