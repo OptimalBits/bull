@@ -1,3 +1,10 @@
+## [4.11.1](https://github.com/OptimalBits/bull/compare/v4.11.0...v4.11.1) (2023-08-08)
+
+
+### Bug Fixes
+
+* **queue:** deep clone opts ([#2634](https://github.com/OptimalBits/bull/issues/2634)) fixes [#2633](https://github.com/OptimalBits/bull/issues/2633) ([35f1da3](https://github.com/OptimalBits/bull/commit/35f1da3cf631bee97e96a774d9f1127466e7a66a))
+
 # [4.11.0](https://github.com/OptimalBits/bull/compare/v4.10.4...v4.11.0) (2023-08-08)
 
 

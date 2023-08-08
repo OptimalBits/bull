@@ -1,6 +1,6 @@
 {
   "name": "bull",
-  "version": "4.11.0",
+  "version": "4.11.1",
   "description": "Job manager",
   "engines": {
     "node": ">=12"
