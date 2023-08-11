@@ -1,3 +1,10 @@
+## [4.11.3](https://github.com/OptimalBits/bull/compare/v4.11.2...v4.11.3) (2023-08-11)
+
+
+### Bug Fixes
+
+* **types:** make repeat option key optional ([934ec98](https://github.com/OptimalBits/bull/commit/934ec9875c6e04c3e771b6c6ba212e3693d3a25b))
+
 ## [4.11.2](https://github.com/OptimalBits/bull/compare/v4.11.1...v4.11.2) (2023-08-08)
 
 
