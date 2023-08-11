@@ -447,7 +447,7 @@ declare namespace Bull {
           /**
            * The key for the repeatable job metadata in Redis.
            */
-          readonly key: string;
+          readonly key?: string;
         })
       | undefined;
 
