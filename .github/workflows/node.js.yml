@@ -22,6 +22,10 @@ jobs:
     strategy:
       matrix:
         node-version: [10.x, 12.x, 14.x]
+        redis-version: [7.0-alpine]
+        include:
+          - node-version: '14.x'
+            redis-version: 6.2-alpine
 
     steps:
       - uses: actions/checkout@v2
