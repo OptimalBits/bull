@@ -1,3 +1,282 @@
+## [4.11.3](https://github.com/OptimalBits/bull/compare/v4.11.2...v4.11.3) (2023-08-11)
+
+
+### Bug Fixes
+
+* **types:** make repeat option key optional ([934ec98](https://github.com/OptimalBits/bull/commit/934ec9875c6e04c3e771b6c6ba212e3693d3a25b))
+
+## [4.11.2](https://github.com/OptimalBits/bull/compare/v4.11.1...v4.11.2) (2023-08-08)
+
+
+### Bug Fixes
+
+* **worker:** better client name support ([5910f44](https://github.com/OptimalBits/bull/commit/5910f44b03a264d979c8ade54d64d13fdc908b51))
+
+## [4.11.1](https://github.com/OptimalBits/bull/compare/v4.11.0...v4.11.1) (2023-08-08)
+
+
+### Bug Fixes
+
+* **queue:** deep clone opts ([#2634](https://github.com/OptimalBits/bull/issues/2634)) fixes [#2633](https://github.com/OptimalBits/bull/issues/2633) ([35f1da3](https://github.com/OptimalBits/bull/commit/35f1da3cf631bee97e96a774d9f1127466e7a66a))
+
+# [4.11.0](https://github.com/OptimalBits/bull/compare/v4.10.4...v4.11.0) (2023-08-08)
+
+
+### Bug Fixes
+
+* add mising getMetrics type ([#2640](https://github.com/OptimalBits/bull/issues/2640)) ([a217a7d](https://github.com/OptimalBits/bull/commit/a217a7d56d52385eb56ffe386b7503eca9a24604))
+* remove deprecated debuglog ([4ce36fe](https://github.com/OptimalBits/bull/commit/4ce36febe3a63a45198e2fe24b46fc371ee3f6e5))
+* **types:** add missing keys to repeat opts ([e4e6457](https://github.com/OptimalBits/bull/commit/e4e64572a3ad259d9cb90d5dec81e8565eeadca1))
+* **types:** rename strategyOptions to options to reflect js file ([bae6427](https://github.com/OptimalBits/bull/commit/bae6427ce9d9fac26b198402068bd84647fd8208))
+* **typings:** return type of getJobCountByTypes ([#2622](https://github.com/OptimalBits/bull/issues/2622)) ([47722ed](https://github.com/OptimalBits/bull/commit/47722ed791429b087128ce5f35847663b2d8fc9c))
+* **worker:** high-memory-usage-when-providing-float-to-concurrency ([#2620](https://github.com/OptimalBits/bull/issues/2620)) ([dcca1e8](https://github.com/OptimalBits/bull/commit/dcca1e8c39b121fb01ac299bec30a3d011059c1f))
+* change option name to match ts declaration ([909a07e](https://github.com/OptimalBits/bull/commit/909a07e27075a63b9ca178a3074b0b5c80d86355))
+* ts declaration metrics option and getMetrics function ([11331b7](https://github.com/OptimalBits/bull/commit/11331b718a8e534ac6822917a536eab32b10446b))
+
+
+### Features
+
+* upgrade ioredis to 5.3.2 ([e1883f0](https://github.com/OptimalBits/bull/commit/e1883f01c2cb23a51b5485ef8048c4268ee968ea))
+
+## [4.10.4](https://github.com/OptimalBits/bull/compare/v4.10.3...v4.10.4) (2023-02-09)
+
+
+### Bug Fixes
+
+* **retry:** handle pause queue status ([9f945d6](https://github.com/OptimalBits/bull/commit/9f945d60c69e8b5d7b46f58189a1c49a83897099))
+
+## [4.10.3](https://github.com/OptimalBits/bull/compare/v4.10.2...v4.10.3) (2023-02-03)
+
+
+### Bug Fixes
+
+* don't reschedule delay timer if closing ([#2535](https://github.com/OptimalBits/bull/issues/2535)) ([8a0292a](https://github.com/OptimalBits/bull/commit/8a0292a574df82a62d718e13d8995800fd8529d0))
+
+## [4.10.2](https://github.com/OptimalBits/bull/compare/v4.10.1...v4.10.2) (2022-11-24)
+
+
+### Bug Fixes
+
+* **queue:** throw error when needed instead of hiding it in a closure ([8a742c1](https://github.com/OptimalBits/bull/commit/8a742c1176e7147e2069602f18089d8becb4cb15))
+
+## [4.10.1](https://github.com/OptimalBits/bull/compare/v4.10.0...v4.10.1) (2022-10-13)
+
+
+### Bug Fixes
+
+* support for instantiation using redisUrl ([6288f7d](https://github.com/OptimalBits/bull/commit/6288f7de9b82e712e480510eb10c03bd4d1cd24e))
+
+# [4.10.0](https://github.com/OptimalBits/bull/compare/v4.9.0...v4.10.0) (2022-09-29)
+
+
+### Features
+
+* **types:** add typescript types to package ([e793f8d](https://github.com/OptimalBits/bull/commit/e793f8d1502bc5ed4a2e15087dc048c18e5e8644))
+
+# [4.9.0](https://github.com/OptimalBits/bull/compare/v4.8.5...v4.9.0) (2022-09-05)
+
+
+### Features
+
+* support .cjs files ([75e6775](https://github.com/OptimalBits/bull/commit/75e6775fc3720563aac9cd9a07d1722dfbdfa177))
+
+## [4.8.5](https://github.com/OptimalBits/bull/compare/v4.8.4...v4.8.5) (2022-07-27)
+
+
+### Performance Improvements
+
+* **clean:** use ZRANGEBYSCORE to improve performance ([#2363](https://github.com/OptimalBits/bull/issues/2363)) ([3331188](https://github.com/OptimalBits/bull/commit/3331188bce510e0bb4749d92cb63f4c73203d076))
+
+## [4.8.4](https://github.com/OptimalBits/bull/compare/v4.8.3...v4.8.4) (2022-06-16)
+
+
+### Bug Fixes
+
+* **worker:** better disconnect when blocking connection ([b9ea7f4](https://github.com/OptimalBits/bull/commit/b9ea7f4780948d4556548e6bf13e2c3271939d12))
+
+## [4.8.3](https://github.com/OptimalBits/bull/compare/v4.8.2...v4.8.3) (2022-05-12)
+
+
+### Bug Fixes
+
+* **stalled-jobs:** move stalled jobs to wait in batches ([2f1fb6c](https://github.com/OptimalBits/bull/commit/2f1fb6cdc1329f98b2dd30e847b5a79839db0346))
+
+## [4.8.2](https://github.com/OptimalBits/bull/compare/v4.8.1...v4.8.2) (2022-04-21)
+
+
+### Bug Fixes
+
+* unlock job when moving it to delayed ([#2329](https://github.com/OptimalBits/bull/issues/2329)) ([11eae6b](https://github.com/OptimalBits/bull/commit/11eae6b960c83b47dadb22991b2b3e239c177508))
+
+## [4.8.1](https://github.com/OptimalBits/bull/compare/v4.8.0...v4.8.1) (2022-03-21)
+
+
+### Performance Improvements
+
+* speed up clean operation ([#2326](https://github.com/OptimalBits/bull/issues/2326)) ([ef5f471](https://github.com/OptimalBits/bull/commit/ef5f4717258940042fa11f980622034cde765860))
+
+# [4.8.0](https://github.com/OptimalBits/bull/compare/v4.7.0...v4.8.0) (2022-03-19)
+
+
+### Features
+
+* have Queue#clean consult job.{finishedOn,processedOn,timestamp} ([#2309](https://github.com/OptimalBits/bull/issues/2309)) ([b7058e6](https://github.com/OptimalBits/bull/commit/b7058e6e8f4bb56febebaf9452f993883240fa9d))
+
+# [4.7.0](https://github.com/OptimalBits/bull/compare/v4.6.2...v4.7.0) (2022-03-02)
+
+
+### Features
+
+* **metrics:** add support for collecting queue metrics ([886d764](https://github.com/OptimalBits/bull/commit/886d7643819dcf52902d2e92394267dbd495c71b))
+
+## [4.6.2](https://github.com/OptimalBits/bull/compare/v4.6.1...v4.6.2) (2022-02-23)
+
+
+### Bug Fixes
+
+* better handling of maxRetriesPerRequest ([d3b9138](https://github.com/OptimalBits/bull/commit/d3b91386e30d7205efdc19bcd18fe1e5fefa3542))
+
+## [4.6.1](https://github.com/OptimalBits/bull/compare/v4.6.0...v4.6.1) (2022-02-21)
+
+
+### Bug Fixes
+
+* **sandbox:** better error reporting broken processor file ([10db479](https://github.com/OptimalBits/bull/commit/10db479731bcb8ba27c3a0e2dd4094c8e9ff1c57))
+
+# [4.6.0](https://github.com/OptimalBits/bull/compare/v4.5.6...v4.6.0) (2022-02-21)
+
+
+### Features
+
+* handle redis uri queries ([54e5463](https://github.com/OptimalBits/bull/commit/54e5463bffee1b8b56b460460c79d8751142d859))
+
+## [4.5.6](https://github.com/OptimalBits/bull/compare/v4.5.5...v4.5.6) (2022-02-20)
+
+
+### Bug Fixes
+
+* **sandbox:** wait for result of sending start command ([232ed85](https://github.com/OptimalBits/bull/commit/232ed85d4c980d94dee5d9e4c5b6f8758dbb82d9))
+
+## [4.5.5](https://github.com/OptimalBits/bull/compare/v4.5.4...v4.5.5) (2022-02-16)
+
+
+### Bug Fixes
+
+* **worker:** better closing when disconnected ([41b9404](https://github.com/OptimalBits/bull/commit/41b940457b3447619c3c2887674a8cebf1508b07))
+
+## [4.5.4](https://github.com/OptimalBits/bull/compare/v4.5.3...v4.5.4) (2022-02-14)
+
+
+### Bug Fixes
+
+* **queue:** return correct workers with getWorkers() ([193644c](https://github.com/OptimalBits/bull/commit/193644c5ed290901448f8c35ede99e1063a90f4a))
+
+## [4.5.3](https://github.com/OptimalBits/bull/compare/v4.5.2...v4.5.3) (2022-02-14)
+
+
+### Bug Fixes
+
+* **commands:** do not wait for redis to load commands ([ad7b647](https://github.com/OptimalBits/bull/commit/ad7b6474db426b4970a0d1d3ddb8a032a22c481b))
+
+## [4.5.2](https://github.com/OptimalBits/bull/compare/v4.5.1...v4.5.2) (2022-02-14)
+
+
+### Bug Fixes
+
+* **scripts:** make it easier for tools like vercel to find the .lua scripts ([8ab5b1d](https://github.com/OptimalBits/bull/commit/8ab5b1d1c3eecf41b20d97f464030377ece01640))
+
+## [4.5.1](https://github.com/OptimalBits/bull/compare/v4.5.0...v4.5.1) (2022-02-06)
+
+
+### Bug Fixes
+
+* **sandbox:** broken processor files should fail jobs ([dd0b853](https://github.com/OptimalBits/bull/commit/dd0b853a516c32baac535395377a19e361964dc8))
+
+# [4.5.0](https://github.com/OptimalBits/bull/compare/v4.4.0...v4.5.0) (2022-02-01)
+
+
+### Features
+
+* **queue:** add retryJobs for failed status ([501b2cc](https://github.com/OptimalBits/bull/commit/501b2cc49ccd0d7de82fea50144b52fa9879d1f5))
+
+# [4.4.0](https://github.com/OptimalBits/bull/compare/v4.3.0...v4.4.0) (2022-01-26)
+
+
+### Features
+
+* add support for removeOn based on time ([90f040c](https://github.com/OptimalBits/bull/commit/90f040c052325da302c99f17111a12d1afbe88bd))
+
+# [4.3.0](https://github.com/OptimalBits/bull/compare/v4.2.1...v4.3.0) (2022-01-26)
+
+
+### Features
+
+* upgrade cron version enabling new cron expressions ([79337a3](https://github.com/OptimalBits/bull/commit/79337a30758ea7e6d6b1536eb0edebcd0b3c8274))
+
+## [4.2.1](https://github.com/OptimalBits/bull/compare/v4.2.0...v4.2.1) (2022-01-17)
+
+
+### Bug Fixes
+
+* **sandbox:** exit if uncaughtException ([43dc2e6](https://github.com/OptimalBits/bull/commit/43dc2e69dfa0cbaf960ce6f1bd6c4125b1052ff9))
+
+# [4.2.0](https://github.com/OptimalBits/bull/compare/v4.1.4...v4.2.0) (2021-12-21)
+
+
+### Features
+
+* **queue:** enabled queues to share childPool instance ([#2237](https://github.com/OptimalBits/bull/issues/2237)) ([16fdbe9](https://github.com/OptimalBits/bull/commit/16fdbe90a05ae2e2bcb134a550a97dc84dfe573e))
+
+## [4.1.4](https://github.com/OptimalBits/bull/compare/v4.1.3...v4.1.4) (2021-12-14)
+
+
+### Bug Fixes
+
+* **queue:** check redisOptions is available fixes [#2186](https://github.com/OptimalBits/bull/issues/2186) ([071c51d](https://github.com/OptimalBits/bull/commit/071c51d16db58ed9f71138058dbbc25f73383e56))
+
+## [4.1.3](https://github.com/OptimalBits/bull/compare/v4.1.2...v4.1.3) (2021-12-14)
+
+
+### Bug Fixes
+
+* typo on url ([#2195](https://github.com/OptimalBits/bull/issues/2195)) ([7e7d9cb](https://github.com/OptimalBits/bull/commit/7e7d9cb58d7cb5c1a92020f7c4333932526d8e98))
+
+## [4.1.2](https://github.com/OptimalBits/bull/compare/v4.1.1...v4.1.2) (2021-12-14)
+
+
+### Performance Improvements
+
+* speed up performance of queue.clean when called with a limit ([#2205](https://github.com/OptimalBits/bull/issues/2205)) ([c20e469](https://github.com/OptimalBits/bull/commit/c20e469dcd71fd13e23e922f2720f55450311d22))
+
+## [4.1.1](https://github.com/OptimalBits/bull/compare/v4.1.0...v4.1.1) (2021-11-16)
+
+
+### Bug Fixes
+
+* **emit:** protect emit calls fixes [#2213](https://github.com/OptimalBits/bull/issues/2213) ([4978a2b](https://github.com/OptimalBits/bull/commit/4978a2b40ee840ba91e0939e86e1e3b15e8b16e9))
+
+# [4.1.0](https://github.com/OptimalBits/bull/compare/v4.0.0...v4.1.0) (2021-10-31)
+
+
+### Features
+
+* emit event on job lock extend failure ([7247b3b](https://github.com/OptimalBits/bull/commit/7247b3bb9741c5eb18ce4027ea14349cbc8504c5))
+
+# [4.0.0](https://github.com/OptimalBits/bull/compare/v3.29.3...v4.0.0) (2021-10-27)
+
+
+### Bug Fixes
+
+* force options to guarantee correct reconnects ([3ade8e6](https://github.com/OptimalBits/bull/commit/3ade8e6727d7b906a30b09bccb6dc10d76ed1b5f))
+
+
+### BREAKING CHANGES
+
+* If redis opts are missing:
+ { maxRetriesPerRequest: null,
+   enableReadyCheck: false }
+then a exception will be thrown.
+
 ## [3.29.3](https://github.com/OptimalBits/bull/compare/v3.29.2...v3.29.3) (2021-10-13)
 
 

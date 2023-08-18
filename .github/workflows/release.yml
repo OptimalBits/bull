@@ -3,10 +3,14 @@ on:
   push:
     branches:
       - develop
+permissions: {}
 jobs:
   release:
+    permissions:
+      contents: write # for release publishing
+
     name: Release
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2

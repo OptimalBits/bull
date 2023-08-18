@@ -34,6 +34,7 @@
   - [Queue#getCompleted](#queuegetcompleted)
   - [Queue#getFailed](#queuegetfailed)
   - [Queue#getWorkers](#queuegetworkers)
+  - [Queue#getMetrics](#queuegetmetrics)
 
 - [Job](#job)
 
@@ -67,12 +68,19 @@ The optional `url` argument, allows to specify a redis connection string such as
 
 ```typescript
 interface QueueOptions {
-  createClient?(type: 'client' | 'subscriber' | 'bclient', config?: Redis.RedisOptions): Redis.Redis | Redis.Cluster;
+  createClient?: (type: 'client' | 'subscriber' | 'bclient', config?: Redis.RedisOptions) => Redis.Redis | Redis.Cluster;
   limiter?: RateLimiter;
   redis?: RedisOpts;
   prefix?: string = 'bull'; // prefix for all queue keys.
+  metrics?: MetricsOpts; // Configure metrics
   defaultJobOptions?: JobOpts;
   settings?: AdvancedSettings;
+}
+```
+
+```typescript
+interface MetricsOpts {
+    maxDataPoints?: number; //  Max number of data points to collect, granularity is fixed at one minute.
 }
 ```
 
@@ -107,10 +115,11 @@ interface AdvancedSettings {
   retryProcessDelay: number = 5000; // delay before processing next job in case of internal error.
   backoffStrategies: {}; // A set of custom backoff strategies keyed by name.
   drainDelay: number = 5; // A timeout for when the queue is in drained state (empty waiting for jobs).
+  isSharedChildPool: boolean = false; // enables multiple queues on the same instance of child pool to share the same instance.
 }
 ```
 
-**Custom or Shared IORedis Connections**
+#### Custom or Shared IORedis Connections
 
 `createClient` is passed a `type` to specify the type of connection that Bull is trying to create, and some options that `bull` would like to set for that connection.
 
@@ -123,7 +132,7 @@ Redis connections somewhere and disconnect them after you shut down all the queu
 The `bclient` connection however is a "blocking client" and is used to wait for new jobs on a single queue at a time.  For this reason it cannot be shared and a
 new connection should be returned each time.
 
-**Advanced Settings**
+#### Advanced Settings
 
 **Warning:** Do not override these advanced settings unless you understand the internals of the queue.
 
@@ -157,9 +166,9 @@ backoffStrategies: {
 
 ```ts
 /**
- * Consider these as overloaded functions. Since method overloading doesn't exist in javacript
- * bull recognizes the desired function call by checking the parameters' types. Make sure you
- * comply with one of the below defined patterns.
+ * Consider these as overloaded functions. Since method overloading doesn't exist in JavaScript,
+ * Bull recognizes the desired function call by checking the parameters' types.
+ * Make sure you comply with one of the below defined patterns.
  *
  * Note: Concurrency defaults to 1 if not specified.
  */
@@ -265,6 +274,9 @@ An optional name can be added, so that only process functions defined for that n
 **Note:**
 You need to define _processors_ for all the named jobs that you add to your queue or the queue will complain that you are missing a processor for the given job, unless you use the `*` as job name when defining the processor.
 
+**Note:**
+Considering all jobs in a finished state (`failed` or `completed`) are stored in Redis, depending on the number of jobs running and your Redis setup, you might want to setup a default maximum number of jobs kept, using the `removeOnComplete` and `removeOnFail` options when creating a queue so Redis does not end up running out of memory.
+
 ```typescript
 interface JobOpts {
   priority: number; // Optional priority value. ranges from 1 (highest priority) to MAX_INT  (lowest priority). Note that
@@ -277,10 +289,11 @@ interface JobOpts {
 
   repeat: RepeatOpts; // Repeat job according to a cron specification, see below for details.
 
-  backoff: number | BackoffOpts; // Backoff setting for automatic retries if the job fails, default strategy: `fixed`
+  backoff: number | BackoffOpts; // Backoff setting for automatic retries if the job fails, default strategy: `fixed`.
+  // Needs `attempts` to be set.
 
   lifo: boolean; // if true, adds the job to the right of the queue instead of the left (default false)
-  timeout: number; // The number of milliseconds after which the job should be fail with a timeout error [optional]
+  timeout: number; // The number of milliseconds after which the job should fail with a timeout error [optional]
 
   jobId: number | string; // Override the job ID - by default, the job ID is a unique
   // integer, but you can use this setting to override it.
@@ -288,14 +301,51 @@ interface JobOpts {
   // jobId is unique. If you attempt to add a job with an id that
   // already exists, it will not be added (see caveat below about repeatable jobs).
 
-  removeOnComplete: boolean | number; // If true, removes the job when it successfully
+  removeOnComplete: boolean | number | KeepJobs; // If true, removes the job when it successfully
   // completes. A number specified the amount of jobs to keep. Default behavior is to keep the job in the completed set.
+  // See KeepJobs if using that interface instead.
 
-  removeOnFail: boolean | number; // If true, removes the job when it fails after all attempts. A number specified the amount of jobs to keep
+  removeOnFail: boolean | number | KeepJobs; // If true, removes the job when it fails after all attempts. A number specified the amount of jobs to keep, see KeepJobs if using that interface instead.
   // Default behavior is to keep the job in the failed set.
   stackTraceLimit: number; // Limits the amount of stack trace lines that will be recorded in the stacktrace.
 }
 ```
+
+#### KeepJobs Options
+```typescript
+/**
+ * KeepJobs
+ *
+ * Specify which jobs to keep after finishing. If both age and count are
+ * specified, then the jobs kept will be the ones that satisfies both
+ * properties.
+ */
+export interface KeepJobs {
+  /**
+   * Maximum age in *seconds* for job to be kept.
+   */
+  age?: number;
+
+  /**
+   * Maximum count of jobs to be kept.
+   */
+  count?: number;
+}
+```
+
+---
+
+#### Timeout Implementation
+
+It is important to note that jobs are _not_ proactively stopped after the given `timeout`. The job is marked as failed
+and the job's promise is rejected, but Bull has no way to stop the processor function externally.
+
+If you need a job to stop processing after it times out, here are a couple suggestions:
+ - Have the job itself periodically check `job.getStatus()`, and exit if the status becomes `'failed'`
+ - Implement the job as a _cancelable promise_. If the processor's promise has a `cancel()` method, it will
+   be called when a job times out, and the job can respond accordingly. (Note: currently this only works for
+   native Promises, see [#2203](https://github.com/OptimalBits/bull/issues/2203)
+ - If you have a way to externally stop a job, add a listener for the `failed` event and do so there.
 
 #### Repeated Job Details
 ```typescript
@@ -313,7 +363,9 @@ interface RepeatOpts {
 
 Adding a job with the `repeat` option set will actually do two things immediately: create a Repeatable Job configuration,
 and schedule a regular delayed job for the job's first run. This first run will be scheduled "on the hour", that is if you create
-a job that repeats every 15 minutes at 4:07, the job will first run at 4:15, then 4:30, and so on.
+a job that repeats every 15 minutes at 4:07, the job will first run at 4:15, then 4:30, and so on. If `startDate` is set, the job
+will not run before `startDate`, but will still run "on the hour". In the previous example, if `startDate` was set for some day at
+6:05, the same day, the first job would run on that day at 6:15.
 
 The cron expression uses the [cron-parser](https://github.com/harrisiirak/cron-parser) library, see their docs for more details.
 
@@ -336,6 +388,7 @@ await queue.add({}, { jobId: 'example' }) // Will not be created, conflicts with
 interface BackoffOpts {
   type: string; // Backoff type, which can be either `fixed` or `exponential`. A custom backoff strategy can also be specified in `backoffStrategies` on the queue settings.
   delay: number; // Backoff delay, in milliseconds.
+  options?: any; // Options for custom strategies
 }
 ```
 
@@ -449,7 +502,7 @@ configurations, use [`obliterate()`](#queueobliterate).
 ### Queue#close
 
 ```ts
-close(): Promise
+close(doNotWaitJobs?: boolean): Promise
 ```
 
 Closes the underlying Redis client. Use this to perform a graceful shutdown.
@@ -578,8 +631,8 @@ for the job when it was added.
 removeRepeatableByKey(key: string): Promise<void>
 ```
 
-Removes a given Repeatable Job configuration by its key so that no more repeatable jobs will be processed for this 
-particular configuration. 
+Removes a given Repeatable Job configuration by its key so that no more repeatable jobs will be processed for this
+particular configuration.
 
 There are currently two ways to get the "key" of a repeatable job.
 
@@ -612,7 +665,8 @@ getJobCounts() : Promise<JobCounts>
 
 Returns a promise that will return the job counts for the given queue.
 
-```typescript{
+```typescript
+{
   interface JobCounts {
     waiting: number,
     active: number,
@@ -677,7 +731,7 @@ Returns a promise that will return the waiting job counts for the given queue.
 
 ### Queue#getPausedCount
 
-*DEPRECATED* Since only the queue can be paused, getWaitingCount gives the same 
+*DEPRECATED* Since only the queue can be paused, getWaitingCount gives the same
 result.
 
 ```ts
@@ -755,8 +809,26 @@ Returns a promise that will return an array with the failed jobs between start a
 getWorkers() : Promise<Array<Object>>
 ```
 
-Returns a promise that will return an array workers currently listening or processing jobs.
+Returns a promise that will resolve to an array workers currently listening or processing jobs.
 The object includes the same fields as [Redis CLIENT LIST](https://redis.io/commands/client-list) command.
+
+---
+
+### Queue#getMetrics
+
+```ts
+getMetrics(type: 'completed' | 'failed', start = 0, end = -1) : Promise<{
+  meta: {
+    count: number;
+    prevTS: number;
+    prevCount: number;
+  };
+  data: number[];
+  count: number;
+}>
+```
+
+Returns a promise that resolves to a Metrics object.
 
 ---
 
@@ -768,7 +840,7 @@ clean(grace: number, status?: string, limit?: number): Promise<number[]>
 
 Tells the queue remove jobs of a specific type created outside of a grace period.
 
-**Example**
+#### Example
 
 ```js
 queue.on('cleaned', function (jobs, type) {
@@ -797,7 +869,7 @@ is performed iterativelly. However the queue is always paused during this proces
 if the queue gets unpaused during the obliteration by another script, the call
 will fail with the removed items it managed to remove until the failure.
 
-**Example**
+#### Example
 
 ```js
 // Removes everything but only if there are no active jobs
@@ -814,6 +886,10 @@ A job includes all data needed to perform its execution, as well as the progress
 
 The most important property for the user is `Job#data` that includes the object that was passed to [`Queue#add`](#queueadd), and that is normally used to perform the job.
 
+Other useful job properties:
+* `job.attemptsMade`: number of failed attempts.
+* `job.finishedOn`: Unix Timestamp, when job is completed or finally failed after all attempts.
+
 ### Job#progress
 
 ```ts
@@ -823,7 +899,7 @@ progress(progress?: number | object): Promise
 Updates a job progress if called with an argument.
 Return a promise resolving to the current job's progress if called without argument.
 
-**Arguments**
+#### Arguments
 
 ```js
   progress: number; Job progress number or any serializable object representing progress or similar.
@@ -954,6 +1030,12 @@ A queue emits also some useful events:
   // A job has been marked as stalled. This is useful for debugging job
   // workers that crash or pause the event loop.
 })
+
+.on('lock-extension-failed', function (job, err) {
+  // A job failed to extend lock. This will be useful to debug redis
+  // connection issues and jobs getting restarted because workers
+  // are not able to extend locks.
+});
 
 .on('progress', function (job, progress) {
   // A job's progress was updated!

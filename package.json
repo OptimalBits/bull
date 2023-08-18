@@ -1,11 +1,12 @@
 {
   "name": "bull",
-  "version": "3.29.3",
+  "version": "4.11.3",
   "description": "Job manager",
   "engines": {
-    "node": ">=10"
+    "node": ">=12"
   },
   "main": "./index.js",
+  "types": "./index.d.ts",
   "repository": {
     "type": "git",
     "url": "git://github.com/OptimalBits/bull.git"
@@ -20,15 +21,12 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
-    "cron-parser": "^2.13.0",
-    "debuglog": "^1.0.0",
+    "cron-parser": "^4.2.1",
     "get-port": "^5.1.1",
-    "ioredis": "^4.27.0",
+    "ioredis": "^5.3.2",
     "lodash": "^4.17.21",
-    "p-timeout": "^3.2.0",
-    "promise.prototype.finally": "^3.1.2",
-    "semver": "^7.3.2",
-    "util.promisify": "^1.0.1",
+    "msgpackr": "^1.5.2",
+    "semver": "^7.5.2",
     "uuid": "^8.3.0"
   },
   "devDependencies": {

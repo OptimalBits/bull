@@ -454,4 +454,46 @@ describe('sandboxed process', () => {
     const jobResult = await job.finished();
     expect(jobResult).to.equal(42);
   });
+
+  it('should share child pool across all different queues created', async () => {
+    const [queueA, queueB] = await Promise.all([
+      utils.newQueue('queueA', { settings: { isSharedChildPool: true } }),
+      utils.newQueue('queueB', { settings: { isSharedChildPool: true } })
+    ]);
+
+    const processFile = __dirname + '/fixtures/fixture_processor.js';
+    queueA.process(processFile);
+    queueB.process(processFile);
+
+    await Promise.all([queueA.add(), queueB.add()]);
+
+    expect(queueA.childPool).to.be.eql(queueB.childPool);
+  });
+
+  it("should not share childPool across different queues if isSharedChildPool isn't specified", async () => {
+    const [queueA, queueB] = await Promise.all([
+      utils.newQueue('queueA', { settings: { isSharedChildPool: false } }),
+      utils.newQueue('queueB')
+    ]);
+
+    const processFile = __dirname + '/fixtures/fixture_processor.js';
+    queueA.process(processFile);
+    queueB.process(processFile);
+
+    await Promise.all([queueA.add(), queueB.add()]);
+
+    expect(queueA.childPool).to.not.be.equal(queueB.childPool);
+  });
+
+  it('should fail if the process file is broken', async () => {
+    const processFile = __dirname + '/fixtures/fixture_processor_broken.js';
+    queue.process(processFile);
+    await queue.add('test', {});
+
+    return new Promise(resolve => {
+      queue.on('failed', () => {
+        resolve();
+      });
+    });
+  });
 });

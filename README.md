@@ -26,9 +26,6 @@
     <a href="https://gitter.im/OptimalBits/bull">
       <img src="https://img.shields.io/npm/dm/bull.svg?maxAge=2592000"/>
     </a>
-    <a href="http://travis-ci.org/OptimalBits/bull">
-      <img src="https://img.shields.io/travis/OptimalBits/bull/master.svg"/>
-    </a>
     <a href="http://badge.fury.io/js/bull">
       <img src="https://badge.fury.io/js/bull.svg"/>
     </a>
@@ -41,13 +38,18 @@
     <a href="http://isitmaintained.com/project/OptimalBits/bull">
       <img src="http://isitmaintained.com/badge/resolution/optimalbits/bull.svg"/>
     </a>
+        <a href="https://twitter.com/manast">
+      <img src="https://img.shields.io/twitter/follow/manast?label=Stay%20updated&style=social"/>
+    </a>
   </p>
 </div>
 
 ### 📻 News and updates
 
-Follow me on [Twitter](http://twitter.com/manast) for important news and updates.
+Bull is currently in maintenance mode, we are only fixing bugs. For new features check [BullMQ](https://github.com/taskforcesh/bullmq), a modern rewritten
+implementation in Typescript. You are still very welcome to use Bull if it suits your needs, which is a safe, battle tested library.
 
+Follow me on [Twitter](http://twitter.com/manast) for other important news and updates.
 
 ### 🛠 Tutorials
 
@@ -55,18 +57,64 @@ You can find tutorials and news in this blog: https://blog.taskforce.sh/
 
 ---
 
-### BullMQ
+### Used by
 
-If you want to start using the next major version of Bull written entirely in Typescript you are welcome to the new repo [here](https://github.com/taskforcesh/bullmq). Otherwise you are very welcome to still use Bull, which is a safe, battle tested codebase.
+Bull is popular among large and small organizations, like the following ones:
+
+<table cellspacing="0" cellpadding="0">
+  <tr>
+    <td valign="center">
+      <a href="https://github.com/atlassian/github-for-jira">
+        <img
+          src="https://876297641-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-LUuDmt_xXMfG66Rn1GA%2Fuploads%2FevsJCF6F1tx1ScZwDQOd%2FAtlassian-horizontal-blue-rgb.webp?alt=media&token=2fcd0528-e8bb-4bdd-af35-9d20e313d1a8"
+          width="150"
+          alt="Atlassian"
+      /></a>
+    </td>
+    <td valign="center">
+      <a href="https://github.com/Autodesk">
+        <img
+          src="https://876297641-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-LUuDmt_xXMfG66Rn1GA%2Fuploads%2FvpTe02RdOhUJBA8TdHEE%2Fautodesk-logo-white.png?alt=media&token=326961b4-ea4f-4ded-89a4-e05692eec8ee"
+          width="150"
+          alt="Autodesk"
+      /></a>
+    </td>
+    <td valign="center">
+      <a href="https://github.com/common-voice/common-voice">
+        <img
+          src="https://876297641-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-LUuDmt_xXMfG66Rn1GA%2Fuploads%2F4zPSrubNJKViAzUIftIy%2Fmozilla-logo-bw-rgb.png?alt=media&token=9f93aae2-833f-4cc4-8df9-b7fea0ad5cb5"
+          width="150"
+          alt="Mozilla"
+      /></a>
+    </td>
+    <td valign="center">
+      <a href="https://github.com/nestjs/bull">
+        <img
+          src="https://876297641-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-LUuDmt_xXMfG66Rn1GA%2Fuploads%2FfAcGye182utFUtPKdLqJ%2FScreenshot%202022-02-15%20at%2011.32.39.png?alt=media&token=29feb550-f0bc-467d-a290-f700701d7d15"
+          width="150"
+          alt="Nest"
+      /></a>
+    </td>
+    <td valign="center">
+      <a href="https://github.com/salesforce/refocus">
+        <img
+          src="https://876297641-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-LUuDmt_xXMfG66Rn1GA%2Fuploads%2FZNnYNuL5qJ6ZoBh7JJEW%2Fsalesforce-logo.png?alt=media&token=ddcae63b-08c0-4dd4-8496-3b29a9bf977d"
+          width="100"
+          alt="Salesforce"
+      /></a>
+    </td>
+
+  </tr>
+</table>
 
 ---
 
 ### 🚀 Sponsors 🚀
 
-[<img src="https://www.redisgreen.com/images/rglogo/redisgreen_transparent_240x48.png" width="150" alt="RedisGreen" style="padding: 100px"/>](https://dashboard.redisgreen.net/new?utm_campaign=BULLMQ)
+[<img src="https://www.memetria.com/images/logo/memetria-logo.svg" width="300" alt="Memetria for Redis" style="padding: 100px"/>](https://dashboard.memetria.com/new?utm_campaign=BULLMQ)
 
 If you need high quality production Redis instances for your Bull projects, please consider subscribing 
-to [RedisGreen](https://dashboard.redisgreen.net/new?utm_campaign=BULLMQ), 
+to [Memetria for Redis](https://dashboard.memetria.com/new?utm_campaign=BULLMQ), 
 leaders in Redis hosting that works perfectly with Bull. Use the promo code "BULLMQ" when signing up to help us
 sponsor the development of Bull!
 
@@ -142,21 +190,25 @@ There are a few third-party UIs that you can use for monitoring:
 
 Since there are a few job queue solutions, here is a table comparing them:
 
-| Feature         | Bull          | Kue   | Bee | Agenda |
-| :-------------  |:-------------:|:-----:|:---:|:------:|
-| Backend         | redis         | redis |redis| mongo  |
-| Priorities      | ✓             |  ✓    |     |   ✓    |
-| Concurrency     | ✓             |  ✓    |  ✓  |   ✓    |
-| Delayed jobs    | ✓             |  ✓    |     |   ✓    |
-| Global events   | ✓             |  ✓    |     |        |
-| Rate Limiter    | ✓             |       |     |        |
-| Pause/Resume    | ✓             |  ✓    |     |        |
-| Sandboxed worker| ✓             |       |     |        |
-| Repeatable jobs | ✓             |       |     |   ✓    |
-| Atomic ops      | ✓             |       |  ✓  |        |
-| Persistence     | ✓             |   ✓   |  ✓  |   ✓    |
-| UI              | ✓             |   ✓   |     |   ✓    |
-| Optimized for   | Jobs / Messages | Jobs | Messages | Jobs |
+| Feature                   |   Bullmq-Pro    |     Bullmq      |      Bull       |  Kue  | Bee      | Agenda |
+| :------------------------ | :-------------: | :-------------: | :-------------: | :---: | -------- | ------ |
+| Backend                   |      redis      |      redis      |      redis      | redis | redis    | mongo  |
+| Observables               |        ✓        |                 |                 |       |          |        |
+| Group Rate Limit          |        ✓        |                 |                 |       |          |        |
+| Group Support             |        ✓        |                 |                 |       |          |        |
+| Parent/Child Dependencies |        ✓        |        ✓        |                 |       |          |        |
+| Priorities                |        ✓        |        ✓        |        ✓        |   ✓   |          | ✓      |
+| Concurrency               |        ✓        |        ✓        |        ✓        |   ✓   | ✓        | ✓      |
+| Delayed jobs              |        ✓        |        ✓        |        ✓        |   ✓   |          | ✓      |
+| Global events             |        ✓        |        ✓        |        ✓        |   ✓   |          |        |
+| Rate Limiter              |        ✓        |        ✓        |        ✓        |       |          |        |
+| Pause/Resume              |        ✓        |        ✓        |        ✓        |   ✓   |          |        |
+| Sandboxed worker          |        ✓        |        ✓        |        ✓        |       |          |        |
+| Repeatable jobs           |        ✓        |        ✓        |        ✓        |       |          | ✓      |
+| Atomic ops                |        ✓        |        ✓        |        ✓        |       | ✓        |        |
+| Persistence               |        ✓        |        ✓        |        ✓        |   ✓   | ✓        | ✓      |
+| UI                        |        ✓        |        ✓        |        ✓        |   ✓   |          | ✓      |
+| Optimized for             | Jobs / Messages | Jobs / Messages | Jobs / Messages | Jobs  | Messages | Jobs   |
 
 
 ### Install
@@ -216,7 +268,7 @@ videoQueue.process(function (job, done) {
   // call done when finished
   done();
 
-  // or give a error if error
+  // or give an error if error
   done(new Error('error transcoding'));
 
   // or pass it a result
@@ -233,7 +285,7 @@ audioQueue.process(function (job, done) {
   // call done when finished
   done();
 
-  // or give a error if error
+  // or give an error if error
   done(new Error('error transcoding'));
 
   // or pass it a result
@@ -250,7 +302,7 @@ imageQueue.process(function (job, done) {
   // call done when finished
   done();
 
-  // or give a error if error
+  // or give an error if error
   done(new Error('error transcoding'));
 
   // or pass it a result

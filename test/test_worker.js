@@ -27,11 +27,12 @@ describe('workers', () => {
     });
   });
 
-  it('should get all workers for this queue', () => {
+  it('should get all workers for this queue', async () => {
     queue.process(() => {});
 
-    return queue.getWorkers().then(workers => {
-      expect(workers).to.have.length(1);
-    });
+    await queue.bclient.ping();
+
+    const workers = await queue.getWorkers();
+    expect(workers).to.have.length(1);
   });
 });

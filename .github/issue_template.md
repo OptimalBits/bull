@@ -1,6 +1,6 @@
 <!--
 You may report several types of issues. Bug reports, enhancements or questions.
-For bug reports however you are required to provice some information so that the 
+For bug reports however you are required to provide some information so that the 
 issue can be resolved efficiently. The following template should be filled for bugs.
 
 Before submitting the bug just think twice if you really need to submit the bug
