@@ -190,12 +190,13 @@ There are a few third-party UIs that you can use for monitoring:
 
 Since there are a few job queue solutions, here is a table comparing them:
 
-| Feature                   |   Bullmq-Pro    |     Bullmq      |      Bull       |  Kue  | Bee      | Agenda |
+| Feature                   |   [BullMQ-Pro](https://bullmq.io/#bullmq-pro)    |     [BullMQ](https://bullmq.io)      |      Bull       |  Kue  | Bee      | Agenda |
 | :------------------------ | :-------------: | :-------------: | :-------------: | :---: | -------- | ------ |
 | Backend                   |      redis      |      redis      |      redis      | redis | redis    | mongo  |
 | Observables               |        ✓        |                 |                 |       |          |        |
 | Group Rate Limit          |        ✓        |                 |                 |       |          |        |
 | Group Support             |        ✓        |                 |                 |       |          |        |
+| Batches Support           |        ✓        |                 |                 |       |          |        |
 | Parent/Child Dependencies |        ✓        |        ✓        |                 |       |          |        |
 | Priorities                |        ✓        |        ✓        |        ✓        |   ✓   |          | ✓      |
 | Concurrency               |        ✓        |        ✓        |        ✓        |   ✓   | ✓        | ✓      |
