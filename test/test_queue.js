@@ -206,6 +206,23 @@ describe('Queue', () => {
       return queue.close();
     });
 
+    it('creates a queue using the supplied redis url as opts', () => {
+      const queue = new Queue('custom', {
+        redis: 'redis://abc:123@127.2.3.4:1234/1'
+      });
+
+      expect(queue.client.options.host).to.be.eql('127.2.3.4');
+      expect(queue.eclient.options.host).to.be.eql('127.2.3.4');
+
+      expect(queue.client.options.port).to.be.eql(1234);
+      expect(queue.eclient.options.port).to.be.eql(1234);
+
+      expect(queue.client.options.db).to.be.eql(1);
+      expect(queue.eclient.options.db).to.be.eql(1);
+
+      return queue.close();
+    });
+
     it('creates a queue using the supplied redis host', () => {
       const queue = new Queue('custom', { redis: { host: 'localhost' } });
 

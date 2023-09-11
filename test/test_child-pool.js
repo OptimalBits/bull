@@ -151,12 +151,12 @@ describe('Child pool', () => {
   });
 
   it('should not overwrite the the childPool singleton when isSharedChildPool is false', () => {
-    const childPoolA = new childPool(true)
-    const childPoolB = new childPool(false)
+    const childPoolA = new childPool(true);
+    const childPoolB = new childPool(false);
     const childPoolC = new childPool(true);
 
-    expect(childPoolA).to.be.equal(childPoolC)
-    expect(childPoolB).to.not.be.equal(childPoolA)
-    expect(childPoolB).to.not.be.equal(childPoolC)
-  })
+    expect(childPoolA).to.be.equal(childPoolC);
+    expect(childPoolB).to.not.be.equal(childPoolA);
+    expect(childPoolB).to.not.be.equal(childPoolC);
+  });
 });
