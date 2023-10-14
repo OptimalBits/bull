@@ -1,3 +1,10 @@
+## [4.11.4](https://github.com/OptimalBits/bull/compare/v4.11.3...v4.11.4) (2023-10-14)
+
+
+### Bug Fixes
+
+* catch pause errors when closing ([ccb6cc7](https://github.com/OptimalBits/bull/commit/ccb6cc7ecca8c726fc14509536831f665ac49701))
+
 ## [4.11.3](https://github.com/OptimalBits/bull/compare/v4.11.2...v4.11.3) (2023-08-11)
 
 
