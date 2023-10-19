@@ -314,7 +314,7 @@ declare namespace Bull {
     promote(): Promise<void>;
 
     /**
-     * The lock id of the job
+     * Return a unique key representing a lock for this Job
      */
     lockKey(): string;
 
@@ -327,6 +327,13 @@ declare namespace Bull {
      * Takes a lock for this job so that no other queue worker can process it at the same time.
      */
     takeLock(): Promise<number | false>;
+
+    /**
+     * Extend the lock for this job.
+     *
+     * @param duration lock duration in milliseconds
+     */
+    extendLock(duration: number): Promise<number>
 
     /**
      * Get job properties as Json Object
