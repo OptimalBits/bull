@@ -307,5 +307,5 @@ if (nextJobdata) {
 **Note**
 
 By default the lock duration for a job that has been returned by ```getNextJob``` or ```moveToCompleted``` is 30 seconds, if it takes more time than that the job will be automatically
-marked as stalled and depending on the max stalled options be moved back to the wait state or marked as failed. In order to avoid this you must use ```job.extendLock(duration)``` in order to give you some more time before the lock expires. The recommended is to extend the lock when half the lock time has passsed.
+marked as stalled and depending on the max stalled options be moved back to the wait state or marked as failed. In order to avoid this you must use [```job.extendLock(duration)```](REFERENCE.md#jobextendlock) in order to give you some more time before the lock expires. The recommended is to extend the lock when half the lock time has passsed.
 

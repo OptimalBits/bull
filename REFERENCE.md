@@ -47,8 +47,12 @@
   - [Job#discard](#jobdiscard)
   - [Job#promote](#jobpromote)
   - [Job#finished](#jobfinished)
-  - [Job#moveToCompleted](#jobMoveToCompleted)
-  - [Job#moveToFailed](#jobMoveToFailed)
+  - [Job#moveToCompleted](#jobmovetocompleted)
+  - [Job#moveToFailed](#jobmovetofailed)
+  - [Job#lockKey](#joblockkey)
+  - [Job#releaseLock](#jobreleaselock)
+  - [Job#takeLock](#jobtakelock)
+  - [Job#extendLock](#jobextendlock)
 
 - [Events](#events)
   - [Global events](#global-events)
@@ -1009,6 +1013,45 @@ Moves a job to the `failed` queue. Pulls a job from 'waiting' to 'active' and re
 
 ---
 
+### Job#lockKey
+
+```ts
+lockKey(): string
+```
+
+Return a unique key representing a lock for this Job.
+
+---
+
+### Job#releaseLock
+
+```ts
+releaseLock(): Promise<void>
+```
+
+Releases the lock on the job. Only locks owned by the queue instance can be released.
+
+---
+
+### Job#takeLock
+
+```ts
+takeLock(): Promise<number | false>
+```
+
+Takes a lock for this job so that no other queue worker can process it at the same time.
+
+---
+
+### Job#extendLock
+
+```ts
+extendLock(duration: number): Promise<number>
+```
+
+Extend the lock for this job. The `duration` parameter specifies the lock duration in milliseconds. It will return '1' on success and '0' on failure.
+
+---
 ## Events
 
 A queue emits also some useful events:
