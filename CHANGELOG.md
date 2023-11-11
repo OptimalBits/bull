@@ -1,3 +1,10 @@
+## [4.11.5](https://github.com/OptimalBits/bull/compare/v4.11.4...v4.11.5) (2023-11-11)
+
+
+### Bug Fixes
+
+* pass redis string as opts into queue ([e94f568](https://github.com/OptimalBits/bull/commit/e94f568085de079fc42b876233a060ba11ec946e))
+
 ## [4.11.4](https://github.com/OptimalBits/bull/compare/v4.11.3...v4.11.4) (2023-10-14)
 
 
