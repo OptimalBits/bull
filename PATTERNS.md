@@ -98,7 +98,7 @@ const opts = {
       case 'bclient':
         return new Redis(REDIS_URL, redisOpts);
       default:
-        throw new Error('Unexpected connection type: ', type);
+        throw new Error('Unexpected connection type: ' + type);
     }
   }
 }
