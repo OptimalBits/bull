@@ -1,3 +1,10 @@
+# [4.12.0](https://github.com/OptimalBits/bull/compare/v4.11.5...v4.12.0) (2023-12-18)
+
+
+### Features
+
+* add missing extendLock definition ([14432ff](https://github.com/OptimalBits/bull/commit/14432ff8a5e743d97c82a360c9d6a92204b1a684))
+
 ## [4.11.5](https://github.com/OptimalBits/bull/compare/v4.11.4...v4.11.5) (2023-11-11)
 
 
