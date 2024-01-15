@@ -1,3 +1,10 @@
+## [4.12.1](https://github.com/OptimalBits/bull/compare/v4.12.0...v4.12.1) (2024-01-15)
+
+
+### Bug Fixes
+
+* **deps:** bump msgpackr from 1.5.2 to 1.10.1 ([#2697](https://github.com/OptimalBits/bull/issues/2697)) ([b27c90d](https://github.com/OptimalBits/bull/commit/b27c90d8b106cc5319e712df2386ddc35946ec3d))
+
 # [4.12.0](https://github.com/OptimalBits/bull/compare/v4.11.5...v4.12.0) (2023-12-18)
 
 
