@@ -1,3 +1,10 @@
+## [4.12.2](https://github.com/OptimalBits/bull/compare/v4.12.1...v4.12.2) (2024-01-17)
+
+
+### Bug Fixes
+
+* **dependencies:** upgrade msgpackr ([cc83ae2](https://github.com/OptimalBits/bull/commit/cc83ae297e96344f94039401be5097d7f05ab10b))
+
 ## [4.12.1](https://github.com/OptimalBits/bull/compare/v4.12.0...v4.12.1) (2024-01-15)
 
 
