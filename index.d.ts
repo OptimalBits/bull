@@ -258,7 +258,7 @@ declare namespace Bull {
      * it atomic. If your queue does have a very large quantity of jobs, you may want to
      * avoid using this method.
      */
-    getState(): Promise<JobStatus | 'stuck'>;
+    getState(): Promise<JobStatus>;
 
     /**
      * Update a specific job's data. Promise resolves when the job has been updated.
@@ -361,6 +361,7 @@ declare namespace Bull {
     | 'active'
     | 'delayed'
     | 'failed'
+    | 'stuck'
     | 'paused';
   type JobStatusClean =
     | 'completed'
@@ -368,6 +369,7 @@ declare namespace Bull {
     | 'active'
     | 'delayed'
     | 'failed'
+    | 'stuck'
     | 'paused';
 
   interface BackoffOptions {
