@@ -247,10 +247,6 @@ declare namespace Bull {
      */
     isPaused(): Promise<boolean>;
 
-    /**
-     * Returns a promise resolving to a boolean which, if true, current job's state is stuck
-     */
-    isStuck(): Promise<boolean>;
 
     /**
      * Returns a promise resolving to the current job's status.
@@ -258,7 +254,7 @@ declare namespace Bull {
      * it atomic. If your queue does have a very large quantity of jobs, you may want to
      * avoid using this method.
      */
-    getState(): Promise<JobStatus | 'stuck'>;
+    getState(): Promise<JobStatus>;
 
     /**
      * Update a specific job's data. Promise resolves when the job has been updated.

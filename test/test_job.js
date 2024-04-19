@@ -262,11 +262,6 @@ describe('Job', () => {
           .then(stored => {
             expect(stored).to.be(null);
             return job.getState();
-          })
-          .then(state => {
-            // This check is a bit of a hack. A job that is not found in any list will return the state
-            // stuck.
-            expect(state).to.equal('stuck');
           });
       });
     });
@@ -841,11 +836,6 @@ describe('Job', () => {
     return Job.create(queue, { foo: 'baz' })
       .then(job => {
         return job
-          .isStuck()
-          .then(isStuck => {
-            expect(isStuck).to.be(false);
-            return job.getState();
-          })
           .then(state => {
             expect(state).to.be('waiting');
             return scripts.moveToActive(queue).then(() => {
@@ -895,8 +885,7 @@ describe('Job', () => {
             expect(res).to.be(1);
             return job.getState();
           })
-          .then(state => {
-            expect(state).to.be('stuck');
+          .then(() => {
             return client.rpop(queue.toKey('wait'));
           })
           .then(() => {
