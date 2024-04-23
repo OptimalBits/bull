@@ -470,7 +470,7 @@ Returns a promise that returns the number of jobs in the queue, waiting or delay
 removeJobs(pattern: string): Promise<void>
 ```
 
-Removes all the jobs which jobId matches the given pattern. The pattern must follow redis glob-style pattern (syntax)[https://redis.io/commands/keys]
+Removes all the jobs which jobId matches the given pattern. The pattern must follow redis glob-style pattern [syntax](https://redis.io/commands/keys)
 
 Example:
 
