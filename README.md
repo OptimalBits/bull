@@ -51,6 +51,12 @@ implementation in Typescript. You are still very welcome to use Bull if it suits
 
 Follow me on [Twitter](http://twitter.com/manast) for other important news and updates.
 
+### 🌟 Rediscover Scale Conference 2024
+
+Discover the latest in in-memory and real-time data technologies at **Rediscover Scale 2024**. Ideal for engineers, architects, and technical leaders looking to push technological boundaries. Connect with experts and advance your skills at The Foundry SF, San Francisco.
+
+[Learn more and register here!](https://www.rediscoverscale.com/)
+
 ### 🛠 Tutorials
 
 You can find tutorials and news in this blog: https://blog.taskforce.sh/
