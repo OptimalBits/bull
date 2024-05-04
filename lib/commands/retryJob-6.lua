@@ -7,6 +7,7 @@
       KEYS[3] jobId
       KEYS[4] 'meta-paused'
       KEYS[5] 'paused'
+      KEYS[6] stalled key
 
       ARGV[1]  pushCmd
       ARGV[2]  jobId
@@ -26,8 +27,10 @@ if rcall("EXISTS", KEYS[3]) == 1 then
   -- Check for job lock
   if ARGV[3] ~= "0" then
     local lockKey = KEYS[3] .. ':lock'
-    local lock = rcall("GET", lockKey)
-    if lock ~= ARGV[3] then
+    if rcall("GET", lockKey) == ARGV[3] then
+      rcall("DEL", lockKey)
+      rcall("SREM", KEYS[6], ARGV[2])
+    else
       return -2
     end
   end
