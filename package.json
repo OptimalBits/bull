@@ -58,6 +58,8 @@
     "sinon": "^7.5.0"
   },
   "scripts": {
+    "dc:up": "docker-compose -f docker-compose.yml up -d",
+    "dc:down": "docker-compose -f docker-compose.yml down",
     "pretest": "npm run lint",
     "lint": "eslint lib test *.js",
     "test": "NODE_ENV=test nyc mocha -- 'test/test_*' --recursive --exit",
