@@ -1,3 +1,15 @@
+## [4.12.3](https://github.com/OptimalBits/bull/compare/v4.12.2...v4.12.3) (2024-05-10)
+
+
+### Bug Fixes
+
+* **job:** validate jobKey in updateProgress and update ([#2730](https://github.com/OptimalBits/bull/issues/2730)) ([6d84156](https://github.com/OptimalBits/bull/commit/6d8415696606d3b7ec891f7fca9ab0508923c321))
+
+
+### Performance Improvements
+
+* **scripts:** remove token after moving to wait or delayed ([#2731](https://github.com/OptimalBits/bull/issues/2731)) ([7ee8f74](https://github.com/OptimalBits/bull/commit/7ee8f7430a68492c9ce768e7108443592f49d74c))
+
 ## [4.12.2](https://github.com/OptimalBits/bull/compare/v4.12.1...v4.12.2) (2024-01-17)
 
 
