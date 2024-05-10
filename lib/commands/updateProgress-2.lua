@@ -11,5 +11,11 @@
       Event:
         progress(jobId, progress)
 ]]
-redis.call("HSET", KEYS[1], "progress", ARGV[1])
-redis.call("PUBLISH", KEYS[2], ARGV[2])
+local rcall = redis.call
+if rcall("EXISTS", KEYS[1]) == 1 then -- // Make sure job exists
+  rcall("HSET", KEYS[1], "progress", ARGV[1])
+  rcall("PUBLISH", KEYS[2], ARGV[2])
+  return 0
+else
+  return -1
+end

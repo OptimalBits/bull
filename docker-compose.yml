@@ -1,0 +1,7 @@
+version: '3.2'
+services:
+  redis:
+    image: redis:6.2-alpine
+    container_name: cache
+    ports:
+      - 6379:6379
