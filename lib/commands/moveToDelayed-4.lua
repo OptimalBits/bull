@@ -5,6 +5,7 @@
     KEYS[1] active key
     KEYS[2] delayed key
     KEYS[3] job key
+    KEYS[4] stalled key
 
     ARGV[1] delayedTimestamp
     ARGV[2] the id of the job
@@ -21,14 +22,13 @@
 local rcall = redis.call
 
 if rcall("EXISTS", KEYS[3]) == 1 then
-  local lockKey
-  local lock
-
   -- Check for job lock
   if ARGV[3] ~= "0" then
-    lockKey = KEYS[3] .. ':lock'
-    lock = rcall("GET", lockKey)
-    if lock ~= ARGV[3] then
+    local lockKey = KEYS[3] .. ':lock'
+    if rcall("GET", lockKey) == ARGV[3] then
+      rcall("DEL", lockKey)
+      rcall("SREM", KEYS[4], ARGV[2])
+    else
       return -2
     end
   end
@@ -37,10 +37,6 @@ if rcall("EXISTS", KEYS[3]) == 1 then
   rcall("ZADD", KEYS[2], score, ARGV[2])
   rcall("PUBLISH", KEYS[2], (score / 0x1000))
   rcall("LREM", KEYS[1], 0, ARGV[2])
-
-  if lock then
-    rcall("DEL", lockKey)
-  end
 
   return 0
 else
