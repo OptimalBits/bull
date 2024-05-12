@@ -201,6 +201,16 @@ describe('Job', () => {
           });
         });
     });
+
+    describe('when job was removed', () => {
+      it('throws an error', async () => {
+        const job = await Job.create(queue, { foo: 'bar' });
+        await job.remove();
+        await job.update({baz: 'qux'}).catch(err => {
+          expect(err.message).to.be.equal('Missing key for job 1 updateData');
+        });
+      });
+    });
   });
 
   describe('.remove', () => {
@@ -520,7 +530,7 @@ describe('Job', () => {
     it('can set and get progress as number', () => {
       return Job.create(queue, { foo: 'bar' }).then(job => {
         return job.progress(42).then(() => {
-          return Job.fromId(queue, job.id).then(storedJob => {
+          return Job.fromId(queue, job.id).then(async storedJob => {
             expect(storedJob.progress()).to.be(42);
           });
         });
@@ -531,6 +541,16 @@ describe('Job', () => {
       await job.progress({ total: 120, completed: 40 });
       const storedJob = await Job.fromId(queue, job.id);
       expect(storedJob.progress()).to.eql({ total: 120, completed: 40 });
+    });
+
+    describe('when job was removed', () => {
+      it('throws an error', async () => {
+        const job = await Job.create(queue, { foo: 'bar' });
+        await job.remove();
+        await job.progress({ total: 120, completed: 40 }).catch(err => {
+          expect(err.message).to.be.equal('Missing key for job 1 updateProgress');
+        });
+      });
     });
   });
 

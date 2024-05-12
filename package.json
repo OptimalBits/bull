@@ -1,6 +1,6 @@
 {
   "name": "bull",
-  "version": "4.12.2",
+  "version": "4.12.3",
   "description": "Job manager",
   "engines": {
     "node": ">=12"
@@ -63,8 +63,9 @@
   },
   "scripts": {
     "clean:scripts": "rimraf rawScripts lib/scripts",
+    "dc:up": "docker-compose -f docker-compose.yml up -d",
+    "dc:down": "docker-compose -f docker-compose.yml down",
     "generate:raw:scripts": "node generateRawScripts.js",
-    "transform:commands": "node ./commandTransform.js ./rawScripts ./lib/scripts",
     "pretest": "npm-run-all clean:scripts generate:raw:scripts transform:commands lint",
     "lint": "eslint lib test *.js",
     "test": "NODE_ENV=test nyc mocha -- 'test/test_*' --recursive --exit",
@@ -73,7 +74,8 @@
     "postpublish": "git push && git push --tags",
     "prettier": "prettier --config package.json --write '**/*.js'",
     "precommit": "lint-staged",
-    "build": "tsc"
+    "build": "tsc",
+    "transform:commands": "node ./commandTransform.js ./rawScripts ./lib/scripts"
   },
   "lint-staged": {
     "*.{js,json}": [
