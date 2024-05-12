@@ -65,6 +65,7 @@
     "clean:scripts": "rimraf rawScripts lib/scripts",
     "dc:up": "docker-compose -f docker-compose.yml up -d",
     "dc:down": "docker-compose -f docker-compose.yml down",
+    "dry-run": "npm publish --dry-run",
     "generate:raw:scripts": "node generateRawScripts.js",
     "pretest": "npm-run-all clean:scripts generate:raw:scripts transform:commands lint",
     "lint": "eslint lib test *.js",
