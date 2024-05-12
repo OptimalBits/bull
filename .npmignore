@@ -11,3 +11,4 @@ support
 .gitignore
 *.md
 commitlint.config.js
+rawScripts
