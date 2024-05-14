@@ -11,3 +11,10 @@ support
 .gitignore
 *.md
 commitlint.config.js
+rawScripts
+commandTransform.js
+docker-compose.yml
+generateRawScripts.js
+.nyc_output
+.mocharc.json
+lib/commands/*.js
