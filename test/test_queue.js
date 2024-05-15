@@ -2454,6 +2454,60 @@ describe('Queue', () => {
       });
     });
 
+    describe('when job has more priority than delayed jobs', () => {
+      it('executes retried job first', done => {
+        queue = utils.buildQueue('test retries and priority');
+        let id = 0;
+        queue.isReady().then(() => {
+          queue.process(async job => {
+            await delay(200);
+            if (job.attemptsMade === 0) {
+              id++;
+              expect(job.id).to.be.eql(`${id}`);
+            }
+            if (job.id == '1' && job.attemptsMade < 1) {
+              throw new Error('Not yet!');
+            }
+          });
+
+          queue.add(
+            { foo: 'bar' },
+            {
+              attempts: 2,
+              priority: 1
+            }
+          );
+          queue.add(
+            {},
+            {
+              delay: 200,
+              priority: 2
+            }
+          );
+          queue.add(
+            {},
+            {
+              delay: 200,
+              priority: 2
+            }
+          );
+          queue.add(
+            {},
+            {
+              delay: 200,
+              priority: 2
+            }
+          );
+        });
+        let count = 0;
+        queue.on('completed', () => {
+          if (count++ === 3) {
+            done();
+          }
+        });
+      });
+    });
+
     it('should not retry a failed job more than the number of given attempts times', done => {
       queue = utils.buildQueue('test retries and backoffs');
       let tries = 0;
