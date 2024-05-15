@@ -1,3 +1,10 @@
+## [4.12.4](https://github.com/OptimalBits/bull/compare/v4.12.3...v4.12.4) (2024-05-15)
+
+
+### Bug Fixes
+
+* **retry-job:** consider priority ([#2737](https://github.com/OptimalBits/bull/issues/2737)) fixes [#1755](https://github.com/OptimalBits/bull/issues/1755) ([09ce146](https://github.com/OptimalBits/bull/commit/09ce146563871519cda638bafa82ce6af34bdd25))
+
 ## [4.12.3](https://github.com/OptimalBits/bull/compare/v4.12.2...v4.12.3) (2024-05-10)
 
 
