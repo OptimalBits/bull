@@ -26,11 +26,11 @@ class RawScriptLoader extends ScriptLoader {
       for (const command of scripts) {
         const {
           name,
-          options: { numberOfKeys, lua },
+          options: { numberOfKeys, lua }
         } = command;
         await writeFile(
           path.join(writeFilenamePath, `${name}-${numberOfKeys}.lua`),
-          lua,
+          lua
         );
       }
     }
@@ -41,5 +41,5 @@ const scriptLoader = new RawScriptLoader();
 
 scriptLoader.transpileScripts(
   path.join(__dirname, './lib/commands'),
-  path.join(__dirname, './rawScripts'),
+  path.join(__dirname, './rawScripts')
 );

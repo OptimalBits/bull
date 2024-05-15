@@ -49,9 +49,9 @@ if rcall("EXISTS", KEYS[3]) == 1 then
 
   if priority == 0 then
     -- LIFO or FIFO
-    rcall(ARGV[1], target, jobId)
+    rcall(ARGV[1], target, ARGV[2])
   else
-    addJobWithPriority(KEYS[7], priority, jobId, target)
+    addJobWithPriority(KEYS[7], priority, ARGV[2], target)
   end
 
   return 0
