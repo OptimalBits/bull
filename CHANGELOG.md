@@ -1,3 +1,10 @@
+## [4.12.5](https://github.com/OptimalBits/bull/compare/v4.12.4...v4.12.5) (2024-05-17)
+
+
+### Bug Fixes
+
+* **job:** validate job existence when adding log ([#2738](https://github.com/OptimalBits/bull/issues/2738)) ([1fb1562](https://github.com/OptimalBits/bull/commit/1fb15628dc5912e83220d430aa14e19e90d1cc53))
+
 ## [4.12.4](https://github.com/OptimalBits/bull/compare/v4.12.3...v4.12.4) (2024-05-15)
 
 
