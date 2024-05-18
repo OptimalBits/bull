@@ -4,10 +4,11 @@
     Input:
       KEYS[1] 'active',
       KEYS[2] 'wait'
-      KEYS[3] jobId
+      KEYS[3] jobId key
       KEYS[4] 'meta-paused'
       KEYS[5] 'paused'
       KEYS[6] stalled key
+      KEYS[7] 'priority'
 
       ARGV[1]  pushCmd
       ARGV[2]  jobId
@@ -22,6 +23,11 @@
      -2 - Job Not locked
 ]]
 local rcall = redis.call
+
+-- Includes
+--- @include "includes/addJobWithPriority"
+--- @include "includes/getTargetQueueList"
+
 if rcall("EXISTS", KEYS[3]) == 1 then
 
   -- Check for job lock
@@ -37,14 +43,16 @@ if rcall("EXISTS", KEYS[3]) == 1 then
 
   rcall("LREM", KEYS[1], 0, ARGV[2])
 
-  local target
-  if rcall("EXISTS", KEYS[4]) ~= 1 then
-    target = KEYS[2]
-  else
-    target = KEYS[5]
-  end
+  local target = getTargetQueueList(KEYS[4], KEYS[2], KEYS[5])
 
-  rcall(ARGV[1], target, ARGV[2])
+  local priority = tonumber(rcall("HGET", KEYS[3], "priority")) or 0
+
+  if priority == 0 then
+    -- LIFO or FIFO
+    rcall(ARGV[1], target, ARGV[2])
+  else
+    addJobWithPriority(KEYS[7], priority, ARGV[2], target)
+  end
 
   return 0
 else

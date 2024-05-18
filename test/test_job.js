@@ -206,7 +206,7 @@ describe('Job', () => {
       it('throws an error', async () => {
         const job = await Job.create(queue, { foo: 'bar' });
         await job.remove();
-        await job.update({baz: 'qux'}).catch(err => {
+        await job.update({ baz: 'qux' }).catch(err => {
           expect(err.message).to.be.equal('Missing key for job 1 updateData');
         });
       });
@@ -548,7 +548,9 @@ describe('Job', () => {
         const job = await Job.create(queue, { foo: 'bar' });
         await job.remove();
         await job.progress({ total: 120, completed: 40 }).catch(err => {
-          expect(err.message).to.be.equal('Missing key for job 1 updateProgress');
+          expect(err.message).to.be.equal(
+            'Missing key for job 1 updateProgress'
+          );
         });
       });
     });
@@ -590,6 +592,16 @@ describe('Job', () => {
           .then(() => queue.getJobLogs(job.id))
           .then(logs => expect(logs).to.be.eql({ logs: [], count: 0 }))
       );
+    });
+
+    describe('when job was removed', () => {
+      it('throws an error', async () => {
+        const job = await Job.create(queue, { foo: 'bar' });
+        await job.remove();
+        await job.log('some log text 1').catch(err => {
+          expect(err.message).to.be.equal('Missing key for job 1 addLog');
+        });
+      });
     });
   });
 

@@ -102,7 +102,7 @@ if(#stalling > 0) then
           rcall("ZADD", KEYS[4], ARGV[3], jobId)
           rcall("HMSET", jobKey, "failedReason", "job stalled more than allowable limit",
             "finishedOn", ARGV[3])
-          rcall("PUBLISH", KEYS[4],  "{\"jobId\":\"" .. jobId .. "\", \"val\": \"job stalled more than maxStalledCount\"}")
+          rcall("PUBLISH", KEYS[4],  '{"jobId":"' .. jobId .. '", "val": "job stalled more than maxStalledCount"}')
 
           if removeOnFailType == "number" then
             removeJobsByMaxCount(opts["removeOnFail"],
