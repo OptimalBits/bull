@@ -20,6 +20,10 @@
 ]]
 local rcall = redis.call;
 
+-- Includes
+--- @include "includes/addJobWithPriority"
+--- @include "includes/getTargetQueueList"
+
 -- Try to get as much as 1000 jobs at once
 local jobs = rcall("ZRANGEBYSCORE", KEYS[1], 0, tonumber(ARGV[2]) * 0x1000, "LIMIT", 0, 1000)
 
@@ -27,12 +31,7 @@ if(#jobs > 0) then
   rcall("ZREM", KEYS[1], unpack(jobs))
 
   -- check if we need to use push in paused instead of waiting
-  local target;
-  if rcall("EXISTS", KEYS[6]) ~= 1 then
-    target = KEYS[3]
-  else
-    target = KEYS[5]
-  end
+  local target = getTargetQueueList(KEYS[6], KEYS[3], KEYS[5])
 
   for _, jobId in ipairs(jobs) do
     -- Is this really needed?
@@ -44,17 +43,7 @@ if(#jobs > 0) then
       -- LIFO or FIFO
       rcall("LPUSH", target, jobId)
     else
-      -- Priority add
-      rcall("ZADD", KEYS[4], priority, jobId)
-      local count = rcall("ZCOUNT", KEYS[4], 0, priority)
-  
-      local len = rcall("LLEN", target)
-      local id = rcall("LINDEX", target, len - (count-1))
-      if id then
-        rcall("LINSERT", target, "BEFORE", id, jobId)
-      else
-        rcall("RPUSH", target, jobId)
-      end
+      addJobWithPriority(KEYS[4], priority, jobId, target)
     end
   
     -- Emit waiting event (wait..ing@token)
