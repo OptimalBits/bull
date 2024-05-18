@@ -1739,6 +1739,46 @@ describe('Queue', () => {
         .catch(done);
     });
 
+    it('removes failed stalled jobs that stall more than allowable stalled limit when removeOnFail is present', function(done) {
+      const FAILED_MESSAGE = 'job stalled more than allowable limit';
+      this.timeout(10000);
+
+      const queue2 = utils.buildQueue('running-stalled-job-' + uuid.v4(), {
+        settings: {
+          lockRenewTime: 2500,
+          lockDuration: 250,
+          stalledInterval: 500,
+          maxStalledCount: 1
+        }
+      });
+
+      let processedCount = 0;
+      queue2.process(job => {
+        processedCount++;
+        expect(job.data.foo).to.be.equal('bar');
+        return delay(1500);
+      });
+
+      queue2.on('completed', () => {
+        done(new Error('should not complete'));
+      });
+
+      queue2.on('failed', (job, err) => {
+        expect(processedCount).to.be.eql(2);
+        expect(job).to.be.null;
+        expect(err.message).to.be.eql(FAILED_MESSAGE);
+        done();
+      });
+
+      queue2
+        .add({ foo: 'bar' }, {removeOnFail: true})
+        .then(job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        })
+        .catch(done);
+    });
+
     it('should clear job from stalled set when job completed', done => {
       const queue2 = utils.buildQueue('running-job-' + uuid.v4(), {
         settings: {
