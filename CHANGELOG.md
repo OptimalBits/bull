@@ -1,3 +1,10 @@
+## [4.12.6](https://github.com/OptimalBits/bull/compare/v4.12.5...v4.12.6) (2024-05-18)
+
+
+### Bug Fixes
+
+* **stalled:** take in count removeOnFail option ([#2734](https://github.com/OptimalBits/bull/issues/2734)) ([2112269](https://github.com/OptimalBits/bull/commit/21122697461b551055192ff3b9c02c6f37cb331e))
+
 ## [4.12.5](https://github.com/OptimalBits/bull/compare/v4.12.4...v4.12.5) (2024-05-17)
 
 
