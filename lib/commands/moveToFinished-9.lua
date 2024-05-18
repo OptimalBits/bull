@@ -92,8 +92,10 @@ if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
         end
     end
 
-    -- Remove from active list
-    rcall("LREM", KEYS[1], -1, ARGV[1])
+    -- Remove from active list (if not active we shall return error)
+    local numRemovedElements = rcall("LREM", KEYS[1], -1, ARGV[1])
+
+    if numRemovedElements < 1 then return -3 end
 
     -- Remove job?
     local keepJobs = cmsgpack.unpack(ARGV[6])

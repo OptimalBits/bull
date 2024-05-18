@@ -38,6 +38,10 @@ local jobId
 local jobIdKey
 local rcall = redis.call
 
+-- Includes
+--- @include "includes/addJobWithPriority"
+--- @include "includes/getTargetQueueList"
+
 local jobCounter = rcall("INCR", KEYS[4])
 
 if ARGV[2] == "" then
@@ -67,14 +71,7 @@ else
 
   -- Whe check for the meta-paused key to decide if we are paused or not
   -- (since an empty list and !EXISTS are not really the same)
-  local paused
-  if rcall("EXISTS", KEYS[3]) ~= 1 then
-    target = KEYS[1]
-    paused = false
-  else
-    target = KEYS[2]
-    paused = true
-  end
+  local target, paused = getTargetQueueList(KEYS[3], KEYS[1], KEYS[2])
 
   -- Standard or priority add
   local priority = tonumber(ARGV[9])
@@ -82,18 +79,7 @@ else
       -- LIFO or FIFO
     rcall(ARGV[10], target, jobId)
   else
-    -- Priority add
-    rcall("ZADD", KEYS[6], priority, jobId)
-    local count = rcall("ZCOUNT", KEYS[6], 0, priority)
-
-    local len = rcall("LLEN", target)
-    local id = rcall("LINDEX", target, len - (count-1))
-    if id then
-      rcall("LINSERT", target, "BEFORE", id, jobId)
-    else
-      rcall("RPUSH", target, jobId)
-    end
-
+    addJobWithPriority(KEYS[6], priority, jobId, target)
   end
 
   -- Emit waiting event (wait..ing@token)
