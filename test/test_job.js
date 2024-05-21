@@ -727,6 +727,9 @@ describe('Job', () => {
             expect(isFailed).to.be(false);
           })
           .then(() => {
+            return scripts.moveToActive(queue);
+          })
+          .then(() => {
             return job.moveToFailed(new Error('test error'), true);
           })
           .then(() => {
@@ -734,11 +737,9 @@ describe('Job', () => {
               expect(isFailed).to.be(false);
               expect(job.stacktrace).not.be(null);
               expect(job.stacktrace.length).to.be(1);
-              return client.lpush(queue.toKey('active'), job.id).then(()=>{
-                return job.isDelayed().then(isDelayed => {
-                  expect(isDelayed).to.be(true);
-                });  
-              })
+              return job.isDelayed().then(isDelayed => {
+                expect(isDelayed).to.be(true);
+              });  
             });
           });
       });
