@@ -734,9 +734,11 @@ describe('Job', () => {
               expect(isFailed).to.be(false);
               expect(job.stacktrace).not.be(null);
               expect(job.stacktrace.length).to.be(1);
-              return job.isDelayed().then(isDelayed => {
-                expect(isDelayed).to.be(true);
-              });
+              return client.lpush(queue.toKey('active'), job.id).then(()=>{
+                return job.isDelayed().then(isDelayed => {
+                  expect(isDelayed).to.be(true);
+                });  
+              })
             });
           });
       });
@@ -893,7 +895,9 @@ describe('Job', () => {
           })
           .then(state => {
             expect(state).to.be('completed');
-            return client.zrem(queue.toKey('completed'), job.id);
+            return client.zrem(queue.toKey('completed'), job.id).then(()=>{
+              return client.lpush(queue.toKey('active'), job.id)
+            });
           })
           .then(() => {
             return job.moveToDelayed(Date.now() + 10000, true);
@@ -907,7 +911,9 @@ describe('Job', () => {
           })
           .then(state => {
             expect(state).to.be('delayed');
-            return client.zrem(queue.toKey('delayed'), job.id);
+            return client.zrem(queue.toKey('delayed'), job.id).then(()=>{
+              return client.lpush(queue.toKey('active'), job.id)
+            });
           })
           .then(() => {
             return job.moveToFailed(new Error('test'), true);
