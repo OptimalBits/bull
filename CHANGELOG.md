@@ -1,3 +1,10 @@
+## [4.12.7](https://github.com/OptimalBits/bull/compare/v4.12.6...v4.12.7) (2024-05-21)
+
+
+### Bug Fixes
+
+* **scripts:** throw error when moving non-active job to delayed ([#2740](https://github.com/OptimalBits/bull/issues/2740)) ([63636b1](https://github.com/OptimalBits/bull/commit/63636b181d0a166b1702059e5abb53ce1589d90f))
+
 ## [4.12.6](https://github.com/OptimalBits/bull/compare/v4.12.5...v4.12.6) (2024-05-18)
 
 
