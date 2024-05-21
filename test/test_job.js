@@ -739,7 +739,7 @@ describe('Job', () => {
               expect(job.stacktrace.length).to.be(1);
               return job.isDelayed().then(isDelayed => {
                 expect(isDelayed).to.be(true);
-              });  
+              });
             });
           });
       });
