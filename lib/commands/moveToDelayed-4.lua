@@ -21,22 +21,21 @@
 ]]
 local rcall = redis.call
 
+-- Includes
+--- @include "includes/removeLock"
+
 if rcall("EXISTS", KEYS[3]) == 1 then
-  -- Check for job lock
-  if ARGV[3] ~= "0" then
-    local lockKey = KEYS[3] .. ':lock'
-    if rcall("GET", lockKey) == ARGV[3] then
-      rcall("DEL", lockKey)
-      rcall("SREM", KEYS[4], ARGV[2])
-    else
-      return -2
-    end
+  local errorCode = removeLock(KEYS[3], KEYS[4], ARGV[3], ARGV[2])
+  if errorCode < 0 then
+    return errorCode
   end
+
+  local numRemovedElements = rcall("LREM", KEYS[1], -1, ARGV[2])
+  if numRemovedElements < 1 then return -3 end
 
   local score = tonumber(ARGV[1])
   rcall("ZADD", KEYS[2], score, ARGV[2])
   rcall("PUBLISH", KEYS[2], (score / 0x1000))
-  rcall("LREM", KEYS[1], 0, ARGV[2])
 
   return 0
 else
