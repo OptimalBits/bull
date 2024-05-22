@@ -1,3 +1,10 @@
+## [4.12.8](https://github.com/OptimalBits/bull/compare/v4.12.7...v4.12.8) (2024-05-22)
+
+
+### Bug Fixes
+
+* **move-to-finished:** throw error when job is not in active state ([#2739](https://github.com/OptimalBits/bull/issues/2739)) ([7b12be1](https://github.com/OptimalBits/bull/commit/7b12be13ea39e309d6a6a39a2e56f646f06fdfa8))
+
 ## [4.12.7](https://github.com/OptimalBits/bull/compare/v4.12.6...v4.12.7) (2024-05-21)
 
 
