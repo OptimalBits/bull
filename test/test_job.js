@@ -756,7 +756,7 @@ describe('Job', () => {
 
     it('applies stacktrace limit on failure', () => {
       const stackTraceLimit = 1;
-      return Job.create(queue, { foo: 'bar' }, { stackTraceLimit }).then(
+      return Job.create(queue, { foo: 'bar' }, { stackTraceLimit, attempts: 2 }).then(
         job => {
           return job
             .isFailed()
