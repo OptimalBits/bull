@@ -22,6 +22,10 @@
 
 local rcall = redis.call
 
+-- Includes
+--- @include "includes/batches"
+--- @include "includes/getTargetQueueList"
+
 local function removeJob(jobId, baseKey)
   local jobKey = baseKey .. jobId
   rcall("DEL", jobKey, jobKey .. ':logs')
@@ -45,19 +49,6 @@ local function removeJobsByMaxCount(maxCount, targetSet, prefix)
   rcall("ZREMRANGEBYRANK", targetSet, 0, -(maxCount + 1))
 end
 
-local function batches(n, batchSize)
-  local i = 0
-
-  return function()
-    local from = i * batchSize + 1
-    i = i + 1
-    if (from <= n) then
-      local to = math.min(from + batchSize - 1, n)
-      return from, to
-    end
-  end
-end
-
 -- Check if we need to check for stalled jobs now.
 if rcall("EXISTS", KEYS[5]) == 1 then
   return {{}, {}}
@@ -70,15 +61,6 @@ local stalling = rcall('SMEMBERS', KEYS[1])
 local stalled = {}
 local failed = {}
 if(#stalling > 0) then
-
-  local dst
-  -- wait or paused destination
-  if rcall("EXISTS", KEYS[6]) ~= 1 then
-    dst = KEYS[2]
-  else
-    dst = KEYS[7]
-  end
-
   rcall('DEL', KEYS[1])
 
   local MAX_STALLED_JOB_COUNT = tonumber(ARGV[1])
@@ -129,8 +111,10 @@ if(#stalling > 0) then
 
           table.insert(failed, jobId)
         else
+          local target = getTargetQueueList(KEYS[6], KEYS[2], KEYS[7])
+
           -- Move the job back to the wait queue, to immediately be picked up by a waiting worker.
-          rcall("RPUSH", dst, jobId)
+          rcall("RPUSH", target, jobId)
           rcall('PUBLISH', KEYS[1] .. '@', jobId)
           table.insert(stalled, jobId)
         end

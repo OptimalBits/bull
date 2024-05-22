@@ -608,11 +608,14 @@ describe('Job', () => {
   describe('.moveToCompleted', () => {
     it('marks the job as completed and returns new job', () => {
       return Job.create(queue, { foo: 'bar' }).then(job1 => {
-        return Job.create(queue, { foo: 'bar' }).then(job2 => {
+        return Job.create(queue, { foo: 'bar' }, { lifo: true }).then(job2 => {
           return job2
             .isCompleted()
             .then(isCompleted => {
               expect(isCompleted).to.be(false);
+            })
+            .then(() => {
+              return scripts.moveToActive(queue);
             })
             .then(() => {
               return job2.moveToCompleted('succeeded', true);
@@ -636,6 +639,9 @@ describe('Job', () => {
           .isFailed()
           .then(isFailed => {
             expect(isFailed).to.be(false);
+          })
+          .then(() => {
+            return scripts.moveToActive(queue);
           })
           .then(() => {
             return job.moveToFailed(new Error('test error'), true);
@@ -703,6 +709,9 @@ describe('Job', () => {
             expect(isFailed).to.be(false);
           })
           .then(() => {
+            return scripts.moveToActive(queue);
+          })
+          .then(() => {
             return job.moveToFailed(new Error('test error'), true);
           })
           .then(() => {
@@ -747,7 +756,7 @@ describe('Job', () => {
 
     it('applies stacktrace limit on failure', () => {
       const stackTraceLimit = 1;
-      return Job.create(queue, { foo: 'bar' }, { stackTraceLimit }).then(
+      return Job.create(queue, { foo: 'bar' }, { stackTraceLimit, attempts: 2 }).then(
         job => {
           return job
             .isFailed()
@@ -755,7 +764,13 @@ describe('Job', () => {
               expect(isFailed).to.be(false);
             })
             .then(() => {
+              return scripts.moveToActive(queue);
+            })
+            .then(() => {
               return job.moveToFailed(new Error('test error'), true);
+            })
+            .then(() => {
+              return scripts.moveToActive(queue);
             })
             .then(() => {
               return job
