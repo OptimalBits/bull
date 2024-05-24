@@ -664,6 +664,9 @@ describe('Job', () => {
             expect(isFailed).to.be(false);
           })
           .then(() => {
+            return scripts.moveToActive(queue);
+          })
+          .then(() => {
             return job.moveToFailed(new Error('test error'), true);
           })
           .then(() => {
