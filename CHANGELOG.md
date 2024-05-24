@@ -1,3 +1,10 @@
+## [4.12.9](https://github.com/OptimalBits/bull/compare/v4.12.8...v4.12.9) (2024-05-24)
+
+
+### Bug Fixes
+
+* **retry-job:** throw error when job is not in active state ([#2741](https://github.com/OptimalBits/bull/issues/2741)) ([c29e3b0](https://github.com/OptimalBits/bull/commit/c29e3b061a168c3d40a336a733c382bab14caa57))
+
 ## [4.12.8](https://github.com/OptimalBits/bull/compare/v4.12.7...v4.12.8) (2024-05-22)
 
 
