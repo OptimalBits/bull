@@ -21,27 +21,23 @@
      0  - OK
      -1 - Missing key
      -2 - Job Not locked
+     -3 - Job not in active set
 ]]
 local rcall = redis.call
 
 -- Includes
 --- @include "includes/addJobWithPriority"
 --- @include "includes/getTargetQueueList"
+--- @include "includes/removeLock"
 
 if rcall("EXISTS", KEYS[3]) == 1 then
-
-  -- Check for job lock
-  if ARGV[3] ~= "0" then
-    local lockKey = KEYS[3] .. ':lock'
-    if rcall("GET", lockKey) == ARGV[3] then
-      rcall("DEL", lockKey)
-      rcall("SREM", KEYS[6], ARGV[2])
-    else
-      return -2
-    end
+  local errorCode = removeLock(KEYS[3], KEYS[6], ARGV[3], ARGV[2])
+  if errorCode < 0 then
+    return errorCode
   end
 
-  rcall("LREM", KEYS[1], 0, ARGV[2])
+  local numRemovedElements = rcall("LREM", KEYS[1], -1, ARGV[2])
+  if numRemovedElements < 1 then return -3 end
 
   local target = getTargetQueueList(KEYS[4], KEYS[2], KEYS[5])
 

@@ -35,6 +35,7 @@
       0 OK
       -1 Missing key.
       -2 Missing lock.
+      -3 - Job not in active set.
 
      Events:
       'completed/failed'
@@ -81,15 +82,13 @@ local function collectMetrics(metaKey, dataPointsList, maxDataPoints, timestamp)
     end
 end
 
+-- Includes
+--- @include "includes/removeLock"
+
 if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
-    if ARGV[5] ~= "0" then
-        local lockKey = KEYS[3] .. ':lock'
-        if rcall("GET", lockKey) == ARGV[5] then
-            rcall("DEL", lockKey)
-            rcall("SREM", KEYS[8], ARGV[1])
-        else
-            return -2
-        end
+    local errorCode = removeLock(KEYS[3], KEYS[8], ARGV[5], ARGV[1])
+    if errorCode < 0 then
+        return errorCode
     end
 
     -- Remove from active list (if not active we shall return error)
