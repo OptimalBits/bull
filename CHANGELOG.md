@@ -1,3 +1,10 @@
+# [4.13.0](https://github.com/OptimalBits/bull/compare/v4.12.9...v4.13.0) (2024-06-12)
+
+
+### Features
+
+* **queue:** add getCountsPerPriority method ([#2746](https://github.com/OptimalBits/bull/issues/2746)) ([0376dcc](https://github.com/OptimalBits/bull/commit/0376dcc128d9af13ecbd658d8ea7ff19fce56915))
+
 ## [4.12.9](https://github.com/OptimalBits/bull/compare/v4.12.8...v4.12.9) (2024-05-24)
 
 
