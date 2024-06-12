@@ -171,6 +171,29 @@ describe('Jobs getters', function() {
     queue.add({ baz: 'qux' });
   });
 
+  describe('.getCountsPerPriority', () => {
+    it('returns job counts per priority', done => {
+      const jobsArray = Array.from(Array(42).keys()).map(index => ({
+        name: 'test',
+        data: {},
+        opts: {
+          priority: index % 4
+        }
+      }));
+      queue.addBulk(jobsArray).then(() => {
+        queue.getCountsPerPriority([0, 1, 2, 3]).then(counts => {
+          expect(counts).to.be.eql({
+            '0': 11,
+            '1': 11,
+            '2': 10,
+            '3': 10
+          });
+          done();
+        });
+      });
+    });
+  });
+
   it('fails jobs that exceed their specified timeout', done => {
     queue.process((job, jobDone) => {
       setTimeout(jobDone, 200);
