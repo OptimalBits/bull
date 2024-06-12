@@ -751,6 +751,13 @@ declare namespace Bull {
     close(doNotWaitJobs?: boolean): Promise<void>;
 
     /**
+     * Returns the number of jobs per priority.
+     */
+    getCountsPerPriority(priorities: number[]): Promise<{
+      [index: string]: number;
+    }>;
+
+    /**
      * Returns a promise that will return the job instance associated with the jobId parameter.
      * If the specified job cannot be located, the promise callback parameter will be set to null.
      */
