@@ -1771,7 +1771,7 @@ describe('Queue', () => {
       });
 
       queue2
-        .add({ foo: 'bar' }, {removeOnFail: true})
+        .add({ foo: 'bar' }, { removeOnFail: true })
         .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');

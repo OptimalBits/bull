@@ -759,35 +759,35 @@ describe('Job', () => {
 
     it('applies stacktrace limit on failure', () => {
       const stackTraceLimit = 1;
-      return Job.create(queue, { foo: 'bar' }, { stackTraceLimit, attempts: 2 }).then(
-        job => {
-          return job
-            .isFailed()
-            .then(isFailed => {
-              expect(isFailed).to.be(false);
-            })
-            .then(() => {
-              return scripts.moveToActive(queue);
-            })
-            .then(() => {
-              return job.moveToFailed(new Error('test error'), true);
-            })
-            .then(() => {
-              return scripts.moveToActive(queue);
-            })
-            .then(() => {
-              return job
-                .moveToFailed(new Error('test error'), true)
-                .then(() => {
-                  return job.isFailed().then(isFailed => {
-                    expect(isFailed).to.be(true);
-                    expect(job.stacktrace).not.be(null);
-                    expect(job.stacktrace.length).to.be(stackTraceLimit);
-                  });
-                });
+      return Job.create(
+        queue,
+        { foo: 'bar' },
+        { stackTraceLimit, attempts: 2 }
+      ).then(job => {
+        return job
+          .isFailed()
+          .then(isFailed => {
+            expect(isFailed).to.be(false);
+          })
+          .then(() => {
+            return scripts.moveToActive(queue);
+          })
+          .then(() => {
+            return job.moveToFailed(new Error('test error'), true);
+          })
+          .then(() => {
+            return scripts.moveToActive(queue);
+          })
+          .then(() => {
+            return job.moveToFailed(new Error('test error'), true).then(() => {
+              return job.isFailed().then(isFailed => {
+                expect(isFailed).to.be(true);
+                expect(job.stacktrace).not.be(null);
+                expect(job.stacktrace.length).to.be(stackTraceLimit);
+              });
             });
-        }
-      );
+          });
+      });
     });
   });
 
@@ -914,8 +914,8 @@ describe('Job', () => {
           })
           .then(state => {
             expect(state).to.be('completed');
-            return client.zrem(queue.toKey('completed'), job.id).then(()=>{
-              return client.lpush(queue.toKey('active'), job.id)
+            return client.zrem(queue.toKey('completed'), job.id).then(() => {
+              return client.lpush(queue.toKey('active'), job.id);
             });
           })
           .then(() => {
@@ -930,8 +930,8 @@ describe('Job', () => {
           })
           .then(state => {
             expect(state).to.be('delayed');
-            return client.zrem(queue.toKey('delayed'), job.id).then(()=>{
-              return client.lpush(queue.toKey('active'), job.id)
+            return client.zrem(queue.toKey('delayed'), job.id).then(() => {
+              return client.lpush(queue.toKey('active'), job.id);
             });
           })
           .then(() => {
