@@ -1,3 +1,10 @@
+## [4.13.1](https://github.com/OptimalBits/bull/compare/v4.13.0...v4.13.1) (2024-06-21)
+
+
+### Bug Fixes
+
+* **priority:** consider paused state when calling getCountsPerPriority ([#2748](https://github.com/OptimalBits/bull/issues/2748)) ([6c2719a](https://github.com/OptimalBits/bull/commit/6c2719a9292bf0a11136d575d333600be0b9a422))
+
 # [4.13.0](https://github.com/OptimalBits/bull/compare/v4.12.9...v4.13.0) (2024-06-12)
 
 
