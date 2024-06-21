@@ -192,6 +192,28 @@ describe('Jobs getters', function() {
         });
       });
     });
+
+    describe('when queue is paused', () => {
+      it('returns job counts per priority', async () => {
+        await queue.pause();
+        const jobsArray = Array.from(Array(42).keys()).map(index => ({
+          name: 'test',
+          data: {},
+          opts: {
+            priority: index % 4
+          }
+        }));
+        await queue.addBulk(jobsArray);
+        const counts = await queue.getCountsPerPriority([0, 1, 2, 3]);
+        
+        expect(counts).to.be.eql({
+          '0': 11,
+          '1': 11,
+          '2': 10,
+          '3': 10
+        });
+      });
+    });  
   });
 
   it('fails jobs that exceed their specified timeout', done => {
