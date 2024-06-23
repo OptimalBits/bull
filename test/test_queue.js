@@ -1097,6 +1097,27 @@ describe('Queue', () => {
       }
     });
 
+    describe('when job has been added again', function () {
+      it('emits duplicated event', async function () {
+        queue.process(
+          async () => {
+            await delay(50);
+            await queue.add({ foo: 'bar' }, { jobId: 'a1' });
+            await delay(50);
+          }
+        );
+  
+        await queue.add({ foo: 'bar' }, { jobId: 'a1' });
+    
+        await new Promise(resolve => {
+          queue.once('global:duplicated', (jobId) => {
+            expect(jobId).to.be.equal('a1');
+            resolve();
+          });
+        });
+      });
+    });
+
     it('process a job that updates progress', done => {
       queue.process((job, jobDone) => {
         expect(job.data.foo).to.be.equal('bar');

@@ -51,6 +51,7 @@ else
   jobId = ARGV[2]
   jobIdKey = ARGV[1] .. jobId
   if rcall("EXISTS", jobIdKey) == 1 then
+    rcall("PUBLISH", ARGV[1] .. "duplicated", jobId)
     return jobId .. "" -- convert to string
   end
 end
