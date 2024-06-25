@@ -1097,8 +1097,8 @@ describe('Queue', () => {
       }
     });
 
-    describe('when job has been added again', function () {
-      it('emits duplicated event', async function () {
+    describe('when job has been added again', () => {
+      it('emits duplicated event', async () => {
         queue.process(
           async () => {
             await delay(50);
