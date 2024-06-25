@@ -1,3 +1,10 @@
+# [4.14.0](https://github.com/OptimalBits/bull/compare/v4.13.1...v4.14.0) (2024-06-25)
+
+
+### Features
+
+* **queue:** add global:duplicated event when a duplicated is added ([#2749](https://github.com/OptimalBits/bull/issues/2749)) ([d632ac1](https://github.com/OptimalBits/bull/commit/d632ac1010d7d7faaa8f731eafdea67d6129e111))
+
 ## [4.13.1](https://github.com/OptimalBits/bull/compare/v4.13.0...v4.13.1) (2024-06-21)
 
 
