@@ -1098,7 +1098,7 @@ describe('Queue', () => {
     });
 
     describe('when job has been added again', () => {
-      it('emits duplicated event', async () => {
+      it('emits global duplicated event', async () => {
         queue.process(
           async () => {
             await delay(50);
@@ -1111,6 +1111,25 @@ describe('Queue', () => {
     
         await new Promise(resolve => {
           queue.once('global:duplicated', (jobId) => {
+            expect(jobId).to.be.equal('a1');
+            resolve();
+          });
+        });
+      });
+
+      it('emits duplicated event', async () => {
+        queue.process(
+          async () => {
+            await delay(50);
+            await queue.add({ foo: 'bar' }, { jobId: 'a1' });
+            await delay(50);
+          }
+        );
+  
+        await queue.add({ foo: 'bar' }, { jobId: 'a1' });
+    
+        await new Promise(resolve => {
+          queue.once('duplicated', (jobId) => {
             expect(jobId).to.be.equal('a1');
             resolve();
           });
