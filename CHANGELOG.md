@@ -1,3 +1,10 @@
+# [4.15.0](https://github.com/OptimalBits/bull/compare/v4.14.0...v4.15.0) (2024-06-30)
+
+
+### Features
+
+* **queue:** emit internal duplicated event ([#2754](https://github.com/OptimalBits/bull/issues/2754)) ([021ab7f](https://github.com/OptimalBits/bull/commit/021ab7fd8d6c89b01767572b0e53422f34f7bc04))
+
 # [4.14.0](https://github.com/OptimalBits/bull/compare/v4.13.1...v4.14.0) (2024-06-25)
 
 
