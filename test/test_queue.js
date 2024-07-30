@@ -1146,7 +1146,7 @@ describe('Queue', () => {
           );
   
           let debouncedCounter = 0;
-          let secondJob;
+          let secondJob = null;
           queue.on('debounced', (jobId) => {
             if (debouncedCounter > 1) {
               expect(jobId).to.be.equal(secondJob.id);
@@ -1184,15 +1184,15 @@ describe('Queue', () => {
         });
       });
 
-      describe('when removing debounced job', function () {
-        it('removes debounce key', async function () {
+      describe('when removing debounced job',  () => {
+        it('removes debounce key', async ()=> {
           const job = await queue.add(
             { foo: 'bar' },
             { debounce: { id: 'a1', ttl: 2000 } },
           );
 
           let debouncedCounter = 0;
-          queue.on('debounced', (jobId) => {
+          queue.on('debounced', () => {
             debouncedCounter++;
           });
           await job.remove();
@@ -1227,8 +1227,8 @@ describe('Queue', () => {
         });
       });
 
-      describe('when ttl is not provided', function () {
-        it('waits until job is finished before removing debounce key', async function () {
+      describe('when ttl is not provided',  ()=> {
+        it('waits until job is finished before removing debounce key', async  ()=> {
           queue.process(
             async () => {
               await delay(100);
