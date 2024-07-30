@@ -25,6 +25,7 @@ local rcall = redis.call
 -- Includes
 --- @include "includes/batches"
 --- @include "includes/getTargetQueueList"
+--- @include "includes/removeDebounceKeyIfNeeded"
 
 local function removeJob(jobId, baseKey)
   local jobKey = baseKey .. jobId
@@ -78,12 +79,13 @@ if(#stalling > 0) then
         -- If this job has been stalled too many times, such as if it crashes the worker, then fail it.
         local stalledCount = rcall("HINCRBY", jobKey, "stalledCounter", 1)
         if(stalledCount > MAX_STALLED_JOB_COUNT) then
-          local rawOpts = rcall("HGET", jobKey, "opts")
-          local opts = cjson.decode(rawOpts)
+          local jobAttributes = rcall("HMGET", jobKey, "opts")
+          local opts = cjson.decode(jobAttributes[1])
           local removeOnFailType = type(opts["removeOnFail"])
           rcall("ZADD", KEYS[4], ARGV[3], jobId)
           rcall("HMSET", jobKey, "failedReason", "job stalled more than allowable limit",
             "finishedOn", ARGV[3])
+          removeDebounceKeyIfNeeded(ARGV[2], jobAttributes[2])
           rcall("PUBLISH", KEYS[4],  '{"jobId":"' .. jobId .. '", "val": "job stalled more than maxStalledCount"}')
 
           if removeOnFailType == "number" then

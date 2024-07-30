@@ -96,6 +96,9 @@ if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
 
     if numRemovedElements < 1 then return -3 end
 
+    local debounceId = rcall("HGET", KEYS[3], "deid")
+    removeDebounceKeyIfNeeded(ARGV[9], debounceId)
+
     -- Remove job?
     local keepJobs = cmsgpack.unpack(ARGV[6])
     local maxCount = keepJobs['count']

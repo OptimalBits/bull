@@ -33,6 +33,7 @@
       ARGV[9]  priority
       ARGV[10] LIFO
       ARGV[11] token
+      ARGV[12] debounce key
 ]]
 local jobId
 local jobIdKey
@@ -40,6 +41,7 @@ local rcall = redis.call
 
 -- Includes
 --- @include "includes/addJobWithPriority"
+--- @include "includes/debounceJob"
 --- @include "includes/getTargetQueueList"
 
 local jobCounter = rcall("INCR", KEYS[4])
@@ -56,10 +58,28 @@ else
   end
 end
 
+local debounceKey = ARGV[12]
+
 local opts = cmsgpack.unpack(ARGV[5])
 
--- Store the job.
-rcall("HMSET", jobIdKey, "name", ARGV[3], "data", ARGV[4], "opts", opts, "timestamp", ARGV[6], "delay", ARGV[7], "priority", ARGV[9])
+local debouncedJobId = debounceJob(ARGV[1], opts['debounce'],
+  jobId, debounceKey, ARGV[11])
+if debouncedJobId then
+  return debouncedJobId
+end
+
+local debounceId = opts['debounce'] and opts['debounce']['id']
+
+local optionalValues = {}
+
+if debounceId then
+  table.insert(optionalValues, "deid")
+  table.insert(optionalValues, debounceId)
+end
+
+    -- Store the job.
+rcall("HMSET", jobIdKey, "name", ARGV[3], "data", ARGV[4], "opts", opts, "timestamp",
+  ARGV[6], "delay", ARGV[7], "priority", ARGV[9], unpack(optionalValues))
 
 -- Check if job is delayed
 local delayedTimestamp = tonumber(ARGV[8])

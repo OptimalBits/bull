@@ -6,7 +6,7 @@
     KEYS[2]  priority key
     KEYS[3]  rate limiter key
 
-    ARGV[1]  jobId
+    ARGV[1]  prefix key
     ARGV[2]  maxTimestamp
     ARGV[3]  limit the number of jobs to be removed. 0 is unlimited
     ARGV[4]  set name, can be any of 'wait', 'active', 'paused', 'delayed', 'completed', or 'failed'
@@ -16,13 +16,16 @@ local setKey = KEYS[1]
 local priorityKey = KEYS[2]
 local rateLimiterKey = KEYS[3]
 
-local jobKeyPrefix = ARGV[1]
+local prefixKey = ARGV[1]
 local maxTimestamp = ARGV[2]
 local limitStr = ARGV[3]
 local setName = ARGV[4]
 
 local isList = false
 local rcall = redis.call
+
+-- Includes
+--- @include "includes/removeDebounceKey"
 
 if setName == "wait" or setName == "active" or setName == "paused" then
   isList = true
@@ -75,7 +78,7 @@ while ((limit <= 0 or deletedCount < limit) and next(jobIds, nil) ~= nil) do
       break
     end
 
-    local jobKey = jobKeyPrefix .. jobId
+    local jobKey = prefixKey .. jobId
     if (rcall("EXISTS", jobKey .. ":lock") == 0) then
       -- Find the right timestamp of the job to compare to maxTimestamp:
       -- * finishedOn says when the job was completed, but it isn't set unless the job has actually completed
@@ -98,6 +101,11 @@ while ((limit <= 0 or deletedCount < limit) and next(jobIds, nil) ~= nil) do
           rcall("ZREM", setKey, jobId)
         end
         rcall("ZREM", priorityKey, jobId)
+
+        if setName ~= "completed" and setName ~= "failed" then
+          removeDebounceKey(prefixKey, jobKey)
+        end
+
         rcall("DEL", jobKey)
         rcall("DEL", jobKey .. ":logs")
 
