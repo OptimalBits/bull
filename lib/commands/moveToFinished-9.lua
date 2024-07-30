@@ -84,6 +84,7 @@ end
 
 -- Includes
 --- @include "includes/removeLock"
+--- @include "includes/removeDebounceKeyIfNeeded"
 
 if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
     local errorCode = removeLock(KEYS[3], KEYS[8], ARGV[5], ARGV[1])

@@ -2,12 +2,10 @@
   Function to debounce a job.
 ]]
 
-local function debounceJob(prefixKey, debounceOpts, jobId, debounceKey, token)
-  local debounceId = debounceOpts and debounceOpts['id']
+local function debounceJob(prefixKey, debounceId, ttl, jobId, debounceKey, token)
   if debounceId then
-    local ttl = debounceOpts['ttl']
     local debounceKeyExists
-    if ttl then
+    if ttl ~= "" then
       debounceKeyExists = not rcall('SET', debounceKey, jobId, 'PX', ttl, 'NX')
     else
       debounceKeyExists = not rcall('SET', debounceKey, jobId, 'NX')

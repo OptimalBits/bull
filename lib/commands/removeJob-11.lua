@@ -30,7 +30,7 @@ local rcall = redis.call
 --- @include "includes/removeDebounceKey"
 
 local lockKey = KEYS[8] .. ':lock'
-local lock = redis.call("GET", lockKey)
+local lock = rcall("GET", lockKey)
 if not lock then             -- or (lock == ARGV[2])) then
   local jobId = ARGV[1]
   rcall("LREM", KEYS[1], 0, jobId)
@@ -40,10 +40,11 @@ if not lock then             -- or (lock == ARGV[2])) then
   rcall("ZREM", KEYS[5], jobId)
   rcall("ZREM", KEYS[6], jobId)
   rcall("ZREM", KEYS[7], jobId)
-  rcall("DEL", KEYS[8])
-  rcall("DEL", KEYS[9])
 
   removeDebounceKey(KEYS[11], KEYS[8])
+
+  rcall("DEL", KEYS[8])
+  rcall("DEL", KEYS[9])
 
   -- delete keys related to rate limiter
   local limiterIndexTable = KEYS[10] .. ":index"

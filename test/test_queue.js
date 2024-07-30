@@ -1137,6 +1137,146 @@ describe('Queue', () => {
       });
     });
 
+    describe('when job is debounced when added again with same debounce id', () => {
+      describe('when ttl is provided', () => {
+        it('used a fixed time period and emits debounced event', async () => {
+          const job = await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+  
+          let debouncedCounter = 0;
+          let secondJob;
+          queue.on('debounced', (jobId) => {
+            if (debouncedCounter > 1) {
+              expect(jobId).to.be.equal(secondJob.id);
+            } else {
+              expect(jobId).to.be.equal(job.id);
+            }
+            debouncedCounter++;
+          });
+  
+          await delay(1000);
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await delay(1100);
+          secondJob = await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await delay(100);
+  
+          expect(debouncedCounter).to.be.equal(4);
+        });
+      });
+
+      describe('when removing debounced job', function () {
+        it('removes debounce key', async function () {
+          const job = await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+
+          let debouncedCounter = 0;
+          queue.on('debounced', (jobId) => {
+            debouncedCounter++;
+          });
+          await job.remove();
+
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await delay(1000);
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await delay(1100);
+          const secondJob = await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await secondJob.remove();
+
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await delay(100);
+
+          expect(debouncedCounter).to.be.equal(2);
+        });
+      });
+
+      describe('when ttl is not provided', function () {
+        it('waits until job is finished before removing debounce key', async function () {
+          queue.process(
+            async () => {
+              await delay(100);
+              await queue.add(
+                { foo: 'bar' },
+                { debounce: { id: 'a1' } },
+              );
+              await delay(100);
+              await queue.add(
+                { foo: 'bar' },
+                { debounce: { id: 'a1' } },
+              );
+              await delay(100);
+            }
+          );
+      
+          let debouncedCounter = 0;
+  
+          const completing = new Promise(resolve => {
+            queue.once('completed', ({ id }) => {
+              expect(id).to.be.equal('1');
+              resolve();
+            });
+  
+            queue.on('debounced', () => {
+              debouncedCounter++;
+            });
+          });
+    
+          await queue.add({ foo: 'bar' }, { debounce: { id: 'a1' } });
+  
+          await completing;
+  
+          const secondJob = await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1' } },
+          );
+  
+          const count = await queue.getJobCountByTypes();
+  
+          expect(count).to.be.eql(2);
+  
+          expect(debouncedCounter).to.be.equal(2);
+          expect(secondJob.id).to.be.equal('4');
+        });
+      });  
+    });
+
     it('process a job that updates progress', done => {
       queue.process((job, jobDone) => {
         expect(job.data.foo).to.be.equal('bar');

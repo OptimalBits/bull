@@ -34,6 +34,8 @@
       ARGV[10] LIFO
       ARGV[11] token
       ARGV[12] debounce key
+      ARGV[13] debounceId
+      ARGV[14] debounceTtl
 ]]
 local jobId
 local jobIdKey
@@ -62,13 +64,13 @@ local debounceKey = ARGV[12]
 
 local opts = cmsgpack.unpack(ARGV[5])
 
-local debouncedJobId = debounceJob(ARGV[1], opts['debounce'],
+local debouncedJobId = debounceJob(ARGV[1], ARGV[13], ARGV[14],
   jobId, debounceKey, ARGV[11])
 if debouncedJobId then
   return debouncedJobId
 end
 
-local debounceId = opts['debounce'] and opts['debounce']['id']
+local debounceId = ARGV[13]
 
 local optionalValues = {}
 

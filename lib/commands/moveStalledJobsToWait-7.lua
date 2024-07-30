@@ -79,7 +79,7 @@ if(#stalling > 0) then
         -- If this job has been stalled too many times, such as if it crashes the worker, then fail it.
         local stalledCount = rcall("HINCRBY", jobKey, "stalledCounter", 1)
         if(stalledCount > MAX_STALLED_JOB_COUNT) then
-          local jobAttributes = rcall("HMGET", jobKey, "opts")
+          local jobAttributes = rcall("HMGET", jobKey, "opts", "deid")
           local opts = cjson.decode(jobAttributes[1])
           local removeOnFailType = type(opts["removeOnFail"])
           rcall("ZADD", KEYS[4], ARGV[3], jobId)
