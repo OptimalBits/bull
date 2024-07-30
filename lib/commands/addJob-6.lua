@@ -74,7 +74,7 @@ local debounceId = ARGV[13]
 
 local optionalValues = {}
 
-if debounceId then
+if debounceId ~= "" then
   table.insert(optionalValues, "deid")
   table.insert(optionalValues, debounceId)
 end

@@ -41,13 +41,13 @@ end
 
 local function removeListJobs(keyName, max)
     local jobs = getListItems(keyName, max)
-    removeJobs(keyName, jobs)
+    removeJobs(baseKey, jobs)
     rcall("LTRIM", keyName, #jobs, -1)
 end
 
 local function removeZSetJobs(keyName, max)
     local jobs = getZSetItems(keyName, max)
-    removeJobs(keyName, jobs)
+    removeJobs(baseKey, jobs)
     if (#jobs > 0) then rcall("ZREM", keyName, unpack(jobs)) end
 end
 
@@ -70,7 +70,7 @@ if (#activeJobs > 0) then
 end
 
 removeLockKeys(activeJobs)
-removeJobs(activeKey, activeJobs)
+removeJobs(baseKey, activeJobs)
 rcall("LTRIM", activeKey, #activeJobs, -1)
 if (maxCount <= 0) then return 1 end
 

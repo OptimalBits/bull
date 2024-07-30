@@ -3,7 +3,7 @@
 ]]
 
 local function debounceJob(prefixKey, debounceId, ttl, jobId, debounceKey, token)
-  if debounceId then
+  if debounceId ~= "" then
     local debounceKeyExists
     if ttl ~= "" then
       debounceKeyExists = not rcall('SET', debounceKey, jobId, 'PX', ttl, 'NX')
