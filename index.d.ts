@@ -428,7 +428,23 @@ declare namespace Bull {
     every: number;
   }
 
+  interface DebounceOptions {
+    /**
+     * ttl in milliseconds
+     */
+    ttl?: number;
+    /**
+     * Identifier
+     */
+    id: string;
+  }
+
   interface JobOptions {
+    /**
+     * Debounce options.
+     */
+    debounce?: DebounceOptions;
+
     /**
      * Optional priority value. ranges from 1 (highest priority) to MAX_INT  (lowest priority).
      * Note that using priorities has a slight impact on performance, so do not use it if not required

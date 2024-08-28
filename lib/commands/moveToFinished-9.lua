@@ -42,6 +42,11 @@
 ]]
 local rcall = redis.call
 
+-- Includes
+--- @include "includes/removeLock"
+--- @include "includes/removeDebounceKeyIfNeeded"
+--- @include "includes/batches"
+
 --[[
   Functions to collect metrics based on a current and previous count of jobs.
   Granualarity is fixed at 1 minute.
@@ -68,7 +73,10 @@ local function collectMetrics(metaKey, dataPointsList, maxDataPoints, timestamp)
             local points = {}
             points[1] = delta
             for i = 2, N do points[i] = 0 end
-            rcall("LPUSH", dataPointsList, unpack(points))
+
+            for from, to in batches(#points, 7000) do
+                rcall("LPUSH", dataPointsList, unpack(points, from, to))
+            end
         else
             -- LPUSH delta to the list
             rcall("LPUSH", dataPointsList, delta)
@@ -81,10 +89,6 @@ local function collectMetrics(metaKey, dataPointsList, maxDataPoints, timestamp)
         rcall("HSET", metaKey, "prevCount", count, "prevTS", timestamp)
     end
 end
-
--- Includes
---- @include "includes/removeLock"
---- @include "includes/removeDebounceKeyIfNeeded"
 
 if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
     local errorCode = removeLock(KEYS[3], KEYS[8], ARGV[5], ARGV[1])
