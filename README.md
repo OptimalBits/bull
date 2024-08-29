@@ -348,7 +348,7 @@ imageQueue.add({ image: 'http://example.com/image1.tiff' });
 
 #### Using promises
 
-Alternatively, you can use return promises instead of using the `done` callback:
+Alternatively, you can return promises instead of using the `done` callback:
 
 ```javascript
 videoQueue.process(function (job) { // don't forget to remove the done callback!
