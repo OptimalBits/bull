@@ -23,8 +23,8 @@
     <a href="https://gitter.im/OptimalBits/bull">
       <img src="https://badges.gitter.im/Join%20Chat.svg"/>
     </a>
-    <a href="https://gitter.im/OptimalBits/bull">
-      <img src="https://img.shields.io/npm/dm/bull.svg?maxAge=2592000"/>
+    <a href="https://join.slack.com/t/bullmq/shared_invite/zt-1nbtpk6mv-TItWpF9jf3k4yrCaS0PPZA">
+      <img src="https://img.shields.io/badge/Slack-4A154B"/>
     </a>
     <a href="http://badge.fury.io/js/bull">
       <img src="https://badge.fury.io/js/bull.svg"/>
