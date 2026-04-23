@@ -27,7 +27,7 @@
     "lodash": "^4.17.21",
     "msgpackr": "^1.11.2",
     "semver": "^7.5.2",
-    "uuid": "^8.3.0"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^7.6.1",
