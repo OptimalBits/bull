@@ -989,7 +989,7 @@ declare namespace Bull {
     on(event: string, callback: (...args: any[]) => void): this;
 
     /**
-     * An error occured
+     * An error occurred
      */
     on(event: 'error', callback: ErrorEventCallback): this;
 
