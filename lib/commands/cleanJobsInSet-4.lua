@@ -5,6 +5,7 @@
     KEYS[1]  set key,
     KEYS[2]  priority key
     KEYS[3]  rate limiter key
+    KEYS[4]  prioritized key
 
     ARGV[1]  prefix key
     ARGV[2]  maxTimestamp
@@ -15,6 +16,7 @@
 local setKey = KEYS[1]
 local priorityKey = KEYS[2]
 local rateLimiterKey = KEYS[3]
+local prioritizedKey = KEYS[4]
 
 local prefixKey = ARGV[1]
 local maxTimestamp = ARGV[2]
@@ -101,6 +103,7 @@ while ((limit <= 0 or deletedCount < limit) and next(jobIds, nil) ~= nil) do
           rcall("ZREM", setKey, jobId)
         end
         rcall("ZREM", priorityKey, jobId)
+        rcall("ZREM", prioritizedKey, jobId)
 
         if setName ~= "completed" and setName ~= "failed" then
           removeDebounceKey(prefixKey, jobKey)
@@ -141,6 +144,53 @@ end
 
 if isList then
   rcall("LREM", setKey, 0, "")
+end
+
+-- Jobs added via addJobWithPriority never enter the wait/paused list at all
+-- (they live solely in prioritizedKey, which is pause-agnostic, see
+-- addJobWithPriority.lua), so cleaning either "wait" or "paused" also needs
+-- a pass over prioritizedKey to catch them.
+if
+  (setName == "wait" or setName == "paused") and
+  (limit <= 0 or deletedCount < limit)
+then
+  local prioritizedRangeEnd = limit > 0 and (limit - deletedCount - 1) or -1
+  local prioritizedJobIds = rcall("ZRANGE", prioritizedKey, 0, prioritizedRangeEnd)
+
+  for _, jobId in ipairs(prioritizedJobIds) do
+    if limit > 0 and deletedCount >= limit then
+      break
+    end
+
+    local jobKey = prefixKey .. jobId
+    if (rcall("EXISTS", jobKey .. ":lock") == 0) then
+      local jobTS
+      for _, ts in ipairs(rcall("HMGET", jobKey, "finishedOn", "processedOn", "timestamp")) do
+        if (ts) then
+          jobTS = ts
+          break
+        end
+      end
+      if (not jobTS or jobTS < maxTimestamp) then
+        rcall("ZREM", prioritizedKey, jobId)
+        rcall("ZREM", priorityKey, jobId)
+        removeDebounceKey(prefixKey, jobKey)
+
+        rcall("DEL", jobKey)
+        rcall("DEL", jobKey .. ":logs")
+
+        local limiterIndexTable = rateLimiterKey .. ":index"
+        local limitedSetKey = rcall("HGET", limiterIndexTable, jobId)
+        if limitedSetKey then
+          rcall("SREM", limitedSetKey, jobId)
+          rcall("HDEL", limiterIndexTable, jobId)
+        end
+
+        deletedCount = deletedCount + 1
+        table.insert(deleted, jobId)
+      end
+    end
+  end
 end
 
 return deleted

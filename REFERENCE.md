@@ -283,8 +283,9 @@ Considering all jobs in a finished state (`failed` or `completed`) are stored in
 
 ```typescript
 interface JobOpts {
-  priority: number; // Optional priority value. ranges from 1 (highest priority) to MAX_INT  (lowest priority). Note that
-  // using priorities has a slight impact on performance, so do not use it if not required.
+  priority: number; // Optional priority value. ranges from 1 (highest priority) to 2097151 (lowest priority).
+  // Jobs added without an explicit priority are only processed once there are no prioritized jobs left
+  // waiting, even ones added later, so a steady stream of prioritized jobs can delay them indefinitely.
 
   delay: number; // An amount of milliseconds to wait until this job can be processed. Note that for accurate delays, both
   // server and clients should have their clocks synchronized. [optional].

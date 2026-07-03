@@ -741,6 +741,69 @@ describe('Queue', () => {
           const CompletedCount = await queue.getJobCounts('completed');
           expect(CompletedCount.completed).to.be.equal(jobCount);
         });
+
+        it('preserves priority when retrying failed jobs in bulk', async () => {
+          const jobCount = 4;
+
+          let fail = true;
+          queue.process(async () => {
+            await delay(10);
+            if (fail) {
+              throw new Error('failed');
+            }
+          });
+
+          let failedCount = 0;
+          const failing = new Promise(resolve => {
+            queue.on('failed', () => {
+              failedCount++;
+              if (failedCount === jobCount) {
+                resolve();
+              }
+            });
+          });
+
+          const jobs = [];
+          for (let i = 0; i < jobCount; i++) {
+            jobs.push(await queue.add({ idx: i }, { priority: i + 1 }));
+          }
+
+          await failing;
+
+          fail = false;
+
+          await queue.pause();
+
+          await queue.retryJobs({ count: jobCount });
+
+          const PRIORITY_COUNTER_BASE = 4294967296;
+          for (const job of jobs) {
+            const score = await client.zscore(
+              queue.toKey('prioritized'),
+              job.id
+            );
+            expect(score).to.not.be.null;
+            const priority = job.opts.priority;
+            expect(Number(score)).to.be.within(
+              priority * PRIORITY_COUNTER_BASE,
+              (priority + 1) * PRIORITY_COUNTER_BASE - 1
+            );
+          }
+
+          let completedCount = 0;
+          const completing = new Promise(resolve => {
+            queue.on('completed', () => {
+              completedCount++;
+              if (completedCount === jobCount) {
+                resolve();
+              }
+            });
+          });
+
+          await queue.resume();
+
+          await completing;
+        });
       });
 
       it('should keep specified number of jobs after completed with removeOnComplete', async () => {
@@ -1075,6 +1138,79 @@ describe('Queue', () => {
           }
         });
       }, done);
+    });
+
+    it('processes prioritized jobs added while paused in priority order once resumed', async () => {
+      await queue.pause();
+
+      await queue.add({ tag: 'low' }, { priority: 3 });
+      await queue.add({ tag: 'high' }, { priority: 1 });
+      await queue.add({ tag: 'medium' }, { priority: 2 });
+
+      const processed = [];
+      const allProcessed = new Promise(resolve => {
+        queue.process(job => {
+          processed.push(job.data.tag);
+          if (processed.length === 3) {
+            resolve();
+          }
+          return Promise.resolve();
+        });
+      });
+
+      await queue.resume();
+      await allProcessed;
+
+      expect(processed).to.eql(['high', 'medium', 'low']);
+    });
+
+    it('drains jobs left over from the legacy priority-list format alongside newly-added prioritized jobs', async () => {
+      // Simulate jobs that were already spliced into 'wait' (in priority
+      // order) by the old LINSERT-based algorithm, with matching entries in
+      // the legacy 'priority' zset, i.e. the on-disk shape that predates the
+      // dedicated 'prioritized' zset. Adding through the current API first
+      // (so the job hashes are created correctly) and then relocating the
+      // job ids reproduces that shape without depending on removed code.
+      const legacy1 = await queue.add({ tag: 'legacy1' }, { priority: 5 });
+      const legacy2 = await queue.add({ tag: 'legacy2' }, { priority: 5 });
+
+      await client.zrem(queue.toKey('prioritized'), legacy1.id, legacy2.id);
+      // Oldest job ends up closest to the tail, matching what RPOPLPUSH
+      // (used to consume 'wait') expects for FIFO order.
+      await client.lpush(queue.toKey('wait'), legacy1.id, legacy2.id);
+      await client.zadd(queue.toKey('priority'), 5, legacy1.id, 5, legacy2.id);
+
+      // A job added through the current code path lands in 'prioritized'.
+      await queue.add({ tag: 'modern' }, { priority: 1 });
+
+      const processed = [];
+      await new Promise((resolve, reject) => {
+        queue.process(job => {
+          processed.push(job.data.tag);
+          if (processed.length === 3) {
+            resolve();
+          }
+          return Promise.resolve();
+        });
+        queue.on('error', reject);
+      });
+
+      // The new-format prioritized job is drained first, then the
+      // legacy-format jobs in their pre-existing order.
+      expect(processed).to.eql(['modern', 'legacy1', 'legacy2']);
+      expect(await client.zcard(queue.toKey('priority'))).to.eql(0);
+    });
+
+    it('caps the marker key length instead of growing unboundedly under sustained throughput', async () => {
+      // No processor is running, so nothing ever pops from the marker: it
+      // can only be trimmed by addBaseMarkerIfNeeded itself.
+      const jobCount = 1100;
+      await Promise.all(
+        Array.from({ length: jobCount }, (_, i) => queue.add({ i }))
+      );
+
+      const markerLength = await client.llen(queue.toKey('marker'));
+      expect(markerLength).to.eql(1024);
     });
 
     it('process several jobs serially', function(done) {
@@ -1992,6 +2128,33 @@ describe('Queue', () => {
       });
     });
 
+    it('recovers a stalled prioritized job back into the prioritized set, not plain wait', async () => {
+      const job = await queue.add({ foo: 'bar' }, { priority: 2 });
+
+      // Simulate a worker having picked the job up and then stalling (e.g.
+      // it crashed) by moving it into 'active'/'stalled' without a lock,
+      // mirroring what a real stalled worker leaves behind.
+      await client
+        .multi()
+        .zrem(queue.toKey('prioritized'), job.id)
+        .lpush(queue.toKey('active'), job.id)
+        .sadd(queue.toKey('stalled'), job.id)
+        .exec();
+
+      await queue.moveUnlockedJobsToWait();
+
+      const score = await client.zscore(queue.toKey('prioritized'), job.id);
+      expect(score).to.not.be.null;
+      const PRIORITY_COUNTER_BASE = 4294967296;
+      expect(Number(score)).to.be.within(
+        2 * PRIORITY_COUNTER_BASE,
+        3 * PRIORITY_COUNTER_BASE - 1
+      );
+
+      const waitJobIds = await client.lrange(queue.toKey('wait'), 0, -1);
+      expect(waitJobIds).to.not.include(job.id);
+    });
+
     it('process a job that fails', done => {
       const jobError = new Error('Job Failed');
 
@@ -2229,6 +2392,61 @@ describe('Queue', () => {
       });
 
       await completed;
+    });
+
+    it('retry a job that fails preserves its priority', async () => {
+      let called = 0;
+      let failedOnce = false;
+      const notEvenErr = new Error('Not even!');
+
+      const retryQueue = utils.buildQueue('retry-test-queue');
+
+      const job = await retryQueue.add({ foo: 'bar' }, { priority: 3 });
+      expect(job.id).to.be.ok;
+
+      retryQueue.process((job, jobDone) => {
+        called++;
+        if (called % 2 !== 0) {
+          throw notEvenErr;
+        }
+        jobDone();
+      });
+
+      const failed = new Promise(resolve => {
+        retryQueue.once('failed', async (job, err) => {
+          expect(err).to.be.eql(notEvenErr);
+          failedOnce = true;
+          resolve();
+        });
+      });
+
+      await failed;
+
+      // Pausing prevents the queue from re-picking up the job before we
+      // get a chance to inspect where it landed.
+      await retryQueue.pause();
+
+      await job.retry();
+
+      const score = await client.zscore(retryQueue.toKey('prioritized'), job.id);
+      expect(score).to.not.be.null;
+      const PRIORITY_COUNTER_BASE = 4294967296;
+      expect(Number(score)).to.be.within(
+        3 * PRIORITY_COUNTER_BASE,
+        4 * PRIORITY_COUNTER_BASE - 1
+      );
+
+      await retryQueue.resume();
+
+      const completed = new Promise(resolve => {
+        retryQueue.once('completed', () => {
+          expect(failedOnce).to.be.eql(true);
+          resolve();
+        });
+      });
+
+      await completed;
+      await retryQueue.close();
     });
 
     it('retry a job that fails using job retry method', done => {
@@ -3209,6 +3427,24 @@ describe('Queue', () => {
           return queue.close();
         });
     });
+
+    it('should remove the job hashes of prioritized jobs', async () => {
+      const client = new redis(6379, '127.0.0.1', {});
+      const queue = utils.buildQueue();
+
+      const job = await queue.add({ foo: 'bar' }, { priority: 5 });
+      await queue.empty();
+
+      const keys = await new Promise((resolve, reject) => {
+        client.keys(queue.toKey(job.id), (err, res) => {
+          if (err) reject(err);
+          else resolve(res);
+        });
+      });
+      expect(keys.length).to.be.eql(0);
+
+      return queue.close();
+    });
   });
 
   describe('Cleaner', () => {
@@ -3451,6 +3687,11 @@ describe('Queue', () => {
 
     it('should properly clean jobs from the priority set', done => {
       const client = new redis(6379, '127.0.0.1', {});
+      // Prioritized jobs are stored in the "prioritized" zset with a score of
+      // priority * 2^32 + counter (see addJobWithPriority.lua), so priority 5
+      // occupies the [5 * 2^32, 6 * 2^32) score range.
+      const scoreStart = 5 * 4294967296;
+      const scoreEnd = scoreStart + 4294967295;
       queue.add({ some: 'data' }, { priority: 5 });
       queue.add({ some: 'data' }, { priority: 5 });
       delay(100)
@@ -3459,16 +3700,51 @@ describe('Queue', () => {
         })
         .then(() => {
           return new Promise((resolve, reject) => {
-            client.zcount(queue.toKey('priority'), '5', '5', (err, res) => {
-              if (err) reject(err);
-              else resolve(res);
-            });
+            client.zcount(
+              queue.toKey('prioritized'),
+              scoreStart,
+              scoreEnd,
+              (err, res) => {
+                if (err) reject(err);
+                else resolve(res);
+              }
+            );
           });
         })
         .then(priority => {
           expect(priority).to.be.eql(1);
           done();
         });
+    });
+
+    it('should clean prioritized jobs left in the prioritized zset while paused', async () => {
+      const client = new redis(6379, '127.0.0.1', {});
+      // Prioritized jobs are stored in the "prioritized" zset with a score of
+      // priority * 2^32 + counter (see addJobWithPriority.lua), so priority 5
+      // occupies the [5 * 2^32, 6 * 2^32) score range.
+      const scoreStart = 5 * 4294967296;
+      const scoreEnd = scoreStart + 4294967295;
+
+      await queue.pause();
+      await queue.add({ some: 'data' }, { priority: 5 });
+      await queue.add({ some: 'data' }, { priority: 5 });
+      await delay(100);
+
+      const cleaned = await queue.clean(0, 'paused');
+      expect(cleaned.length).to.be.eql(2);
+
+      const priorityCount = await new Promise((resolve, reject) => {
+        client.zcount(
+          queue.toKey('prioritized'),
+          scoreStart,
+          scoreEnd,
+          (err, res) => {
+            if (err) reject(err);
+            else resolve(res);
+          }
+        );
+      });
+      expect(priorityCount).to.be.eql(0);
     });
 
     it('should clean a job without a timestamp', done => {

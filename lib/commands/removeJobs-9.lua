@@ -11,6 +11,7 @@
       KEYS[6] 'failed',
       KEYS[7] 'priority',
       KEYS[8] 'rate-limiter'
+      KEYS[9] 'prioritized'
 
       ARGV[1]  prefix
       ARGV[2]  pattern
@@ -43,6 +44,7 @@ for i, jobKey in ipairs(jobKeys) do
             rcall("ZREM", KEYS[5], jobId)
             rcall("ZREM", KEYS[6], jobId)
             rcall("ZREM", KEYS[7], jobId)
+            rcall("ZREM", KEYS[9], jobId)
             rcall("DEL", jobKey)
             rcall("DEL", jobKey .. ':logs')
 

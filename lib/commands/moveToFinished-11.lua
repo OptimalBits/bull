@@ -10,13 +10,16 @@
       KEYS[3] jobId key
 
       KEYS[4] wait key
-      KEYS[5] priority key
+      KEYS[5] priority key (legacy, kept for backward compatibility)
       KEYS[6] active event key
 
       KEYS[7] delayed key
       KEYS[8] stalled key
 
       KEYS[9] metrics key
+
+      KEYS[10] prioritized key
+      KEYS[11] meta-paused key
 
       ARGV[1]  jobId
       ARGV[2]  timestamp
@@ -46,6 +49,7 @@ local rcall = redis.call
 --- @include "includes/collectMetrics"
 --- @include "includes/removeLock"
 --- @include "includes/removeDebounceKeyIfNeeded"
+--- @include "includes/getNextJob"
 
 if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
     local errorCode = removeLock(KEYS[3], KEYS[8], ARGV[5], ARGV[1])
@@ -108,11 +112,11 @@ if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
 
     rcall("PUBLISH", targetSet, ARGV[7])
 
-    -- Try to get next job to avoid an extra roundtrip if the queue is not closing, 
+    -- Try to get next job to avoid an extra roundtrip if the queue is not closing,
     -- and not rate limited.
     if (ARGV[8] == "1") then
-        -- move from wait to active 
-        local jobId = rcall("RPOPLPUSH", KEYS[4], KEYS[1])
+        -- move from wait/prioritized to active
+        local jobId = getNextJob(KEYS[10], KEYS[4], KEYS[1], KEYS[5], KEYS[11])
         if jobId then
             local jobKey = ARGV[9] .. jobId
             local lockKey = jobKey .. ':lock'
@@ -120,7 +124,7 @@ if rcall("EXISTS", KEYS[3]) == 1 then -- // Make sure job exists
             -- get a lock
             rcall("SET", lockKey, ARGV[11], "PX", ARGV[10])
 
-            rcall("ZREM", KEYS[5], jobId) -- remove from priority
+            rcall("ZREM", KEYS[5], jobId) -- remove from legacy priority set, in case this job predates the prioritized zset
             rcall("PUBLISH", KEYS[6], jobId)
             rcall("HSET", jobKey, "processedOn", ARGV[2])
 

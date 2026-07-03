@@ -90,8 +90,18 @@ local failedKey = baseKey .. 'failed'
 removeZSetJobs(failedKey, maxCount)
 if (maxCount <= 0) then return 1 end
 
+-- Unlike 'priority' (score-only references into 'wait', DEL'd below with
+-- the other metadata keys), 'prioritized' is where prioritized jobs'
+-- hashes actually live (see addJobWithPriority.lua), so it must be walked
+-- and removed job-by-job like delayed/completed/failed above, rather than
+-- just DEL'd, or their hashes would be orphaned.
+local prioritizedKey = baseKey .. 'prioritized'
+removeZSetJobs(prioritizedKey, maxCount)
+if (maxCount <= 0) then return 1 end
+
 if (maxCount > 0) then
     rcall("DEL", baseKey .. 'priority')
+    rcall("DEL", baseKey .. 'marker')
     rcall("DEL", baseKey .. 'stalled-check')
     rcall("DEL", baseKey .. 'stalled')
     rcall("DEL", baseKey .. 'meta-paused')

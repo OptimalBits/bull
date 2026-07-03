@@ -14,6 +14,7 @@
       KEYS[9]  job logs
       KEYS[10] rate limiter index table
       KEYS[11] prefix key
+      KEYS[12] 'prioritized'
 
       ARGV[1]  jobId
       ARGV[2]  lock token
@@ -40,6 +41,7 @@ if not lock then             -- or (lock == ARGV[2])) then
   rcall("ZREM", KEYS[5], jobId)
   rcall("ZREM", KEYS[6], jobId)
   rcall("ZREM", KEYS[7], jobId)
+  rcall("ZREM", KEYS[12], jobId)
 
   removeDebounceKey(KEYS[11], KEYS[8])
 

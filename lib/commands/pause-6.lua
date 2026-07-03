@@ -7,6 +7,7 @@
       KEYS[3] 'meta-paused'
       KEYS[4] 'paused' o 'resumed' event.
       KEYS[5] 'meta' this key is only used in BullMQ and above.
+      KEYS[6] 'marker'
 
       ARGV[1] 'paused' or 'resumed'
 
@@ -14,6 +15,9 @@
       publish paused or resumed event.
 ]]
 local rcall = redis.call
+
+-- Includes
+--- @include "includes/addBaseMarkerIfNeeded"
 
 if rcall("EXISTS", KEYS[1]) == 1 then
   rcall("RENAME", KEYS[1], KEYS[2])
@@ -30,6 +34,8 @@ else
   -- for forwards compatibility
   rcall("HDEL", KEYS[5], "paused")
 
+  -- Wake up (at least) one blocked worker so it can resume draining 'wait'.
+  addBaseMarkerIfNeeded(KEYS[6], false)
 end
 
 rcall("PUBLISH", KEYS[4], ARGV[1])

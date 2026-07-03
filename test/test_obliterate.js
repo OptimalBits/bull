@@ -104,6 +104,16 @@ describe('Obliterate', () => {
     expect(keys.length).to.be.eql(0);
   });
 
+  it('should remove the job hashes of prioritized jobs', async () => {
+    await queue.add({ foo: 'bar' }, { priority: 5 });
+    await queue.add({ foo: 'bar2' }, { priority: 10 });
+
+    await queue.obliterate();
+    const client = await queue.client;
+    const keys = await client.keys(`bull:${queue.name}:*`);
+    expect(keys.length).to.be.eql(0);
+  });
+
   it('should remove repeatable jobs', async () => {
     await queue.add(
       'test',

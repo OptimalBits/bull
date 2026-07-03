@@ -20,7 +20,8 @@
       KEYS[3] 'meta-paused'
       KEYS[4] 'id'
       KEYS[5] 'delayed'
-      KEYS[6] 'priority'
+      KEYS[6] 'prioritized'
+      KEYS[7] 'marker'
 
       ARGV[1]  key prefix,
       ARGV[2]  custom id (will not generate one automatically)
@@ -42,6 +43,7 @@ local jobIdKey
 local rcall = redis.call
 
 -- Includes
+--- @include "includes/addBaseMarkerIfNeeded"
 --- @include "includes/addJobWithPriority"
 --- @include "includes/debounceJob"
 --- @include "includes/getTargetQueueList"
@@ -81,7 +83,7 @@ end
 
     -- Store the job.
 rcall("HMSET", jobIdKey, "name", ARGV[3], "data", ARGV[4], "opts", opts, "timestamp",
-  ARGV[6], "delay", ARGV[7], "priority", ARGV[9], unpack(optionalValues))
+  ARGV[6], "delay", ARGV[7], "priority", ARGV[9], "pc", jobCounter, unpack(optionalValues))
 
 -- Check if job is delayed
 local delayedTimestamp = tonumber(ARGV[8])
@@ -90,8 +92,6 @@ if(delayedTimestamp ~= 0) then
   rcall("ZADD", KEYS[5], timestamp, jobId)
   rcall("PUBLISH", KEYS[5], delayedTimestamp)
 else
-  local target
-
   -- Whe check for the meta-paused key to decide if we are paused or not
   -- (since an empty list and !EXISTS are not really the same)
   local target, paused = getTargetQueueList(KEYS[3], KEYS[1], KEYS[2])
@@ -102,8 +102,10 @@ else
       -- LIFO or FIFO
     rcall(ARGV[10], target, jobId)
   else
-    addJobWithPriority(KEYS[6], priority, jobId, target)
+    addJobWithPriority(KEYS[6], priority, jobCounter, jobId)
   end
+
+  addBaseMarkerIfNeeded(KEYS[7], paused)
 
   -- Emit waiting event (wait..ing@token)
   rcall("PUBLISH", KEYS[1] .. "ing@" .. ARGV[11], jobId)

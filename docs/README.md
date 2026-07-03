@@ -244,7 +244,9 @@ const myJob = await myqueue.add({ foo: 'bar' }, { delay: 5000 });
 
 ## Prioritized
 
-Jobs can be added to a queue with a priority value. Jobs with higher priority will be processed before jobs with lower priority. The highest priority is 1, and the larger the integer you use, the lower the priority of the job. Keep in mind that priority queues are a bit slower than a standard queue (currently insertion time O(n), n being the number of jobs currently waiting in the queue, instead of O(1) for standard queues).
+Jobs can be added to a queue with a priority value. Jobs with higher priority will be processed before jobs with lower priority. The highest priority is 1, and the larger the integer you use, the lower the priority of the job.
+
+Jobs added without an explicit priority are processed via the standard FIFO/LIFO queue, which is only drained once there are no prioritized jobs left waiting. This means a job without a priority will be processed after every job that has one, even jobs with a priority added later, so a steady stream of prioritized jobs can delay non-prioritized ones indefinitely.
 
 ```js
 const myJob = await myqueue.add({ foo: 'bar' }, { priority: 3 });

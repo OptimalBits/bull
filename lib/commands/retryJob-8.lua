@@ -8,7 +8,8 @@
       KEYS[4] 'meta-paused'
       KEYS[5] 'paused'
       KEYS[6] stalled key
-      KEYS[7] 'priority'
+      KEYS[7] 'prioritized'
+      KEYS[8] 'marker'
 
       ARGV[1]  pushCmd
       ARGV[2]  jobId
@@ -26,6 +27,7 @@
 local rcall = redis.call
 
 -- Includes
+--- @include "includes/addBaseMarkerIfNeeded"
 --- @include "includes/addJobWithPriority"
 --- @include "includes/getTargetQueueList"
 --- @include "includes/removeLock"
@@ -39,7 +41,7 @@ if rcall("EXISTS", KEYS[3]) == 1 then
   local numRemovedElements = rcall("LREM", KEYS[1], -1, ARGV[2])
   if numRemovedElements < 1 then return -3 end
 
-  local target = getTargetQueueList(KEYS[4], KEYS[2], KEYS[5])
+  local target, paused = getTargetQueueList(KEYS[4], KEYS[2], KEYS[5])
 
   local priority = tonumber(rcall("HGET", KEYS[3], "priority")) or 0
 
@@ -47,8 +49,11 @@ if rcall("EXISTS", KEYS[3]) == 1 then
     -- LIFO or FIFO
     rcall(ARGV[1], target, ARGV[2])
   else
-    addJobWithPriority(KEYS[7], priority, ARGV[2], target)
+    local counter = tonumber(rcall("HGET", KEYS[3], "pc")) or 0
+    addJobWithPriority(KEYS[7], priority, counter, ARGV[2])
   end
+
+  addBaseMarkerIfNeeded(KEYS[8], paused)
 
   return 0
 else

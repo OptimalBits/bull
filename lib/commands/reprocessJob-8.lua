@@ -8,6 +8,8 @@
     KEYS[4] wait key
     KEYS[5] meta-pause
     KEYS[6] paused key
+    KEYS[7] prioritized key
+    KEYS[8] marker key
 
     ARGV[1] job.id,
     ARGV[2] (job.opts.lifo ? 'R' : 'L') + 'PUSH'
@@ -23,20 +25,26 @@
 
 ]]
 local rcall = redis.call;
+-- Includes
+--- @include "includes/addBaseMarkerIfNeeded"
+--- @include "includes/addJobWithPriority"
+--- @include "includes/getTargetQueueList"
+
 if (rcall("EXISTS", KEYS[1]) == 1) then
     if (rcall("EXISTS", KEYS[2]) == 0) then
         rcall("HDEL", KEYS[1], "finishedOn", "processedOn", "failedReason")
         rcall("HSET", KEYS[1], "retriedOn", ARGV[4])
 
         if (rcall("ZREM", KEYS[3], ARGV[1]) == 1) then
-            local target
-            if rcall("EXISTS", KEYS[5]) ~= 1 then
-                target = KEYS[4]
+            local target, paused = getTargetQueueList(KEYS[5], KEYS[4], KEYS[6])
+            local priority = tonumber(rcall("HGET", KEYS[1], "priority")) or 0
+            if priority == 0 then
+                rcall(ARGV[2], target, ARGV[1])
             else
-                target = KEYS[6]
+                local counter = tonumber(rcall("HGET", KEYS[1], "pc")) or 0
+                addJobWithPriority(KEYS[7], priority, counter, ARGV[1])
             end
-
-            rcall(ARGV[2], target, ARGV[1])
+            addBaseMarkerIfNeeded(KEYS[8], paused)
 
             -- Emit waiting event (wait..ing@token)
             rcall("PUBLISH", KEYS[4] .. "ing@" .. ARGV[3], ARGV[1])

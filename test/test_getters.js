@@ -171,6 +171,20 @@ describe('Jobs getters', function() {
     queue.add({ baz: 'qux' });
   });
 
+  describe('.getJobCounts', () => {
+    it('includes prioritized jobs in the waiting count', async () => {
+      await queue.add({ foo: 'bar' });
+      await queue.add({ foo: 'bar' }, { priority: 5 });
+      await queue.add({ foo: 'bar' }, { priority: 5 });
+
+      const counts = await queue.getJobCounts();
+      expect(counts.waiting).to.be.eql(3);
+
+      const waitingCount = await queue.getJobCountByTypes('waiting');
+      expect(waitingCount).to.be.eql(3);
+    });
+  });
+
   describe('.getCountsPerPriority', () => {
     it('returns job counts per priority', done => {
       const jobsArray = Array.from(Array(42).keys()).map(index => ({

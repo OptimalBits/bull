@@ -444,8 +444,10 @@ declare namespace Bull {
     debounce?: DebounceOptions;
 
     /**
-     * Optional priority value. ranges from 1 (highest priority) to MAX_INT  (lowest priority).
-     * Note that using priorities has a slight impact on performance, so do not use it if not required
+     * Optional priority value. ranges from 1 (highest priority) to 2097151 (lowest priority).
+     * Jobs added without an explicit priority are only processed once there are no prioritized
+     * jobs left waiting, even ones added later, so a steady stream of prioritized jobs can delay
+     * them indefinitely.
      */
     priority?: number | undefined;
 

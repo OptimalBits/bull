@@ -9,7 +9,7 @@
   Input:
       KEYS[1] wait key
       KEYS[2] active key
-      KEYS[3] priority key
+      KEYS[3] priority key (legacy, kept for backward compatibility)
       KEYS[4] active event key
       KEYS[5] stalled key
 
@@ -19,6 +19,9 @@
 
       --
       KEYS[8] drained key
+
+      KEYS[9] prioritized key
+      KEYS[10] meta-paused key
 
       ARGV[1] key prefix
       ARGV[2] lock token
@@ -33,6 +36,9 @@
 ]]
 
 local rcall = redis.call
+
+-- Includes
+--- @include "includes/getNextJob"
 
 local rateLimit = function(jobId, maxJobs)
   local rateLimiterKey = KEYS[6];
@@ -118,8 +124,8 @@ if jobId ~= '' then
   -- clean stalled key
   rcall("SREM", KEYS[5], jobId)
 else
-  -- move from wait to active
-  jobId = rcall("RPOPLPUSH", KEYS[1], KEYS[2])
+  -- move from wait/prioritized to active
+  jobId = getNextJob(KEYS[9], KEYS[1], KEYS[2], KEYS[3], KEYS[10])
 end
 
 if jobId then
@@ -137,13 +143,19 @@ if jobId then
   local lockKey = jobKey .. ':lock'
   rcall("SET", lockKey, ARGV[2], "PX", ARGV[3])
 
-  -- remove from priority
+  -- remove from legacy priority set, in case this job predates the prioritized zset
   rcall("ZREM", KEYS[3], jobId)
   rcall("PUBLISH", KEYS[4], jobId)
   rcall("HSET", jobKey, "processedOn", ARGV[4])
 
   return {rcall("HGETALL", jobKey), jobId} -- get job data
 else
+  -- Unlike the local 'drained' JS event (which is edge-triggered, see
+  -- Queue#nextJobFromJobData), this global pubsub notification fires on
+  -- every empty fetch, not just the first one after a non-empty queue
+  -- becomes empty. This is kept level-triggered to preserve existing
+  -- pubsub consumers' semantics; callers that want one-shot,
+  -- edge-triggered notification should use the local 'drained' event
+  -- instead.
   rcall("PUBLISH", KEYS[8], "")
 end
-

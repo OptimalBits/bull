@@ -10,6 +10,8 @@
 
       KEYS[6] 'meta-paused', (KEY)
       KEYS[7] 'paused', (LIST)
+      KEYS[8] 'marker', (LIST)
+      KEYS[9] 'prioritized', (ZSET)
 
       ARGV[1]  Max stalled job count
       ARGV[2]  queue.toKey('')
@@ -23,6 +25,8 @@
 local rcall = redis.call
 
 -- Includes
+--- @include "includes/addBaseMarkerIfNeeded"
+--- @include "includes/addJobWithPriority"
 --- @include "includes/batches"
 --- @include "includes/getTargetQueueList"
 --- @include "includes/removeDebounceKeyIfNeeded"
@@ -113,10 +117,19 @@ if(#stalling > 0) then
 
           table.insert(failed, jobId)
         else
-          local target = getTargetQueueList(KEYS[6], KEYS[2], KEYS[7])
+          local target, paused = getTargetQueueList(KEYS[6], KEYS[2], KEYS[7])
 
-          -- Move the job back to the wait queue, to immediately be picked up by a waiting worker.
-          rcall("RPUSH", target, jobId)
+          -- Move the job back to the wait queue (or, if it has a priority,
+          -- back into the prioritized zset) to immediately be picked up by
+          -- a waiting worker.
+          local priority = tonumber(rcall("HGET", jobKey, "priority")) or 0
+          if priority == 0 then
+            rcall("RPUSH", target, jobId)
+          else
+            local counter = tonumber(rcall("HGET", jobKey, "pc")) or 0
+            addJobWithPriority(KEYS[9], priority, counter, jobId)
+          end
+          addBaseMarkerIfNeeded(KEYS[8], paused)
           rcall('PUBLISH', KEYS[1] .. '@', jobId)
           table.insert(stalled, jobId)
         end
