@@ -281,8 +281,11 @@ describe('Job', () => {
       });
     });
 
-    it('emits removed event', cb => {
+    it('emits removed event with a Job instance', cb => {
       queue.once('removed', job => {
+        expect(job).to.be.a(Job);
+        expect(typeof job).not.to.be('string');
+        expect(job.id).to.be.ok();
         expect(job.data.foo).to.be.equal('bar');
         cb();
       });
@@ -339,6 +342,109 @@ describe('Job', () => {
           expect(storedJob).to.not.be(null);
         }
       }
+    });
+
+    it('emits removed event with a Job instance for each matching job', async () => {
+      const specs = [
+        { jobId: 'foo', data: { kind: 'match', n: 1 } },
+        { jobId: 'foo1', data: { kind: 'match', n: 2 } },
+        { jobId: 'bar', data: { kind: 'skip', n: 3 } }
+      ];
+
+      await Promise.all(
+        specs.map(spec =>
+          Job.create(queue, 'email', spec.data, { jobId: spec.jobId })
+        )
+      );
+
+      const removed = [];
+      queue.on('removed', job => {
+        removed.push(job);
+      });
+
+      await queue.removeJobs('foo*');
+
+      expect(removed.length).to.be(2);
+      removed.forEach(job => {
+        expect(job).to.be.a(Job);
+        expect(typeof job).not.to.be('string');
+        expect(job.id).to.match(/^foo/);
+        expect(job.name).to.be('email');
+        expect(job.data.kind).to.be('match');
+      });
+
+      const ids = removed.map(job => job.id).sort();
+      expect(ids).to.eql(['foo', 'foo1']);
+
+      const skipped = await Job.fromId(queue, 'bar');
+      expect(skipped).to.not.be(null);
+      expect(skipped.data.kind).to.be('skip');
+    });
+
+    it('emits the same Job shape from Job#remove and Queue#removeJobs', async () => {
+      const single = await Job.create(
+        queue,
+        'named',
+        { x: 1 },
+        { jobId: 'single' }
+      );
+      await Job.create(queue, 'named', { x: 2 }, { jobId: 'pat-1' });
+
+      const fromSingle = [];
+      const fromPattern = [];
+      queue.on('removed', job => {
+        if (job.id === 'single') {
+          fromSingle.push(job);
+        } else {
+          fromPattern.push(job);
+        }
+      });
+
+      await single.remove();
+      await queue.removeJobs('pat-*');
+
+      expect(fromSingle.length).to.be(1);
+      expect(fromPattern.length).to.be(1);
+
+      [fromSingle[0], fromPattern[0]].forEach(job => {
+        expect(job).to.be.a(Job);
+        expect(typeof job).not.to.be('string');
+        expect(job.name).to.be('named');
+        expect(job.data).to.have.property('x');
+        expect(job.id).to.be.a('string');
+      });
+      expect(fromSingle[0].data.x).to.be(1);
+      expect(fromPattern[0].data.x).to.be(2);
+    });
+
+    it('does not emit removed for locked jobs matching the pattern', async () => {
+      const job = await Job.create(
+        queue,
+        { foo: 'bar' },
+        { jobId: 'foo-locked' }
+      );
+      const lock = await job.takeLock();
+      expect(lock).to.be.ok();
+
+      const removed = [];
+      queue.on('removed', emitted => {
+        removed.push(emitted);
+      });
+
+      await queue.removeJobs('foo*');
+
+      expect(removed.length).to.be(0);
+      expect(await Job.fromId(queue, 'foo-locked')).to.not.be(null);
+    });
+
+    it('does not emit removed when no jobs match the pattern', async () => {
+      await Job.create(queue, { foo: 'bar' }, { jobId: 'bar' });
+      let emitted = false;
+      queue.on('removed', () => {
+        emitted = true;
+      });
+      await queue.removeJobs('foo*');
+      expect(emitted).to.be(false);
     });
   });
 

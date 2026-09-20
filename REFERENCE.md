@@ -472,6 +472,8 @@ removeJobs(pattern: string): Promise<void>
 
 Removes all the jobs which jobId matches the given pattern. The pattern must follow redis glob-style pattern [syntax](https://redis.io/commands/keys)
 
+Each successfully removed job emits a `removed` event with a `Job` instance — the same shape as [`Job#remove`](#jobremove).
+
 Example:
 
 ```js
@@ -1111,6 +1113,7 @@ A queue emits also some useful events:
 
 .on('removed', function (job) {
   // A job successfully removed.
+  // `job` is a Job instance for both Job#remove() and Queue#removeJobs().
 });
 
 ```

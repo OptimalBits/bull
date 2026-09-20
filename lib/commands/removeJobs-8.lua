@@ -23,10 +23,21 @@
 -- TODO PUBLISH global events 'removed'
 
 local rcall = redis.call
+
+-- Snapshot the job hash as JSON so JS can emit a Job instance after DEL.
+local function jobHashToJson(hash)
+    local map = {}
+    for i = 1, #hash, 2 do
+        map[hash[i]] = hash[i + 1]
+    end
+    return cjson.encode(map)
+end
+
 local result = rcall("SCAN", ARGV[3], "MATCH", ARGV[1] .. ARGV[2])
 local cursor = result[1];
 local jobKeys = result[2];
 local removed = {}
+local removedJobs = {}
 
 local prefixLen = string.len(ARGV[1]) + 1
 for i, jobKey in ipairs(jobKeys) do
@@ -36,6 +47,9 @@ for i, jobKey in ipairs(jobKeys) do
         local lockKey = jobKey .. ':lock'
         local lock = redis.call("GET", lockKey)
         if not lock then
+            -- Capture job data before deleting the hash.
+            local jobHash = rcall("HGETALL", jobKey)
+
             rcall("LREM", KEYS[1], 0, jobId)
             rcall("LREM", KEYS[2], 0, jobId)
             rcall("ZREM", KEYS[3], jobId)
@@ -55,7 +69,8 @@ for i, jobKey in ipairs(jobKeys) do
                 rcall("HDEL", limiterIndexTable, jobId)
             end
             table.insert(removed, jobId)
+            table.insert(removedJobs, jobHashToJson(jobHash))
         end
     end
 end
-return {cursor, removed}
+return {cursor, removed, removedJobs}

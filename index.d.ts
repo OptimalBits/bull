@@ -1036,6 +1036,8 @@ declare namespace Bull {
 
     /**
      * A job successfully removed.
+     * Fired for both Job#remove and Queue#removeJobs. The callback
+     * always receives a Job instance.
      */
     on(event: 'removed', callback: RemovedEventCallback<T>): this;
 
@@ -1093,6 +1095,7 @@ declare namespace Bull {
     /**
      * Removes all the jobs which jobId matches the given pattern. The pattern must follow redis glob-style pattern
      * (syntax)[redis.io/commands/keys]
+     * Each successfully removed job emits a 'removed' event with a Job instance.
      */
     removeJobs(pattern: string): Promise<void>;
   }
