@@ -10,7 +10,7 @@
     ARGV[3]  jobid
 
   Output:
-    "1" if lock extended succesfully.
+    "1" if lock extended successfully.
 ]]
 local rcall = redis.call
 if rcall("GET", KEYS[1]) == ARGV[1] then
