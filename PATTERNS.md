@@ -253,7 +253,7 @@ myQueue.add({ msg: 'Specific Error' }, {
 Manually fetching jobs
 ----------------------------------
 
-If you want the actual job processing to be done in a seperate repo/service than where `bull` is running, this pattern may be for you.
+If you want the actual job processing to be done in a separate repo/service than where `bull` is running, this pattern may be for you.
 
 Manually transitioning states for jobs can be done with a few simple methods.
 

@@ -8,7 +8,7 @@
         ARGV[2]  lock duration in milliseconds
       
       Output:
-        "OK" if lock extented succesfully.
+        "OK" if lock extended successfully.
 ]]
 local rcall = redis.call
 

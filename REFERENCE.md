@@ -1058,7 +1058,7 @@ A queue emits also some useful events:
 
 ```js
 .on('error', function (error) {
-  // An error occured.
+  // An error occurred.
 })
 
 .on('waiting', function (jobId) {
